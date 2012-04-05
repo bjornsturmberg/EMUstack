@@ -1,0 +1,14 @@
+0  debug         - 0 for full simulations, 1 for full details
+1  parallel_comp - Parallel computation 1, else single core
+1  Loss          - Include loss 1, else set Im(n) to zero
+1  hole_wire     - Choose holes 0, nanowires 1, uniform slab 2 or const 3
+1  substrate     - suspended in medium_1 0, on substrate 1
+0  TEmode        - Calculate t,r,a for the incident TE polarisation
+1  TMmode        - Calculate t,r,a for the incident TM polarisation
+1  traLambda     - Save t,r,a for each wavelength
+0  PropModes     - Save # of propagating modes & det(I-RPRP) 1, save SVD 2
+0  PrintSolution - Save FEM Bloch modes for lambda selected below.
+0  PrintSupModes - Save supermode field distributions
+0  PrintOmega    - Save dispersion data (beta for each lambda)
+0  PrintAll      - Save J overlap, orthogonal
+0  Checks        - Check completeness, energy conservation
