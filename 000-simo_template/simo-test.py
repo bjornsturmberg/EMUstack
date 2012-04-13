@@ -33,8 +33,8 @@ no_wl_1  = 5    # 2 nm steps
 no_wl_2  = 1   # 1 nm steps
 no_wl_3  = 1    # 10 nm steps - total 667 wavelengths
 # simulation parameters
-max_num_BMs   = 300
-max_order_PWs = 3
+max_num_BMs   = 30
+max_order_PWs = 5
 # number of cpus to use
 num_cores_to_use = 10
 # number of cpus to leave free
@@ -48,7 +48,7 @@ clear_previous.clean('.pdf')
 clear_previous.clean('.log')
 
 # Set up solar cell
-mesh = '../PCPV/Data/2by2_ff20_tau_01-2.mail'
+mesh = '../PCPV/Data/2by2_ff20_tau_01.mail'
 solar_cell  = objects.SolarCell(radius1, radius2, period, ff, mesh)#, inclusion=materials.air, substrate=materials.SiO2)
 
 # Set up light objects
@@ -56,14 +56,14 @@ wl_array_1  = np.linspace(wl_1, wl_2, no_wl_1)
 wl_array_2  = np.linspace(wl_2+1, wl_3, no_wl_2)
 wl_array_3  = np.linspace(wl_3+1, wl_4, no_wl_3)
 wavelengths = np.concatenate((wl_array_1,wl_array_2, wl_array_3, [wl_5]))
-# blah = 400
-# wl_array_1  = np.linspace(blah, blah, 1)
-# wl_array_2  = np.linspace(blah, blah, 1)
-# wavelengths = np.concatenate((wl_array_1,wl_array_2))
+blah = 1127
+wl_array_1  = np.linspace(blah, blah, 1)
+wl_array_2  = np.linspace(blah, blah, 1)
+wavelengths = np.concatenate((wl_array_1,wl_array_2))
 light_list  = [objects.Light(wl) for wl in wavelengths]
 
 # Simulation controls
-other_para  = objects.Controls()#PrintAll = 1)#, Checks = 1)
+other_para  = objects.Controls(PrintAll = 1, Checks = 1)
 
 # Interpolate refractive indecies over wavelength array
 materials.interp_all(wavelengths)

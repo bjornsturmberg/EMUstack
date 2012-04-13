@@ -117,16 +117,16 @@ C     prefactors of plane waves order s(px,py)
             do px = -ordre_ls, ordre_ls
               do py = -ordre_ls, ordre_ls
               if (px**2 + py**2 .le. ordre_ls**2) then
-                alpha = bloch1 + vec_kx*px	! Bloch vector along x
-                beta  = bloch2 + vec_ky*py	! Bloch vector along y
-                norm = 1.0d0/DSQRT(alpha**2 + beta**2)	! sqrt term             
+                alpha = bloch1 + vec_kx*px      ! Bloch vector along x
+                beta  = bloch2 + vec_ky*py      ! Bloch vector along y
+                norm = 1.0d0/DSQRT(alpha**2 + beta**2) ! sqrt term             
                 r_tmp = alpha*xx_g(1) + beta*xx_g(2)
                 s2 = index_pw_inv(s)
                 val_exp = EXP(ii*r_tmp)*norm
 C
 C     Plane waves order s (1-neq_PW) not conjugated (-ii) -> ii	
 C  	RK	  x component
-	          PlaneW_RK(s2,1) = alpha*val_exp
+                PlaneW_RK(s2,1) = alpha*val_exp
 C             y component
                 PlaneW_RK(s2,2) = beta*val_exp
 C		
@@ -140,7 +140,7 @@ C
               enddo
             enddo
 C
-            coeff_1 = ww * ABS(det) * pp(typ_e)
+            coeff_1 = ww * ABS(det)     ! * pp(typ_e)
             do s=1,neq_PW
               do trans=1,2              ! transverse field components
                 K_tmp(trans) = PlaneW_RK(s,trans)

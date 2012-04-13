@@ -198,7 +198,7 @@ c                   Determine the basis vector
                     do E_K = 1,2
                       z_tmp1 = z_vec_phi_i(1,E_K)*vec_phi_j(1) + 
      *                            z_vec_phi_i(2,E_K)*vec_phi_j(2)
-                      z_tmp1 = (z_coeff_1/k) * z_tmp1
+                      z_tmp1 = (z_coeff_1/k_0) * z_tmp1
                       mat_scal(s2,ind_jp,E_K) = 
      *                  mat_scal(s2,ind_jp,E_K) + z_tmp1
                     enddo
@@ -214,7 +214,7 @@ c                 Determine the basis vector
                   do E_K = 1,2
                     z_tmp1 = z_vec_phi_i(1,E_K)*vec_phi_j(1) + 
      *                             z_vec_phi_i(2,E_K)*vec_phi_j(2)
-                    z_tmp1 = (z_coeff_1/k) * z_tmp1
+                    z_tmp1 = (z_coeff_1/k_0) * z_tmp1
                     mat_scal(s2,ind_jp,E_K) = 
      *                mat_scal(s2,ind_jp,E_K) + z_tmp1
                   enddo
