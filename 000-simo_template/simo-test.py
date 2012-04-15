@@ -34,6 +34,7 @@ no_wl_2  = 1   # 1 nm steps
 no_wl_3  = 1    # 10 nm steps - total 667 wavelengths
 # simulation parameters
 max_num_BMs   = 30
+var_BM_min    = 370
 max_order_PWs = 5
 # number of cpus to use
 num_cores_to_use = 10
@@ -56,14 +57,14 @@ wl_array_1  = np.linspace(wl_1, wl_2, no_wl_1)
 wl_array_2  = np.linspace(wl_2+1, wl_3, no_wl_2)
 wl_array_3  = np.linspace(wl_3+1, wl_4, no_wl_3)
 wavelengths = np.concatenate((wl_array_1,wl_array_2, wl_array_3, [wl_5]))
-blah = 1127
-wl_array_1  = np.linspace(blah, blah, 1)
-wl_array_2  = np.linspace(blah, blah, 1)
-wavelengths = np.concatenate((wl_array_1,wl_array_2))
+# blah = 1127
+# wl_array_1  = np.linspace(blah, blah, 1)
+# wl_array_2  = np.linspace(blah, blah, 1)
+# wavelengths = np.concatenate((wl_array_1,wl_array_2))
 light_list  = [objects.Light(wl) for wl in wavelengths]
 
 # Simulation controls
-other_para  = objects.Controls(PrintAll = 1, Checks = 1)
+other_para  = objects.Controls()
 
 # Interpolate refractive indecies over wavelength array
 materials.interp_all(wavelengths)
@@ -73,7 +74,7 @@ simmo_list = []
 p 		   = 1
 for light in light_list:
 	simmo_list += [Simmo(solar_cell, light, other_para, 
-		max_num_BMs, max_order_PWs, p)]
+		max_num_BMs, var_BM_min, max_order_PWs, p)]
 	p += 1
 
 # # Start all simulations running
@@ -105,7 +106,7 @@ Efficiency = plotting.irradiance('Absorptance','../PCPV/Data/ASTM_1_5_spectrum',
 # Plot sprectra
 spec_list = ['Weighted_Abs', 'Absorptance', 'Transmittance', 'Reflectance']
 last_light_object = light_list.pop()
-plotting.tra_plot(spec_list, solar_cell, last_light_object, max_num_BMs, max_order_PWs)
+plotting.tra_plot(spec_list, solar_cell, last_light_object, max_num_BMs, max_order_PWs, Efficiency)
 
 
 

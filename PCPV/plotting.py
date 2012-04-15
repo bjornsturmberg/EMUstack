@@ -29,7 +29,7 @@ def irradiance(Absorptance, Irradiance, Weighted):
 	return Efficiency
 
 
-def tra_plot(spec_list, solar_cell, light, max_num_BMs, max_order_PWs):
+def tra_plot(spec_list, solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
 	fig = plt.figure(num=None, figsize=(8, 12), dpi=80, facecolor='w', edgecolor='k')
 	for i in range(len(spec_list)):
 		ax1 = fig.add_subplot(4,1,i+1, adjustable='box', aspect=400)
@@ -62,7 +62,9 @@ def tra_plot(spec_list, solar_cell, light, max_num_BMs, max_order_PWs):
 	tmp6 = '\nmax_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
 	'max_num_BMs'	: max_num_BMs,
 	'max_order_PWs'	: max_order_PWs, }
+	tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {
+	'Efficiency'	: Efficiency, }
 
-	imp_facts = tmp1 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6
+	imp_facts = tmp1 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6 + tmp7
 	plt.suptitle(imp_facts)
 	plt.savefig('tra_spectra')

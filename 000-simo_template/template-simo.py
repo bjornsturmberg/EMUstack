@@ -34,6 +34,7 @@ no_wl_2  = 610   # 1 nm steps
 no_wl_3  = 10    # 10 nm steps - total 667 wavelengths
 # simulation parameters
 max_num_BMs   = 200
+var_BM_min    = 370
 max_order_PWs = 3
 # number of cpus to use
 num_cores_to_use = 10
@@ -69,7 +70,7 @@ simmo_list = []
 p 		   = 1
 for light in light_list:
 	simmo_list += [Simmo(solar_cell, light, other_para, 
-		max_num_BMs, max_order_PWs, p)]
+		max_num_BMs, var_BM_min, max_order_PWs, p)]
 	p += 1
 
 # # Start all simulations running
@@ -101,7 +102,7 @@ Efficiency = plotting.irradiance('Absorptance','../PCPV/Data/ASTM_1_5_spectrum',
 # Plot sprectra
 spec_list = ['Weighted_Abs', 'Absorptance', 'Transmittance', 'Reflectance']
 last_light_object = light_list.pop()
-plotting.tra_plot(spec_list, solar_cell, last_light_object, max_num_BMs, max_order_PWs)
+plotting.tra_plot(spec_list, solar_cell, last_light_object, max_num_BMs, max_order_PWs, Efficiency)
 
 
 

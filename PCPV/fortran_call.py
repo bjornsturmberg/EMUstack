@@ -11,11 +11,12 @@ pcpv_location = '../PCPV/'
 class Simmo(object):
 	"""docstring for Simmo"""
 	def __init__(self, solar_cell, light, other_para, 
-		max_num_BMs, max_order_PWs, p):
+		max_num_BMs, var_BM_min, max_order_PWs, p):
 		self.solar_cell    = solar_cell
 		self.light         = light
 		self.other_para    = other_para
 		self.max_num_BMs   = max_num_BMs
+		self.var_BM_min    = var_BM_min
 		self.max_order_PWs = max_order_PWs
 		self.p             = p
 
@@ -39,11 +40,16 @@ class Simmo(object):
 		background_n  = self.background_n()
 		superstrate_n = self.superstrate_n()
 		substrate_n   = self.substrate_n()
-		max_n         = self.solar_cell.inclusion.max_n()
-		nval_tmp      = self.max_num_BMs*inclusion_n.real/max_n
-		# note this ceil has issues in python 2.x rounding up vs down
-		nval 		  = math.ceil(nval_tmp)
-		ordre_ls      = math.ceil(self.max_order_PWs*nval/self.max_num_BMs)
+		if self.light.Lambda > self.var_BM_min:
+			max_n         = self.solar_cell.inclusion.max_n()
+			nval_tmp      = self.max_num_BMs*inclusion_n.real/max_n
+			# note this ceil has issues in python 2.x rounding up vs down
+			nval 		  = math.ceil(nval_tmp)
+			ordre_ls      = math.ceil(self.max_order_PWs*nval/self.max_num_BMs)
+		else:
+			nval 		  = self.max_num_BMs
+			ordre_ls      = self.max_order_PWs			
+
 
 		command_to_run  = "%(pcpv_location)spcpv.exe %(parallel)d %(Lambda)s %(nval)d \
 		%(ordre_ls)d %(d_in_nm)d %(debug)d %(mesh_file)s %(mesh_format)d \
