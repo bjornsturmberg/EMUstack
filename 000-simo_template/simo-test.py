@@ -102,12 +102,18 @@ if other_para.PropModes  == 1:
 		cat_n_clean.c_c_prop_modes()
 
 # Interpolate solar spectrum and calculate efficiency
-Efficiency = plotting.irradiance('Absorptance','../PCPV/Data/ASTM_1_5_spectrum','Weighted_Abs')
+Efficiency = plotting.irradiance('../PCPV/Data/ASTM_1_5_spectrum','Absorptance',
+	'Weighted_Absorb', 'Transmittance', 'Weighted_Trans', 'Reflectance', 'Weighted_Reflec')
 # Plot sprectra
-spec_list = ['Weighted_Abs', 'Absorptance', 'Transmittance', 'Reflectance']
+spec_list = ['Absorptance', 'Transmittance', 'Reflectance']
 last_light_object = light_list.pop()
-plotting.tra_plot(spec_list, solar_cell, last_light_object, max_num_BMs, max_order_PWs, Efficiency)
-
+plotting.tra_plot('Spectra', spec_list, solar_cell, last_light_object,
+	max_num_BMs, max_order_PWs, Efficiency)
+# Plot weighted sprectra
+spec_list = ['Weighted_Absorb', 'Weighted_Trans', 'Weighted_Reflec']
+last_light_object = light_list.pop()
+plotting.tra_plot('Spectra_weighted', spec_list, solar_cell, last_light_object, 
+	max_num_BMs, max_order_PWs, Efficiency)
 
 
 # Wraping up simulation by printing to screen and log file

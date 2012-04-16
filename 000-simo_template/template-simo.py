@@ -29,9 +29,9 @@ wl_2     = 410   # < 400 Im(n(cSi)) large
 wl_3     = 1010  # > 1010 Im(n(cSi)) = 0
 wl_4     = 1110
 wl_5     = 1127
-no_wl_1  = 46    # 2 nm steps
-no_wl_2  = 610   # 1 nm steps
-no_wl_3  = 10    # 10 nm steps - total 667 wavelengths
+no_wl_1  = 5#46    # 2 nm steps
+no_wl_2  = 2#610   # 1 nm steps
+no_wl_3  = 1#10    # 10 nm steps - total 667 wavelengths
 # simulation parameters
 max_num_BMs   = 200
 var_BM_min    = 370
@@ -98,12 +98,18 @@ if other_para.PropModes  == 1:
 		cat_n_clean.c_c_prop_modes()
 
 # Interpolate solar spectrum and calculate efficiency
-Efficiency = plotting.irradiance('Absorptance','../PCPV/Data/ASTM_1_5_spectrum','Weighted_Abs')
+Efficiency = plotting.irradiance('../PCPV/Data/ASTM_1_5_spectrum','Absorptance',
+	'Weighted_Absorb', 'Transmittance', 'Weighted_Trans', 'Reflectance', 'Weighted_Reflec')
 # Plot sprectra
-spec_list = ['Weighted_Abs', 'Absorptance', 'Transmittance', 'Reflectance']
+spec_list = ['Absorptance', 'Transmittance', 'Reflectance']
 last_light_object = light_list.pop()
-plotting.tra_plot(spec_list, solar_cell, last_light_object, max_num_BMs, max_order_PWs, Efficiency)
-
+plotting.tra_plot('Spectra', spec_list, solar_cell, last_light_object,
+	max_num_BMs, max_order_PWs, Efficiency)
+# Plot weighted sprectra
+spec_list = ['Weighted_Absorb', 'Weighted_Trans', 'Weighted_Reflec']
+last_light_object = light_list.pop()
+plotting.tra_plot('Spectra_weighted', spec_list, solar_cell, last_light_object, 
+	max_num_BMs, max_order_PWs, Efficiency)
 
 
 # Wraping up simulation by printing to screen and log file
