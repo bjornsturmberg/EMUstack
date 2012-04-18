@@ -1,6 +1,5 @@
 # Description
 
-import math
 import sys	# needed? interfering???
 from subprocess  import Popen
 
@@ -43,9 +42,8 @@ class Simmo(object):
 		if self.light.Lambda > self.var_BM_min:
 			max_n         = self.solar_cell.inclusion.max_n()
 			nval_tmp      = self.max_num_BMs*inclusion_n.real/max_n
-			# note this ceil has issues in python 2.x rounding up vs down
-			nval 		  = math.ceil(nval_tmp)
-			ordre_ls      = math.ceil(self.max_order_PWs*nval/self.max_num_BMs)
+			nval 		  = round(nval_tmp)
+			ordre_ls      = round(self.max_order_PWs*nval/self.max_num_BMs)
 		else:
 			nval 		  = self.max_num_BMs
 			ordre_ls      = self.max_order_PWs			
