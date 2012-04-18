@@ -2,7 +2,6 @@
 
 import time
 import datetime
-import math
 import numpy as np
 import multiprocessing 	 as mp
 import subprocess
@@ -22,12 +21,12 @@ start = time.time()
 ################ Simo specific parameters ################
 # solar cell parameters
 rho_tau = 'rho'
-r_t_val = '01_25'
+r_t_val = '1'
 radius1 = 80
-radius2 = 180
+radius2 = 80
 period  = 897
-ff4msh  = math.ceil(100.0*calculate_ff(radius1,radius2,period))
-ff      = ff4msh/100.0
+ff      = calculate_ff(radius1,radius2,period)
+ff4msh  = ff*100
 
 # light parameters
 wl_1     = 310
@@ -39,7 +38,7 @@ no_wl_1  = 5#46    # 2 nm steps
 no_wl_2  = 2#610   # 1 nm steps
 no_wl_3  = 1#10    # 10 nm steps - total 667 wavelengths
 # simulation parameters
-max_num_BMs   = 10
+max_num_BMs   = 100
 var_BM_min    = 370
 max_order_PWs = 1
 # number of cpus to use
