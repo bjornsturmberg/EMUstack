@@ -2,12 +2,14 @@
 
 import time
 import datetime
+import math
 import numpy as np
 import multiprocessing 	 as mp
 import subprocess
 import sys
 sys.path.append("../PCPV/")
 
+from calculate_ff     import calculate_ff
 import clear_previous
 import objects
 import materials
@@ -19,10 +21,14 @@ start = time.time()
 
 ################ Simo specific parameters ################
 # solar cell parameters
-radius1 = 150
-radius2 = 150
-period  = 1190
-ff      = 0.20
+rho_tau = 'rho'
+r_t_val = '01_25'
+radius1 = 80
+radius2 = 180
+period  = 897
+ff4msh  = math.ceil(100.0*calculate_ff(radius1,radius2,period))
+ff      = ff4msh/100.0
+
 # light parameters
 wl_1     = 310
 wl_2     = 410   # < 400 Im(n(cSi)) large
@@ -33,9 +39,9 @@ no_wl_1  = 5#46    # 2 nm steps
 no_wl_2  = 2#610   # 1 nm steps
 no_wl_3  = 1#10    # 10 nm steps - total 667 wavelengths
 # simulation parameters
-max_num_BMs   = 200
+max_num_BMs   = 10
 var_BM_min    = 370
-max_order_PWs = 3
+max_order_PWs = 1
 # number of cpus to use
 num_cores_to_use = 10
 # number of cpus to leave free
@@ -49,8 +55,11 @@ clear_previous.clean('.pdf')
 clear_previous.clean('.log')
 
 # Set up solar cell
-mesh = '../PCPV/Data/2by2_ff20_tau_01.mail'
-solar_cell  = objects.SolarCell(radius1, radius2, period, ff, mesh)#, inclusion=materials.air, substrate=materials.SiO2)
+mesh = '../PCPV/Data/2by2_ff%(ff)i_%(rho_tau)s_%(r_t_val)s.mail' % {
+			'ff'      : ff4msh,
+			'rho_tau' : rho_tau,
+			'r_t_val' : r_t_val,}
+solar_cell  = objects.SolarCell(radius1, radius2, period, ff, mesh)
 
 # Set up light objects
 wl_array_1  = np.linspace(wl_1, wl_2, no_wl_1)
@@ -99,7 +108,8 @@ if other_para.PropModes  == 1:
 
 # Interpolate solar spectrum and calculate efficiency
 Efficiency = plotting.irradiance('../PCPV/Data/ASTM_1_5_spectrum','Absorptance',
-	'Weighted_Absorb', 'Transmittance', 'Weighted_Trans', 'Reflectance', 'Weighted_Reflec')
+	'Weighted_Absorb', 'Transmittance', 'Weighted_Trans', 'Reflectance', 'Weighted_Reflec',
+	radius1, radius2, period, ff)
 # Plot sprectra
 spec_list = ['Absorptance', 'Transmittance', 'Reflectance']
 last_light_object = light_list.pop()

@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 
 
 
-def irradiance(Irradiance, Absorb, W_Absorb, Trans, W_Trans, Reflec, W_Reflec):
+def irradiance(Irradiance, Absorb, W_Absorb, Trans, W_Trans, Reflec, W_Reflec, radius1, radius2,
+		period, ff):
 	a_data         = np.loadtxt('%s.txt' % Absorb)
 	wavelengths    = a_data[:,0]
 	a_spec         = a_data[:,2]
@@ -22,7 +23,8 @@ def irradiance(Irradiance, Absorb, W_Absorb, Trans, W_Trans, Reflec, W_Reflec):
 	expression     = i_spec*a_spec*wavelengths
 	integral_tmp   = np.trapz(expression, x=wavelengths)
 	Efficiency     = integral_tmp/(bandgap_wl*tot_irradiance)
-	np.savetxt('Efficiency.txt', [Efficiency], fmt = '%12.8f')
+	np.savetxt('Efficiency.txt', [Efficiency, radius1, radius2,
+		period, ff], fmt = '%12.8f')
 
 	# weighted absorptance
 	weighting(i_spec, wavelengths, Absorb, W_Absorb)
@@ -74,7 +76,7 @@ def tra_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_
 	'max_num_BMs'	: max_num_BMs,
 	'max_order_PWs'	: max_order_PWs, }
 	tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {
-	'Efficiency'	: Efficiency, }
+	'Efficiency'	: Efficiency*100, }
 
 	imp_facts = tmp1 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6 + tmp7
 	plt.suptitle(imp_facts)
