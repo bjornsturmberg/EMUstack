@@ -60,7 +60,35 @@ class Light(object):
         
 
 class Controls(object):
-    """docstring for Controls"""
+    """
+    0  debug         - 0 for full simulations, 1 for full details
+    1  parallel_comp - Parallel computation 1, else single core
+    1  Loss          - Include loss 1, else set Im(n) to zero
+    1  hole_wire     - Choose holes 0, nanowires 1, uniform slab 2 or const 3
+    0  TEmode        - Calculate t,r,a for the incident TE polarisation
+    1  TMmode        - Calculate t,r,a for the incident TM polarisation
+    1  traLambda     - Save t,r,a for each wavelength
+    1  PropModes     - Save # of propagating modes & det(I-RPRP) 1, save SVD 2
+    0  PrintSolution - Save FEM Bloch modes for lambda selected below.
+    0  PrintSupModes - Save supermode field distributions
+    1  PrintOmega    - Save dispersion data (beta for each lambda)
+    0  PrintAll      - Save J overlap, orthogonal
+    0  Checks        - Check completeness, energy conservation
+
+    1                    # Selected formulation (1=E-Field, 2=H-Field)
+    1                    # Number of wavelength to be scanned (n_lambda)
+    315.0d0  699.0d0     # Wavelength range in nm (lambda_1, lambda_2)
+    0                    # Sets wavelengths as in data files, (Lambda_Res)
+    600                  # Lattice vector in nanometers (d_in_nm)
+    2                    # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
+    1.0d0                # X dimension of unit cell (lx)
+    1.0d0                # Y dimension of unit cell (ly)
+    350                  # Number of FEM Eigenvalues to be calculated (nval)
+    725                  # Dimensions of reduced matrix (must be > 2*nval)(nvect)
+    30                   # Maximum number of iterations for convergence (itermax)
+    0.0d0                # ARPACK accuracy (0.0 for machine precision)(tol) 
+    5.0d0 0.0d0          # Re and Im of parameter for shift-and-invert method
+    """
     def __init__(self, debug = 0, traLambda = 1 , PrintOmega = 1, PrintSolution = 0, 
         PrintSupModes = 0, PrintAll = 0, Checks = 0, PropModes = 0, q_average = 0, 
         plot_real = 1, plot_imag = 0, plot_abs = 0, tol = 0, E_H_field = 1, 

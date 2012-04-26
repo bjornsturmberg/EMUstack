@@ -121,7 +121,7 @@ c
 c    All_plots.geo (unit=34)
       if (plot_val .eq. 1) then
       tchar = """../../"//dir_name(1:namelength)// "/"
-     *  //"interface_cyl.geo"";"
+     *  //"interface_c4.geo"";"
       namelen2 = len_trim(tchar)
         write(34,*) "Merge ", tchar(1:namelen2)
       else
@@ -142,7 +142,7 @@ C
       tchar = gmsh_file_pos(1:namelen) // '_' // tval // '_abs2.pos'
         namelen2 = len_trim(tchar)
         write(26,*) " Include """, tchar(1:namelen2), """;"
-        write(26,*) "Merge ""interface_cyl.geo"";"
+        write(26,*) "Merge ""interface_c4.geo"";"
       close (unit=26)
 C
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
@@ -151,7 +151,7 @@ C
       tchar = gmsh_file_pos(1:namelen) // '_' // tval // '_abs2_eE.pos'
         namelen2 = len_trim(tchar)
         write(32,*) " Include """, tchar(1:namelen2), """;"
-        write(32,*) "Merge ""interface_cyl.geo"";"
+        write(32,*) "Merge ""interface_c4.geo"";"
       close (unit=32)
       
 C      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
@@ -160,7 +160,7 @@ C      open (unit=33,file=tchar)
 C      tchar = gmsh_file_pos(1:namelen) // '_' // tval // '_abs2_eE.pos'
 C        namelen2 = len_trim(tchar)
 C        write(33,*) " Include """, tchar(1:namelen2), """;"
-C        write(33,*) "Merge ""interface_cyl.geo"";"
+C        write(33,*) "Merge ""interface_c4.geo"";"
 C      close (unit=33)
 
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 

@@ -25,9 +25,7 @@ c
 c
       ui = 6
 c
-C      open (unit=24,file="../Mesh/"//mesh_file,status='old')
-      open (unit=24,file=mesh_file,status='old')
-c
+        open (unit=24,file="../PCPV/Data/"//mesh_file,status='old')
         read(24,*) npt2, nel2
 c
       if(npt .ne. npt2) then

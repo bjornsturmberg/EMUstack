@@ -188,10 +188,10 @@ C        log_file = 'Normed/'//mesh_file(1:namelength)//'.log'
         if (debug .eq. 1) then
           write(*,*) "get_param: mesh_file = ", mesh_file
           write(*,*) "get_param: gmsh_file = ", gmsh_file
-        endif
-C        open (unit=24,file="../Mesh/"//mesh_file,status='unknown')
-        open (unit=24,file=mesh_file,status='unknown')
-          read(24,*) npt, nel
+        endif    
+        open (unit=24,file="../PCPV/Data/"//mesh_file,
+     *     status='unknown')
+            read(24,*) npt, nel
         close(24)
 C nb_typ_el -int
         CALL GETARG(input,get_args)
@@ -511,9 +511,13 @@ C
         call gmsh_interface_cyl (nel, npt, nnodes, a(ip_type_el), 
      *    a(ip_type_nod), a(ip_table_nod), 
      *    nb_typ_el, b(jp_x))
-      endif
 C
-      call lattice_vec (npt, b(jp_x), lat_vecs)
+        call lattice_vec (npt, b(jp_x), lat_vecs)
+C
+        call gmsh_interface_c4 (nel, npt, nnodes, a(ip_type_el), 
+     *    a(ip_type_nod), a(ip_table_nod), 
+     *    nb_typ_el, b(jp_x), lat_vecs)
+      endif
 C
 C      V = number of vertices
 C      E = number of edges

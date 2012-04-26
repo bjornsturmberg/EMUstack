@@ -43,7 +43,7 @@ def weighting(weight_by, wavelengths, spectrum, w_spectum):
 
 
 def tra_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
-	fig = plt.figure(num=None, figsize=(10, 15), dpi=80, facecolor='w', edgecolor='k')
+	fig = plt.figure(num=None, figsize=(8, 12), dpi=80, facecolor='w', edgecolor='k')
 	for i in range(len(spec_list)):
 		ax1 = fig.add_subplot(3,1,i+1, adjustable='box', aspect=400)
 		spec_name = spec_list.pop(0)

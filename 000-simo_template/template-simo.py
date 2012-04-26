@@ -1,4 +1,13 @@
-# Des
+"""
+The Ueber python script, the only one that needs to be edited to set up all 
+simulation parameters.
+Uses other python scripts to prime the simulation (interpolate raw data over chosen 
+wavelengths etc.), then calls the fortran routine pcpv.exe for each wavelength giving 
+it all the required details. It does this by spanning a new process for each wavelength,
+keeping the total running instances to a maximum number (num_cores_to_use). Finally all 
+results are collected in text files and the spectra are plotted. A log file is found in
+python_log.txt
+"""
 
 import time
 import datetime
@@ -42,7 +51,7 @@ max_num_BMs   = 100
 var_BM_min    = 370
 max_order_PWs = 1
 # number of cpus to use
-num_cores_to_use = 10
+num_cores_to_use = 8
 # number of cpus to leave free
 # num_cores_sahand_gets = 8
 ################ Simo specific parameters ################
