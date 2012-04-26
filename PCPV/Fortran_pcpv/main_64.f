@@ -508,16 +508,16 @@ C  Export the mesh to gmsh format
      *    a(ip_type_nod), a(ip_table_nod), 
      *    nb_typ_el, n_eff, b(jp_x), gmsh_file)
 C
-        call gmsh_interface_cyl (nel, npt, nnodes, a(ip_type_el), 
-     *    a(ip_type_nod), a(ip_table_nod), 
-     *    nb_typ_el, b(jp_x))
-C
-        call lattice_vec (npt, b(jp_x), lat_vecs)
+C        call gmsh_interface_cyl (nel, npt, nnodes, a(ip_type_el), 
+C     *    a(ip_type_nod), a(ip_table_nod), 
+C     *    nb_typ_el, b(jp_x))
 C
         call gmsh_interface_c4 (nel, npt, nnodes, a(ip_type_el), 
      *    a(ip_type_nod), a(ip_table_nod), 
      *    nb_typ_el, b(jp_x), lat_vecs)
       endif
+C
+      call lattice_vec (npt, b(jp_x), lat_vecs)
 C
 C      V = number of vertices
 C      E = number of edges

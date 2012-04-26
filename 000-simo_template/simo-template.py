@@ -63,7 +63,7 @@ clear_previous.clean('.pdf')
 clear_previous.clean('.log')
 
 # Set up solar cell
-mesh = '../PCPV/Data/2by2_ff%(ff)i_%(rho_tau)s_%(r_t_val)s.mail' % {
+mesh = '2by2_ff%(ff)i_%(rho_tau)s_%(r_t_val)s.mail' % {
 			'ff'      : ff4msh,
 			'rho_tau' : rho_tau,
 			'r_t_val' : r_t_val,}
