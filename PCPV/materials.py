@@ -51,8 +51,19 @@ cSi  = Material(np.loadtxt('%scSi_r_index_1.txt'% data_location))
 aSi  = Material(np.loadtxt('%saSi_r_index_1.txt'% data_location))
 SiO2 = Material(np.loadtxt('%sSiO2_r_index_1.txt'% data_location))
 
+# TSP materials
+# CuO  = Material(np.loadtxt('%sCuO_r_index_1.txt'% data_location))
+# CdTe = Material(np.loadtxt('%sCdTe_r_index_1.txt'% data_location))
+# FeS2 = Material(np.loadtxt('%sFeS2_r_index_1.txt'% data_location))
+# Zn2P3= Material(np.loadtxt('%sZn2P3_r_index_1.txt'% data_location))
+
 def interp_all(wavelengths):
     air.n_interp(wavelengths)
     cSi.n_interp(wavelengths)
     aSi.n_interp(wavelengths)
     SiO2.n_interp(wavelengths)
+    
+    # CuO.n_interp(wavelengths)
+    # CdTe.n_interp(wavelengths)
+    # FeS2.n_interp(wavelengths)
+    # Zn2P3.n_interp(wavelengths)
