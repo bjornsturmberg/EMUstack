@@ -4,15 +4,18 @@ C
      *             T12, R12, T21, R21, PrintAll,
      *             PrintSolution, lx, h, Checks, TLambda,
      *             RLambda, traLambda, pol, PropModes, 
-     *             lambda, d_in_nm)
+     *             lambda, d_in_nm,
+     *    numberprop_S, freq, Zeroth_Order_inv,
+     *    debug, incident, what4incident, out4incident)
 C
       implicit none
 C
-      integer*8 neq_PW, nval, PropModes, d_in_nm
+      integer*8 neq_PW, nval, PropModes, d_in_nm, num_h
 c     32-but integers for BLAS and LAPACK
-      integer*4 nval_max_32, PW_max_32
+      integer*4 nval_max_32, PW_max_32, h_i
+      integer*8 debug, numberprop_S, Zeroth_Order_inv
       complex*16 Beta(nval)
-      double precision h, lambda
+      double precision h, h_1, h_2, h_int, lambda, freq
       parameter (nval_max_32 = 1000)
       parameter (PW_max_32 = 200)
       complex*16 J(2*neq_PW,nval)
@@ -67,7 +70,7 @@ C
       complex*16 MONE, ZERO, ONE, TWO, ii
 C
       double precision total_t, total_r, total_a, tot_0
-      integer*8 allincident, incident, total4incident
+      integer*8 allincident, incident, what4incident
       integer*8 out4incident, test, traLambda, PrintSolution
       complex*16 detA, detAe, detAo 
       double precision lx
@@ -165,6 +168,14 @@ C  R21
 C      
 CCCCCCCCCCCCCCC   Introduce Propagation in z
 C
+      do h_i = 1, num_h
+        if(h_i .eq. 1) then
+          h_int = 0
+        else
+          h_int = (h_2 - h_1)/(num_h-1)
+        endif
+        h = h_1 + (h_i-1)*h_int
+C
 C  P
       do k = 1, nval
         do i = 1,nval
@@ -224,6 +235,18 @@ C  RLambda
           enddo
         enddo
       endif
+C
+      if (traLambda .eq. 1) then
+      if (debug .eq. 1) then
+        write(*,*) "ScatMat_sub: A_and_W_Lambda_sub"
+      endif
+        call A_and_W_Lambda(TLambda, RLambda, neq_PW, 
+     *    numberprop_S, lambda, freq, pol, 
+     *    Zeroth_Order_inv, debug, d_in_nm,
+     *    incident, what4incident, out4incident, Checks, h) 
+      endif
+C
+      enddo ! num_h
 C      
 CCCCCCCCCCCCCCC   Calculating det(I-RPRP)   CCCCCCCCCCCCCCCCC
 C

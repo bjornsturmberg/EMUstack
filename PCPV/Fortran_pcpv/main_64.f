@@ -94,9 +94,9 @@ C  Names and Controls
       character*100 tchar
       integer*8 namelength, PrintAll, PrintOmega, Checks, traLambda
       integer*8 PrintSolution, hole_wire, pol, PrintSupModes
-      integer*8 substrate
+      integer*8 substrate, num_h
       integer*8 Lambda_count, parallel_comp, PropModes
-      double precision h, hz
+      double precision h_1, h_2, hz
       integer*8 d_in_nm, pair_warning, parallel(2), max_arg, Loss
       complex*16 Complex_refract1(818), Complex_refract2(1635)
       complex*16 Complex_refract3(818), Complex_refract4(1635)
@@ -234,10 +234,20 @@ C phi - double
         read (get_py,'(F18.12)') phi
 C        write(ui,*) phi
         input = input + 1
-C h - double
+C h_1 - double
         CALL GETARG(input, get_py)
-        read (get_py,'(F18.12)') h
-C        write(ui,*) h
+        read (get_py,'(F18.12)') h_1
+C        write(ui,*) h_1
+        input = input + 1
+C h_2 - double
+        CALL GETARG(input, get_py)
+        read (get_py,'(F18.12)') h_2
+C        write(ui,*) h_2
+        input = input + 1
+C num_h - int
+        CALL GETARG(input,get_args)
+        read (get_args,'(I5)') num_h
+C        write(ui,*) num_h
         input = input + 1
 C lx - double 
         CALL GETARG(input, get_py)
@@ -380,7 +390,9 @@ C
         read(4,*) theta
         read(4,*) phi
         read(4,*) ordre_ls
-        read(4,*) h
+        read(4,*) h_1
+        read(4,*) h_2
+        read(4,*) num_h
       close(4)
 C
       open (unit=346, file='Parameters/output.txt', status='old')
@@ -795,7 +807,8 @@ c
 C
 C#####################  End FEM PRE-PROCESSING  #########################
 C
-      h = h/d_in_nm   ! convert h from nm to lattice vector units d
+      h_1 = h_1/d_in_nm   ! convert h from nm to lattice vector units d
+      h_2 = h_2/d_in_nm 
       if (python .eq. 1) then ! lambda from nm - lattice vector units d
 C  Avoid directly hitting Wood anomalies
         if (lambda .eq. d_in_nm) then
@@ -1264,6 +1277,7 @@ C  J_dagger_overlap
         write(ui,*) "MAIN: CPU time for J_dagger_overlap :",
      *  (time2_J-time1_J)
       endif
+C
 C  Overlaps at bottom Substrate
       if (substrate .eq. 1) then
         n_eff_sub = DBLE(n_eff(2))
@@ -1280,16 +1294,18 @@ C
      *    b(jp_X_mat), b(jp_X_mat_b), neq_PW, nval, 
      *    b(jp_eigenval1), b(jp_T12), b(jp_R12), b(jp_T21), b(jp_R21),
      *    PrintAll, PrintSolution, 
-     *    lx, h, Checks, b(jp_T_Lambda), b(jp_R_Lambda), traLambda,
-     *    pol, PropModes, lambda, d_in_nm)
+     *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
+     *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
+     *    numberprop_S, numberprop_S_b, freq, Zeroth_Order_inv,
+     *    debug, incident, what4incident, out4incident)
 C
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: A_and_W_Lambda substrate"
-      endif
-      call A_and_W_Lambda_sub(b(jp_T_Lambda), b(jp_R_Lambda), neq_PW,
-     *    numberprop_S, numberprop_S_b, lambda, freq, pol, 
-     *    Zeroth_Order_inv, debug, d_in_nm, incident,
-     *    what4incident, out4incident, Checks)
+C      if (debug .eq. 1) then
+C        write(ui,*) "MAIN: A_and_W_Lambda substrate"
+C      endif
+C      call A_and_W_Lambda_sub(b(jp_T_Lambda), b(jp_R_Lambda), neq_PW,
+C     *    numberprop_S, numberprop_S_b, lambda, freq, pol, 
+C     *    Zeroth_Order_inv, debug, d_in_nm, incident,
+C     *    what4incident, out4incident, Checks, h_1)
 C
 C
       else  !No Substrate
@@ -1301,20 +1317,22 @@ C  Scattering Matrices
      *    b(jp_X_mat), neq_PW, nval, 
      *    b(jp_eigenval1), b(jp_T12), b(jp_R12), b(jp_T21), b(jp_R21),
      *    PrintAll, PrintSolution, 
-     *    lx, h, Checks, b(jp_T_Lambda), b(jp_R_Lambda), traLambda,
-     *    pol, PropModes, lambda, d_in_nm)
+     *    lx, h_1, Checks, b(jp_T_Lambda), b(jp_R_Lambda), traLambda,
+     *    pol, PropModes, lambda, d_in_nm,
+     *    numberprop_S, freq, Zeroth_Order_inv,
+     *    debug, incident, what4incident, out4incident)
 C
 C  Absorption for each Wavelength (and save t, r & a)
-      if (traLambda .eq. 1) then
-        if (debug .eq. 1) then
-          write(ui,*) "MAIN: t, r & a for Lambda = ", lambda
-          write(ui,*) " Lambda = ", b(jp_T_Lambda)
-        endif
-        call A_and_W_Lambda(b(jp_T_Lambda), b(jp_R_Lambda), neq_PW, 
-     *    numberprop_S, lambda, freq, pol, 
-     *    Zeroth_Order_inv, debug, d_in_nm,
-     *    incident, what4incident, out4incident, Checks) 
-      endif
+C      if (traLambda .eq. 1) then
+C        if (debug .eq. 1) then
+C          write(ui,*) "MAIN: t, r & a for Lambda = ", lambda
+C          write(ui,*) " Lambda = ", b(jp_T_Lambda)
+C        endif
+C        call A_and_W_Lambda(b(jp_T_Lambda), b(jp_R_Lambda), neq_PW, 
+C     *    numberprop_S, lambda, freq, pol, 
+C     *    Zeroth_Order_inv, debug, d_in_nm,
+C     *    incident, what4incident, out4incident, Checks) 
+C      endif
       endif  !End Substrate Options
 C
       if (debug .eq. 2 .and. i_lambda .eq. debug_i_lambda) then
@@ -1358,15 +1376,15 @@ C     Coefficent of the modes travelling upward
       call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
      *     nnodes, a(ip_table_nod), a(ip_type_el), eps_eff, b(jp_x),  
      *     b(jp_eigenval1), b(jp_sol1), b(jp_rhs), 
-     *     vec_coef, h, hz, gmsh_file_pos, dir_name, nb_typ_el, 
+     *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
      *       q_average, plot_real, plot_imag, plot_abs)
 C
-      hz = h  ! hz=0 => top interface; hz=h => bottom interface
+      hz = h_1  ! hz=0 => top interface; hz=h => bottom interface
       i = 2 ! reference number of the field
       call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
      *     nnodes, a(ip_table_nod), a(ip_type_el), eps_eff, b(jp_x),
      *     b(jp_eigenval1), b(jp_sol1), b(jp_rhs), 
-     *     vec_coef, h, hz, gmsh_file_pos, dir_name, nb_typ_el, 
+     *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
      *       q_average, plot_real, plot_imag, plot_abs)
 
       do i=1,2*neq_PW
@@ -1383,16 +1401,16 @@ C
      *     nel, npt, nnodes, neq_PW, bloch_vec, 
      *  a(ip_table_nod), b(jp_x), lat_vecs, lambda, eps_eff(1),
      *  b(jp_rhs), vec_coef_down, vec_coef_up, 
-     *  a(ip_index_pw_inv), ordre_ls, h, hz, gmsh_file_pos,
+     *  a(ip_index_pw_inv), ordre_ls, h_1, hz, gmsh_file_pos,
      *  dir_name, q_average, plot_real, plot_imag, plot_abs)
 
-      hz = h ! Upper semi-inifinite medium: Plane wave expansion
+      hz = h_1 ! Upper semi-inifinite medium: Plane wave expansion
       i = 2
       call gmsh_plot_PW (i, E_H_field, 
      *     nel, npt, nnodes, neq_PW, bloch_vec, 
      *  a(ip_table_nod), b(jp_x), lat_vecs, lambda, eps_eff(1),
      *  b(jp_rhs), vec_coef_down, vec_coef_up, 
-     *  a(ip_index_pw_inv), ordre_ls, h, hz, gmsh_file_pos,
+     *  a(ip_index_pw_inv), ordre_ls, h_1, hz, gmsh_file_pos,
      *  dir_name, q_average, plot_real, plot_imag, plot_abs)
       endif
 C

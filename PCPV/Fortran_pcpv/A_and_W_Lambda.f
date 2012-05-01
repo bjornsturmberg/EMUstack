@@ -4,7 +4,7 @@ C
       subroutine A_and_W_Lambda(TLambda, RLambda, neq_PW,  
      * numberprop_S, lambda, freq, pol,
      * Zeroth_Order_inv, debug, d_in_nm, 
-     * incident, what4incident, out4incident, Checks)
+     * incident, what4incident, out4incident, Checks, h)
 C
       implicit none
 C
@@ -15,7 +15,7 @@ C
       integer*8 incident, what4incident, inc
       integer*8 i, j, out4incident, numberprop_S
       integer*8 pol, Zeroth_Order_inv
-      double precision lambda, freq, lambda_nm, freq_nm
+      double precision lambda, freq, lambda_nm, freq_nm, h
       integer*8 Checks
 C
 CCCCCCCCCCC Start Program CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -84,9 +84,9 @@ C  For TM polarisation:
         endif
       Lambda_a = tot_0*numberprop_S
      *                - Lambda_t - Lambda_r
-      write(643,101) lambda_nm, freq_nm, REAL(Lambda_t)
-      write(644,101) lambda_nm, freq_nm, REAL(Lambda_r)
-      write(645,101) lambda_nm, freq_nm, REAL(Lambda_a)
+      write(643,101) lambda_nm, freq_nm, REAL(Lambda_t), h*d_in_nm
+      write(644,101) lambda_nm, freq_nm, REAL(Lambda_r), h*d_in_nm
+      write(645,101) lambda_nm, freq_nm, REAL(Lambda_a), h*d_in_nm
 C
 C
 C
@@ -138,9 +138,9 @@ C
       close(342)
       endif
 C
-      write(643,101) lambda_nm, freq_nm, REAL(Lambda_t)
-      write(644,101) lambda_nm, freq_nm, REAL(Lambda_r)
-      write(645,101) lambda_nm, freq_nm, REAL(Lambda_a)    
+      write(643,101) lambda_nm, freq_nm, REAL(Lambda_t), h*d_in_nm
+      write(644,101) lambda_nm, freq_nm, REAL(Lambda_r), h*d_in_nm
+      write(645,101) lambda_nm, freq_nm, REAL(Lambda_a), h*d_in_nm    
 C
 C
 C
@@ -162,12 +162,12 @@ C  For TM polarisation:
      *         + ABS(RLambda(neq_PW+out4incident,neq_PW+inc))**2
         endif
         Lambda_a = tot_0 - Lambda_t - Lambda_r
-      write(643,101) lambda_nm, freq_nm, REAL(Lambda_t)
-      write(644,101) lambda_nm, freq_nm, REAL(Lambda_r)
-      write(645,101) lambda_nm, freq_nm, REAL(Lambda_a)
+      write(643,101) lambda_nm, freq_nm, REAL(Lambda_t), h*d_in_nm
+      write(644,101) lambda_nm, freq_nm, REAL(Lambda_r), h*d_in_nm
+      write(645,101) lambda_nm, freq_nm, REAL(Lambda_a), h*d_in_nm
       endif
 C
-101    format(2(f18.10),(g25.17))
+101    format(2(f18.10),(g25.17),(f18.10))
 C
       return
       end 

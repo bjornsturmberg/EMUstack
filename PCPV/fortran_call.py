@@ -54,7 +54,7 @@ class Simmo(object):
 		%(nb_typ_el)d %(re_n_eff_super)s %(im_n_eff_super)s \
 		%(re_n_eff_sub)s %(im_n_eff_sub)s %(re_n_eff_bkg)s %(im_n_eff_bkg)s \
 		%(re_n_eff_inc)s %(im_n_eff_inc)s %(has_substrate)d \
-		%(theta)s %(phi)s %(h)s %(lx)s %(ly)s %(tol)s %(E_H_field)d \
+		%(theta)s %(phi)s %(h_one)s %(h_two)s %(num_h)s %(lx)s %(ly)s %(tol)s %(E_H_field)d \
 		%(i_cond)d %(itermax)d %(pol)d %(traLambda)d %(PropModes)d \
 		%(PrintSolution)d %(PrintSupModes)d %(PrintOmega)d %(PrintAll)d \
 		%(Checks)d %(q_average)d %(plot_real)d %(plot_imag)d %(plot_abs)d \
@@ -63,7 +63,9 @@ class Simmo(object):
 			'parallel' 	    : self.p,
 			'nval'          : nval,
 		    'ordre_ls'      : ordre_ls,
-		    'h'             : fort_dp(self.solar_cell.height),
+		    'h_one'         : fort_dp(self.solar_cell.height_1),
+		    'h_two'         : fort_dp(self.solar_cell.height_2),
+		    'num_h'       : self.solar_cell.num_h,
 		    'lx'            : fort_dp(self.solar_cell.lx),
 		    'ly'            : fort_dp(self.solar_cell.ly),
 		    'd_in_nm'       : self.solar_cell.period,

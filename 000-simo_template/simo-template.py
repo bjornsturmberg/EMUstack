@@ -43,11 +43,11 @@ wl_2     = 410   # < 400 Im(n(cSi)) large
 wl_3     = 1010  # > 1010 Im(n(cSi)) = 0
 wl_4     = 1110
 wl_5     = 1127
-no_wl_1  = 5#46    # 2 nm steps
-no_wl_2  = 2#610   # 1 nm steps
+no_wl_1  = 2#46    # 2 nm steps
+no_wl_2  = 5#610   # 1 nm steps
 no_wl_3  = 1#10    # 10 nm steps - total 667 wavelengths
 # simulation parameters
-max_num_BMs   = 100
+max_num_BMs   = 25
 var_BM_min    = 370
 max_order_PWs = 1
 # number of cpus to use
@@ -67,7 +67,8 @@ mesh = '2by2_ff%(ff)i_%(rho_tau)s_%(r_t_val)s.mail' % {
 			'ff'      : ff4msh,
 			'rho_tau' : rho_tau,
 			'r_t_val' : r_t_val,}
-solar_cell  = objects.SolarCell(radius1, radius2, period, ff, mesh)
+solar_cell  = objects.SolarCell(radius1, radius2, period, ff, mesh, 
+	height_1 = 2300, height_2 = 2400, num_h = 1000)
 
 # Set up light objects
 wl_array_1  = np.linspace(wl_1, wl_2, no_wl_1)
@@ -114,20 +115,29 @@ if other_para.PropModes  == 1:
 	if solar_cell.loss   == False:
 		cat_n_clean.c_c_prop_modes()
 
+
+plotting.average_spec('Absorptance','Av_Absorb', len(wavelengths), solar_cell.num_h)
+plotting.average_spec('Transmittance','Av_Trans', len(wavelengths), solar_cell.num_h)
+plotting.average_spec('Reflectance','Av_Reflec', len(wavelengths), solar_cell.num_h)
 # Interpolate solar spectrum and calculate efficiency
-Efficiency = plotting.irradiance('../PCPV/Data/ASTM_1_5_spectrum','Absorptance',
-	'Weighted_Absorb', 'Transmittance', 'Weighted_Trans', 'Reflectance', 'Weighted_Reflec',
+Efficiency = plotting.irradiance('../PCPV/Data/ASTM_1_5_spectrum','Av_Absorb',
+	'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans', 'Av_Reflec', 'Weighted_Reflec',
 	radius1, radius2, period, ff)
-# Plot sprectra
-spec_list = ['Absorptance', 'Transmittance', 'Reflectance']
+# Plot averaged sprectra
+spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
 last_light_object = light_list.pop()
 plotting.tra_plot('Spectra', spec_list, solar_cell, last_light_object,
 	max_num_BMs, max_order_PWs, Efficiency)
-# Plot weighted sprectra
+# Plot weighted averaged sprectra
 spec_list = ['Weighted_Absorb', 'Weighted_Trans', 'Weighted_Reflec']
 last_light_object = light_list.pop()
 plotting.tra_plot('Spectra_weighted', spec_list, solar_cell, last_light_object, 
 	max_num_BMs, max_order_PWs, Efficiency)
+# Plot as funtion of height
+if solar_cell.num_h != 1:
+	plotting.height_plot('Spectra_height', 'Absorptance', solar_cell, last_light_object,
+	max_num_BMs, max_order_PWs, Efficiency, solar_cell.height_1, solar_cell.height_2, 
+	solar_cell.num_h, wavelengths)
 
 
 # Wraping up simulation by printing to screen and log file

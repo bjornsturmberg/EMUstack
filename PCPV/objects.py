@@ -6,7 +6,7 @@ class SolarCell(object):
     """ Represents Solar Cell structure
     """
     def __init__(self, radius1, radius2, period, ff,
-        mesh_file, height = 2330,
+        mesh_file, height_1 = 2330, height_2 = 2330, num_h = 1,
         inclusion = materials.cSi, background = materials.air,
         superstrate = materials.air, substrate = materials.SiO2,
         loss = True, lx = 1, ly = 1, mesh_format = 1,
@@ -15,7 +15,9 @@ class SolarCell(object):
         self.radius2     = radius2
         self.period      = period
         self.ff          = ff
-        self.height      = height
+        self.height_1    = height_1
+        self.height_2    = height_2
+        self.num_h       = num_h
         self.inclusion   = inclusion
         self.background  = background
         self.superstrate = superstrate
