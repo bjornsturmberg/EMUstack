@@ -1,7 +1,6 @@
 # doc
 
 import numpy as np
-# import data
 
 data_location = '../PCPV/Data/'
 
@@ -44,26 +43,39 @@ class Material(object):
         """ Return maximum of Re(n) over the interpolation range."""
         return self.interp_data.real.max()
 
+air    = Material(np.loadtxt('%sair.txt'% data_location))
+Si_c   = Material(np.loadtxt('%sSi_c.txt'% data_location))
+Si_a   = Material(np.loadtxt('%sSi_a.txt'% data_location))
+SiO2_a = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
+CuO    = Material(np.loadtxt('%sCuO.txt'% data_location))
+CdTe   = Material(np.loadtxt('%sCdTe.txt'% data_location))
+FeS2   = Material(np.loadtxt('%sFeS2.txt'% data_location))
+Zn2P3  = Material(np.loadtxt('%sZn2P3.txt'% data_location))
 
-# air  = Material(data.air_data)
-air  = Material(np.loadtxt('%sair_r_index_1.txt'% data_location))
-cSi  = Material(np.loadtxt('%scSi_r_index_1.txt'% data_location))
-aSi  = Material(np.loadtxt('%saSi_r_index_1.txt'% data_location))
-SiO2 = Material(np.loadtxt('%sSiO2_r_index_1.txt'% data_location))
+# def interp_all(wavelengths):
+#     air.n_interp(wavelengths)
+#     Si_c.n_interp(wavelengths)
+#     Si_a.n_interp(wavelengths)
+#     SiO2_a.n_interp(wavelengths)
+#     CuO.n_interp(wavelengths)
+#     # CdTe.n_interp(wavelengths)
+#     FeS2.n_interp(wavelengths)
+#     # Zn2P3.n_interp(wavelengths)
 
-# TSP materials
-# CuO  = Material(np.loadtxt('%sCuO_r_index_1.txt'% data_location))
-# CdTe = Material(np.loadtxt('%sCdTe_r_index_1.txt'% data_location))
-# FeS2 = Material(np.loadtxt('%sFeS2_r_index_1.txt'% data_location))
-# Zn2P3= Material(np.loadtxt('%sZn2P3_r_index_1.txt'% data_location))
-
-def interp_all(wavelengths):
-    air.n_interp(wavelengths)
-    cSi.n_interp(wavelengths)
-    aSi.n_interp(wavelengths)
-    SiO2.n_interp(wavelengths)
-    
-    # CuO.n_interp(wavelengths)
-    # CdTe.n_interp(wavelengths)
-    # FeS2.n_interp(wavelengths)
-    # Zn2P3.n_interp(wavelengths)
+def interp_needed(wavelengths, inclusion, background, superstrate, substrate):
+    if inclusion == air or background == air or superstrate == air or substrate == air:
+        air.n_interp(wavelengths)
+    if inclusion == Si_c or background == Si_c or superstrate == Si_c or substrate == Si_c:
+        Si_c.n_interp(wavelengths)
+    if inclusion == Si_a or background == Si_a or superstrate == Si_a or substrate == Si_a:
+      Si_a.n_interp(wavelengths)
+    if inclusion == SiO2_a or background == SiO2_a or superstrate == SiO2_a or substrate == SiO2_a:
+       SiO2_a.n_interp(wavelengths)
+    if inclusion == CuO or background == CuO or superstrate == CuO or substrate == CuO:
+       CuO.n_interp(wavelengths)
+    if inclusion == CdTe or background == CdTe or superstrate == CdTe or substrate == CdTe:
+       CdTe.n_interp(wavelengths)
+    if inclusion == FeS2 or background == FeS2 or superstrate == FeS2 or substrate == FeS2:
+       FeS2.n_interp(wavelengths)
+    if inclusion == Zn2P3 or background == Zn2P3 or superstrate == Zn2P3 or substrate == Zn2P3:
+       Zn2P3.n_interp(wavelengths)

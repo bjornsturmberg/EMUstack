@@ -38,6 +38,7 @@ ff      = calculate_ff(radius1,radius2,period)
 ff4msh  = ff*100
 
 # light parameters
+# wl_super = 700
 wl_1     = 310
 wl_2     = 410   # < 400 Im(n(cSi)) large
 wl_3     = 1010  # > 1010 Im(n(cSi)) = 0
@@ -47,7 +48,7 @@ no_wl_1  = 2#46    # 2 nm steps
 no_wl_2  = 5#610   # 1 nm steps
 no_wl_3  = 1#10    # 10 nm steps - total 667 wavelengths
 # simulation parameters
-max_num_BMs   = 25
+max_num_BMs   = 20
 var_BM_min    = 370
 max_order_PWs = 1
 # number of cpus to use
@@ -57,7 +58,7 @@ num_cores_to_use = 8
 ################ Simo specific parameters ################
 
 
-# Remove results of previous simulations
+# # Remove results of previous simulations
 clear_previous.clean('.txt')
 clear_previous.clean('.pdf')
 clear_previous.clean('.log')
@@ -67,7 +68,7 @@ mesh = '2by2_ff%(ff)i_%(rho_tau)s_%(r_t_val)s.mail' % {
 			'ff'      : ff4msh,
 			'rho_tau' : rho_tau,
 			'r_t_val' : r_t_val,}
-solar_cell  = objects.SolarCell(radius1, radius2, period, ff, mesh, 
+solar_cell  = objects.SolarCell(radius1, radius2, period, ff, mesh,
 	height_1 = 2300, height_2 = 2400, num_h = 1000)
 
 # Set up light objects
@@ -76,12 +77,19 @@ wl_array_2  = np.linspace(wl_2+1, wl_3, no_wl_2)
 wl_array_3  = np.linspace(wl_3+1, wl_4, no_wl_3)
 wavelengths = np.concatenate((wl_array_1,wl_array_2, wl_array_3, [wl_5]))
 light_list  = [objects.Light(wl) for wl in wavelengths]
+# Single wavelength run
+# wavelengths = np.array([wl_super])
+# light_list  = [objects.Light(wl) for wl in wavelengths]
+# wavelengths = np.array([wl_super])
+# light_list  = [objects.Light([[wl_super]])]
 
 # Simulation controls
 other_para  = objects.Controls()
 
 # Interpolate refractive indecies over wavelength array
-materials.interp_all(wavelengths)
+# materials.interp_all(wavelengths)
+materials.interp_needed(wavelengths, solar_cell.inclusion, solar_cell.background,
+        solar_cell.superstrate, solar_cell.substrate)
 
 # List of simulations to calculate, with full arguments
 simmo_list = []
@@ -91,11 +99,7 @@ for light in light_list:
 		max_num_BMs, var_BM_min, max_order_PWs, p)]
 	p += 1
 
-# # Start all simulations running
-# [s.run()  for s in simmo_list]
-# # Wait until every simulation is finished
-# [s.wait() for s in simmo_list]
-
+# Launch simos using pool to limit simultaneous instances
 def run_command_in_shell(command):
 	return subprocess.call(command, shell = True)
 
@@ -115,17 +119,20 @@ if other_para.PropModes  == 1:
 	if solar_cell.loss   == False:
 		cat_n_clean.c_c_prop_modes()
 
-
+# Plotting
+Irrad_spec_file = '../PCPV/Data/ASTM_1_5_spectrum'
 plotting.average_spec('Absorptance','Av_Absorb', len(wavelengths), solar_cell.num_h)
 plotting.average_spec('Transmittance','Av_Trans', len(wavelengths), solar_cell.num_h)
 plotting.average_spec('Reflectance','Av_Reflec', len(wavelengths), solar_cell.num_h)
-# Interpolate solar spectrum and calculate efficiency
-Efficiency = plotting.irradiance('../PCPV/Data/ASTM_1_5_spectrum','Av_Absorb',
+# # Interpolate solar spectrum and calculate efficiency
+Efficiency = plotting.irradiance(Irrad_spec_file,'Av_Absorb',
 	'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans', 'Av_Reflec', 'Weighted_Reflec',
 	radius1, radius2, period, ff)
-# Plot averaged sprectra
-spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
+plotting.efficiency_h_h('Absorptance','Efficiency_h',wavelengths,len(wavelengths),
+	solar_cell.num_h,Irrad_spec_file)
+# # Plot averaged sprectra
 last_light_object = light_list.pop()
+spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
 plotting.tra_plot('Spectra', spec_list, solar_cell, last_light_object,
 	max_num_BMs, max_order_PWs, Efficiency)
 # Plot weighted averaged sprectra
@@ -136,16 +143,15 @@ plotting.tra_plot('Spectra_weighted', spec_list, solar_cell, last_light_object,
 # Plot as funtion of height
 if solar_cell.num_h != 1:
 	plotting.height_plot('Spectra_height', 'Absorptance', solar_cell, last_light_object,
-	max_num_BMs, max_order_PWs, Efficiency, solar_cell.height_1, solar_cell.height_2, 
-	solar_cell.num_h, wavelengths)
+	max_num_BMs, max_order_PWs, 'Efficiency_h', Efficiency,	solar_cell.num_h)
 
 
 # Wraping up simulation by printing to screen and log file
 print '\n*******************************************'
-print 'The ultimate efficiency is %12.8f' % Efficiency
+print 'The ultimate efficiency is %12.8f' % Efficiency, '%'
 print '-------------------------------------------'
 
-# Calculate and record the time taken for simulation
+# Calculate and record the (real) time taken for simulation
 elapsed = (time.time() - start)
 hms     = str(datetime.timedelta(seconds=elapsed))
 hms_string = 'Total time for simulation was \n \

@@ -12,8 +12,8 @@ FC = ifort
 LIBS = -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_sequential \
 	-lmkl_core
 
-CFLAGS = -c -w -O2 -I./ -traceback -check
-#CFLAGS = -c -O3
+#CFLAGS = -c -w -O2 -I./ -traceback -check
+CFLAGS = -c -O3
 #CFLAGS = -c -w -traceback -check all
 LFLAGS = ./Lib/umf4_f77zwrapper64.o ./Lib/libumfpack.a ./Lib/libamd.a\
 	 ./Lib/libcerbla.a ./Lib/libcholmod.a\

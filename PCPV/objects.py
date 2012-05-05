@@ -7,8 +7,8 @@ class SolarCell(object):
     """
     def __init__(self, radius1, radius2, period, ff,
         mesh_file, height_1 = 2330, height_2 = 2330, num_h = 1,
-        inclusion = materials.cSi, background = materials.air,
-        superstrate = materials.air, substrate = materials.SiO2,
+        inclusion = materials.Si_c, background = materials.air,
+        superstrate = materials.air, substrate = materials.SiO2_a,
         loss = True, lx = 1, ly = 1, mesh_format = 1,
         nb_typ_el = 4, make_mesh_now = False):
         self.radius1     = radius1

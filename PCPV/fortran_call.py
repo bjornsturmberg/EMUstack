@@ -32,7 +32,6 @@ class Simmo(object):
 	def substrate_n(self):
 		return self.solar_cell.substrate.n(self.light.Lambda)
 		
-	# def run(self):
 	def fortran_command_str(self):
 		"""Return a string that runs the simmo, to execute in a shell"""
 		inclusion_n   = self.inclusion_n()
