@@ -94,7 +94,8 @@ class Controls(object):
     def __init__(self, debug = 0, traLambda = 1 , PrintOmega = 1, PrintSolution = 0, 
         PrintSupModes = 0, PrintAll = 0, Checks = 0, PropModes = 0, q_average = 0, 
         plot_real = 1, plot_imag = 0, plot_abs = 0, tol = 0, E_H_field = 1, 
-        i_cond = 2, itermax = 30, incident = 0, what4incident = 2, out4incident = 0):
+        i_cond = 2, itermax = 30, incident = 0, what4incident = 2, out4incident = 0,
+        Animate = False):
         self.debug         = debug
         self.traLambda     = traLambda
         self.PrintOmega    = PrintOmega
@@ -114,3 +115,4 @@ class Controls(object):
         self.incident      = incident
         self.what4incident = what4incident
         self.out4incident  = out4incident
+        self.Animate       = Animate

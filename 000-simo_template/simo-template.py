@@ -55,7 +55,7 @@ max_order_PWs = 1
 num_cores_to_use = 8
 # number of cpus to leave free
 # num_cores_sahand_gets = 8
-################ Simo specific parameters ################
+##########################################################
 
 
 # # Remove results of previous simulations
@@ -64,12 +64,12 @@ clear_previous.clean('.pdf')
 clear_previous.clean('.log')
 
 # Set up solar cell
-mesh = '2by2_ff%(ff)i_%(rho_tau)s_%(r_t_val)s.mail' % {
-			'ff'      : ff4msh,
+mesh = '2by2_ff%(ff4msh)i_%(rho_tau)s_%(r_t_val)s.mail' % {
+			'ff4msh'  : ff4msh,
 			'rho_tau' : rho_tau,
 			'r_t_val' : r_t_val,}
 solar_cell  = objects.SolarCell(radius1, radius2, period, ff, mesh,
-	height_1 = 2300, height_2 = 2400, num_h = 1000)
+	height_1 = 2300, height_2 = 2400, num_h = 10)
 
 # Set up light objects
 wl_array_1  = np.linspace(wl_1, wl_2, no_wl_1)
@@ -84,7 +84,7 @@ light_list  = [objects.Light(wl) for wl in wavelengths]
 # light_list  = [objects.Light([[wl_super]])]
 
 # Simulation controls
-other_para  = objects.Controls()
+other_para  = objects.Controls(Animate=True)
 
 # Interpolate refractive indecies over wavelength array
 # materials.interp_all(wavelengths)
@@ -124,24 +124,28 @@ Irrad_spec_file = '../PCPV/Data/ASTM_1_5_spectrum'
 plotting.average_spec('Absorptance','Av_Absorb', len(wavelengths), solar_cell.num_h)
 plotting.average_spec('Transmittance','Av_Trans', len(wavelengths), solar_cell.num_h)
 plotting.average_spec('Reflectance','Av_Reflec', len(wavelengths), solar_cell.num_h)
-# # Interpolate solar spectrum and calculate efficiency
+# Interpolate solar spectrum and calculate efficiency
 Efficiency = plotting.irradiance(Irrad_spec_file,'Av_Absorb',
 	'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans', 'Av_Reflec', 'Weighted_Reflec',
 	radius1, radius2, period, ff)
-plotting.efficiency_h_h('Absorptance','Efficiency_h',wavelengths,len(wavelengths),
-	solar_cell.num_h,Irrad_spec_file)
-# # Plot averaged sprectra
+# Plot averaged sprectra
 last_light_object = light_list.pop()
 spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
 plotting.tra_plot('Spectra', spec_list, solar_cell, last_light_object,
 	max_num_BMs, max_order_PWs, Efficiency)
 # Plot weighted averaged sprectra
 spec_list = ['Weighted_Absorb', 'Weighted_Trans', 'Weighted_Reflec']
-last_light_object = light_list.pop()
 plotting.tra_plot('Spectra_weighted', spec_list, solar_cell, last_light_object, 
 	max_num_BMs, max_order_PWs, Efficiency)
-# Plot as funtion of height
+# Plot dispersion diagrams
+plotting.omega_plot(solar_cell, last_light_object, 
+	max_num_BMs, max_order_PWs, Efficiency)
+
 if solar_cell.num_h != 1:
+# Calculate and plot efficiency as a function of height
+	plotting.efficiency_h('Absorptance','Efficiency_h',wavelengths,len(wavelengths),
+	solar_cell.num_h,Irrad_spec_file,other_para.Animate)
+# Plot absorptance as funtion of height
 	plotting.height_plot('Spectra_height', 'Absorptance', solar_cell, last_light_object,
 	max_num_BMs, max_order_PWs, 'Efficiency_h', Efficiency,	solar_cell.num_h)
 

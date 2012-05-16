@@ -1,8 +1,0 @@
-0      q_average  ! at a discontinuity, use average value if q_average = 1
-1      plot_real  ! plot real part if plot_real = 1
-0      plot_imag  ! plot real part if plot_imag = 1
-0      plot_abs   ! plot absolute values of each component if plot_abs = 1
-
-0  - Select the specific incident order (0=Zeroth)(1, >beta)
-2  - Consider all prop PW (1) all outgoing orders for order in above line (2)
-0  - Only consider outgoing waves of specified order.
