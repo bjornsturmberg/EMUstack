@@ -7,6 +7,7 @@ matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 import os
 
+Irrad_spec_file = '../PCPV/Data/ASTM_1_5_spectrum'
 
 def average_spec(spec_name,av_spec_name,num_wl,num_h):
 	data      = np.loadtxt('%s.txt' % spec_name)
@@ -24,10 +25,10 @@ def average_spec(spec_name,av_spec_name,num_wl,num_h):
 	np.savetxt('%s.txt' % av_spec_name, av_array, fmt = '%18.12f')
 
 
-def efficiency_h(spec_name,h_spec_name,wavelengths,num_wl,num_h,Irradiance, Animate):
+def efficiency_h(spec_name,h_spec_name,wavelengths,num_wl,num_h, Animate):
 	data   = np.loadtxt('%s.txt' % spec_name)
 	spec   = data[:,1] 		#NEEED CHANGE
-	i_data = np.loadtxt('%s.txt' % Irradiance)
+	i_data = np.loadtxt('%s.txt' % Irrad_spec_file)
 	i_spec = np.interp(wavelengths, i_data[:,0], i_data[:,2])
 	h_Efficiency = []
 	h_data       = []
@@ -45,7 +46,7 @@ def efficiency_h(spec_name,h_spec_name,wavelengths,num_wl,num_h,Irradiance, Anim
 	h_array = zip(h_Efficiency, h_data)
 	np.savetxt('%s.txt' % h_spec_name, h_array, fmt = '%18.12f')
 	if Animate == True:
-		ps = os.system("convert -delay 5 +dither -layers Optimize -colors 16 Animated/*.pdf Animated/Abs_Spectra.gif")
+		ps = os.system("convert -delay 3 +dither -layers Optimize -colors 16 Animated/*.pdf Animated/Abs_Spectra.gif")
 		p  = os.system("gifsicle -O2 Animated/Abs_Spectra.gif -o Animated/Abs_Spectra-opt.gif")
 
 def spectra_h(wavelengths,h_wl, h, eta_calc,i):
@@ -73,13 +74,13 @@ def spectra_h(wavelengths,h_wl, h, eta_calc,i):
 		plt.savefig('Animated/%d' % i)
 
 
-def irradiance(Irradiance, Absorb, W_Absorb, Trans, W_Trans, Reflec, W_Reflec, radius1, radius2,
+def irradiance(Absorb, W_Absorb, Trans, W_Trans, Reflec, W_Reflec, radius1, radius2,
 		period, ff):
 	data         = np.loadtxt('%s.txt' % Absorb)
 	wavelengths  = data[:,0]
 	spec         = data[:,1]
 	h_av         = data[:,2] 
-	i_data       = np.loadtxt('%s.txt' % Irradiance)
+	i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
 	i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,2])
 
 	# call efficiency function 
@@ -157,7 +158,7 @@ def tra_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_
 
 def overlay_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
 	fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-	ax1 = fig.add_subplot(1,1,1)#, adjustable='box', aspect=400)
+	ax1 = fig.add_subplot(3,1,2)
 	line_list = ['r-.','b--','k-']
 	for i in range(len(spec_list)):
 		spec_name   = spec_list.pop(0)
@@ -220,15 +221,15 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
 
 	# CS = plt.contourf(int_wl,int_h,int_Eff,100,cmap=plt.cm.jet)
 	CS = plt.imshow(int_Eff_t, cmap=plt.cm.hot, norm=None, aspect='auto', interpolation=None,
-	  vmin=0, vmax=max(s_data), origin='lower', extent=(wl_1, wl_2, h_1, h_2))
+	  vmin=0, vmax=s_data.max(), origin='lower', extent=(wl_1, wl_2, h_1, h_2))
 	ax1.set_xlabel('Wavelength (nm)')
 	ax1.set_ylabel('Height (nm)')
 	tick_array = []
 	for i in range(0,10,1):
 		tick = float(i)/10
-		if tick < max(s_data):
+		if tick < s_data.max():
 			tick_array.append(tick)
-	tick_array.append(round(max(s_data),4))
+	tick_array.append(round(s_data.max(),4))
 	cbar = plt.colorbar(extend='neither',ticks=tick_array)
 	cbar.set_ticklabels(tick_array)
 	cbar.ax.set_ylabel('Absorptance')
@@ -274,7 +275,7 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
 	int_Eff_e_t = np.fliplr(int_Eff_e.T)
 
 	CS = plt.imshow(int_Eff_e_t, cmap=plt.cm.hot, norm=None, aspect='auto', interpolation=None,
-	  alpha=None, vmin=0, vmax=max(s_data), origin='lower', extent=(e_2, e_1, h_1, h_2))#, shape=None, filternorm=1, filterrad=4.0, imlim=None, resample=None, url=None, hold=None
+	  alpha=None, vmin=0, vmax=s_data.max(), origin='lower', extent=(e_2, e_1, h_1, h_2))#, shape=None, filternorm=1, filterrad=4.0, imlim=None, resample=None, url=None, hold=None
 	ax1.set_xlabel('Energy (eV)')
 	ax1.set_ylabel('Height (nm)')
 	cbar = plt.colorbar(extend='neither',ticks=tick_array)
@@ -293,7 +294,7 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
 	ax2.set_xlabel(r'$\eta$' ' (%)')
 	ax2.set_ylabel('Height (nm)')
 	plt.axis([es[-1], 0, hs[0], hs[-1]])
-	plt.xticks([round(max(es),1), 0])
+	plt.xticks([round(es.max(),1), 0])
 	plt.fill_betweenx(hs,es,color='blue', alpha=0.5)
 	plt.suptitle(imp_facts)
 	plt.savefig('%s_eta_bar' % name_out)
@@ -302,15 +303,8 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
 def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
 	fig = plt.figure(num=None, figsize=(12, 9), dpi=80, facecolor='w', edgecolor='k')
 	ax1 = fig.add_subplot(1,1,1)
-	# ax2 = fig.add_subplot(2,1,2)
-	# data  = np.loadtxt('%s.txt' % 'omega2')
-	data        = np.genfromtxt('%s.txt' % 'omega', usecols=(0, 2))
 	wavelengths = np.genfromtxt('%s.txt' % 'omega', usecols=(2))
 	num_BMs     = np.genfromtxt('%s.txt' % 'omega', usecols=(1))
-
-	# h  = 6.626068e-34;
-	# c  = 299792458;
-	# eV = 1.60217646e-19;
 
 	for i in range(len(num_BMs)):
 		prop = []
@@ -324,10 +318,6 @@ def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
 		ax1.plot(trim_wls, prop, 'ro')
 		ax1.set_xlabel('Wavelength (nm)')
 		ax1.set_ylabel(r'Re(k$_z$)')
-		# e = (h*c/(trim_wls*1e-9))/eV
-		# ax2.plot(e, prop, 'ro')
-		# ax2.set_xlabel('E (eV)')
-		# ax2.set_ylabel(r'Re(k$_z$)')
 	plt.xlim((wavelengths[0], wavelengths[-1]))
 
 	tmp1 = 'a1 = %(radius)d, a2 = %(rad)d, d = %(period)d, ff = %(ff)4.2f, h_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {

@@ -1,6 +1,7 @@
 # doc
 
 import numpy as np
+import copy
 
 data_location = '../PCPV/Data/'
 
@@ -23,6 +24,8 @@ class Material(object):
               data max of %(d)f" % {
           'in' : wavelengths.max(), 'd' : self.data_wls.max()
              }
+         # spline_fit = interp1d(self.data_wls, self.data_re_ns, kind = 2)
+         # interp_re_n = spline_fit(wavelengths)
          interp_re_n = np.interp(wavelengths, 
              self.data_wls, self.data_re_ns)
          interp_im_n = np.interp(wavelengths, 
@@ -44,50 +47,54 @@ class Material(object):
          """ Return maximum of Re(n) over the interpolation range."""
          return self.interp_data.real.max()
 
-air    = Material(np.loadtxt('%sair.txt'% data_location))
+Air    = Material(np.loadtxt('%sAir.txt'% data_location))
 Si_c   = Material(np.loadtxt('%sSi_c.txt'% data_location))
 Si_a   = Material(np.loadtxt('%sSi_a.txt'% data_location))
 SiO2_a = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
 CuO    = Material(np.loadtxt('%sCuO.txt'% data_location))
 CdTe   = Material(np.loadtxt('%sCdTe.txt'% data_location))
 FeS2   = Material(np.loadtxt('%sFeS2.txt'% data_location))
-Zn2P3  = Material(np.loadtxt('%sZn2P3.txt'% data_location))
+Zn3P2  = Material(np.loadtxt('%sZn3P2.txt'% data_location))
+
+test   = copy.deepcopy(Air)
 
 # def interp_all(wavelengths):
-#     air.n_interp(wavelengths)
+#     Air.n_interp(wavelengths)
 #     Si_c.n_interp(wavelengths)
 #     Si_a.n_interp(wavelengths)
 #     SiO2_a.n_interp(wavelengths)
 #     CuO.n_interp(wavelengths)
-#     # CdTe.n_interp(wavelengths)
+#     CdTe.n_interp(wavelengths)
 #     FeS2.n_interp(wavelengths)
-#     # Zn2P3.n_interp(wavelengths)
+#     Zn3P2.n_interp(wavelengths)
 
-def interp_needed(wavelengths, inclusion, background, superstrate, substrate):
-    if inclusion == air or background == air or superstrate == air or substrate == air:
-        air.n_interp(wavelengths)
-        # n_plot('Air',wavelengths, air.interp_data)
-    if inclusion == Si_c or background == Si_c or superstrate == Si_c or substrate == Si_c:
+def interp_needed(wavelengths, inclusion_a, inclusion_b, background, superstrate, substrate):
+    if inclusion_a == Air or inclusion_b == Air or background == Air or superstrate == Air or substrate == Air:
+        Air.n_interp(wavelengths)
+        # n_plot('Air',wavelengths, Air.interp_data)
+    if inclusion_a == Si_c or inclusion_b == Si_c or background == Si_c or superstrate == Si_c or substrate == Si_c:
         Si_c.n_interp(wavelengths)
         # n_plot('Si_c',wavelengths, Si_c.interp_data)
-    if inclusion == Si_a or background == Si_a or superstrate == Si_a or substrate == Si_a:
+    if inclusion_a == Si_a or inclusion_b == Si_a or background == Si_a or superstrate == Si_a or substrate == Si_a:
         Si_a.n_interp(wavelengths)
         # n_plot('Si_a',wavelengths, Si_a.interp_data)
-    if inclusion == SiO2_a or background == SiO2_a or superstrate == SiO2_a or substrate == SiO2_a:
+    if inclusion_a == SiO2_a or inclusion_b == SiO2_a or background == SiO2_a or superstrate == SiO2_a or substrate == SiO2_a:
         SiO2_a.n_interp(wavelengths)
         # n_plot('SiO2_a',wavelengths, SiO2_a.interp_data)
-    if inclusion == CuO or background == CuO or superstrate == CuO or substrate == CuO:
+    if inclusion_a == CuO or inclusion_b == CuO or background == CuO or superstrate == CuO or substrate == CuO:
         CuO.n_interp(wavelengths)
         # n_plot('CuO',wavelengths, CuO.interp_data)
-    if inclusion == CdTe or background == CdTe or superstrate == CdTe or substrate == CdTe:
+    if inclusion_a == CdTe or inclusion_b == CdTe or background == CdTe or superstrate == CdTe or substrate == CdTe:
         CdTe.n_interp(wavelengths)
         # n_plot('CdTe',wavelengths, CdTe.interp_data)
-    if inclusion == FeS2 or background == FeS2 or superstrate == FeS2 or substrate == FeS2:
+    if inclusion_a == FeS2 or inclusion_b == FeS2 or background == FeS2 or superstrate == FeS2 or substrate == FeS2:
         FeS2.n_interp(wavelengths)
         # n_plot('FeS2',wavelengths, FeS2.interp_data)
-    if inclusion == Zn2P3 or background == Zn2P3 or superstrate == Zn2P3 or substrate == Zn2P3:
-        Zn2P3.n_interp(wavelengths)
-        # n_plot('Zn2P3',wavelengths, Zn2P3.interp_data)
+    if inclusion_a == Zn3P2 or inclusion_b == Zn3P2 or background == Zn3P2 or superstrate == Zn3P2 or substrate == Zn3P2:
+        Zn3P2.n_interp(wavelengths)
+        # n_plot('Zn3P2',wavelengths, Zn3P2.interp_data)
+    if inclusion_a == test or inclusion_b == test or background == test or superstrate == test or substrate == test:
+        test.n_interp(wavelengths)
 
 # from matplotlib.mlab import griddata
 # import matplotlib

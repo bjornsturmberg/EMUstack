@@ -31,9 +31,9 @@ start = time.time()
 # solar cell parameters
 rho_tau = 'rho'
 r_t_val = '1'
-radius1 = 80
-radius2 = 80
-period  = 897
+radius1 = 123
+radius2 = 123
+period  = 793
 ff      = calculate_ff(radius1,radius2,period)
 ff4msh  = ff*100
 
@@ -45,7 +45,7 @@ wl_3     = 1010  # > 1010 Im(n(cSi)) = 0
 wl_4     = 1110
 wl_5     = 1127
 no_wl_1  = 2#46    # 2 nm steps
-no_wl_2  = 5#610   # 1 nm steps
+no_wl_2  = 4#610   # 1 nm steps
 no_wl_3  = 1#10    # 10 nm steps - total 667 wavelengths
 # simulation parameters
 max_num_BMs   = 20
@@ -64,12 +64,21 @@ clear_previous.clean('.pdf')
 clear_previous.clean('.log')
 
 # Set up solar cell
-mesh = '2by2_ff%(ff4msh)i_%(rho_tau)s_%(r_t_val)s.mail' % {
-			'ff4msh'  : ff4msh,
-			'rho_tau' : rho_tau,
-			'r_t_val' : r_t_val,}
+# mesh = 'bj_can_a60_d600.mail'
+mesh = '2by2_ff20_t_02_1-p1.mail'
+
 solar_cell  = objects.SolarCell(radius1, radius2, period, ff, mesh,
-	height_1 = 2300, height_2 = 2400, num_h = 10)
+	height_1 = 2300, height_2 = 2400, num_h = 1,
+	inclusion_a = materials.Si_c, inclusion_b = materials.test, nb_typ_el = 5)
+
+# by default materials.test = Air. If scaling != 0 n of 'copied' object is used scaled by 'scaled'.
+scaling = 0 
+if scaling > 0.0 and solar_cell.inclusion_b == materials.test:
+	modified = solar_cell.inclusion_b
+	copied   = solar_cell.inclusion_a
+	modified.data_wls   = copied.data_wls
+	modified.data_re_ns = copied.data_re_ns*scaling
+	modified.data_im_ns = copied.data_im_ns*scaling
 
 # Set up light objects
 wl_array_1  = np.linspace(wl_1, wl_2, no_wl_1)
@@ -84,12 +93,12 @@ light_list  = [objects.Light(wl) for wl in wavelengths]
 # light_list  = [objects.Light([[wl_super]])]
 
 # Simulation controls
-other_para  = objects.Controls(Animate=True)
+other_para  = objects.Controls(Animate=False)
 
 # Interpolate refractive indecies over wavelength array
 # materials.interp_all(wavelengths)
-materials.interp_needed(wavelengths, solar_cell.inclusion, solar_cell.background,
-        solar_cell.superstrate, solar_cell.substrate)
+materials.interp_needed(wavelengths, solar_cell.inclusion_a, solar_cell.inclusion_b,
+		 solar_cell.background, solar_cell.superstrate, solar_cell.substrate)
 
 # List of simulations to calculate, with full arguments
 simmo_list = []
@@ -120,14 +129,12 @@ if other_para.PropModes  == 1:
 		cat_n_clean.c_c_prop_modes()
 
 # Plotting
-Irrad_spec_file = '../PCPV/Data/ASTM_1_5_spectrum'
 plotting.average_spec('Absorptance','Av_Absorb', len(wavelengths), solar_cell.num_h)
 plotting.average_spec('Transmittance','Av_Trans', len(wavelengths), solar_cell.num_h)
 plotting.average_spec('Reflectance','Av_Reflec', len(wavelengths), solar_cell.num_h)
 # Interpolate solar spectrum and calculate efficiency
-Efficiency = plotting.irradiance(Irrad_spec_file,'Av_Absorb',
-	'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans', 'Av_Reflec', 'Weighted_Reflec',
-	radius1, radius2, period, ff)
+Efficiency = plotting.irradiance('Av_Absorb', 'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans',
+ 'Av_Reflec', 'Weighted_Reflec', radius1, radius2, period, ff)
 # Plot averaged sprectra
 last_light_object = light_list.pop()
 spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
@@ -144,7 +151,7 @@ plotting.omega_plot(solar_cell, last_light_object,
 if solar_cell.num_h != 1:
 # Calculate and plot efficiency as a function of height
 	plotting.efficiency_h('Absorptance','Efficiency_h',wavelengths,len(wavelengths),
-	solar_cell.num_h,Irrad_spec_file,other_para.Animate)
+	solar_cell.num_h, other_para.Animate)
 # Plot absorptance as funtion of height
 	plotting.height_plot('Spectra_height', 'Absorptance', solar_cell, last_light_object,
 	max_num_BMs, max_order_PWs, 'Efficiency_h', Efficiency,	solar_cell.num_h)
@@ -152,7 +159,7 @@ if solar_cell.num_h != 1:
 
 # Wraping up simulation by printing to screen and log file
 print '\n*******************************************'
-print 'The ultimate efficiency is %12.8f' % Efficiency, '%'
+print 'The ultimate efficiency is %12.8f' % Efficiency
 print '-------------------------------------------'
 
 # Calculate and record the (real) time taken for simulation
