@@ -2,17 +2,13 @@ import numpy as np
 
 pi = np.pi
 
-def calculate_ff(a1, a2, d):
+def calculate_ff(d, a1, a2, a3, a4):
 
-	# print "a1 = ", a1
-	# print "a2 = ", a2
-	# print "d  = ", d
-
-	ff = 2*pi*(a1**2 + a2**2)/(d)**2
+	ff = pi*(a1**2 + a2**2 + a3**2 + a4**2)/(d)**2
 	# print "ff = ", ff
-	ff_round = round(ff,2)
+	# ff_round = round(ff,2)
 	# print "ff = ", ff_round
-	return ff_round
+	return ff#_round
 
 
 if __name__ == "__main__":

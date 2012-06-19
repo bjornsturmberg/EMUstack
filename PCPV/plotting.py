@@ -121,7 +121,7 @@ def weighting(weight_by, wavelengths, spectrum, h_av, w_spectum):
 def tra_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
 	fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
 	for i in range(len(spec_list)):
-		ax1 = fig.add_subplot(3,1,i+1)#, adjustable='box', aspect=400)
+		ax1 = fig.add_subplot(3,1,i+1)
 		spec_name = spec_list.pop(0)
 		s_data  = np.loadtxt('%s.txt' % spec_name)
 		wavelengths = s_data[:,0]
@@ -130,28 +130,39 @@ def tra_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_
 		ax1.set_xlabel('Wavelength (nm)')
 		ax1.set_ylabel(spec_name)
 		plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
-	tmp1 = 'a1 = %(radius)d, a2 = %(rad)d, d = %(period)d, ff = %(ff)4.2f, h_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, \n'% {
-	'radius' 	    : solar_cell.radius1,
-	'rad' 	        : solar_cell.radius2,
-	'period' 	    : solar_cell.period,
+	tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
+	'period' 	    : solar_cell.period, 'radius' : solar_cell.radius1,}
+	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d,'% {
 	'ff' 	  		: solar_cell.ff, 
 	'h_one' 	    : solar_cell.height_1,
 	'h_two' 	    : solar_cell.height_2,
 	'num_h' 	    : solar_cell.num_h, }
 	tmp2 = r'$\theta$ = '
-	tmp3 = '%(theta)6.2f, '% {
-	'theta' 	    : light.theta, }
+	tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
 	tmp4 = r'$\phi$ = '
-	tmp5 = '%(phi)6.2f, '% {
-	'phi'	 	    : light.phi, }
+	tmp5 = '%(phi)6.2f, '% {'phi' : light.phi, }
 	tmp6 = 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
 	'max_num_BMs'	: max_num_BMs,
 	'max_order_PWs'	: max_order_PWs, }
-	tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {
-	'Efficiency'	: Efficiency*100, }
+	tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
 	tmp8 = ' %'
+	tmp_end = tmp10 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6 + tmp7 + tmp8
 
-	imp_facts = tmp1 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6 + tmp7 + tmp8
+	if solar_cell.radius2 + solar_cell.radius3 + solar_cell.radius4 == 0:
+		imp_facts = tmp1 + tmp_end
+	elif solar_cell.radius3 + solar_cell.radius4 == 0:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		imp_facts = tmp1 +  tmp11 + tmp_end
+	elif solar_cell.radius4 == 0:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		tmp12 = 'a3 = %(radius)d '% {'radius' : solar_cell.radius3,}
+		imp_facts = tmp1 + tmp11 + tmp12 + tmp_end
+	else:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		tmp12 = 'a3 = %(radius)d '% {'radius' : solar_cell.radius3,}
+		tmp13 = 'a4 = %(radius)d '% {'radius' : solar_cell.radius4,}
+		imp_facts = tmp1 + tmp11 + tmp12 + tmp13 + tmp_end
+
 	plt.suptitle(imp_facts)
 	plt.savefig(spectra_name)
 
@@ -171,28 +182,39 @@ def overlay_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_or
 		ax1.set_ylabel(spec_name)
 		plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
 	plt.legend( ('a = 70 nm', 'a = 123 nm','supercell') )
-	tmp1 = 'a1 = %(radius)d, a2 = %(rad)d, d = %(period)d, ff = %(ff)4.2f, h_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-	'radius' 	    : solar_cell.radius1,
-	'rad' 	        : solar_cell.radius2,
-	'period' 	    : solar_cell.period,
+	tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
+	'period' 	    : solar_cell.period, 'radius' : solar_cell.radius1,}
+	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d,'% {
 	'ff' 	  		: solar_cell.ff, 
 	'h_one' 	    : solar_cell.height_1,
 	'h_two' 	    : solar_cell.height_2,
 	'num_h' 	    : solar_cell.num_h, }
 	tmp2 = r'$\theta$ = '
-	tmp3 = '%(theta)6.2f, '% {
-	'theta' 	    : light.theta, }
+	tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
 	tmp4 = r'$\phi$ = '
-	tmp5 = '%(phi)6.2f, '% {
-	'phi'	 	    : light.phi, }
-	tmp6 = '\nmax_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
+	tmp5 = '%(phi)6.2f, '% {'phi' : light.phi, }
+	tmp6 = 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
 	'max_num_BMs'	: max_num_BMs,
 	'max_order_PWs'	: max_order_PWs, }
-	tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {
-	'Efficiency'	: Efficiency*100, }
+	tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
 	tmp8 = ' %'
+	tmp_end = tmp10 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6 + tmp7 + tmp8
 
-	imp_facts = tmp1 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6 + tmp7 + tmp8
+	if solar_cell.radius2 + solar_cell.radius3 + solar_cell.radius4 == 0:
+		imp_facts = tmp1 + tmp_end
+	elif solar_cell.radius3 + solar_cell.radius4 == 0:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		imp_facts = tmp1 +  tmp11 + tmp_end
+	elif solar_cell.radius4 == 0:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		tmp12 = 'a3 = %(radius)d '% {'radius' : solar_cell.radius3,}
+		imp_facts = tmp1 + tmp11 + tmp12 + tmp_end
+	else:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		tmp12 = 'a3 = %(radius)d '% {'radius' : solar_cell.radius3,}
+		tmp13 = 'a4 = %(radius)d '% {'radius' : solar_cell.radius4,}
+		imp_facts = tmp1 + tmp11 + tmp12 + tmp13 + tmp_end
+
 	plt.suptitle(imp_facts)
 	plt.savefig(spectra_name)
 
@@ -234,27 +256,39 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
 	cbar.set_ticklabels(tick_array)
 	cbar.ax.set_ylabel('Absorptance')
 
-	tmp1 = 'a1 = %(radius)d, a2 = %(rad)d, d = %(period)d, ff = %(ff)4.2f, h_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-	'radius' 	    : solar_cell.radius1,
-	'rad' 	        : solar_cell.radius2,
-	'period' 	    : solar_cell.period,
+	tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
+	'period' 	    : solar_cell.period, 'radius' : solar_cell.radius1,}
+	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d,'% {
 	'ff' 	  		: solar_cell.ff, 
 	'h_one' 	    : solar_cell.height_1,
 	'h_two' 	    : solar_cell.height_2,
 	'num_h' 	    : solar_cell.num_h, }
 	tmp2 = r'$\theta$ = '
-	tmp3 = '%(theta)6.2f, '% {
-	'theta' 	    : light.theta, }
+	tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
 	tmp4 = r'$\phi$ = '
-	tmp5 = '%(phi)6.2f, '% {
-	'phi'	 	    : light.phi, }
-	tmp6 = '\nmax_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
+	tmp5 = '%(phi)6.2f, '% {'phi' : light.phi, }
+	tmp6 = 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
 	'max_num_BMs'	: max_num_BMs,
 	'max_order_PWs'	: max_order_PWs, }
-	tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {
-	'Efficiency'	: Efficiency*100, }
+	tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
 	tmp8 = ' %'
-	imp_facts = tmp1 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6 + tmp7 + tmp8
+	tmp_end = tmp10 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6 + tmp7 + tmp8
+
+	if solar_cell.radius2 + solar_cell.radius3 + solar_cell.radius4 == 0:
+		imp_facts = tmp1 + tmp_end
+	elif solar_cell.radius3 + solar_cell.radius4 == 0:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		imp_facts = tmp1 +  tmp11 + tmp_end
+	elif solar_cell.radius4 == 0:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		tmp12 = 'a3 = %(radius)d '% {'radius' : solar_cell.radius3,}
+		imp_facts = tmp1 + tmp11 + tmp12 + tmp_end
+	else:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		tmp12 = 'a3 = %(radius)d '% {'radius' : solar_cell.radius3,}
+		tmp13 = 'a4 = %(radius)d '% {'radius' : solar_cell.radius4,}
+		imp_facts = tmp1 + tmp11 + tmp12 + tmp13 + tmp_end
+
 	plt.suptitle(imp_facts)
 	plt.savefig(name_out)
 
@@ -320,26 +354,38 @@ def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
 		ax1.set_ylabel(r'Re(k$_z$)')
 	plt.xlim((wavelengths[0], wavelengths[-1]))
 
-	tmp1 = 'a1 = %(radius)d, a2 = %(rad)d, d = %(period)d, ff = %(ff)4.2f, h_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-	'radius' 	    : solar_cell.radius1,
-	'rad' 	   		: solar_cell.radius2,
-	'period' 	    : solar_cell.period,
+	tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
+	'period' 	    : solar_cell.period, 'radius' : solar_cell.radius1,}
+	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d,'% {
 	'ff' 	  		: solar_cell.ff, 
 	'h_one' 	    : solar_cell.height_1,
 	'h_two' 	    : solar_cell.height_2,
 	'num_h' 	    : solar_cell.num_h, }
 	tmp2 = r'$\theta$ = '
-	tmp3 = '%(theta)6.2f, '% {
-	'theta' 	    : light.theta, }
+	tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
 	tmp4 = r'$\phi$ = '
-	tmp5 = '%(phi)6.2f, '% {
-	'phi'	 	    : light.phi, }
-	tmp6 = '\nmax_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
+	tmp5 = '%(phi)6.2f, '% {'phi' : light.phi, }
+	tmp6 = 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
 	'max_num_BMs'	: max_num_BMs,
 	'max_order_PWs'	: max_order_PWs, }
-	tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {
-	'Efficiency'	: Efficiency*100, }
+	tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
 	tmp8 = ' %'
-	imp_facts = tmp1 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6 + tmp7 + tmp8
+	tmp_end = tmp10 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6 + tmp7 + tmp8
+
+	if solar_cell.radius2 + solar_cell.radius3 + solar_cell.radius4 == 0:
+		imp_facts = tmp1 + tmp_end
+	elif solar_cell.radius3 + solar_cell.radius4 == 0:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		imp_facts = tmp1 +  tmp11 + tmp_end
+	elif solar_cell.radius4 == 0:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		tmp12 = 'a3 = %(radius)d '% {'radius' : solar_cell.radius3,}
+		imp_facts = tmp1 + tmp11 + tmp12 + tmp_end
+	else:
+		tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+		tmp12 = 'a3 = %(radius)d '% {'radius' : solar_cell.radius3,}
+		tmp13 = 'a4 = %(radius)d '% {'radius' : solar_cell.radius4,}
+		imp_facts = tmp1 + tmp11 + tmp12 + tmp13 + tmp_end
+
 	plt.suptitle(imp_facts)
 	plt.savefig('Disp_Diagram')

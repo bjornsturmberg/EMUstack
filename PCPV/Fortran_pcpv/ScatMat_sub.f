@@ -477,6 +477,22 @@ C
         enddo
       enddo 
       close(345)
+      open (unit=345, file='Matrices/R23.txt',
+     *         status='unknown')
+      do k=1,nval
+        do i=1,nval
+          write(345,101) i, k, R23(i,k), abs(R23(i,k))**2
+        enddo
+      enddo 
+      close(345)
+      open (unit=345, file='Matrices/T23.txt',
+     *         status='unknown')
+      do k=1,nval
+        do i=1,2*neq_PW
+          write(345,101) i, k, T23(i,k), abs(T23(i,k))**2
+        enddo
+      enddo 
+      close(345)
       endif  ! PrintSolution .ne. 0.0d0
 C
 101   format(I4,I4,3(G25.17))

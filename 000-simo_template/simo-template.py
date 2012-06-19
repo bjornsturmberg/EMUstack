@@ -29,13 +29,12 @@ start = time.time()
 
 ################ Simo specific parameters ################
 # solar cell parameters
-rho_tau = 'rho'
-r_t_val = '1'
-radius1 = 123
-radius2 = 123
-period  = 793
-ff      = calculate_ff(radius1,radius2,period)
-ff4msh  = ff*100
+period  = 1000
+radius1 = 60
+radius2 = 3
+radius3 = 0
+radius4 = 0
+ff      = 0.2;#calculate_ff(period,radius1,radius2,radius3,radius4)
 
 # light parameters
 # wl_super = 700
@@ -65,20 +64,20 @@ clear_previous.clean('.log')
 
 # Set up solar cell
 # mesh = 'bj_can_a60_d600.mail'
-mesh = '2by2_ff20_t_02_1-p1.mail'
+# mesh = '2by2_ff20_t_02_1-p1.mail'
 
-solar_cell  = objects.SolarCell(radius1, radius2, period, ff, mesh,
-	height_1 = 2300, height_2 = 2400, num_h = 1,
-	inclusion_a = materials.Si_c, inclusion_b = materials.test, nb_typ_el = 5)
+solar_cell  = objects.SolarCell(period, radius1, radius2, radius3, radius4, ff, #mesh_file = mesh, 
+	set_ff = False, height_1 = 2200, height_2 = 2400, num_h = 500,
+	inclusion_a = materials.Si_c, inclusion_b = materials.Si_c, nb_typ_el = 5, make_mesh_now = True)
 
-# by default materials.test = Air. If scaling != 0 n of 'copied' object is used scaled by 'scaled'.
-scaling = 0 
-if scaling > 0.0 and solar_cell.inclusion_b == materials.test:
-	modified = solar_cell.inclusion_b
-	copied   = solar_cell.inclusion_a
-	modified.data_wls   = copied.data_wls
-	modified.data_re_ns = copied.data_re_ns*scaling
-	modified.data_im_ns = copied.data_im_ns*scaling
+# # by default materials.test = Air. If scaling != 0 n of 'copied' object is used scaled by 'scaled'.
+# scaling = 0 
+# if scaling > 0.0 and solar_cell.inclusion_b == materials.test:
+# 	modified = solar_cell.inclusion_b
+# 	copied   = solar_cell.inclusion_a
+# 	modified.data_wls   = copied.data_wls
+# 	modified.data_re_ns = copied.data_re_ns*scaling
+# 	modified.data_im_ns = copied.data_im_ns*scaling
 
 # Set up light objects
 wl_array_1  = np.linspace(wl_1, wl_2, no_wl_1)
@@ -87,8 +86,6 @@ wl_array_3  = np.linspace(wl_3+1, wl_4, no_wl_3)
 wavelengths = np.concatenate((wl_array_1,wl_array_2, wl_array_3, [wl_5]))
 light_list  = [objects.Light(wl) for wl in wavelengths]
 # Single wavelength run
-# wavelengths = np.array([wl_super])
-# light_list  = [objects.Light(wl) for wl in wavelengths]
 # wavelengths = np.array([wl_super])
 # light_list  = [objects.Light([[wl_super]])]
 

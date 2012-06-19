@@ -1,0 +1,15 @@
+ conv_gmsh_m: debug =            1
+ gmsh_version =            2
+ i_mesh =           -1          -1          -1
+  file1_mesh = 
+ ../PCPV/Data/.msh                                                              
+                      
+  file2_mesh = 
+ ../PCPV/Data/.mail                                                             
+                      
+  i_sym =            0
+ Number of points =            0
+ Number of elements =            0
+ The program terminates normally
+ Symmetry code =            0
+ CPU time (sec.)           =   0.000000000000000E+000
