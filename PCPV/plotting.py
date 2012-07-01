@@ -9,13 +9,14 @@ import os
 
 Irrad_spec_file = '../PCPV/Data/ASTM_1_5_spectrum'
 
-def average_spec(spec_name,av_spec_name,num_wl,num_h):
+def average_spec(spec_name,av_spec_name,num_wl,num_h):#,wavelengths):
 	data      = np.loadtxt('%s.txt' % spec_name)
 	av_wl     = []
 	av_spec   = []
 	av_h      = []
 	for i in np.linspace(0,num_wl-1,num_wl):
 		av_wl   = np.append(av_wl,data[i*num_h,0])
+		# print av_wl[i] - wavelengths[i]
 		av_tmp  = np.mean(data[i*num_h:(i+1)*num_h,1])
 		av_spec = np.append(av_spec,av_tmp)
 		av_tmp  = np.mean(data[i*num_h:(i+1)*num_h,2])
@@ -170,7 +171,7 @@ def tra_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_
 def overlay_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
 	fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
 	ax1 = fig.add_subplot(3,1,2)
-	line_list = ['r-.','b--','k-']
+	line_list = ['k-','r-.','b--','g:','m,']
 	for i in range(len(spec_list)):
 		spec_name   = spec_list.pop(0)
 		line_name   = line_list.pop(0)
@@ -181,7 +182,7 @@ def overlay_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_or
 		ax1.set_xlabel('Wavelength (nm)')
 		ax1.set_ylabel(spec_name)
 		plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
-	plt.legend( ('a = 70 nm', 'a = 123 nm','supercell') )
+	plt.legend( ('con3','a=60nm', 'a=70nm', 'a=105nm', 'a=125nm') )
 	tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
 	'period' 	    : solar_cell.period, 'radius' : solar_cell.radius1,}
 	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d,'% {

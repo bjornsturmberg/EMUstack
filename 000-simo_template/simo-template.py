@@ -29,12 +29,18 @@ start = time.time()
 
 ################ Simo specific parameters ################
 # solar cell parameters
-period  = 1000
-radius1 = 60
-radius2 = 3
-radius3 = 0
-radius4 = 0
-ff      = 0.2;#calculate_ff(period,radius1,radius2,radius3,radius4)
+period  = 1200
+radius1 = 150
+radius2 = 140
+radius3 = 130
+radius4 = 120
+radius5 = 110
+radius6 = 100
+radius7 = 90
+radius8 = 80
+radius9 = 70
+ff      = calculate_ff(period,radius1,radius2,radius3,radius4,
+	radius5,radius6,radius7,radius8,radius9)
 
 # light parameters
 # wl_super = 700
@@ -66,110 +72,112 @@ clear_previous.clean('.log')
 # mesh = 'bj_can_a60_d600.mail'
 # mesh = '2by2_ff20_t_02_1-p1.mail'
 
-solar_cell  = objects.SolarCell(period, radius1, radius2, radius3, radius4, ff, #mesh_file = mesh, 
+solar_cell  = objects.SolarCell(period, radius1, radius2, radius3, radius4, radius5,
+	radius6, radius7, radius8, radius9, ff,#mesh_file = mesh,
 	set_ff = False, height_1 = 2200, height_2 = 2400, num_h = 500,
-	inclusion_a = materials.Si_c, inclusion_b = materials.Si_c, nb_typ_el = 5, make_mesh_now = True)
+	inclusion_a = materials.Si_c, inclusion_b = materials.Si_c, nb_typ_el = 5, make_mesh_now = True,
+	force_mesh = True,lc = 0.1,lc2 = 1.9, lc3 = 1.9, lc4 = 4.5, lc5 = 1.8, lc6 = 1.1)
 
-# # by default materials.test = Air. If scaling != 0 n of 'copied' object is used scaled by 'scaled'.
-# scaling = 0 
-# if scaling > 0.0 and solar_cell.inclusion_b == materials.test:
-# 	modified = solar_cell.inclusion_b
-# 	copied   = solar_cell.inclusion_a
-# 	modified.data_wls   = copied.data_wls
-# 	modified.data_re_ns = copied.data_re_ns*scaling
-# 	modified.data_im_ns = copied.data_im_ns*scaling
+# # # by default materials.test = Air. If scaling != 0 n of 'copied' object is used scaled by 'scaled'.
+# # scaling = 0 
+# # if scaling > 0.0 and solar_cell.inclusion_b == materials.test:
+# # 	modified = solar_cell.inclusion_b
+# # 	copied   = solar_cell.inclusion_a
+# # 	modified.data_wls   = copied.data_wls
+# # 	modified.data_re_ns = copied.data_re_ns*scaling
+# # 	modified.data_im_ns = copied.data_im_ns*scaling
 
-# Set up light objects
-wl_array_1  = np.linspace(wl_1, wl_2, no_wl_1)
-wl_array_2  = np.linspace(wl_2+1, wl_3, no_wl_2)
-wl_array_3  = np.linspace(wl_3+1, wl_4, no_wl_3)
-wavelengths = np.concatenate((wl_array_1,wl_array_2, wl_array_3, [wl_5]))
-light_list  = [objects.Light(wl) for wl in wavelengths]
-# Single wavelength run
-# wavelengths = np.array([wl_super])
-# light_list  = [objects.Light([[wl_super]])]
+# # Set up light objects
+# wl_array_1  = np.linspace(wl_1, wl_2, no_wl_1)
+# wl_array_2  = np.linspace(wl_2+1, wl_3, no_wl_2)
+# wl_array_3  = np.linspace(wl_3+1, wl_4, no_wl_3)
+# wavelengths = np.concatenate((wl_array_1,wl_array_2, wl_array_3, [wl_5]))
+# light_list  = [objects.Light(wl) for wl in wavelengths]
+# # Single wavelength run
+# # wavelengths = np.array([wl_super])
+# # light_list  = [objects.Light(wl) for wl in wavelengths]
 
-# Simulation controls
-other_para  = objects.Controls(Animate=False)
+# # Simulation controls
+# other_para  = objects.Controls(Animate=False)
 
-# Interpolate refractive indecies over wavelength array
-# materials.interp_all(wavelengths)
-materials.interp_needed(wavelengths, solar_cell.inclusion_a, solar_cell.inclusion_b,
-		 solar_cell.background, solar_cell.superstrate, solar_cell.substrate)
+# # Interpolate refractive indecies over wavelength array
+# # materials.interp_all(wavelengths)
+# materials.interp_needed(wavelengths, solar_cell.inclusion_a, solar_cell.inclusion_b,
+# 		 solar_cell.background, solar_cell.superstrate, solar_cell.substrate)
 
-# List of simulations to calculate, with full arguments
-simmo_list = []
-p 		   = 1
-for light in light_list:
-	simmo_list += [Simmo(solar_cell, light, other_para, 
-		max_num_BMs, var_BM_min, max_order_PWs, p)]
-	p += 1
+# # List of simulations to calculate, with full arguments
+# simmo_list = []
+# p 		   = 1
+# for light in light_list:
+# 	simmo_list += [Simmo(solar_cell, light, other_para, 
+# 		max_num_BMs, var_BM_min, max_order_PWs, p)]
+# 	p += 1
 
-# Launch simos using pool to limit simultaneous instances
-def run_command_in_shell(command):
-	return subprocess.call(command, shell = True)
+# # Launch simos using pool to limit simultaneous instances
+# def run_command_in_shell(command):
+# 	return subprocess.call(command, shell = True)
 
-command_list = [s.fortran_command_str() for s in simmo_list]
-# pool = mp.Pool(mp.cpu_count() - num_cores_sahand_gets)
-pool = mp.Pool(num_cores_to_use)
-pool.map(run_command_in_shell, command_list)
-
-
-# Concatinate results
-if other_para.traLambda  == 1:
-	cat_n_clean.c_c_tra()
-if other_para.PrintOmega == 1:
-	cat_n_clean.c_c_omega()
-if other_para.PropModes  == 1:
-	cat_n_clean.c_c_detA()
-	if solar_cell.loss   == False:
-		cat_n_clean.c_c_prop_modes()
-
-# Plotting
-plotting.average_spec('Absorptance','Av_Absorb', len(wavelengths), solar_cell.num_h)
-plotting.average_spec('Transmittance','Av_Trans', len(wavelengths), solar_cell.num_h)
-plotting.average_spec('Reflectance','Av_Reflec', len(wavelengths), solar_cell.num_h)
-# Interpolate solar spectrum and calculate efficiency
-Efficiency = plotting.irradiance('Av_Absorb', 'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans',
- 'Av_Reflec', 'Weighted_Reflec', radius1, radius2, period, ff)
-# Plot averaged sprectra
-last_light_object = light_list.pop()
-spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
-plotting.tra_plot('Spectra', spec_list, solar_cell, last_light_object,
-	max_num_BMs, max_order_PWs, Efficiency)
-# Plot weighted averaged sprectra
-spec_list = ['Weighted_Absorb', 'Weighted_Trans', 'Weighted_Reflec']
-plotting.tra_plot('Spectra_weighted', spec_list, solar_cell, last_light_object, 
-	max_num_BMs, max_order_PWs, Efficiency)
-# Plot dispersion diagrams
-plotting.omega_plot(solar_cell, last_light_object, 
-	max_num_BMs, max_order_PWs, Efficiency)
-
-if solar_cell.num_h != 1:
-# Calculate and plot efficiency as a function of height
-	plotting.efficiency_h('Absorptance','Efficiency_h',wavelengths,len(wavelengths),
-	solar_cell.num_h, other_para.Animate)
-# Plot absorptance as funtion of height
-	plotting.height_plot('Spectra_height', 'Absorptance', solar_cell, last_light_object,
-	max_num_BMs, max_order_PWs, 'Efficiency_h', Efficiency,	solar_cell.num_h)
+# command_list = [s.fortran_command_str() for s in simmo_list]
+# # pool = mp.Pool(mp.cpu_count() - num_cores_sahand_gets)
+# pool = mp.Pool(num_cores_to_use)
+# pool.map(run_command_in_shell, command_list)
 
 
-# Wraping up simulation by printing to screen and log file
-print '\n*******************************************'
-print 'The ultimate efficiency is %12.8f' % Efficiency
-print '-------------------------------------------'
+# # Concatinate results
+# if other_para.traLambda  == 1:
+# 	cat_n_clean.c_c_tra()
+# if other_para.PrintOmega == 1:
+# 	cat_n_clean.c_c_omega()
+# if other_para.PropModes  == 1:
+# 	cat_n_clean.c_c_detA()
+# 	if solar_cell.loss   == False:
+# 		cat_n_clean.c_c_prop_modes()
 
-# Calculate and record the (real) time taken for simulation
-elapsed = (time.time() - start)
-hms     = str(datetime.timedelta(seconds=elapsed))
-hms_string = 'Total time for simulation was \n \
-	%(hms)s (%(elapsed)12.3f seconds)'% {
-			'hms' 	    : hms,
-			'elapsed'	: elapsed, }
+# # Plotting
+# plotting.average_spec('Absorptance','Av_Absorb', len(wavelengths), solar_cell.num_h)
+# plotting.average_spec('Transmittance','Av_Trans', len(wavelengths), solar_cell.num_h)
+# plotting.average_spec('Reflectance','Av_Reflec', len(wavelengths), solar_cell.num_h)
+# # Interpolate solar spectrum and calculate efficiency
+# Efficiency = plotting.irradiance('Av_Absorb', 'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans',
+#  'Av_Reflec', 'Weighted_Reflec', radius1, radius2, period, ff)
+# # Plot averaged sprectra
+# last_light_object = light_list.pop()
+# spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
+# plotting.tra_plot('Spectra', spec_list, solar_cell, last_light_object,
+# 	max_num_BMs, max_order_PWs, Efficiency)
+# # Plot weighted averaged sprectra
+# spec_list = ['Weighted_Absorb', 'Weighted_Trans', 'Weighted_Reflec']
+# plotting.tra_plot('Spectra_weighted', spec_list, solar_cell, last_light_object, 
+# 	max_num_BMs, max_order_PWs, Efficiency)
+# # Plot dispersion diagrams
+# plotting.omega_plot(solar_cell, last_light_object, 
+# 	max_num_BMs, max_order_PWs, Efficiency)
 
-python_log = open("python_log.log", "w")
-python_log.write(hms_string)
-python_log.close()
+# if solar_cell.num_h != 1:
+# # Calculate and plot efficiency as a function of height
+# 	plotting.efficiency_h('Absorptance','Efficiency_h',wavelengths,len(wavelengths),
+# 	solar_cell.num_h, other_para.Animate)
+# # Plot absorptance as funtion of height
+# 	plotting.height_plot('Spectra_height', 'Absorptance', solar_cell, last_light_object,
+# 	max_num_BMs, max_order_PWs, 'Efficiency_h', Efficiency,	solar_cell.num_h)
 
-print hms_string
-print '*******************************************'
+
+# # Wraping up simulation by printing to screen and log file
+# print '\n*******************************************'
+# print 'The ultimate efficiency is %12.8f' % Efficiency
+# print '-------------------------------------------'
+
+# # Calculate and record the (real) time taken for simulation
+# elapsed = (time.time() - start)
+# hms     = str(datetime.timedelta(seconds=elapsed))
+# hms_string = 'Total time for simulation was \n \
+# 	%(hms)s (%(elapsed)12.3f seconds)'% {
+# 			'hms' 	    : hms,
+# 			'elapsed'	: elapsed, }
+
+# python_log = open("python_log.log", "w")
+# python_log.write(hms_string)
+# python_log.close()
+
+# print hms_string
+# print '*******************************************'

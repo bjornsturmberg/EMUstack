@@ -1,0 +1,15 @@
+ conv_gmsh_m: debug =            1
+ gmsh_version =            2
+ i_mesh =           -1          -1          -1
+  file1_mesh = 
+ ../PCPV/Data/2000_480_460_420_440.msh                                          
+                      
+  file2_mesh = 
+ ../PCPV/Data/2000_480_460_420_440.mail                                         
+                      
+  i_sym =            0
+ Number of points =         2225
+ Number of elements =         1096
+ The program terminates normally
+ Symmetry code =            0
+ CPU time (sec.)           =   2.400100000000000E-002

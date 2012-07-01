@@ -1,20 +1,20 @@
 d=1; // grating period
-ff = 0;
-d_in_nm = 0;
-a1 = 0;
-a2 = 0;
-a3 = 0;
-a4 = 0;
+ff = 0.305280;
+d_in_nm = 1200;
+a1 = 290;
+a2 = 110;
+a3 = 131;
+a4 = 163;
 radius1 = (a1/d_in_nm)*d;
 radius2 = (a2/d_in_nm)*d;
 radius3 = (a3/d_in_nm)*d;
 radius4 = (a4/d_in_nm)*d;
-lc = 0; // 0.501 0.201 0.0701;
-lc2 = lc/1; // on cylinder surfaces
-lc3 = lc/1; // cylinder1 centres
-lc4 = lc/1; // cylinder2 centres
-lc5 = lc/1; // cylinder3 centres
-lc6 = lc/1; // cylinder4 centres
+lc = 0.090000; // 0.501 0.201 0.0701;
+lc2 = lc/1.900000; // on cylinder surfaces
+lc3 = lc/1.100000; // cylinder1 centres
+lc4 = lc/4.500000; // cylinder2 centres
+lc5 = lc/1.800000; // cylinder3 centres
+lc6 = lc/1.100000; // cylinder4 centres
 
 hy = d; // Thickness: Squre profile => hy=d
 hx = 0.;

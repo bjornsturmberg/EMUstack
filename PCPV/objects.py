@@ -7,17 +7,22 @@ data_location = '../PCPV/Data/'
 class SolarCell(object):
     """ Represents Solar Cell structure
     """
-    def __init__(self, period, radius1, radius2, radius3, radius4, ff, 
-        mesh_file = 'NEED_FILE.geo',
+    def __init__(self, period, radius1, radius2, radius3, radius4, radius5,
+        radius6, radius7, radius8, radius9, ff, mesh_file = 'NEED_FILE.geo',
         set_ff = False, height_1 = 2330, height_2 = 2330, num_h = 1,
         inclusion_a = materials.Si_c, inclusion_b = materials.Si_c, background = materials.Air,
         superstrate = materials.Air, substrate = materials.SiO2_a,
-        loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 4, make_mesh_now = False,
-        lc = 0.09, lc1 = 1.7, lc2 = 1.7, lc3 = 2.7, lc4 = 1.9, lc5 = 1.9, lc6 = 1.9):
+        loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 4, make_mesh_now = False, force_mesh = False,
+        lc = 0.09, lc2 = 1.7, lc3 = 1.9, lc4 = 1.9, lc5 = 1.9, lc6 = 1.9):
         self.radius1     = radius1
         self.radius2     = radius2
         self.radius3     = radius3
         self.radius4     = radius4
+        self.radius5     = radius5
+        self.radius6     = radius6
+        self.radius7     = radius7
+        self.radius8     = radius8
+        self.radius9     = radius9
         self.period      = period
         self.ff          = ff
         self.height_1    = height_1
@@ -39,13 +44,13 @@ class SolarCell(object):
             self.has_substrate = 1
         if make_mesh_now:
             self.lc  = lc
-            self.lc1 = lc1
             self.lc2 = lc2
             self.lc3 = lc3
             self.lc4 = lc4
             self.lc5 = lc5
             self.lc6 = lc6
             self.mesh_format = mesh_format
+            self.force_mesh = force_mesh
             self.make_mesh()
         else:
             self.mesh_file   = mesh_file
@@ -54,7 +59,12 @@ class SolarCell(object):
 
     def make_mesh(self):
 
-        if self.radius4 > 0:
+        if self.radius5 > 0:
+            supercell = 9
+            msh_name  =  '%(d)i_%(radius)i_%(radiuss)i_%(radiusss)i_%(radiussss)i_%(adiussss)i' % {
+           'd' : self.period, 'radius' : self.radius1, 'radiuss' : self.radius2, 
+           'radiusss' : self.radius3,'radiussss' : self.radius4, 'adiussss' : self.radius5}
+        elif self.radius4 > 0:
             supercell = 4
             msh_name  =  '%(d)i_%(radius)i_%(radiuss)i_%(radiusss)i_%(radiussss)i' % {
            'd' : self.period, 'radius' : self.radius1, 'radiuss' : self.radius2, 
@@ -68,29 +78,30 @@ class SolarCell(object):
             supercell = 2
             if self.set_ff == False:
                 msh_name  =  '%(d)i_%(radius)i_%(radiuss)i' % {
-               'd' : self.period, 'radius' : self.radius1, 'radiuss' : self.radius2}
+                'd' : self.period, 'radius' : self.radius1, 'radiuss' : self.radius2}
             else:
                 msh_name  =  '%(d)i_%(radius)i_f_%(ff)i' % {
-               'd' : self.period, 'radius' : self.radius1, 'ff' : 100*round(self.ff,2)}
+                'd' : self.period, 'radius' : self.radius1, 'ff' : 100*round(self.ff,2)}
+                self.radius2 = ((self.ff*(self.period)**2)/3.14159265 - (self.radius1**2))**0.5
         elif self.radius1 > 0:
             supercell = 1
             if self.set_ff == False:
                 msh_name  =  '%(d)i_%(radius)i' % {'d' : self.period, 'radius' : self.radius1}
             else:
                 msh_name  =  '%(d)i_f_%(ff)i' % {'d' : self.period, 'ff' : 100*round(self.ff,2)}
+                self.radius1 = ((self.ff*(self.period)**2)/3.14159265)**0.5
         else:
             # except KeyError:
             raise  NotImplementedError, "must have at least one cylinder of nonzero radius."
 
         self.mesh_file = msh_name + '.mail'
 
-        if not os.path.exists(data_location + msh_name + '.geo'):
+        if not os.path.exists(data_location + msh_name + '.mail') or self.force_mesh == True:
             geo_tmp = open(data_location + '%s_msh_template.geo' % supercell, "r").read()
             geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
             geo = geo.replace('d_in_nm = 0;', "d_in_nm = %i;" % self.period)
             geo = geo.replace('a1 = 0;', "a1 = %i;" % self.radius1)
             geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
-            geo = geo.replace('lc1 = lc/1;', "lc1 = lc/%f;" % self.lc1)
             geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
             geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
             if supercell == 1 & self.set_ff == True:
@@ -106,6 +117,13 @@ class SolarCell(object):
             if supercell > 3:
                 geo = geo.replace('a4 = 0;', "a4 = %i;" % self.radius4)
                 geo = geo.replace('lc6 = lc/1;', "lc6 = lc/%f;" % self.lc6)
+            if supercell > 4:
+                geo = geo.replace('a5 = 0;', "a5 = %i;" % self.radius5)
+                geo = geo.replace('a6 = 0;', "a6 = %i;" % self.radius6)
+                geo = geo.replace('a7 = 0;', "a7 = %i;" % self.radius7)
+                geo = geo.replace('a8 = 0;', "a8 = %i;" % self.radius8)
+                geo = geo.replace('a9 = 0;', "a9 = %i;" % self.radius9)
+
 
             open(data_location + msh_name + '.geo', "w").write(geo)
             
