@@ -7,8 +7,8 @@ data_location = '../PCPV/Data/'
 class SolarCell(object):
     """ Represents Solar Cell structure
     """
-    def __init__(self, period, radius1, radius2, radius3, radius4, radius5,
-        radius6, radius7, radius8, radius9, ff, mesh_file = 'NEED_FILE.geo',
+    def __init__(self, period, ff, radius1, radius2=0, radius3=0, radius4=0, radius5=0,
+        radius6=0, radius7=0, radius8=0, radius9=0, mesh_file = 'NEED_FILE.geo',
         set_ff = False, height_1 = 2330, height_2 = 2330, num_h = 1,
         inclusion_a = materials.Si_c, inclusion_b = materials.Si_c, background = materials.Air,
         superstrate = materials.Air, substrate = materials.SiO2_a,

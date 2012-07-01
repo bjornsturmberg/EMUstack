@@ -34,13 +34,8 @@ radius1 = 150
 radius2 = 140
 radius3 = 130
 radius4 = 120
-radius5 = 110
-radius6 = 100
-radius7 = 90
-radius8 = 80
-radius9 = 70
-ff      = calculate_ff(period,radius1,radius2,radius3,radius4,
-	radius5,radius6,radius7,radius8,radius9)
+ff      = calculate_ff(period,radius1,radius2,radius3,
+	radius4)#,radius5,radius6,radius7,radius8,radius9)
 
 # light parameters
 # wl_super = 700
@@ -72,8 +67,8 @@ clear_previous.clean('.log')
 # mesh = 'bj_can_a60_d600.mail'
 # mesh = '2by2_ff20_t_02_1-p1.mail'
 
-solar_cell  = objects.SolarCell(period, radius1, radius2, radius3, radius4, radius5,
-	radius6, radius7, radius8, radius9, ff,#mesh_file = mesh,
+solar_cell  = objects.SolarCell(period, ff,radius1, radius2, radius3, radius4, 
+	#radius5,radius6, radius7, radius8, radius9, #mesh_file = mesh,
 	set_ff = False, height_1 = 2200, height_2 = 2400, num_h = 500,
 	inclusion_a = materials.Si_c, inclusion_b = materials.Si_c, nb_typ_el = 5, make_mesh_now = True,
 	force_mesh = True,lc = 0.1,lc2 = 1.9, lc3 = 1.9, lc4 = 4.5, lc5 = 1.8, lc6 = 1.1)
