@@ -2,8 +2,8 @@ C     Carry out matrix multiplication to calculate Scattering Matrices T, R
 C
       subroutine ScatMat (J, J_dagger, X, neq_PW, nval, Beta, 
      *             T12, R12, T21, R21, PrintAll,
-     *             PrintSolution, lx, h, Checks, TLambda,
-     *             RLambda, traLambda, pol, PropModes, 
+     *             PrintSolution, lx, h_1, h_2, num_h, Checks,
+     *             TLambda, RLambda, traLambda, pol, PropModes, 
      *             lambda, d_in_nm,
      *    numberprop_S, freq, Zeroth_Order_inv,
      *    debug, incident, what4incident, out4incident)
@@ -168,6 +168,7 @@ C  R21
 C      
 CCCCCCCCCCCCCCC   Introduce Propagation in z
 C
+      write(6,*) "ScatMat: Test 4"
       do h_i = 1, num_h
         if(h_i .eq. 1) then
           h_int = 0
@@ -177,6 +178,7 @@ C
         h = h_1 + (h_i-1)*h_int
 C
 C  P
+      write(6,*) "ScatMat: Test 4"
       do k = 1, nval
         do i = 1,nval
           P(i,k) = 0.0d0
@@ -238,7 +240,7 @@ C  RLambda
 C
       if (traLambda .eq. 1) then
       if (debug .eq. 1) then
-        write(*,*) "ScatMat_sub: A_and_W_Lambda_sub"
+        write(*,*) "ScatMat: A_and_W_Lambda"
       endif
         call A_and_W_Lambda(TLambda, RLambda, neq_PW, 
      *    numberprop_S, lambda, freq, pol, 

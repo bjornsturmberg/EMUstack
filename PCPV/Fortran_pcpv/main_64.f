@@ -1317,8 +1317,8 @@ C  Scattering Matrices
      *    b(jp_X_mat), neq_PW, nval, 
      *    b(jp_eigenval1), b(jp_T12), b(jp_R12), b(jp_T21), b(jp_R21),
      *    PrintAll, PrintSolution, 
-     *    lx, h_1, Checks, b(jp_T_Lambda), b(jp_R_Lambda), traLambda,
-     *    pol, PropModes, lambda, d_in_nm,
+     *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
+     *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
      *    numberprop_S, freq, Zeroth_Order_inv,
      *    debug, incident, what4incident, out4incident)
 C

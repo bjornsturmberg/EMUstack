@@ -56,7 +56,7 @@ CdTe   = Material(np.loadtxt('%sCdTe.txt'% data_location))
 FeS2   = Material(np.loadtxt('%sFeS2.txt'% data_location))
 Zn3P2  = Material(np.loadtxt('%sZn3P2.txt'% data_location))
 
-test   = copy.deepcopy(Air)
+test   = Material(np.loadtxt('%sTuniz.txt'% data_location))#copy.deepcopy(Air)
 
 # def interp_all(wavelengths):
 #     Air.n_interp(wavelengths)

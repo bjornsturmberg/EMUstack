@@ -3,9 +3,9 @@ ff = 0.310000;
 d_in_nm = 600;
 a1 = 188;
 radius1 = ((ff*(d)^2)/3.14159265)^0.5;
-lc = 0.100000; // 0.501 0.201 0.0701;
+lc = 0.090000; // 0.501 0.201 0.0701;
 lc2 = lc/1.900000; // on cylinder surfaces
-lc3 = lc/1.900000; // cylinder1 centres
+lc3 = lc/1.100000; // cylinder1 centres
 
 hy = d; // Thickness: Squre profile => hy=d
 hx = 0.;

@@ -1,0 +1,15 @@
+ conv_gmsh_m: debug =            1
+ gmsh_version =            2
+ i_mesh =           -1          -1          -1
+  file1_mesh = 
+ ../PCPV/Data/Tuniz.msh                                                         
+                      
+  file2_mesh = 
+ ../PCPV/Data/Tuniz.mail                                                        
+                      
+  i_sym =            0
+ Number of points =         3053
+ Number of elements =         1518
+ The program terminates normally
+ Symmetry code =            0
+ CPU time (sec.)           =   2.800100000000000E-002

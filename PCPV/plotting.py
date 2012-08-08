@@ -9,14 +9,13 @@ import os
 
 Irrad_spec_file = '../PCPV/Data/ASTM_1_5_spectrum'
 
-def average_spec(spec_name,av_spec_name,num_wl,num_h):#,wavelengths):
+def average_spec(spec_name,av_spec_name,num_wl,num_h):
 	data      = np.loadtxt('%s.txt' % spec_name)
 	av_wl     = []
 	av_spec   = []
 	av_h      = []
 	for i in np.linspace(0,num_wl-1,num_wl):
 		av_wl   = np.append(av_wl,data[i*num_h,0])
-		# print av_wl[i] - wavelengths[i]
 		av_tmp  = np.mean(data[i*num_h:(i+1)*num_h,1])
 		av_spec = np.append(av_spec,av_tmp)
 		av_tmp  = np.mean(data[i*num_h:(i+1)*num_h,2])
@@ -28,14 +27,14 @@ def average_spec(spec_name,av_spec_name,num_wl,num_h):#,wavelengths):
 
 def efficiency_h(spec_name,h_spec_name,wavelengths,num_wl,num_h, Animate):
 	data   = np.loadtxt('%s.txt' % spec_name)
-	spec   = data[:,1] 		#NEEED CHANGE
+	spec   = data[:,1]
 	i_data = np.loadtxt('%s.txt' % Irrad_spec_file)
 	i_spec = np.interp(wavelengths, i_data[:,0], i_data[:,2])
 	h_Efficiency = []
 	h_data       = []
 	for i in np.linspace(0,num_h-1,num_h):
 		h_wl = []
-		h = data[i,2]		#NEEED CHANGE
+		h = data[i,2]
 		for j in np.linspace(0,num_wl-1,num_wl):
 			tmp  = spec[i + j*(num_h)]
 			h_wl = np.append(h_wl,tmp)
@@ -52,7 +51,7 @@ def efficiency_h(spec_name,h_spec_name,wavelengths,num_wl,num_h, Animate):
 
 def spectra_h(wavelengths,h_wl, h, eta_calc,i):
 	fig = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
-	ax1 = fig.add_subplot(1,1,1)#, adjustable='box', aspect=400)
+	ax1 = fig.add_subplot(1,1,1)
 	ax1.plot(wavelengths, h_wl)
 	ax1.set_xlabel('Wavelength (nm)')
 	ax1.set_ylabel('Absorptance')
@@ -133,7 +132,7 @@ def tra_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_
 		plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
 	tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
 	'period' 	    : solar_cell.period, 'radius' : solar_cell.radius1,}
-	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d,'% {
+	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
 	'ff' 	  		: solar_cell.ff, 
 	'h_one' 	    : solar_cell.height_1,
 	'h_two' 	    : solar_cell.height_2,
@@ -182,10 +181,10 @@ def overlay_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_or
 		ax1.set_xlabel('Wavelength (nm)')
 		ax1.set_ylabel(spec_name)
 		plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
-	plt.legend( ('con3','a=60nm', 'a=70nm', 'a=105nm', 'a=125nm') )
+	plt.legend( ('60 + 125','60','125') )
 	tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
 	'period' 	    : solar_cell.period, 'radius' : solar_cell.radius1,}
-	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d,'% {
+	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
 	'ff' 	  		: solar_cell.ff, 
 	'h_one' 	    : solar_cell.height_1,
 	'h_two' 	    : solar_cell.height_2,
@@ -259,7 +258,7 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
 
 	tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
 	'period' 	    : solar_cell.period, 'radius' : solar_cell.radius1,}
-	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d,'% {
+	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
 	'ff' 	  		: solar_cell.ff, 
 	'h_one' 	    : solar_cell.height_1,
 	'h_two' 	    : solar_cell.height_2,
@@ -357,7 +356,7 @@ def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
 
 	tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
 	'period' 	    : solar_cell.period, 'radius' : solar_cell.radius1,}
-	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d,'% {
+	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
 	'ff' 	  		: solar_cell.ff, 
 	'h_one' 	    : solar_cell.height_1,
 	'h_two' 	    : solar_cell.height_2,
