@@ -14,12 +14,13 @@ C
       implicit none
 C  Local parameters:
       integer*8 int_max, cmplx_max, int_used, cmplx_used
-      integer*8 real_max, real_used
-      parameter (int_max=2**22, cmplx_max=2**26)
-      parameter (real_max=2**21)
-      integer*8 a(int_max)
-      complex*16 b(cmplx_max)
-      double precision c(real_max)
+      integer*8 real_max, real_used, n_64
+C      parameter (int_max=2**22, cmplx_max=2**26)
+C      parameter (real_max=2**21)
+      integer*8, dimension(:), allocatable :: a  !   a(int_max)
+      complex*16, dimension(:), allocatable :: b  !  b(cmplx_max)
+      double precision, dimension(:), allocatable :: c !  c(real_max)
+      integer :: allocate_status=0
 C
       integer*8 python    !take inputs from python (1) txt files (0)
       parameter (python=1)
@@ -128,6 +129,48 @@ C
 C
 CCCCCCCCCCCCCCCCCCCC  Start Program - get parameters  CCCCCCCCCCCCCCCCCCC
 C 
+
+      n_64 = 2
+      cmplx_max=n_64**26 !n_64**28 on Vayu
+      real_max=n_64**21
+      int_max=n_64**22
+
+      !write(*,*) "cmplx_max = ", cmplx_max
+      !write(*,*) "real_max = ", real_max
+      !write(*,*) "int_max = ", int_max
+
+      allocate(b(cmplx_max), STAT=allocate_status)
+      if (allocate_status /= 0) then
+        write(*,*) "The allocation is unseccesfull"
+        write(*,*) "allocate_status = ", allocate_status
+        write(*,*) "Not enough memory for the complex array b"
+        write(*,*) "cmplx_max = ", cmplx_max
+        write(*,*) "Aborting..."
+        stop
+      endif
+
+      allocate(c(real_max), STAT=allocate_status)
+      if (allocate_status /= 0) then
+        write(*,*) "The allocation is unseccesfull"
+        write(*,*) "allocate_status = ", allocate_status
+        write(*,*) "Not enough memory for the real array c"
+        write(*,*) "real_max = ", real_max
+        write(*,*) "Aborting..."
+        stop
+      endif
+
+      allocate(a(int_max), STAT=allocate_status)
+      if (allocate_status /= 0) then
+        write(*,*) "The allocation is unseccesfull"
+        write(*,*) "allocate_status = ", allocate_status
+        write(*,*) "Not enough memory for the integer array a"
+        write(*,*) "int_max = ", int_max
+        write(*,*) "Aborting..."
+        stop
+      endif
+
+
+      
       ui = 6     !ui = Unite dImpression
       nnodes = 6 ! Number of nodes per element
       pi = 3.141592653589793d0

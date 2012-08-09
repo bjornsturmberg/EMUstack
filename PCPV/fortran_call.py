@@ -1,6 +1,7 @@
 # Description
 
-import sys	# needed? interfering???
+# import sys	# needed? interfering???
+import numpy as np
 from subprocess  import Popen
 
 from fort_dp     import fort_dp
@@ -42,6 +43,12 @@ class Simmo(object):
 		background_n  = self.background_n()
 		superstrate_n = self.superstrate_n()
 		substrate_n   = self.substrate_n()
+		if self.solar_cell.loss == False:
+			inclusion_a_n = np.real(inclusion_a_n)
+			inclusion_b_n = np.real(inclusion_b_n)
+			background_n  = np.real(background_n)
+			superstrate_n = np.real(superstrate_n)
+			substrate_n   = np.real(substrate_n)
 		if self.light.Lambda > self.var_BM_min:
 			max_n         = self.solar_cell.inclusion_a.max_n()
 			nval_tmp      = self.max_num_BMs*inclusion_a_n.real/max_n

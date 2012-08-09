@@ -168,7 +168,6 @@ C  R21
 C      
 CCCCCCCCCCCCCCC   Introduce Propagation in z
 C
-      write(6,*) "ScatMat: Test 4"
       do h_i = 1, num_h
         if(h_i .eq. 1) then
           h_int = 0
@@ -178,7 +177,6 @@ C
         h = h_1 + (h_i-1)*h_int
 C
 C  P
-      write(6,*) "ScatMat: Test 4"
       do k = 1, nval
         do i = 1,nval
           P(i,k) = 0.0d0

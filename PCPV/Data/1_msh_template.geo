@@ -3,6 +3,7 @@ ff = 0;
 d_in_nm = 0;
 a1 = 0;
 radius1 = (a1/d_in_nm)*d;
+ellipticity = 0;
 lc = 0; // 0.501 0.201 0.0701;
 lc2 = lc/1; // on cylinder surfaces
 lc3 = lc/1; // cylinder1 centres
@@ -20,9 +21,9 @@ Point(4) = {d, 0, 0,lc};
 
 Point(5) = {-hx+d/2., -hy/2., 0,lc3};
 
-Point(6) = {-hx+d/2., -hy/2.+radius1, 0, lc2};
+Point(6) = {-hx+d/2., -hy/2.+(radius1-ellipticity*radius1), 0, lc2};
 Point(7) = {-hx+d/2.-radius1, -hy/2., 0, lc2};
-Point(8) = {-hx+d/2., -hy/2.-radius1, 0, lc2};
+Point(8) = {-hx+d/2., -hy/2.-(radius1-ellipticity*radius1), 0, lc2};
 Point(9) = {-hx+d/2.+radius1, -hy/2., 0, lc2};
 
 Point(10) = {-hx+d/2., 0, 0, lc};
@@ -45,10 +46,20 @@ Line(13) = {10,6};
 Line(14) = {6,5};
 Line(15) = {5,8};
 Line(16) = {8,12};
+
+If(ellipticity == 0)
 Circle(17) = {9,5,6};
 Circle(18) = {6,5,7};
 Circle(19) = {7,5,8};
 Circle(20) = {8,5,9};
+EndIf
+If(ellipticity != 0)
+Ellipsis(17) = {9,5,6,6};
+Ellipsis(18) = {6,5,7,7};
+Ellipsis(19) = {7,5,8,8};
+Ellipsis(20) = {8,5,9,9};
+EndIf
+
 Line Loop(21) = {7,-12,17,-13,2};
 Plane Surface(22) = {21};
 Line Loop(23) = {1,13,18,-9,-5};

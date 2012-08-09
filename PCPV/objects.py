@@ -12,7 +12,7 @@ class SolarCell(object):
     """
     def __init__(self, period, ff, radius1, radius2=0, radius3=0, radius4=0, radius5=0,
         radius6=0, radius7=0, radius8=0, radius9=0, radius10=0, radius11=0, radius12=0, radius13=0,
-        radius14=0, radius15=0, radius16=0, mesh_file = 'NEED_FILE.geo',
+        radius14=0, radius15=0, radius16=0, ellipticity = 0.0, mesh_file = 'NEED_FILE.geo',
         set_ff = False, ff_rand = False, height_1 = 2330, height_2 = 2330, num_h = 1,
         inclusion_a = materials.Si_c, inclusion_b = materials.Air, background = materials.Air,
         superstrate = materials.Air, substrate = materials.SiO2_a,
@@ -54,7 +54,6 @@ class SolarCell(object):
             self.has_substrate = 0
         else:
             self.has_substrate = 1
-        print self.has_substrate
         if make_mesh_now:
             self.lc  = lc
             self.lc2 = lc2
@@ -62,10 +61,13 @@ class SolarCell(object):
             self.lc4 = lc4
             self.lc5 = lc5
             self.lc6 = lc6
+            self.ellipticity = ellipticity
+            if ellipticity > 1.0:
+                raise TypeError, "ellipticity must be less than 1.0"
             self.posx = posx
             self.posy = posy
             self.mesh_format = mesh_format
-            self.force_mesh = force_mesh
+            self.force_mesh  = force_mesh
             self.make_mesh()
         else:
             self.mesh_file   = mesh_file
@@ -119,6 +121,9 @@ class SolarCell(object):
             # msh_name = 'random_u_%i' % blah
             # self.mesh_file = msh_name + '.mail'
 
+        msh_name = 'CD_1'
+        self.mesh_file = msh_name + '.mail'
+
         if self.ff_rand == True:
             ff_tol = 0.0001
             min_a  = 30
@@ -143,13 +148,6 @@ class SolarCell(object):
                 rad_array[5],rad_array[6],rad_array[7],rad_array[8],rad_array[9],rad_array[10],
                 rad_array[11],rad_array[12],rad_array[13],rad_array[14],rad_array[15])
                 print test_ff
-                # rad_array = rad_array*np.sqrt((self.ff/test_ff))
-                # print rad_array
-                # for i in rad_array:
-                #     if i > max_a:
-                #         print "WARNING EXCEEDED MAX_A"
-                #     if i < min_a:
-                #         print "WARNING TOO SMALL < MIN_A"
                 if supercell>3:
                     self.radius1   = rad_array[0]
                     self.radius2   = rad_array[1]
@@ -178,6 +176,8 @@ class SolarCell(object):
             geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
             geo = geo.replace('d_in_nm = 0;', "d_in_nm = %i;" % self.period)
             geo = geo.replace('a1 = 0;', "a1 = %i;" % self.radius1)
+            geo = geo.replace('ellipticity = 0;', "ellipticity = %f;" % self.ellipticity)
+            print self.ellipticity
             geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
             geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
             geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
@@ -219,8 +219,9 @@ class SolarCell(object):
             
             gmsh_cmd = './'+ data_location + 'gmsh_conversion/' + "conv_gmsh_py.exe "+ data_location + msh_name
             os.system(gmsh_cmd)
+            gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
             # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
-            # os.system(gmsh_cmd)
+            os.system(gmsh_cmd)
      
 
 class Light(object):
@@ -233,8 +234,12 @@ class Light(object):
             self.pol = 1
         elif pol == 'TM':
             self.pol = 2
+        elif pol == 'Left':
+            self.pol = 3
+        elif pol == 'Right':
+            self.pol = 4
         else:
-            raise TypeError, "Polarisation must be either 'TE' or 'TM'."
+            raise TypeError, "Polarisation must be either 'TE', 'TM', 'Left' or 'Right'."
         self.theta = theta
         self.phi   = phi
 
