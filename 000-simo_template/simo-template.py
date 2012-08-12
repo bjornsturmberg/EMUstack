@@ -117,10 +117,10 @@ command_list = [s.fortran_command_str() for s in simmo_list]
 pool = mp.Pool(num_cores_to_use)
 pool.map(run_command_in_shell, command_list)
 
-
+last_light_object = light_list.pop()
 # Concatinate results
 if other_para.traLambda  == 1:
-	cat_n_clean.c_c_tra()
+	cat_n_clean.c_c_tra(pol = last_light_object.pol)
 if other_para.PrintOmega == 1:
 	cat_n_clean.c_c_omega()
 if other_para.PropModes  == 1:
@@ -136,7 +136,6 @@ plotting.average_spec('Reflectance','Av_Reflec', len(wavelengths), solar_cell.nu
 Efficiency = plotting.irradiance('Av_Absorb', 'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans',
  'Av_Reflec', 'Weighted_Reflec', radius1, radius2, period, ff)
 # Plot averaged sprectra
-last_light_object = light_list.pop()
 spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
 plotting.tra_plot('Spectra', spec_list, solar_cell, last_light_object,
 	max_num_BMs, max_order_PWs, Efficiency)

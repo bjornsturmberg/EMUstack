@@ -238,8 +238,10 @@ class Light(object):
             self.pol = 3
         elif pol == 'Right':
             self.pol = 4
+        elif pol == 'CD':
+            self.pol = 5
         else:
-            raise TypeError, "Polarisation must be either 'TE', 'TM', 'Left' or 'Right'."
+            raise TypeError, "Polarisation must be either 'TE', 'TM', 'Left', 'Right', or 'CD'."
         self.theta = theta
         self.phi   = phi
 

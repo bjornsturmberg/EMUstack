@@ -909,14 +909,35 @@ C
       endif
 C
       if (traLambda .eq. 1) then
-        open(643,file="p_"//buf2//
+        if (pol .eq. 5) then
+          open(643,file="p_"//buf2//
+     *    "_T_Lambda_R.txt",status='unknown')
+          open(644,file="p_"//buf2//
+     *    "_R_Lambda_R.txt",status='unknown')
+          open(645,file="p_"//buf2//
+     *    "_A_Lambda_R.txt",status='unknown')
+          open(646,file="p_"//buf2//
+     *    "_T_Lambda_L.txt",status='unknown')
+          open(647,file="p_"//buf2//
+     *    "_R_Lambda_L.txt",status='unknown')
+          open(648,file="p_"//buf2//
+     *    "_A_Lambda_L.txt",status='unknown')
+          open(649,file="p_"//buf2//
+     *    "_T_Lambda_CD.txt",status='unknown')
+          open(650,file="p_"//buf2//
+     *    "_R_Lambda_CD.txt",status='unknown')
+          open(651,file="p_"//buf2//
+     *    "_A_Lambda_CD.txt",status='unknown')
+        else
+          open(643,file="p_"//buf2//
      *    "_T_Lambda.txt",status='unknown')
-        open(644,file="p_"//buf2//
+          open(644,file="p_"//buf2//
      *    "_R_Lambda.txt",status='unknown')
-        open(645,file="p_"//buf2//
+          open(645,file="p_"//buf2//
      *    "_A_Lambda.txt",status='unknown')
+        endif
       endif
-C
+
       if (PropModes .eq. 1) then
         if (Loss .eq. 0) then
           open(unit=200, file="SuperModes"//buf2//".txt",
@@ -952,12 +973,33 @@ C
       if (parallel_comp .ne. 1) write(buf2,'(I4.4)') 0000
 C
       if (traLambda .eq. 1) then
-        open(643,file="Output/d_"//buf1//"p_"//buf2//
+        if (pol .eq. 5) then
+          open(643,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_T_Lambda_R.txt",status='unknown')
+          open(644,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_R_Lambda_R.txt",status='unknown')
+          open(645,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_A_Lambda_R.txt",status='unknown')
+          open(646,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_T_Lambda_L.txt",status='unknown')
+          open(647,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_R_Lambda_L.txt",status='unknown')
+          open(648,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_A_Lambda_L.txt",status='unknown')
+          open(649,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_T_Lambda_CD.txt",status='unknown')
+          open(650,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_R_Lambda_CD.txt",status='unknown')
+          open(651,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_A_Lambda_CD.txt",status='unknown')
+        else
+          open(643,file="Output/d_"//buf1//"p_"//buf2//
      *    "_T_Lambda.txt",status='unknown')
-        open(644,file="Output/d_"//buf1//"p_"//buf2//
+          open(644,file="Output/d_"//buf1//"p_"//buf2//
      *    "_R_Lambda.txt",status='unknown')
-        open(645,file="Output/d_"//buf1//"p_"//buf2//
+          open(645,file="Output/d_"//buf1//"p_"//buf2//
      *    "_A_Lambda.txt",status='unknown')
+        endif
       endif
 C
       if (PropModes .eq. 1) then
@@ -1464,9 +1506,21 @@ C
         close(566)
       endif
       if (traLambda .eq. 1) then
-        close(643)
-        close(644)
-        close(645)
+        if (pol .eq. 5) then
+          close(643)
+          close(644)
+          close(645)
+          close(646)
+          close(647)
+          close(648)
+          close(649)
+          close(650)
+          close(651)
+        else
+          close(643)
+          close(644)
+          close(645)
+        endif
       endif
 C
 CCCCCCCCCCCCCCCCCCCCC Ultimate Efficiency CCCCCCCCCCCCCCCCCCCCC

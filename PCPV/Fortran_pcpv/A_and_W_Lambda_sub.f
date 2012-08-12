@@ -12,6 +12,9 @@ C
       complex*16 TLambda(2*neq_PW,2*neq_PW) 
       complex*16 RLambda(2*neq_PW,2*neq_PW)
       complex*16 Lambda_t, Lambda_r, Lambda_a, tot_0
+      complex*16 Lambda_t_r, Lambda_r_r, Lambda_a_r
+      complex*16 Lambda_t_l, Lambda_r_l, Lambda_a_l
+      complex*16 Lambda_t_cd, Lambda_r_cd, Lambda_a_cd
       integer*8 incident, what4incident, inc
       integer*8 i, j, out4incident
       integer*8 numberprop_S, numberprop_S_b
@@ -84,17 +87,17 @@ C  For TM polarisation:
           enddo
         endif
 C  For LEFT polarisation:   
-        if (pol .eq. 3) then        
+        if (pol .eq. 3 .or. 5) then        
           TECoeff = 1.0
           TMCoeff = -1.0*ii
           do i=1,numberprop_S_b
             do j=1,numberprop_S
-              Lambda_t = Lambda_t
+              Lambda_t_l = Lambda_t_l
      *         + 0.5*ABS(TECoeff*TLambda(i,j)
      *         +   TMCoeff*TLambda(i,neq_PW+j))**2
      *         + 0.5*ABS(TECoeff*TLambda(neq_PW+i,j)
      *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+j))**2
-              Lambda_r = Lambda_r
+              Lambda_r_l = Lambda_r_l
      *         + 0.5*ABS(TECoeff*RLambda(i,j)
      *         +   TMCoeff*RLambda(i,neq_PW+j))**2
      *         + 0.5*ABS(TECoeff*RLambda(neq_PW+i,j)
@@ -103,17 +106,17 @@ C  For LEFT polarisation:
           enddo
         endif
 C  For RIGHT polarisation:
-        if (pol .eq. 4) then      
+        if (pol .eq. 4 .or. 5) then      
           TECoeff = 1.0
           TMCoeff = 1.0*ii
           do i=1,numberprop_S_b
             do j=1,numberprop_S
-              Lambda_t = Lambda_t
+              Lambda_t_r = Lambda_t_r
      *         + 0.5*ABS(TECoeff*TLambda(i,j)
      *         +   TMCoeff*TLambda(i,neq_PW+j))**2
      *         + 0.5*ABS(TECoeff*TLambda(neq_PW+i,j)
      *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+j))**2
-              Lambda_r = Lambda_r
+              Lambda_r_r = Lambda_r_r
      *         + 0.5*ABS(TECoeff*RLambda(i,j)
      *         +   TMCoeff*RLambda(i,neq_PW+j))**2
      *         + 0.5*ABS(TECoeff*RLambda(neq_PW+i,j)
@@ -121,11 +124,6 @@ C  For RIGHT polarisation:
             enddo
           enddo
         endif
-      Lambda_a = tot_0*numberprop_S
-     *                - Lambda_t - Lambda_r
-      write(643,101) lambda_nm, REAL(Lambda_t), h*d_in_nm
-      write(644,101) lambda_nm, REAL(Lambda_r), h*d_in_nm
-      write(645,101) lambda_nm, REAL(Lambda_a), h*d_in_nm
 C
 C
 C
@@ -169,16 +167,16 @@ C  For TM polarisation:
           enddo
         endif
 C  For LEFT polarisation:
-        if (pol .eq. 3) then
+        if (pol .eq. 3 .or. 5) then 
           TECoeff = 1.0
           TMCoeff = -1.0*ii
           do i=1,numberprop_S_b
-            Lambda_t = Lambda_t 
+            Lambda_t_l = Lambda_t_l
      *         + 0.5*ABS(TECoeff*TLambda(i,inc)
      *         +   TMCoeff*TLambda(i,neq_PW+inc))**2
      *         + 0.5*ABS(TECoeff*TLambda(neq_PW+i,inc)
      *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+inc))**2
-            Lambda_r = Lambda_r 
+            Lambda_r_l = Lambda_r_l
      *         + 0.5*ABS(TECoeff*RLambda(i,inc)
      *         +   TMCoeff*RLambda(i,neq_PW+inc))**2
      *         + 0.5*ABS(TECoeff*RLambda(neq_PW+i,inc)
@@ -186,37 +184,33 @@ C  For LEFT polarisation:
           enddo
         endif
 C  For RIGHT polarisation:
-        if (pol .eq. 4) then
+        if (pol .eq. 4 .or. 5) then 
           TECoeff = 1
           TMCoeff = 1.0*ii
           do i=1,numberprop_S_b
-            Lambda_t = Lambda_t
+            Lambda_t_r = Lambda_t_r
      *         + 0.5*ABS(TECoeff*TLambda(i,inc)
      *         +   TMCoeff*TLambda(i,neq_PW+inc))**2
      *         + 0.5*ABS(TECoeff*TLambda(neq_PW+i,inc)
      *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+inc))**2
-            Lambda_r = Lambda_r
+            Lambda_r_r = Lambda_r_r
      *         + 0.5*ABS(TECoeff*RLambda(i,inc)
      *         +   TMCoeff*RLambda(i,neq_PW+inc))**2
      *         + 0.5*ABS(TECoeff*RLambda(neq_PW+i,inc)
      *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+inc))**2
           enddo
         endif
-        Lambda_a = tot_0 - Lambda_t - Lambda_r
 C
       if (Checks .eq. 2) then
-      write(341,*) tot_0
-      write(341,*) pol
-      write(341,*) Lambda_a
-      write(342,*) tot_0
-      write(342,*) pol
-      write(342,*) Lambda_a
-      close(341)      
-      close(342)
-      endif
-      write(643,101) lambda_nm, REAL(Lambda_t), h*d_in_nm
-      write(644,101) lambda_nm, REAL(Lambda_r), h*d_in_nm
-      write(645,101) lambda_nm, REAL(Lambda_a), h*d_in_nm    
+        write(341,*) tot_0
+        write(341,*) pol
+        write(341,*) Lambda_a
+        write(342,*) tot_0
+        write(342,*) pol
+        write(342,*) Lambda_a
+        close(341)      
+        close(342)
+      endif   
 C
 C
 C
@@ -237,41 +231,76 @@ C  For TM polarisation:
      *      + ABS(RLambda(out4incident,neq_PW+inc))**2
      *         + ABS(RLambda(neq_PW+out4incident,neq_PW+inc))**2
         endif
-        Lambda_a = tot_0 - Lambda_t - Lambda_r
-      write(643,101) lambda_nm, REAL(Lambda_t), h*d_in_nm
-      write(644,101) lambda_nm, REAL(Lambda_r), h*d_in_nm
-      write(645,101) lambda_nm, REAL(Lambda_a), h*d_in_nm
-      endif
 C  For LEFT polarisation:
-        if (pol .eq. 3) then
+        if (pol .eq. 3 .or. 5) then 
           TECoeff = 1
           TMCoeff = -1.0*ii
-          Lambda_t = Lambda_t 
+          Lambda_t_l = Lambda_t_l
      *         + 0.5*ABS(TECoeff*TLambda(out4incident,inc)
      *         +   TMCoeff*TLambda(out4incident,neq_PW+inc))**2
      *         + 0.5*ABS(TECoeff*TLambda(neq_PW+out4incident,inc)
      *         +   TMCoeff*TLambda(neq_PW+out4incident,neq_PW+inc))**2
-            Lambda_r = Lambda_r
+            Lambda_r_l = Lambda_r_l
      *         + 0.5*ABS(TECoeff*RLambda(out4incident,inc)
      *         +   TMCoeff*RLambda(out4incident,neq_PW+inc))**2
      *         + 0.5*ABS(TECoeff*RLambda(neq_PW+out4incident,inc)
      *         +   TMCoeff*RLambda(neq_PW+out4incident,neq_PW+inc))**2
         endif
 C  For RIGHT polarisation:
-        if (pol .eq. 4) then
+        if (pol .eq. 4 .or. 5) then 
           TECoeff = 1
           TMCoeff = 1.0*ii
-          Lambda_t = Lambda_t 
+          Lambda_t_r = Lambda_t_r
      *         + 0.5*ABS(TECoeff*TLambda(out4incident,inc)
      *         +   TMCoeff*TLambda(out4incident,neq_PW+inc))**2
      *         + 0.5*ABS(TECoeff*TLambda(neq_PW+out4incident,inc)
      *         +   TMCoeff*TLambda(neq_PW+out4incident,neq_PW+inc))**2
-            Lambda_r = Lambda_r
+            Lambda_r_r = Lambda_r_r
      *         + 0.5*ABS(TECoeff*RLambda(out4incident,inc)
      *         +   TMCoeff*RLambda(out4incident,neq_PW+inc))**2
      *         + 0.5*ABS(TECoeff*RLambda(neq_PW+out4incident,inc)
      *         +   TMCoeff*RLambda(neq_PW+out4incident,neq_PW+inc))**2
         endif
+      endif ! what4incident ifs
+C
+C  Evaluate absorption and save results
+C
+      if (pol .le. 2) then
+        Lambda_a = tot_0*numberprop_S
+     *                - Lambda_t - Lambda_r
+        write(643,101) lambda_nm, REAL(Lambda_t), h*d_in_nm
+        write(644,101) lambda_nm, REAL(Lambda_r), h*d_in_nm
+        write(645,101) lambda_nm, REAL(Lambda_a), h*d_in_nm
+      elseif (pol .eq. 3) then
+        Lambda_a_l = tot_0*numberprop_S
+     *                - Lambda_t_l - Lambda_r_l
+        write(643,101) lambda_nm, REAL(Lambda_t_l), h*d_in_nm
+        write(644,101) lambda_nm, REAL(Lambda_r_l), h*d_in_nm
+        write(645,101) lambda_nm, REAL(Lambda_a_l), h*d_in_nm
+      elseif (pol .eq. 4) then
+        Lambda_a_r = tot_0*numberprop_S
+     *                - Lambda_t_r - Lambda_r_r
+        write(643,101) lambda_nm, REAL(Lambda_t_r), h*d_in_nm
+        write(644,101) lambda_nm, REAL(Lambda_r_r), h*d_in_nm
+        write(645,101) lambda_nm, REAL(Lambda_a_r), h*d_in_nm
+      elseif (pol .eq. 5) then
+        Lambda_a_l   = tot_0*numberprop_S
+     *                   - Lambda_t_l - Lambda_r_l
+        Lambda_a_r   = tot_0*numberprop_S
+     *                   - Lambda_t_r - Lambda_r_r
+        Lambda_t_cd  = Lambda_t_r - Lambda_t_l
+        Lambda_r_cd  = Lambda_r_r - Lambda_r_l
+        Lambda_a_cd  = Lambda_a_r - Lambda_a_l
+        write(643,101) lambda_nm, REAL(Lambda_t_r), h*d_in_nm
+        write(644,101) lambda_nm, REAL(Lambda_r_r), h*d_in_nm
+        write(645,101) lambda_nm, REAL(Lambda_a_r), h*d_in_nm
+        write(646,101) lambda_nm, REAL(Lambda_t_l), h*d_in_nm
+        write(647,101) lambda_nm, REAL(Lambda_r_l), h*d_in_nm
+        write(648,101) lambda_nm, REAL(Lambda_a_l), h*d_in_nm
+        write(649,101) lambda_nm, REAL(Lambda_t_cd), h*d_in_nm
+        write(650,101) lambda_nm, REAL(Lambda_r_cd), h*d_in_nm
+        write(651,101) lambda_nm, REAL(Lambda_a_cd), h*d_in_nm
+      endif
 C
 101    format(2(f18.10),(g25.17),(f18.10))
 C
