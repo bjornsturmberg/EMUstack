@@ -240,8 +240,8 @@ C
       if (debug .eq. 1) then
         write(*,*) "ScatMat: A_and_W_Lambda"
       endif
-        call A_and_W_Lambda(TLambda, RLambda, neq_PW, 
-     *    numberprop_S, lambda, freq, pol, 
+        call A_and_W_Lambda_sub(TLambda, RLambda, neq_PW, 
+     *    numberprop_S, numberprop_S, lambda, pol, 
      *    Zeroth_Order_inv, debug, d_in_nm,
      *    incident, what4incident, out4incident, Checks, h) 
       endif

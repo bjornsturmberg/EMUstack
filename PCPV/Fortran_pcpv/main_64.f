@@ -1341,16 +1341,6 @@ C
      *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
      *    numberprop_S, numberprop_S_b, freq, Zeroth_Order_inv,
      *    debug, incident, what4incident, out4incident)
-C
-C      if (debug .eq. 1) then
-C        write(ui,*) "MAIN: A_and_W_Lambda substrate"
-C      endif
-C      call A_and_W_Lambda_sub(b(jp_T_Lambda), b(jp_R_Lambda), neq_PW,
-C     *    numberprop_S, numberprop_S_b, lambda, freq, pol, 
-C     *    Zeroth_Order_inv, debug, d_in_nm, incident,
-C     *    what4incident, out4incident, Checks, h_1)
-C
-C
       else  !No Substrate
 C  Scattering Matrices
       if (debug .eq. 1) then
@@ -1364,18 +1354,6 @@ C  Scattering Matrices
      *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
      *    numberprop_S, freq, Zeroth_Order_inv,
      *    debug, incident, what4incident, out4incident)
-C
-C  Absorption for each Wavelength (and save t, r & a)
-C      if (traLambda .eq. 1) then
-C        if (debug .eq. 1) then
-C          write(ui,*) "MAIN: t, r & a for Lambda = ", lambda
-C          write(ui,*) " Lambda = ", b(jp_T_Lambda)
-C        endif
-C        call A_and_W_Lambda(b(jp_T_Lambda), b(jp_R_Lambda), neq_PW, 
-C     *    numberprop_S, lambda, freq, pol, 
-C     *    Zeroth_Order_inv, debug, d_in_nm,
-C     *    incident, what4incident, out4incident, Checks) 
-C      endif
       endif  !End Substrate Options
 C
       if (debug .eq. 2 .and. i_lambda .eq. debug_i_lambda) then

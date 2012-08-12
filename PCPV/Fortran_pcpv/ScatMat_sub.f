@@ -342,7 +342,7 @@ C
         write(*,*) "ScatMat_sub: A_and_W_Lambda_sub"
       endif
       call A_and_W_Lambda_sub(TLambda, RLambda, neq_PW,
-     *    numberprop_S, numberprop_S_b, lambda, freq, pol, 
+     *    numberprop_S, numberprop_S_b, lambda, pol, 
      *    Zeroth_Order_inv, debug, d_in_nm, incident,
      *    what4incident, out4incident, Checks, h)
       endif
