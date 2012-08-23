@@ -36,22 +36,22 @@ def c_c_tra(pol = 1):
         for fle in Afiles + Rfiles + Tfiles:
             os.remove(fle)
         # T, R matricies
-        filename1 = "p*_T_Lambda_MAT_sp.txt"
+        filename1 = "p*_T_MAT_sp.txt"
         Afiles = glob.glob(filename1)
         Afiles.sort()
-        filename2 = "p*_R_Lambda_MAT_sp.txt"
+        filename2 = "p*_R_MAT_sp.txt"
         Rfiles = glob.glob(filename2)
         Rfiles.sort()
         listoffiles1 = ""
         for fle in Afiles:
             listoffiles1 += " " + fle
         os.system("cat" + listoffiles1 \
-            + "> T_Lambda_MAT_sp.txt")
+            + "> T_MAT_sp.txt")
         listoffiles2 = ""
         for fle in Rfiles:
             listoffiles2 += " " + fle
         os.system("cat" + listoffiles2 \
-            + "> R_Lambda_MAT_sp.txt")
+            + "> R_MAT_sp.txt")
         for fle in Afiles + Rfiles:
             os.remove(fle)
     elif pol == 5:
@@ -137,22 +137,41 @@ def c_c_tra(pol = 1):
         for fle in Afiles + Rfiles + Tfiles:
             os.remove(fle)
         # T, R matricies
-        filename1 = "p*_T_Lambda_MAT_lr.txt"
+        filename1 = "p*_T_MAT_lr.txt"
         Afiles = glob.glob(filename1)
         Afiles.sort()
-        filename2 = "p*_R_Lambda_MAT_lr.txt"
+        filename2 = "p*_R_MAT_lr.txt"
         Rfiles = glob.glob(filename2)
         Rfiles.sort()
         listoffiles1 = ""
         for fle in Afiles:
             listoffiles1 += " " + fle
         os.system("cat" + listoffiles1 \
-            + "> T_Lambda_MAT_lr.txt")
+            + "> T_MAT_lr.txt")
         listoffiles2 = ""
         for fle in Rfiles:
             listoffiles2 += " " + fle
         os.system("cat" + listoffiles2 \
-            + "> R_Lambda_MAT_lr.txt")
+            + "> R_MAT_lr.txt")
+        for fle in Afiles + Rfiles:
+            os.remove(fle)
+        # T, R phases
+        filename1 = "p*_T_phase_lr.txt"
+        Afiles = glob.glob(filename1)
+        Afiles.sort()
+        filename2 = "p*_R_phase_lr.txt"
+        Rfiles = glob.glob(filename2)
+        Rfiles.sort()
+        listoffiles1 = ""
+        for fle in Afiles:
+            listoffiles1 += " " + fle
+        os.system("cat" + listoffiles1 \
+            + "> T_phase_lr.txt")
+        listoffiles2 = ""
+        for fle in Rfiles:
+            listoffiles2 += " " + fle
+        os.system("cat" + listoffiles2 \
+            + "> R_phase_lr.txt")
         for fle in Afiles + Rfiles:
             os.remove(fle)
     else:

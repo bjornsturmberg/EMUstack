@@ -13,6 +13,8 @@ C
       complex*16 RLambda(2*neq_PW,2*neq_PW)
       complex*16 T_11, T_12, T_21, T_22
       complex*16 R_11, R_12, R_21, R_22
+      complex*16 argT_11, argT_12, argT_21, argT_22
+      complex*16 argR_11, argR_12, argR_21, argR_22
       complex*16 Lambda_t, Lambda_r, Lambda_a, tot_0
       complex*16 Lambda_t_r, Lambda_r_r, Lambda_a_r
       complex*16 Lambda_t_l, Lambda_r_l, Lambda_a_l
@@ -50,6 +52,14 @@ C   reflection as specified in the parameter/output file
       R_21 = 0.0d0   ! where 1st sub is pol out of grating
       R_12 = 0.0d0   ! and 2nd the incident polarisation
       R_22 = 0.0d0
+      argT_11 = 0.0d0   ! phase of matrix element
+      argT_21 = 0.0d0   
+      argT_12 = 0.0d0   
+      argT_22 = 0.0d0  
+      argR_11 = 0.0d0  
+      argR_21 = 0.0d0  
+      argR_12 = 0.0d0  
+      argR_22 = 0.0d0
       Lambda_t = 0.0d0
       Lambda_r = 0.0d0
       Lambda_t_r = 0.0d0
@@ -143,6 +153,14 @@ C  For LEFT polarisation:
      *         +   TMCoeff*TLambda(i,neq_PW+j))**2
               T_21 = T_21 +  ABS(TECoeff*TLambda(neq_PW+i,j)
      *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+j))**2
+          argT_11 = argT_11 + ATAN2(AIMAG(TECoeff*TLambda(i,j)
+     *         +   TMCoeff*TLambda(i,neq_PW+j)),
+     *             REAL(TECoeff*TLambda(i,j)
+     *         +   TMCoeff*TLambda(i,neq_PW+j)) )
+          argT_21 = argT_21 + ATAN2(AIMAG(TECoeff*TLambda(neq_PW+i,j)
+     *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+j)),
+     *             REAL(TECoeff*TLambda(neq_PW+i,j)
+     *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+j)) )
             enddo
           enddo
           do i=1,numberprop_S
@@ -151,6 +169,14 @@ C  For LEFT polarisation:
      *         +   TMCoeff*RLambda(i,neq_PW+j))**2
               R_21 = R_21 +  ABS(TECoeff*RLambda(neq_PW+i,j)
      *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+j))**2
+          argR_11 = argR_11 + ATAN2(AIMAG(TECoeff*RLambda(i,j)
+     *         +   TMCoeff*RLambda(i,neq_PW+j)),
+     *             REAL(TECoeff*RLambda(i,j)
+     *         +   TMCoeff*RLambda(i,neq_PW+j)) )
+          argR_21 = argR_21 + ATAN2(AIMAG(TECoeff*RLambda(neq_PW+i,j)
+     *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+j)),
+     *             REAL(TECoeff*RLambda(neq_PW+i,j)
+     *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+j)) )
             enddo
           enddo
           Lambda_t_l = 0.5*(T_11 + T_21)
@@ -166,6 +192,14 @@ C  For RIGHT polarisation:
      *         +   TMCoeff*TLambda(i,neq_PW+j))**2
               T_22 = T_22 +  ABS(TECoeff*TLambda(neq_PW+i,j)
      *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+j))**2
+          argT_12 = argT_12 + ATAN2(AIMAG(TECoeff*TLambda(i,j)
+     *         +   TMCoeff*TLambda(i,neq_PW+j)),
+     *             REAL(TECoeff*TLambda(i,j)
+     *         +   TMCoeff*TLambda(i,neq_PW+j)) )
+          argT_22 = argT_22 + ATAN2(AIMAG(TECoeff*TLambda(neq_PW+i,j)
+     *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+j)),
+     *             REAL(TECoeff*TLambda(neq_PW+i,j)
+     *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+j)) )
             enddo
           enddo
           do i=1,numberprop_S
@@ -174,6 +208,14 @@ C  For RIGHT polarisation:
      *         +   TMCoeff*RLambda(i,neq_PW+j))**2
               R_22 = R_22 +  ABS(TECoeff*RLambda(neq_PW+i,j)
      *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+j))**2
+          argR_12 = argR_12 + ATAN2(AIMAG(TECoeff*RLambda(i,j)
+     *         +   TMCoeff*RLambda(i,neq_PW+j)),
+     *             REAL(TECoeff*RLambda(i,j)
+     *         +   TMCoeff*RLambda(i,neq_PW+j)) )
+          argR_22 = argR_22 + ATAN2(AIMAG(TECoeff*RLambda(neq_PW+i,j)
+     *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+j)),
+     *             REAL(TECoeff*RLambda(neq_PW+i,j)
+     *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+j)) )
             enddo
           enddo
           Lambda_t_r = 0.5*(T_12 + T_22)
@@ -220,6 +262,10 @@ C
      *        REAL(T_12), REAL(T_22), h*d_in_nm
         write(661,111) lambda_nm, REAL(R_11), REAL(R_21), 
      *        REAL(R_12), REAL(R_22), h*d_in_nm
+        write(662,111) lambda_nm, REAL(argT_11), REAL(argT_21), 
+     *        REAL(argT_12), REAL(argT_22), h*d_in_nm
+        write(663,111) lambda_nm, REAL(argR_11), REAL(argR_21), 
+     *        REAL(argR_12), REAL(argR_22), h*d_in_nm
       endif
 C
 C
@@ -293,12 +339,28 @@ C  For LEFT polarisation:
      *         +   TMCoeff*TLambda(i,neq_PW+inc))**2
             T_21 = T_21 +  ABS(TECoeff*TLambda(neq_PW+i,inc)
      *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+inc))**2
+          argT_11 = argT_11 + ATAN2(AIMAG(TECoeff*TLambda(i,inc)
+     *         +   TMCoeff*TLambda(i,neq_PW+inc)),
+     *             REAL(TECoeff*TLambda(i,inc)
+     *         +   TMCoeff*TLambda(i,neq_PW+inc)) )
+          argT_21 = argT_21 + ATAN2(AIMAG(TECoeff*TLambda(neq_PW+i,inc)
+     *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+inc)),
+     *             REAL(TECoeff*TLambda(neq_PW+i,inc)
+     *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+inc)) )
           enddo
           do i=1,numberprop_S
             R_11 = R_11 +  ABS(TECoeff*RLambda(i,inc)
      *         +   TMCoeff*RLambda(i,neq_PW+inc))**2
             R_21 = R_21 +  ABS(TECoeff*RLambda(neq_PW+i,inc)
      *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+inc))**2
+          argR_11 = argR_11 + ATAN2(AIMAG(TECoeff*RLambda(i,inc)
+     *         +   TMCoeff*RLambda(i,neq_PW+inc)),
+     *             REAL(TECoeff*RLambda(i,inc)
+     *         +   TMCoeff*RLambda(i,neq_PW+inc)) )
+          argR_21 = argR_21 + ATAN2(AIMAG(TECoeff*RLambda(neq_PW+i,inc)
+     *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+inc)),
+     *             REAL(TECoeff*RLambda(neq_PW+i,inc)
+     *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+inc)) )
           enddo
           Lambda_t_l = 0.5*(T_11 + T_21)
           Lambda_r_l = 0.5*(R_11 + R_21)
@@ -312,12 +374,28 @@ C  For RIGHT polarisation:
      *         +   TMCoeff*TLambda(i,neq_PW+inc))**2
             T_22 = T_22 +  ABS(TECoeff*TLambda(neq_PW+i,inc)
      *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+inc))**2
+          argT_12 = argT_12 + ATAN2(AIMAG(TECoeff*TLambda(i,inc)
+     *         +   TMCoeff*TLambda(i,neq_PW+inc)),
+     *             REAL(TECoeff*TLambda(i,inc)
+     *         +   TMCoeff*TLambda(i,neq_PW+inc)) )
+          argT_22 = argT_22 + ATAN2(AIMAG(TECoeff*TLambda(neq_PW+i,inc)
+     *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+inc)),
+     *             REAL(TECoeff*TLambda(neq_PW+i,inc)
+     *         +   TMCoeff*TLambda(neq_PW+i,neq_PW+inc)) )
           enddo 
           do i=1,numberprop_S
             R_12 = R_12 +  ABS(TECoeff*RLambda(i,inc)
      *         +   TMCoeff*RLambda(i,neq_PW+inc))**2
             R_22 = R_22 +  ABS(TECoeff*RLambda(neq_PW+i,inc)
      *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+inc))**2
+          argR_12 = argR_12 + ATAN2(AIMAG(TECoeff*RLambda(i,inc)
+     *         +   TMCoeff*RLambda(i,neq_PW+inc)),
+     *             REAL(TECoeff*RLambda(i,inc)
+     *         +   TMCoeff*RLambda(i,neq_PW+inc)) )
+          argR_22 = argR_22 + ATAN2(AIMAG(TECoeff*RLambda(neq_PW+i,inc)
+     *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+inc)),
+     *             REAL(TECoeff*RLambda(neq_PW+i,inc)
+     *         +   TMCoeff*RLambda(neq_PW+i,neq_PW+inc)) )
           enddo    
           Lambda_t_r = 0.5*(T_12 + T_22)
           Lambda_r_r = 0.5*(R_12 + R_22)      
@@ -369,6 +447,10 @@ C
      *        REAL(T_12), REAL(T_22), h*d_in_nm
         write(661,111) lambda_nm, REAL(R_11), REAL(R_21), 
      *        REAL(R_12), REAL(R_22), h*d_in_nm
+        write(662,111) lambda_nm, REAL(argT_11), REAL(argT_21), 
+     *        REAL(argT_12), REAL(argT_22), h*d_in_nm
+        write(663,111) lambda_nm, REAL(argR_11), REAL(argR_21), 
+     *        REAL(argR_12), REAL(argR_22), h*d_in_nm
       endif
 C
 C
@@ -419,6 +501,26 @@ C  For LEFT polarisation:
      *         +   TMCoeff*RLambda(out4incident,neq_PW+inc))**2
           R_21 = ABS(TECoeff*RLambda(neq_PW+out4incident,inc)
      *         +   TMCoeff*RLambda(neq_PW+out4incident,neq_PW+inc))**2
+          argT_11 = argT_11
+     *         + ATAN2(AIMAG(TECoeff*TLambda(out4incident,inc)
+     *         +   TMCoeff*TLambda(out4incident,neq_PW+inc)),
+     *             REAL(TECoeff*TLambda(out4incident,inc)
+     *         +   TMCoeff*TLambdaout4incident,neq_PW+inc)) )
+          argT_21 = argT_21 
+     *         + ATAN2(AIMAG(TECoeff*TLambda(neq_PW+out4incident,inc)
+     *         +   TMCoeff*TLambda(neq_PW+out4incident,neq_PW+inc)),
+     *             REAL(TECoeff*TLambda(neq_PW+out4incident,inc)
+     *         +   TMCoeff*TLambda(neq_PW+out4incident,neq_PW+inc)) )
+          argR_11 = argR_11 
+     *         + ATAN2(AIMAG(TECoeff*RLambda(out4incident,inc)
+     *         +   TMCoeff*RLambda(out4incident,neq_PW+inc)),
+     *             REAL(TECoeff*RLambda(out4incident,inc)
+     *         +   TMCoeff*RLambda(out4incident,neq_PW+inc)) )
+          argR_21 = argR_21
+     *          + ATAN2(AIMAG(TECoeff*RLambda(neq_PW+out4incident,inc)
+     *         +   TMCoeff*RLambda(neq_PW+out4incident,neq_PW+inc)),
+     *             REAL(TECoeff*RLambda(neq_PW+out4incident,inc)
+     *         +   TMCoeff*RLambda(neq_PW+out4incident,neq_PW+inc)) )
           Lambda_t_l = 0.5*(T_11 + T_21)
           Lambda_r_l = 0.5*(R_11 + R_21)
         endif
@@ -434,6 +536,26 @@ C  For RIGHT polarisation:
      *         +   TMCoeff*RLambda(out4incident,neq_PW+inc))**2
           R_22 = ABS(TECoeff*RLambda(neq_PW+out4incident,inc)
      *         +   TMCoeff*RLambda(neq_PW+out4incident,neq_PW+inc))**2
+          argT_12 = argT_12
+     *         + ATAN2(AIMAG(TECoeff*TLambda(out4incident,inc)
+     *         +   TMCoeff*TLambda(out4incident,neq_PW+inc)),
+     *             REAL(TECoeff*TLambda(out4incident,inc)
+     *         +   TMCoeff*TLambdaout4incident,neq_PW+inc)) )
+          argT_22 = argT_22 
+     *         + ATAN2(AIMAG(TECoeff*TLambda(neq_PW+out4incident,inc)
+     *         +   TMCoeff*TLambda(neq_PW+out4incident,neq_PW+inc)),
+     *             REAL(TECoeff*TLambda(neq_PW+out4incident,inc)
+     *         +   TMCoeff*TLambda(neq_PW+out4incident,neq_PW+inc)) )
+          argR_12 = argR_12 
+     *         + ATAN2(AIMAG(TECoeff*RLambda(out4incident,inc)
+     *         +   TMCoeff*RLambda(out4incident,neq_PW+inc)),
+     *             REAL(TECoeff*RLambda(out4incident,inc)
+     *         +   TMCoeff*RLambda(out4incident,neq_PW+inc)) )
+          argR_22 = argR_22
+     *          + ATAN2(AIMAG(TECoeff*RLambda(neq_PW+out4incident,inc)
+     *         +   TMCoeff*RLambda(neq_PW+out4incident,neq_PW+inc)),
+     *             REAL(TECoeff*RLambda(neq_PW+out4incident,inc)
+     *         +   TMCoeff*RLambda(neq_PW+out4incident,neq_PW+inc)) )
           Lambda_t_r = 0.5*(T_12 + T_22)
           Lambda_r_r = 0.5*(R_12 + R_22)
         endif
@@ -473,6 +595,10 @@ C
      *        REAL(T_12), REAL(T_22), h*d_in_nm
         write(661,111) lambda_nm, REAL(R_11), REAL(R_21), 
      *        REAL(R_12), REAL(R_22), h*d_in_nm
+        write(662,111) lambda_nm, REAL(argT_11), REAL(argT_21), 
+     *        REAL(argT_12), REAL(argT_22), h*d_in_nm
+        write(663,111) lambda_nm, REAL(argR_11), REAL(argR_21), 
+     *        REAL(argR_12), REAL(argR_22), h*d_in_nm
       endif
 C
 C

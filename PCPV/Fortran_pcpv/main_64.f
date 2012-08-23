@@ -917,9 +917,9 @@ C
           open(645,file="p_"//buf2//
      *    "_A_Lambda.txt",status='unknown')
           open(660,file="p_"//buf2//
-     *    "_T_Lambda_MAT_sp.txt",status='unknown')
+     *    "_T_MAT_sp.txt",status='unknown')
           open(661,file="p_"//buf2//
-     *    "_R_Lambda_MAT_sp.txt",status='unknown')
+     *    "_R_MAT_sp.txt",status='unknown')
         elseif (pol .eq. 5) then
           open(643,file="p_"//buf2//
      *    "_T_Lambda_R.txt",status='unknown')
@@ -940,9 +940,13 @@ C
           open(651,file="p_"//buf2//
      *    "_A_Lambda_CD.txt",status='unknown')
           open(660,file="p_"//buf2//
-     *    "_T_Lambda_MAT_lr.txt",status='unknown')
+     *    "_T_MAT_lr.txt",status='unknown')
           open(661,file="p_"//buf2//
-     *    "_R_Lambda_MAT_lr.txt",status='unknown')
+     *    "_R_MAT_lr.txt",status='unknown')
+          open(662,file="p_"//buf2//
+     *    "_T_phase_lr.txt",status='unknown')
+          open(663,file="p_"//buf2//
+     *    "_R_phase_lr.txt",status='unknown')
         else
           open(643,file="p_"//buf2//
      *    "_T_Lambda.txt",status='unknown')
@@ -996,9 +1000,13 @@ C
           open(645,file="Output/d_"//buf1//"p_"//buf2//
      *    "_A_Lambda.txt",status='unknown')
           open(660,file="p_"//buf2//
-     *    "_T_Lambda_MAT_sp.txt",status='unknown')
+     *    "_T_MAT_sp.txt",status='unknown')
           open(661,file="p_"//buf2//
-     *    "_R_Lambda_MAT_sp.txt",status='unknown')
+     *    "_R_MAT_sp.txt",status='unknown')
+          open(662,file="p_"//buf2//
+     *    "_T_phase_sp.txt",status='unknown')
+          open(663,file="p_"//buf2//
+     *    "_R_phase_sp.txt",status='unknown')
         elseif (pol .eq. 5) then
           open(643,file="Output/d_"//buf1//"p_"//buf2//
      *    "_T_Lambda_R.txt",status='unknown')
@@ -1018,6 +1026,14 @@ C
      *    "_R_Lambda_CD.txt",status='unknown')
           open(651,file="Output/d_"//buf1//"p_"//buf2//
      *    "_A_Lambda_CD.txt",status='unknown')
+          open(660,file="p_"//buf2//
+     *    "_T_MAT_lr.txt",status='unknown')
+          open(661,file="p_"//buf2//
+     *    "_R_MAT_lr.txt",status='unknown')
+          open(662,file="p_"//buf2//
+     *    "_T_phase_lr.txt",status='unknown')
+          open(663,file="p_"//buf2//
+     *    "_R_phase_lr.txt",status='unknown')
         else
           open(643,file="Output/d_"//buf1//"p_"//buf2//
      *    "_T_Lambda.txt",status='unknown')
@@ -1538,6 +1554,8 @@ C
           close(645)
           close(660)
           close(661)
+          close(662)
+          close(663)
         elseif (pol .eq. 5) then
           close(643)
           close(644)
@@ -1550,6 +1568,8 @@ C
           close(651)
           close(660)
           close(661)
+          close(662)
+          close(663)
         else
           close(643)
           close(644)
