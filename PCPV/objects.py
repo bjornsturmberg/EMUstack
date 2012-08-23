@@ -116,17 +116,23 @@ class SolarCell(object):
             # except KeyError:
             raise  NotImplementedError, "must have at least one cylinder of nonzero radius."
  
+
+        if self.ellipticity != 0:
+            msh_name = msh_name + '_e_%(e)i' % {'e' : self.ellipticity*100,}
+
+        self.mesh_file = msh_name + '.mail'
+            
         # for blah in range(1,101,1):
         #     print blah
-            # msh_name = 'random_u_%i' % blah
-            # self.mesh_file = msh_name + '.mail'
+        #     msh_name = 'random_u_%i' % blah
+        #     self.mesh_file = msh_name + '.mail'
 
-        msh_name = 'CD_1'
+        msh_name = 'design-last_15'
         self.mesh_file = msh_name + '.mail'
 
         if self.ff_rand == True:
             ff_tol = 0.0001
-            min_a  = 30
+            min_a  = 50
             max_a  = (self.period/2.05)/np.sqrt(supercell)
             unit_period = (self.period/np.sqrt(supercell))
             mean = np.sqrt((self.ff*(unit_period)**2)/3.14159265)
@@ -177,7 +183,6 @@ class SolarCell(object):
             geo = geo.replace('d_in_nm = 0;', "d_in_nm = %i;" % self.period)
             geo = geo.replace('a1 = 0;', "a1 = %i;" % self.radius1)
             geo = geo.replace('ellipticity = 0;', "ellipticity = %f;" % self.ellipticity)
-            print self.ellipticity
             geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
             geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
             geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
@@ -219,10 +224,10 @@ class SolarCell(object):
             
             gmsh_cmd = './'+ data_location + 'gmsh_conversion/' + "conv_gmsh_py.exe "+ data_location + msh_name
             os.system(gmsh_cmd)
-            gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
+            # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
             # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
-            os.system(gmsh_cmd)
-     
+            # os.system(gmsh_cmd)
+         
 
 class Light(object):
     """ Represents the light incident on a PC.
@@ -230,7 +235,9 @@ class Light(object):
     def __init__(self, Lambda, pol = 'TM', theta = 0, phi = 0):
         """See docstring for Light"""
         self.Lambda = Lambda
-        if  pol == 'TE':
+        if  pol == 'Unpol':
+            self.pol = 0
+        elif  pol == 'TE':
             self.pol = 1
         elif pol == 'TM':
             self.pol = 2
@@ -241,7 +248,7 @@ class Light(object):
         elif pol == 'CD':
             self.pol = 5
         else:
-            raise TypeError, "Polarisation must be either 'TE', 'TM', 'Left', 'Right', or 'CD'."
+            raise TypeError, "Polarisation must be either 'Unpol','TE', 'TM', 'Left', 'Right', or 'CD'."
         self.theta = theta
         self.phi   = phi
 

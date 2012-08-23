@@ -191,35 +191,35 @@ Point(402) = {-hx+b*7/8, -hy*1/6, 0, lc} + {0, radius10, 0, lc2};
 Point(403) = {-hx+b*7/8, -hy*1/6, 0, lc} - {   radius10,0, 0, lc2};
 Point(404) = {-hx+b*7/8, -hy*1/6, 0, lc} + {   radius10,0, 0, lc2};
 
-Point(411) = {-hx+b*7/8, -hy*3/6, 0, lc} - {0, radius10, 0, lc2};
-Point(412) = {-hx+b*7/8, -hy*3/6, 0, lc} + {0, radius10, 0, lc2};
-Point(413) = {-hx+b*7/8, -hy*3/6, 0, lc} - {   radius10,0, 0, lc2};
-Point(414) = {-hx+b*7/8, -hy*3/6, 0, lc} + {   radius10,0, 0, lc2};
+Point(411) = {-hx+b*7/8, -hy*3/6, 0, lc} - {0, radius11, 0, lc2};
+Point(412) = {-hx+b*7/8, -hy*3/6, 0, lc} + {0, radius11, 0, lc2};
+Point(413) = {-hx+b*7/8, -hy*3/6, 0, lc} - {   radius11,0, 0, lc2};
+Point(414) = {-hx+b*7/8, -hy*3/6, 0, lc} + {   radius11,0, 0, lc2};
 
-Point(421) = {-hx+b*7/8, -hy*5/6, 0, lc} - {0, radius10, 0, lc2};
-Point(422) = {-hx+b*7/8, -hy*5/6, 0, lc} + {0, radius10, 0, lc2};
-Point(423) = {-hx+b*7/8, -hy*5/6, 0, lc} - {   radius10,0, 0, lc2};
-Point(424) = {-hx+b*7/8, -hy*5/6, 0, lc} + {   radius10,0, 0, lc2};
+Point(421) = {-hx+b*7/8, -hy*5/6, 0, lc} - {0, radius12, 0, lc2};
+Point(422) = {-hx+b*7/8, -hy*5/6, 0, lc} + {0, radius12, 0, lc2};
+Point(423) = {-hx+b*7/8, -hy*5/6, 0, lc} - {   radius12,0, 0, lc2};
+Point(424) = {-hx+b*7/8, -hy*5/6, 0, lc} + {   radius12,0, 0, lc2};
 
-Point(431) = {-hx+b*7/8, -hyb*7/8, 0, lc} - {0, radius10, 0, lc2};
-Point(432) = {-hx+b*7/8, -hyb*7/8, 0, lc} + {0, radius10, 0, lc2};
-Point(433) = {-hx+b*7/8, -hyb*7/8, 0, lc} - {   radius10,0, 0, lc2};
-Point(434) = {-hx+b*7/8, -hyb*7/8, 0, lc} + {   radius10,0, 0, lc2};
+Point(431) = {-hx+b*7/8, -hyb*7/8, 0, lc} - {0, radius13, 0, lc2};
+Point(432) = {-hx+b*7/8, -hyb*7/8, 0, lc} + {0, radius13, 0, lc2};
+Point(433) = {-hx+b*7/8, -hyb*7/8, 0, lc} - {   radius13,0, 0, lc2};
+Point(434) = {-hx+b*7/8, -hyb*7/8, 0, lc} + {   radius13,0, 0, lc2};
 
-Point(441) = {-hx+d*1/6, -hyb*7/8, 0, lc} - {0, radius10, 0, lc2};
-Point(442) = {-hx+d*1/6, -hyb*7/8, 0, lc} + {0, radius10, 0, lc2};
-Point(443) = {-hx+d*1/6, -hyb*7/8, 0, lc} - {   radius10,0, 0, lc2};
-Point(444) = {-hx+d*1/6, -hyb*7/8, 0, lc} + {   radius10,0, 0, lc2};
+Point(441) = {-hx+d*1/6, -hyb*7/8, 0, lc} - {0, radius14, 0, lc2};
+Point(442) = {-hx+d*1/6, -hyb*7/8, 0, lc} + {0, radius14, 0, lc2};
+Point(443) = {-hx+d*1/6, -hyb*7/8, 0, lc} - {   radius14,0, 0, lc2};
+Point(444) = {-hx+d*1/6, -hyb*7/8, 0, lc} + {   radius14,0, 0, lc2};
 
-Point(451) = {-hx+d*3/6, -hyb*7/8, 0, lc} - {0, radius10, 0, lc2};
-Point(452) = {-hx+d*3/6, -hyb*7/8, 0, lc} + {0, radius10, 0, lc2};
-Point(453) = {-hx+d*3/6, -hyb*7/8, 0, lc} - {   radius10,0, 0, lc2};
-Point(454) = {-hx+d*3/6, -hyb*7/8, 0, lc} + {   radius10,0, 0, lc2};
+Point(451) = {-hx+d*3/6, -hyb*7/8, 0, lc} - {0, radius15, 0, lc2};
+Point(452) = {-hx+d*3/6, -hyb*7/8, 0, lc} + {0, radius15, 0, lc2};
+Point(453) = {-hx+d*3/6, -hyb*7/8, 0, lc} - {   radius15,0, 0, lc2};
+Point(454) = {-hx+d*3/6, -hyb*7/8, 0, lc} + {   radius15,0, 0, lc2};
 
-Point(461) = {-hx+d*5/6, -hyb*7/8, 0, lc} - {0, radius10, 0, lc2};
-Point(462) = {-hx+d*5/6, -hyb*7/8, 0, lc} + {0, radius10, 0, lc2};
-Point(463) = {-hx+d*5/6, -hyb*7/8, 0, lc} - {   radius10,0, 0, lc2};
-Point(464) = {-hx+d*5/6, -hyb*7/8, 0, lc} + {   radius10,0, 0, lc2};
+Point(461) = {-hx+d*5/6, -hyb*7/8, 0, lc} - {0, radius16, 0, lc2};
+Point(462) = {-hx+d*5/6, -hyb*7/8, 0, lc} + {0, radius16, 0, lc2};
+Point(463) = {-hx+d*5/6, -hyb*7/8, 0, lc} - {   radius16,0, 0, lc2};
+Point(464) = {-hx+d*5/6, -hyb*7/8, 0, lc} + {   radius16,0, 0, lc2};
 
 
 Line(1) = {1, 2};

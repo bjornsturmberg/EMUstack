@@ -129,7 +129,7 @@ def tra_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_
 		ax1.plot(wavelengths, spectrum)
 		ax1.set_xlabel('Wavelength (nm)')
 		ax1.set_ylabel(spec_name)
-		plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
+		plt.axis([wavelengths[0], wavelengths[-1], 0.0, 1])
 	tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
 	'period' 	    : solar_cell.period, 'radius' : solar_cell.radius1,}
 	tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {

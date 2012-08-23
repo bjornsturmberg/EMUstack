@@ -909,7 +909,18 @@ C
       endif
 C
       if (traLambda .eq. 1) then
-        if (pol .eq. 5) then
+        if (pol .eq. 0) then
+          open(643,file="p_"//buf2//
+     *    "_T_Lambda.txt",status='unknown')
+          open(644,file="p_"//buf2//
+     *    "_R_Lambda.txt",status='unknown')
+          open(645,file="p_"//buf2//
+     *    "_A_Lambda.txt",status='unknown')
+          open(660,file="p_"//buf2//
+     *    "_T_Lambda_MAT_sp.txt",status='unknown')
+          open(661,file="p_"//buf2//
+     *    "_R_Lambda_MAT_sp.txt",status='unknown')
+        elseif (pol .eq. 5) then
           open(643,file="p_"//buf2//
      *    "_T_Lambda_R.txt",status='unknown')
           open(644,file="p_"//buf2//
@@ -928,6 +939,10 @@ C
      *    "_R_Lambda_CD.txt",status='unknown')
           open(651,file="p_"//buf2//
      *    "_A_Lambda_CD.txt",status='unknown')
+          open(660,file="p_"//buf2//
+     *    "_T_Lambda_MAT_lr.txt",status='unknown')
+          open(661,file="p_"//buf2//
+     *    "_R_Lambda_MAT_lr.txt",status='unknown')
         else
           open(643,file="p_"//buf2//
      *    "_T_Lambda.txt",status='unknown')
@@ -973,7 +988,18 @@ C
       if (parallel_comp .ne. 1) write(buf2,'(I4.4)') 0000
 C
       if (traLambda .eq. 1) then
-        if (pol .eq. 5) then
+        if (pol .eq. 0) then
+          open(643,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_T_Lambda.txt",status='unknown')
+          open(644,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_R_Lambda.txt",status='unknown')
+          open(645,file="Output/d_"//buf1//"p_"//buf2//
+     *    "_A_Lambda.txt",status='unknown')
+          open(660,file="p_"//buf2//
+     *    "_T_Lambda_MAT_sp.txt",status='unknown')
+          open(661,file="p_"//buf2//
+     *    "_R_Lambda_MAT_sp.txt",status='unknown')
+        elseif (pol .eq. 5) then
           open(643,file="Output/d_"//buf1//"p_"//buf2//
      *    "_T_Lambda_R.txt",status='unknown')
           open(644,file="Output/d_"//buf1//"p_"//buf2//
@@ -1506,7 +1532,13 @@ C
         close(566)
       endif
       if (traLambda .eq. 1) then
-        if (pol .eq. 5) then
+        if (pol .eq. 0) then
+          close(643)
+          close(644)
+          close(645)
+          close(660)
+          close(661)
+        elseif (pol .eq. 5) then
           close(643)
           close(644)
           close(645)
@@ -1516,6 +1548,8 @@ C
           close(649)
           close(650)
           close(651)
+          close(660)
+          close(661)
         else
           close(643)
           close(644)
@@ -1577,7 +1611,6 @@ C
         if (python .eq. 0) then
         write(ui,*) 
         write(ui,*) 'Total CPU time (sec.)  = ', (time2-time1)
-        endif
 
       open (unit=26,file=log_file)
         write(26,*)
@@ -1662,7 +1695,6 @@ c
         write(26,*) "log_file  = ", log_file
       close(26)
 C
-      if (python .eq. 0) then
       write(ui,*) "   .      .      ."
       write(ui,*) "   .      .      ."
       write(ui,*) "   .      . (d=",d_in_nm,")"

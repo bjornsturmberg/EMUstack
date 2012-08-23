@@ -38,19 +38,19 @@ ff      = calculate_ff(period,radius1,radius2,radius3,
 	radius4)#,radius5,radius6,radius7,radius8,radius9)
 
 # light parameters
-# wl_super = 700
+wl_super = 700
 wl_1     = 310
 wl_2     = 410   # < 400 Im(n(cSi)) large
 wl_3     = 1010  # > 1010 Im(n(cSi)) = 0
 wl_4     = 1110
 wl_5     = 1127
-no_wl_1  = 2#46    # 2 nm steps
+no_wl_1  = 1#46    # 2 nm steps
 no_wl_2  = 4#610   # 1 nm steps
 no_wl_3  = 1#10    # 10 nm steps - total 667 wavelengths
 # simulation parameters
-max_num_BMs   = 80
+max_num_BMs   = 180
 var_BM_min    = 370
-max_order_PWs = 1
+max_order_PWs = 3
 # number of cpus to use
 num_cores_to_use = 8
 # number of cpus to leave free
@@ -64,13 +64,13 @@ clear_previous.clean('.pdf')
 clear_previous.clean('.log')
 
 # Set up solar cell
-# mesh = 'bj_can_a60_d600.mail'
+mesh = 'bj_can_a60_d600.mail'
 # mesh = '2by2_ff20_t_02_1-p1.mail'
 
-solar_cell  = objects.SolarCell(period, ff,radius1, radius2, radius3, radius4, 
-	#radius5,radius6, radius7, radius8, radius9, #mesh_file = mesh,
-	set_ff = False, height_1 = 2200, height_2 = 2400, num_h = 500,
-	inclusion_a = materials.Si_c, inclusion_b = materials.Si_c, nb_typ_el = 5, make_mesh_now = True,
+solar_cell  = objects.SolarCell(period, ff, radius1, radius2, radius3, radius4, 
+	mesh_file = mesh,
+	set_ff = False, height_1 = 2200, height_2 = 2400, num_h = 1,
+	inclusion_a = materials.Si_c, inclusion_b = materials.Si_c, nb_typ_el = 5, make_mesh_now = False,
 	force_mesh = True,lc = 0.1,lc2 = 1.9, lc3 = 1.9, lc4 = 4.5, lc5 = 1.8, lc6 = 1.1, posx = 0, posy = 0)
 
 # # by default materials.test = Air. If scaling != 0 n of 'copied' object is used scaled by 'scaled'.
@@ -89,8 +89,8 @@ wl_array_3  = np.linspace(wl_3+1, wl_4, no_wl_3)
 wavelengths = np.concatenate((wl_array_1,wl_array_2, wl_array_3, [wl_5]))
 light_list  = [objects.Light(wl) for wl in wavelengths]
 # Single wavelength run
-# wavelengths = np.array([wl_super])
-# light_list  = [objects.Light(wl) for wl in wavelengths]
+wavelengths = np.array([wl_super])
+light_list  = [objects.Light(wl) for wl in wavelengths]
 
 # Simulation controls
 other_para  = objects.Controls(Animate=False)

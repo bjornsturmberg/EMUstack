@@ -50,7 +50,7 @@ class Simmo(object):
 			superstrate_n = np.real(superstrate_n)
 			substrate_n   = np.real(substrate_n)
 		if self.light.Lambda > self.var_BM_min:
-			max_n         = self.solar_cell.inclusion_a.max_n()
+			max_n         = 6.8#self.solar_cell.inclusion_a.max_n()
 			nval_tmp      = self.max_num_BMs*inclusion_a_n.real/max_n
 			nval 		  = round(nval_tmp)
 			ordre_ls      = round(self.max_order_PWs*nval/self.max_num_BMs)
