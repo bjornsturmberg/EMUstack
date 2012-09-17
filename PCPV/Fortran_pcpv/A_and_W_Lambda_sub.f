@@ -505,7 +505,7 @@ C  For LEFT polarisation:
      *         + ATAN2(AIMAG(TECoeff*TLambda(out4incident,inc)
      *         +   TMCoeff*TLambda(out4incident,neq_PW+inc)),
      *             REAL(TECoeff*TLambda(out4incident,inc)
-     *         +   TMCoeff*TLambdaout4incident,neq_PW+inc)) )
+     *         +   TMCoeff*TLambda(out4incident,neq_PW+inc)) )
           argT_21 = argT_21 
      *         + ATAN2(AIMAG(TECoeff*TLambda(neq_PW+out4incident,inc)
      *         +   TMCoeff*TLambda(neq_PW+out4incident,neq_PW+inc)),
@@ -540,7 +540,7 @@ C  For RIGHT polarisation:
      *         + ATAN2(AIMAG(TECoeff*TLambda(out4incident,inc)
      *         +   TMCoeff*TLambda(out4incident,neq_PW+inc)),
      *             REAL(TECoeff*TLambda(out4incident,inc)
-     *         +   TMCoeff*TLambdaout4incident,neq_PW+inc)) )
+     *         +   TMCoeff*TLambda(out4incident,neq_PW+inc)) )
           argT_22 = argT_22 
      *         + ATAN2(AIMAG(TECoeff*TLambda(neq_PW+out4incident,inc)
      *         +   TMCoeff*TLambda(neq_PW+out4incident,neq_PW+inc)),

@@ -12,12 +12,13 @@ class SolarCell(object):
     """
     def __init__(self, period, ff, radius1, radius2=0, radius3=0, radius4=0, radius5=0,
         radius6=0, radius7=0, radius8=0, radius9=0, radius10=0, radius11=0, radius12=0, radius13=0,
-        radius14=0, radius15=0, radius16=0, ellipticity = 0.0, mesh_file = 'NEED_FILE.geo',
+        radius14=0, radius15=0, radius16=0, ellipticity = 0.0, square = False, mesh_file = 'NEED_FILE.geo',
         set_ff = False, ff_rand = False, height_1 = 2330, height_2 = 2330, num_h = 1,
         inclusion_a = materials.Si_c, inclusion_b = materials.Air, background = materials.Air,
         superstrate = materials.Air, substrate = materials.SiO2_a,
         loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 4, make_mesh_now = False, force_mesh = False,
-        lc = 0.09, lc2 = 1.7, lc3 = 1.9, lc4 = 1.9, lc5 = 1.9, lc6 = 1.9, posx = 0, posy = 0):
+        lc_bkg = 0.09, lc2_surf= 1.7, lc3_inc1 = 1.9, lc4_inc2 = 1.9, lc5_inc3 = 1.9, lc6_inc4 = 1.9,
+        posx = 0, posy = 0):
         self.radius1     = radius1
         self.radius2     = radius2
         self.radius3     = radius3
@@ -55,15 +56,17 @@ class SolarCell(object):
         else:
             self.has_substrate = 1
         if make_mesh_now:
-            self.lc  = lc
-            self.lc2 = lc2
-            self.lc3 = lc3
-            self.lc4 = lc4
-            self.lc5 = lc5
-            self.lc6 = lc6
+            self.lc  = lc_bkg
+            self.lc2 = lc2_surf
+            self.lc3 = lc3_inc1
+            self.lc4 = lc4_inc2
+            self.lc5 = lc5_inc3
+            self.lc6 = lc6_inc4
             self.ellipticity = ellipticity
             if ellipticity > 1.0:
                 raise TypeError, "ellipticity must be less than 1.0"
+            self.square = square
+            self.square_int = 0
             self.posx = posx
             self.posy = posy
             self.mesh_format = mesh_format
@@ -119,6 +122,13 @@ class SolarCell(object):
 
         if self.ellipticity != 0:
             msh_name = msh_name + '_e_%(e)i' % {'e' : self.ellipticity*100,}
+        if self.square == True:
+            self.square_int = 1
+            msh_name = msh_name + '_sq'
+        if self.posx != 0:
+            msh_name = msh_name + 'x%(e)i' % {'e' : self.posx*100,}
+        if self.posy != 0:
+            msh_name = msh_name + 'y%(e)i' % {'e' : self.posy*100,}
 
         self.mesh_file = msh_name + '.mail'
             
@@ -127,8 +137,8 @@ class SolarCell(object):
         #     msh_name = 'random_u_%i' % blah
         #     self.mesh_file = msh_name + '.mail'
 
-        msh_name = 'design-last_15'
-        self.mesh_file = msh_name + '.mail'
+        # msh_name = 'design-last_17'
+        # self.mesh_file = msh_name + '.mail'
 
         if self.ff_rand == True:
             ff_tol = 0.0001
@@ -136,11 +146,6 @@ class SolarCell(object):
             max_a  = (self.period/2.05)/np.sqrt(supercell)
             unit_period = (self.period/np.sqrt(supercell))
             mean = np.sqrt((self.ff*(unit_period)**2)/3.14159265)
-            # rad_array = [self.radius1,self.radius2,self.radius3,self.radius4,self.radius5,
-            # self.radius6,self.radius7,self.radius8,self.radius9,self.radius10,self.radius11,self.radius12,
-            # self.radius13,self.radius14,self.radius15, self.radius16]
-
-            # rad_array = np.ones(16)*min_a
             test_ff = 0
             while abs(test_ff-self.ff) > ff_tol:
                 rad_array = []
@@ -183,16 +188,15 @@ class SolarCell(object):
             geo = geo.replace('d_in_nm = 0;', "d_in_nm = %i;" % self.period)
             geo = geo.replace('a1 = 0;', "a1 = %i;" % self.radius1)
             geo = geo.replace('ellipticity = 0;', "ellipticity = %f;" % self.ellipticity)
+            geo = geo.replace('square = 0;', "square = %i;" % self.square)
             geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
             geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
             geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
-            # if supercell == 1 & self.set_ff == True:
-            #     geo = geo.replace('radius1 = (a1/d_in_nm)*d;','radius1 = ((ff*(d)^2)/3.14159265)^0.5;')
+            if self.posx != 0:
+                geo = geo.replace('posx = 0;', "posx = %f;" % (self.posx/self.period*(self.period/(2*np.sqrt(supercell)) - self.radius1)))
+            if self.posy != 0:
+                geo = geo.replace('posy = 0;', "posy = %f;" % (self.posy/self.period*(self.period/(2*np.sqrt(supercell)) - self.radius1)))
             if supercell == 2:
-                if self.posx != 0:
-                    geo = geo.replace('posx = 0;', "posx = d/%f;" % self.posx)
-                if self.posy != 0:
-                    geo = geo.replace('posy = 0;', "posy = d/%f;" % self.posy)
                 if self.set_ff == False:
                     geo = geo.replace('radius2 = ((ff*(d)^2)/3.14159265 - (radius1^2))^0.5;', "radius2 = (%i/d_in_nm)*d;" % self.radius2)    
             if supercell > 1:
@@ -224,7 +228,7 @@ class SolarCell(object):
             
             gmsh_cmd = './'+ data_location + 'gmsh_conversion/' + "conv_gmsh_py.exe "+ data_location + msh_name
             os.system(gmsh_cmd)
-            # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
+            gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
             # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
             # os.system(gmsh_cmd)
          

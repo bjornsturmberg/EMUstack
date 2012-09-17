@@ -22,6 +22,8 @@ radius9 = (a9/d_in_nm)*d;
 lc = 0; // 0.501 0.201 0.0701;
 lc2 = lc/1; // on cylinder surfaces
 lc3 = lc/1; // cylinder1 centres
+posx = 0;//
+posy = 0;//
 
 hy = d; // Thickness: Squre profile => hy=d
 hx = 0.;
@@ -29,106 +31,106 @@ hx = 0.;
 // 2*2 supercell outline
 
 Point(1) = {0,         0, 0, lc};
-Point(2) = {-hx+d/6,   0, 0, lc};
+Point(2) = {-hx+d/6+posx,   0, 0, lc};
 Point(3) = {-hx+d*2/6, 0, 0, lc};
 Point(4) = {-hx+d/2,   0, 0, lc};
 Point(5) = {-hx+d*4/6, 0, 0, lc};
-Point(6) = {-hx+d*5/6, 0, 0, lc};
+Point(6) = {-hx+d*5/6-posx, 0, 0, lc};
 Point(7) = {d,         0, 0, lc};
 
-Point(8) = {0,         -hy/6, 0, lc};
-Point(9) = {-hx+d/6,   -hy/6, 0, lc3};
-Point(10) = {-hx+d*2/6, -hy/6, 0, lc};
-Point(11) = {-hx+d/2,   -hy/6, 0, lc3};
-Point(12) = {-hx+d*4/6, -hy/6, 0, lc};
-Point(13) = {-hx+d*5/6, -hy/6, 0, lc3};
-Point(14) = {d,         -hy/6, 0, lc};
+Point(8) = {0,         -hy/6-posy, 0, lc};
+Point(9) = {-hx+d/6+posx,   -hy/6-posy, 0, lc3};
+Point(10) = {-hx+d*2/6, -hy/6-posy, 0, lc};
+Point(11) = {-hx+d/2,   -hy/6-posy, 0, lc3};
+Point(12) = {-hx+d*4/6, -hy/6-posy, 0, lc};
+Point(13) = {-hx+d*5/6-posx, -hy/6-posy, 0, lc3};
+Point(14) = {d,         -hy/6-posy, 0, lc};
 
 Point(15) = {0,         -hy*2/6, 0, lc};
-Point(16) = {-hx+d/6,   -hy*2/6, 0, lc};
+Point(16) = {-hx+d/6+posx,   -hy*2/6, 0, lc};
 Point(17) = {-hx+d*2/6, -hy*2/6, 0, lc};
 Point(18) = {-hx+d/2,   -hy*2/6, 0, lc};
 Point(19) = {-hx+d*4/6, -hy*2/6, 0, lc};
-Point(20) = {-hx+d*5/6, -hy*2/6, 0, lc};
+Point(20) = {-hx+d*5/6-posx, -hy*2/6, 0, lc};
 Point(21) = {d,         -hy*2/6, 0, lc};
 
 Point(22) = {0,         -hy*3/6, 0, lc};
-Point(23) = {-hx+d/6,   -hy*3/6, 0, lc3};
+Point(23) = {-hx+d/6+posx,   -hy*3/6, 0, lc3};
 Point(24) = {-hx+d*2/6, -hy*3/6, 0, lc};
 Point(25) = {-hx+d/2,   -hy*3/6, 0, lc3};
 Point(26) = {-hx+d*4/6, -hy*3/6, 0, lc};
-Point(27) = {-hx+d*5/6, -hy*3/6, 0, lc3};
+Point(27) = {-hx+d*5/6-posx, -hy*3/6, 0, lc3};
 Point(28) = {d,         -hy*3/6, 0, lc};
 
 Point(30) = {0,         -hy*4/6, 0, lc};
-Point(31) = {-hx+d/6,   -hy*4/6, 0, lc};
+Point(31) = {-hx+d/6+posx,   -hy*4/6, 0, lc};
 Point(57) = {-hx+d*2/6, -hy*4/6, 0, lc};
 Point(32) = {-hx+d/2,   -hy*4/6, 0, lc};
 Point(33) = {-hx+d*4/6, -hy*4/6, 0, lc};
-Point(34) = {-hx+d*5/6, -hy*4/6, 0, lc};
+Point(34) = {-hx+d*5/6-posx, -hy*4/6, 0, lc};
 Point(35) = {d,         -hy*4/6, 0, lc};
 
-Point(43) = {0,         -hy*5/6, 0, lc};
-Point(44) = {-hx+d/6,   -hy*5/6, 0, lc3};
-Point(45) = {-hx+d*2/6, -hy*5/6, 0, lc};
-Point(46) = {-hx+d/2,   -hy*5/6, 0, lc3};
-Point(47) = {-hx+d*4/6, -hy*5/6, 0, lc};
-Point(48) = {-hx+d*5/6, -hy*5/6, 0, lc3};
-Point(49) = {d,         -hy*5/6, 0, lc};
+Point(43) = {0,         -hy*5/6+posy, 0, lc};
+Point(44) = {-hx+d/6+posx,   -hy*5/6+posy, 0, lc3};
+Point(45) = {-hx+d*2/6, -hy*5/6+posy, 0, lc};
+Point(46) = {-hx+d/2,   -hy*5/6+posy, 0, lc3};
+Point(47) = {-hx+d*4/6, -hy*5/6+posy, 0, lc};
+Point(48) = {-hx+d*5/6-posx, -hy*5/6+posy, 0, lc3};
+Point(49) = {d,         -hy*5/6+posy, 0, lc};
 
 Point(50) = {0,         -hy, 0, lc};
-Point(51) = {-hx+d/6,   -hy, 0, lc};
+Point(51) = {-hx+d/6+posx,   -hy, 0, lc};
 Point(52) = {-hx+d*2/6, -hy, 0, lc};
 Point(53) = {-hx+d/2,   -hy, 0, lc};
 Point(54) = {-hx+d*4/6, -hy, 0, lc};
-Point(55) = {-hx+d*5/6, -hy, 0, lc};
+Point(55) = {-hx+d*5/6-posx, -hy, 0, lc};
 Point(56) = {d,         -hy, 0, lc};
 
 // circle - top left
-Point(61) = {-hx+d/6,   -hy/6, 0, lc} - {0, radius1, 0, lc2};
-Point(62) = {-hx+d/6,   -hy/6, 0, lc} + {0, radius1, 0, lc2};
-Point(63) = {-hx+d/6,   -hy/6, 0, lc} - {   radius1,0, 0, lc2};
-Point(64) = {-hx+d/6,   -hy/6, 0, lc} + {   radius1,0, 0, lc2};
+Point(61) = {-hx+d/6+posx,   -hy/6-posy, 0, lc} - {0, radius1, 0, lc2};
+Point(62) = {-hx+d/6+posx,   -hy/6-posy, 0, lc} + {0, radius1, 0, lc2};
+Point(63) = {-hx+d/6+posx,   -hy/6-posy, 0, lc} - {   radius1,0, 0, lc2};
+Point(64) = {-hx+d/6+posx,   -hy/6-posy, 0, lc} + {   radius1,0, 0, lc2};
 
-Point(71) = {-hx+d/2,   -hy/6, 0, lc} - {0, radius2, 0, lc2};
-Point(72) = {-hx+d/2,   -hy/6, 0, lc} + {0, radius2, 0, lc2};
-Point(73) = {-hx+d/2,   -hy/6, 0, lc} - {   radius2,0, 0, lc2};
-Point(74) = {-hx+d/2,   -hy/6, 0, lc} + {   radius2,0, 0, lc2};
+Point(71) = {-hx+d/2,   -hy/6-posy, 0, lc} - {0, radius2, 0, lc2};
+Point(72) = {-hx+d/2,   -hy/6-posy, 0, lc} + {0, radius2, 0, lc2};
+Point(73) = {-hx+d/2,   -hy/6-posy, 0, lc} - {   radius2,0, 0, lc2};
+Point(74) = {-hx+d/2,   -hy/6-posy, 0, lc} + {   radius2,0, 0, lc2};
 
-Point(81) = {-hx+d*5/6, -hy/6, 0, lc} - {0, radius3, 0, lc2};
-Point(82) = {-hx+d*5/6, -hy/6, 0, lc} + {0, radius3, 0, lc2};
-Point(83) = {-hx+d*5/6, -hy/6, 0, lc} - {   radius3,0, 0, lc2};
-Point(84) = {-hx+d*5/6, -hy/6, 0, lc} + {   radius3,0, 0, lc2};
+Point(81) = {-hx+d*5/6-posx, -hy/6-posy, 0, lc} - {0, radius3, 0, lc2};
+Point(82) = {-hx+d*5/6-posx, -hy/6-posy, 0, lc} + {0, radius3, 0, lc2};
+Point(83) = {-hx+d*5/6-posx, -hy/6-posy, 0, lc} - {   radius3,0, 0, lc2};
+Point(84) = {-hx+d*5/6-posx, -hy/6-posy, 0, lc} + {   radius3,0, 0, lc2};
 
-Point(91) = {-hx+d/6,   -hy*3/6, 0, lc} - {0, radius4, 0, lc2};
-Point(92) = {-hx+d/6,   -hy*3/6, 0, lc} + {0, radius4, 0, lc2};
-Point(93) = {-hx+d/6,   -hy*3/6, 0, lc} - {   radius4,0, 0, lc2};
-Point(94) = {-hx+d/6,   -hy*3/6, 0, lc} + {   radius4,0, 0, lc2};
+Point(91) = {-hx+d/6+posx,   -hy*3/6, 0, lc} - {0, radius4, 0, lc2};
+Point(92) = {-hx+d/6+posx,   -hy*3/6, 0, lc} + {0, radius4, 0, lc2};
+Point(93) = {-hx+d/6+posx,   -hy*3/6, 0, lc} - {   radius4,0, 0, lc2};
+Point(94) = {-hx+d/6+posx,   -hy*3/6, 0, lc} + {   radius4,0, 0, lc2};
 
 Point(101) = {-hx+d/2,   -hy*3/6, 0, lc} - {0, radius5, 0, lc2};
 Point(102) = {-hx+d/2,   -hy*3/6, 0, lc} + {0, radius5, 0, lc2};
 Point(103) = {-hx+d/2,   -hy*3/6, 0, lc} - {   radius5,0, 0, lc2};
 Point(104) = {-hx+d/2,   -hy*3/6, 0, lc} + {   radius5,0, 0, lc2};
 
-Point(111) = {-hx+d*5/6, -hy*3/6, 0, lc} - {0, radius6, 0, lc2};
-Point(112) = {-hx+d*5/6, -hy*3/6, 0, lc} + {0, radius6, 0, lc2};
-Point(113) = {-hx+d*5/6, -hy*3/6, 0, lc} - {   radius6,0, 0, lc2};
-Point(114) = {-hx+d*5/6, -hy*3/6, 0, lc} + {   radius6,0, 0, lc2};
+Point(111) = {-hx+d*5/6-posx, -hy*3/6, 0, lc} - {0, radius6, 0, lc2};
+Point(112) = {-hx+d*5/6-posx, -hy*3/6, 0, lc} + {0, radius6, 0, lc2};
+Point(113) = {-hx+d*5/6-posx, -hy*3/6, 0, lc} - {   radius6,0, 0, lc2};
+Point(114) = {-hx+d*5/6-posx, -hy*3/6, 0, lc} + {   radius6,0, 0, lc2};
 
-Point(121) = {-hx+d/6,   -hy*5/6, 0, lc} - {0, radius7, 0, lc2};
-Point(122) = {-hx+d/6,   -hy*5/6, 0, lc} + {0, radius7, 0, lc2};
-Point(123) = {-hx+d/6,   -hy*5/6, 0, lc} - {   radius7,0, 0, lc2};
-Point(124) = {-hx+d/6,   -hy*5/6, 0, lc} + {   radius7,0, 0, lc2};
+Point(121) = {-hx+d/6+posx,   -hy*5/6+posy, 0, lc} - {0, radius7, 0, lc2};
+Point(122) = {-hx+d/6+posx,   -hy*5/6+posy, 0, lc} + {0, radius7, 0, lc2};
+Point(123) = {-hx+d/6+posx,   -hy*5/6+posy, 0, lc} - {   radius7,0, 0, lc2};
+Point(124) = {-hx+d/6+posx,   -hy*5/6+posy, 0, lc} + {   radius7,0, 0, lc2};
 
-Point(131) = {-hx+d/2,   -hy*5/6, 0, lc} - {0, radius8, 0, lc2};
-Point(132) = {-hx+d/2,   -hy*5/6, 0, lc} + {0, radius8, 0, lc2};
-Point(133) = {-hx+d/2,   -hy*5/6, 0, lc} - {   radius8,0, 0, lc2};
-Point(134) = {-hx+d/2,   -hy*5/6, 0, lc} + {   radius8,0, 0, lc2};
+Point(131) = {-hx+d/2,   -hy*5/6+posy, 0, lc} - {0, radius8, 0, lc2};
+Point(132) = {-hx+d/2,   -hy*5/6+posy, 0, lc} + {0, radius8, 0, lc2};
+Point(133) = {-hx+d/2,   -hy*5/6+posy, 0, lc} - {   radius8,0, 0, lc2};
+Point(134) = {-hx+d/2,   -hy*5/6+posy, 0, lc} + {   radius8,0, 0, lc2};
 
-Point(141) = {-hx+d*5/6, -hy*5/6, 0, lc} - {0, radius9, 0, lc2};
-Point(142) = {-hx+d*5/6, -hy*5/6, 0, lc} + {0, radius9, 0, lc2};
-Point(143) = {-hx+d*5/6, -hy*5/6, 0, lc} - {   radius9,0, 0, lc2};
-Point(144) = {-hx+d*5/6, -hy*5/6, 0, lc} + {   radius9,0, 0, lc2};
+Point(141) = {-hx+d*5/6-posx, -hy*5/6+posy, 0, lc} - {0, radius9, 0, lc2};
+Point(142) = {-hx+d*5/6-posx, -hy*5/6+posy, 0, lc} + {0, radius9, 0, lc2};
+Point(143) = {-hx+d*5/6-posx, -hy*5/6+posy, 0, lc} - {   radius9,0, 0, lc2};
+Point(144) = {-hx+d*5/6-posx, -hy*5/6+posy, 0, lc} + {   radius9,0, 0, lc2};
 
 
 Line(1) = {1, 2};

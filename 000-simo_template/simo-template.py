@@ -70,8 +70,10 @@ mesh = 'bj_can_a60_d600.mail'
 solar_cell  = objects.SolarCell(period, ff, radius1, radius2, radius3, radius4, 
 	mesh_file = mesh,
 	set_ff = False, height_1 = 2200, height_2 = 2400, num_h = 1,
-	inclusion_a = materials.Si_c, inclusion_b = materials.Si_c, nb_typ_el = 5, make_mesh_now = False,
-	force_mesh = True,lc = 0.1,lc2 = 1.9, lc3 = 1.9, lc4 = 4.5, lc5 = 1.8, lc6 = 1.1, posx = 0, posy = 0)
+	inclusion_a = materials.Si_c, inclusion_b = materials.Si_c, nb_typ_el = 5, 
+	make_mesh_now = False, force_mesh = True,
+	lc_bkg = 0.1, lc2_surf= 1.9, lc3_inc1 = 1.9, lc4_inc2 = 1.9, lc5_inc3 = 1.9, lc6_inc4 = 1.9,
+	posx =   0, posy =   0)
 
 # # by default materials.test = Air. If scaling != 0 n of 'copied' object is used scaled by 'scaled'.
 # scaling = 0 
