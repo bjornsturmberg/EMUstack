@@ -339,7 +339,7 @@ def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
     ax1 = fig.add_subplot(1,1,1)
     wavelengths = np.genfromtxt('%s.txt' % 'omega', usecols=(2))
     num_BMs     = np.genfromtxt('%s.txt' % 'omega', usecols=(1))
-    poo = 1
+    count = 1
     for i in range(len(num_BMs)):
         prop = []
         re = np.genfromtxt('%s.txt' % 'omega', usecols=(5+2*i), invalid_raise=False)
@@ -347,7 +347,7 @@ def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
         for j in range(len(re)):
             if re[j] > im[j]:
                 prop.append(re[j])
-        poo +=1
+        count +=1
 
         trim_wls = wavelengths[0:len(prop)]
         ax1.plot(trim_wls, prop, 'ro')

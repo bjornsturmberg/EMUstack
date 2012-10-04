@@ -7,9 +7,9 @@ import unittest
 import numpy.testing as nt
 #from numpy.ma.testutils import assert_array_approx_equal as arr_aeq
 arr_eq = nt.assert_array_almost_equal
-# from check_arrays_equal import BjornTest
+from check_arrays_equal import BjornTest
 
-test_list = ['Air', 'Fano', 'Povinelli', 'Povinelli_Substrate']
+test_cases = ['Air', 'Fano', 'Povinelli', 'Povinelli_Substrate']
 
 result_file_list = ['VFEM_2D/Output/*.txt',
                    'VFEM_2D/Output/Dispersion/*.txt',

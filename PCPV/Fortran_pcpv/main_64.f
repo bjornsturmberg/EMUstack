@@ -103,6 +103,7 @@ C  Names and Controls
       complex*16 Complex_refract3(818), Complex_refract4(1635)
       integer*8 incident, what4incident, out4incident
       integer*8 q_average, plot_real, plot_imag, plot_abs
+      integer*8 title
 C  SuperMode Plotting
       complex*16 vec_coef(1000)
       complex*16 vec_coef_down(1000)
@@ -401,6 +402,11 @@ C Loss - int
         CALL GETARG(input,get_args)
         read (get_args,'(I5)') Loss
 C        write(ui,*) Loss
+        input = input + 1
+C title - int
+        CALL GETARG(input,get_args)
+        read (get_args,'(I5)') title
+C        write(ui,*) title
         input = input + 1
 C
 C
@@ -889,15 +895,16 @@ C
 C
 C
       if (python .eq. 1) then
+      write(buf1,'(I4.4)') title
       write(buf2,'(I4.4)') parallel(1)
       if (PrintOmega .eq. 1) then
-        open (unit=241, file="p_"//buf2//
+        open (unit=241, file="st"//buf1//"_wl"//buf2//
      *    "_omega.txt", status='unknown')
-        open (unit=231, file="p_"//buf2//
+        open (unit=231, file="st"//buf1//"_wl"//buf2//
      *    "_omega_pol.txt",  status='unknown')
-        open (unit=221, file="p_"//buf2//
+        open (unit=221, file="st"//buf1//"_wl"//buf2//
      *    "_omega_Fz.txt", status='unknown')
-        open (unit=211, file="p_"//buf2//
+        open (unit=211, file="st"//buf1//"_wl"//buf2//
      *    "_omega_Ft.txt", status='unknown')
       endif
       if (debug .eq. 1) then
@@ -910,49 +917,49 @@ C
 C
       if (traLambda .eq. 1) then
         if (pol .eq. 0) then
-          open(643,file="p_"//buf2//
+          open(643,file="st"//buf1//"_wl"//buf2//
      *    "_T_Lambda.txt",status='unknown')
-          open(644,file="p_"//buf2//
+          open(644,file="st"//buf1//"_wl"//buf2//
      *    "_R_Lambda.txt",status='unknown')
-          open(645,file="p_"//buf2//
+          open(645,file="st"//buf1//"_wl"//buf2//
      *    "_A_Lambda.txt",status='unknown')
-          open(660,file="p_"//buf2//
+          open(660,file="st"//buf1//"_wl"//buf2//
      *    "_T_MAT_sp.txt",status='unknown')
-          open(661,file="p_"//buf2//
+          open(661,file="st"//buf1//"_wl"//buf2//
      *    "_R_MAT_sp.txt",status='unknown')
         elseif (pol .eq. 5) then
-          open(643,file="p_"//buf2//
+          open(643,file="st"//buf1//"_wl"//buf2//
      *    "_T_Lambda_R.txt",status='unknown')
-          open(644,file="p_"//buf2//
+          open(644,file="st"//buf1//"_wl"//buf2//
      *    "_R_Lambda_R.txt",status='unknown')
-          open(645,file="p_"//buf2//
+          open(645,file="st"//buf1//"_wl"//buf2//
      *    "_A_Lambda_R.txt",status='unknown')
-          open(646,file="p_"//buf2//
+          open(646,file="st"//buf1//"_wl"//buf2//
      *    "_T_Lambda_L.txt",status='unknown')
-          open(647,file="p_"//buf2//
+          open(647,file="st"//buf1//"_wl"//buf2//
      *    "_R_Lambda_L.txt",status='unknown')
-          open(648,file="p_"//buf2//
+          open(648,file="st"//buf1//"_wl"//buf2//
      *    "_A_Lambda_L.txt",status='unknown')
-          open(649,file="p_"//buf2//
+          open(649,file="st"//buf1//"_wl"//buf2//
      *    "_T_Lambda_CD.txt",status='unknown')
-          open(650,file="p_"//buf2//
+          open(650,file="st"//buf1//"_wl"//buf2//
      *    "_R_Lambda_CD.txt",status='unknown')
-          open(651,file="p_"//buf2//
+          open(651,file="st"//buf1//"_wl"//buf2//
      *    "_A_Lambda_CD.txt",status='unknown')
-          open(660,file="p_"//buf2//
+          open(660,file="st"//buf1//"_wl"//buf2//
      *    "_T_MAT_lr.txt",status='unknown')
-          open(661,file="p_"//buf2//
+          open(661,file="st"//buf1//"_wl"//buf2//
      *    "_R_MAT_lr.txt",status='unknown')
-          open(662,file="p_"//buf2//
+          open(662,file="st"//buf1//"_wl"//buf2//
      *    "_T_phase_lr.txt",status='unknown')
-          open(663,file="p_"//buf2//
+          open(663,file="st"//buf1//"_wl"//buf2//
      *    "_R_phase_lr.txt",status='unknown')
         else
-          open(643,file="p_"//buf2//
+          open(643,file="st"//buf1//"_wl"//buf2//
      *    "_T_Lambda.txt",status='unknown')
-          open(644,file="p_"//buf2//
+          open(644,file="st"//buf1//"_wl"//buf2//
      *    "_R_Lambda.txt",status='unknown')
-          open(645,file="p_"//buf2//
+          open(645,file="st"//buf1//"_wl"//buf2//
      *    "_A_Lambda.txt",status='unknown')
         endif
       endif
@@ -1424,7 +1431,8 @@ C
      *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
      *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
      *    numberprop_S, numberprop_S_b, freq, Zeroth_Order_inv,
-     *    debug, incident, what4incident, out4incident)
+     *    debug, incident, what4incident, out4incident,
+     *    title, parallel(1))
       else  !No Substrate
 C  Scattering Matrices
       if (debug .eq. 1) then
@@ -1437,7 +1445,8 @@ C  Scattering Matrices
      *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
      *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
      *    numberprop_S, freq, Zeroth_Order_inv,
-     *    debug, incident, what4incident, out4incident)
+     *    debug, incident, what4incident, out4incident,
+     *    title, parallel(1))
       endif  !End Substrate Options
 C
       if (debug .eq. 2 .and. i_lambda .eq. debug_i_lambda) then

@@ -56,6 +56,7 @@ CdTe   = Material(np.loadtxt('%sCdTe.txt'% data_location))
 FeS2   = Material(np.loadtxt('%sFeS2.txt'% data_location))
 Zn3P2  = Material(np.loadtxt('%sZn3P2.txt'% data_location))
 Au     = Material(np.loadtxt('%sAu.txt'% data_location))
+Ag     = Material(np.loadtxt('%sAg.txt'% data_location))
 Sb2S3  = Material(np.loadtxt('%sSb2S3.txt'% data_location))
 
 test   = Material(np.loadtxt('%sTuniz.txt'% data_location))#copy.deepcopy(Air)
@@ -70,7 +71,8 @@ test   = Material(np.loadtxt('%sTuniz.txt'% data_location))#copy.deepcopy(Air)
 #     FeS2.n_interp(wavelengths)
 #     Zn3P2.n_interp(wavelengths)
 
-def interp_needed(wavelengths, inclusion_a, inclusion_b, background, superstrate, substrate):
+def interp_needed(wavelengths, inclusion_a=Air, inclusion_b=Air, background=Air,
+                    superstrate=Air, substrate=Air):
     if inclusion_a == Air or inclusion_b == Air or background == Air or superstrate == Air or substrate == Air:
         Air.n_interp(wavelengths)
         # n_plot('Air',wavelengths, Air.interp_data)

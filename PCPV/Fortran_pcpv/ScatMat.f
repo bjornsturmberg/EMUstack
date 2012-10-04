@@ -6,7 +6,8 @@ C
      *             TLambda, RLambda, traLambda, pol, PropModes, 
      *             lambda, d_in_nm,
      *    numberprop_S, freq, Zeroth_Order_inv,
-     *    debug, incident, what4incident, out4incident)
+     *    debug, incident, what4incident, out4incident,
+     *    title, parallel_1)
 C
       implicit none
 C
@@ -14,6 +15,8 @@ C
 c     32-but integers for BLAS and LAPACK
       integer*4 nval_max_32, PW_max_32, h_i
       integer*8 debug, numberprop_S, Zeroth_Order_inv
+      integer*8 title, parallel_1
+      character buf1*4, buf2*4
       complex*16 Beta(nval)
       double precision h, h_1, h_2, h_int, lambda, freq
       parameter (nval_max_32 = 1000)
@@ -352,7 +355,7 @@ C      open (unit=343, file='Matrices/T_c_plus.txt',
         enddo
       enddo 
       close(343)
-      endif
+      endif ! PrintSolution .ne. 0.0d0
 C      
 CCCCCCCCCCCCCCC   Saving Matrices to files   CCCCCCCCCCCCCCCCC
 C
@@ -371,9 +374,19 @@ C      close(341)
 C      close(342)
 C      endif
 C
-      if (PrintAll .eq. 1) then
-C      open (unit=345, file='Matrices/R12.txt',
-      open (unit=345, file='R12.txt',
+C      if (PrintAll .eq. 1) then
+      write(buf1,'(I4.4)') title
+      write(buf2,'(I4.4)') parallel_1 
+      open (unit=345, file="st"//buf1//"_wl"//buf2//"_P.txt",
+     *         status='unknown')
+      do k=1,nval
+        do i=1,nval
+          write(345,101) i, k, P(i,k), abs(P(i,k))**2
+        enddo
+      enddo 
+      close(345)
+C      open (unit=345, file='Matrices/R12.txt',   
+      open (unit=345, file="st"//buf1//"_wl"//buf2//"_R12.txt",
      *         status='unknown')
       do k=1,2*neq_PW
         do i=1,2*neq_PW
@@ -382,7 +395,7 @@ C      open (unit=345, file='Matrices/R12.txt',
       enddo 
       close(345)
 C      open (unit=345, file='Matrices/T12.txt',
-      open (unit=345, file='T12.txt',
+      open (unit=345, file="st"//buf1//"_wl"//buf2//'_T12.txt',
      *         status='unknown')
       do k=1,2*neq_PW
         do i=1,nval
@@ -391,7 +404,7 @@ C      open (unit=345, file='Matrices/T12.txt',
       enddo 
       close(345)
 C      open (unit=345, file='Matrices/R21.txt',
-      open (unit=345, file='R21.txt',
+      open (unit=345, file="st"//buf1//"_wl"//buf2//'_R21.txt',
      *         status='unknown')
       do k=1,nval
         do i=1,nval
@@ -400,7 +413,7 @@ C      open (unit=345, file='Matrices/R21.txt',
       enddo 
       close(345)
 C      open (unit=345, file='Matrices/T21.txt',
-      open (unit=345, file='T21.txt',
+      open (unit=345, file="st"//buf1//"_wl"//buf2//'_T21.txt',
      *         status='unknown')
       do k=1,nval
         do i=1,2*neq_PW
@@ -408,7 +421,7 @@ C      open (unit=345, file='Matrices/T21.txt',
         enddo
       enddo 
       close(345)
-      endif ! PrintAll .ne. 0.0d0
+C      endif ! PrintAll .ne. 0.0d0
 C
 101   format(I4,I4,3(G25.17))
 C

@@ -7,8 +7,8 @@ from calculate_ff     import calculate_ff
 
 data_location = '../PCPV/Data/'
 
-class SolarCell(object):
-    """ Represents Solar Cell structure
+class NanoStruct(object):
+    """ Represents structured layer
     """
     def __init__(self, period, ff, radius1, radius2=0, radius3=0, radius4=0, radius5=0,
         radius6=0, radius7=0, radius8=0, radius9=0, radius10=0, radius11=0, radius12=0, radius13=0,
@@ -18,7 +18,7 @@ class SolarCell(object):
         superstrate = materials.Air, substrate = materials.SiO2_a,
         loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 4, make_mesh_now = False, force_mesh = False,
         lc_bkg = 0.09, lc2_surf= 1.7, lc3_inc1 = 1.9, lc4_inc2 = 1.9, lc5_inc3 = 1.9, lc6_inc4 = 1.9,
-        posx = 0, posy = 0):
+        posx = 0, posy = 0, max_num_BMs = 100, label_nu = 0):
         self.radius1     = radius1
         self.radius2     = radius2
         self.radius3     = radius3
@@ -51,6 +51,8 @@ class SolarCell(object):
         self.ly          = ly
         self.nb_typ_el   = nb_typ_el
         self.set_ff      = set_ff
+        self.max_num_BMs = max_num_BMs
+        self.label_nu       = label_nu
         if substrate == superstrate:
             self.has_substrate = 0
         else:
@@ -75,6 +77,7 @@ class SolarCell(object):
         else:
             self.mesh_file   = mesh_file
             self.mesh_format = mesh_format
+
 
 
     def make_mesh(self):
@@ -228,16 +231,35 @@ class SolarCell(object):
             
             gmsh_cmd = './'+ data_location + 'gmsh_conversion/' + "conv_gmsh_py.exe "+ data_location + msh_name
             os.system(gmsh_cmd)
-            gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
+            # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
             # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
             # os.system(gmsh_cmd)
          
+class ThinFilm(object):
+    """ Represents homogeneous film """
+    def __init__(self, simo_period, height_1 = 2330, height_2 = 2330,
+         num_h = 1, film_material = materials.Si_c, 
+        superstrate = materials.Air, substrate = materials.Air, 
+        nu_tot_ords = 0, nu_prop_ords = 0, inv_zero_ord = 0, 
+        loss = True, label_nu = 0):
+        self.simo_period   = simo_period
+        self.height_1      = height_1
+        self.height_2      = height_2
+        self.num_h         = num_h
+        self.film_material = film_material
+        self.superstrate   = superstrate
+        self.substrate     = substrate
+        self.nu_tot_ords   = nu_tot_ords
+        self.nu_prop_ords  = nu_prop_ords
+        self.inv_zero_ord  = inv_zero_ord
+        self.loss          = loss
+        self.label_nu      = label_nu
+        
+
 
 class Light(object):
-    """ Represents the light incident on a PC.
-    """
+    """ Represents the light incident on structure """
     def __init__(self, Lambda, pol = 'TM', theta = 0, phi = 0):
-        """See docstring for Light"""
         self.Lambda = Lambda
         if  pol == 'Unpol':
             self.pol = 0
@@ -292,7 +314,7 @@ class Controls(object):
         PrintSupModes = 0, PrintAll = 0, Checks = 0, PropModes = 0, q_average = 0, 
         plot_real = 1, plot_imag = 0, plot_abs = 0, tol = 0, E_H_field = 1, 
         i_cond = 2, itermax = 30, incident = 0, what4incident = 2, out4incident = 0,
-        Animate = False):
+        Animate = False, var_BM_min = 370, max_order_PWs = 3, num_cores = 8, leave_cpus = False):
         self.debug         = debug
         self.traLambda     = traLambda
         self.PrintOmega    = PrintOmega
@@ -313,3 +335,11 @@ class Controls(object):
         self.what4incident = what4incident
         self.out4incident  = out4incident
         self.Animate       = Animate
+        self.var_BM_min    = var_BM_min
+        self.max_order_PWs = max_order_PWs
+        self.num_cores     = num_cores
+        if leave_cpus == True:
+            # number of cpus to leave free
+            import multiprocessing   as mp
+            num_cores_sahand_gets = 8
+            self.num_cores = mp.cpu_count() - num_cores_sahand_gets
