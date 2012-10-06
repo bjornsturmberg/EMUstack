@@ -8,44 +8,49 @@ data_location = '../PCPV/Data/'
 class Material(object):
     """docstring for """
     def __init__(self, n_data):
-         self.data_wls   = n_data[:,0]
-         self.data_re_ns = n_data[:,1]
-         self.data_im_ns = n_data[:,2]
-         self.stored_ns  = {}
+
+    # if n_data.isdigit() == True:
+    #     print 'hi babes'
+    #     # n_inc = dict(zip(wavelengths, inclusion_a))
+    # else:
+        self.data_wls   = n_data[:,0]
+        self.data_re_ns = n_data[:,1]
+        self.data_im_ns = n_data[:,2]
+        self.stored_ns  = {}
 
     def n_interp(self, wavelengths):
-         if wavelengths.min() < self.data_wls.min():
-             raise ValueError, "Input wavelength: %(in)f smaller than \
-              data min of %(d)f" % {
-          'in' : wavelengths.min(), 'd' : self.data_wls.min()
-             }
-         if wavelengths.max() > self.data_wls.max():
-             raise ValueError, "Input wavelength: %(in)f larger than \
-              data max of %(d)f" % {
-          'in' : wavelengths.max(), 'd' : self.data_wls.max()
-             }
-         # spline_fit = interp1d(self.data_wls, self.data_re_ns, kind = 2)
-         # interp_re_n = spline_fit(wavelengths)
-         interp_re_n = np.interp(wavelengths, 
-             self.data_wls, self.data_re_ns)
-         interp_im_n = np.interp(wavelengths, 
-             self.data_wls, self.data_im_ns)
-         self.interp_data = interp_re_n + 1j*interp_im_n
-         self.stored_ns   = dict(zip(wavelengths, self.interp_data))
+        if wavelengths.min() < self.data_wls.min():
+            raise ValueError, "Input wavelength: %(in)f smaller than \
+             data min of %(d)f" % {
+         'in' : wavelengths.min(), 'd' : self.data_wls.min()
+            }
+        if wavelengths.max() > self.data_wls.max():
+            raise ValueError, "Input wavelength: %(in)f larger than \
+             data max of %(d)f" % {
+         'in' : wavelengths.max(), 'd' : self.data_wls.max()
+            }
+        # spline_fit = interp1d(self.data_wls, self.data_re_ns, kind = 2)
+        # interp_re_n = spline_fit(wavelengths)
+        interp_re_n = np.interp(wavelengths, 
+            self.data_wls, self.data_re_ns)
+        interp_im_n = np.interp(wavelengths, 
+            self.data_wls, self.data_im_ns)
+        self.interp_data = interp_re_n + 1j*interp_im_n
+        self.stored_ns   = dict(zip(wavelengths, self.interp_data))
 
 
     def n(self, wl):
-         """ Return n at the specified wavelength."""
-         # if self.stored_ns.has_key(wl):
-         return self.stored_ns[wl]
-         # else:
-         #     except KeyError:
-         #     raise  NotImplementedError
-         #     "Cannot interpolate for individual wavelengths"
+        """ Return n at the specified wavelength."""
+        # if self.stored_ns.has_key(wl):
+        return self.stored_ns[wl]
+        # else:
+        #     except KeyError:
+        #     raise  NotImplementedError
+        #     "Cannot interpolate for individual wavelengths"
 
     def max_n(self):
-         """ Return maximum of Re(n) over the interpolation range."""
-         return self.interp_data.real.max()
+        """ Return maximum of Re(n) over the interpolation range."""
+        return self.interp_data.real.max()
 
 Air    = Material(np.loadtxt('%sAir.txt'% data_location))
 Si_c   = Material(np.loadtxt('%sSi_c.txt'% data_location))
@@ -105,6 +110,8 @@ def interp_needed(wavelengths, inclusion_a=Air, inclusion_b=Air, background=Air,
         # n_plot('Sb2S3',wavelengths, Sb2S3.interp_data)
     if inclusion_a == test or inclusion_b == test or background == test or superstrate == test or substrate == test:
         test.n_interp(wavelengths)
+
+
 
 # from matplotlib.mlab import griddata
 # import matplotlib

@@ -1,6 +1,7 @@
 
 
 import numpy as np
+from paper_plot import tmp_plot
 
 def load_scat_mat(name, st, p):
     # reshape matrices to be consistent with pcpv.exe output
@@ -58,8 +59,14 @@ def save_TR_mats(matrix, name, p):
 
 
 
-def net_scat_mats(solar_cell, nu_wls):
-    for p in range(nu_wls):
+def net_scat_mats(solar_cell, wavelengths):
+    Transmittance = []
+    Reflectance   = []
+    Absorptance   = []
+    T_save = []
+    R_save = []
+    A_save = []
+    for p in range(len(wavelengths)):
         p += 1
 
         # calculate list of scattering matrices of interfaces without air slices\
@@ -100,29 +107,38 @@ def net_scat_mats(solar_cell, nu_wls):
         select_ord_in  = solar_cell[-1].set_ord_in
         select_ord_out = solar_cell[0].set_ord_out
 
-        Lambda_t = 0
         inc      = solar_cell[0].zero_ord
-        # tnet = load_scat_mat('T12', solar_cell[0].label_nu, p)#.T
+        Lambda_t = 0
         for i in range(solar_cell[0].nu_prop_ords):
             #TM
             # Lambda_t = Lambda_t + abs(tnet[i,neq_PW+inc])**2 + abs(tnet[neq_PW+i,neq_PW+inc])**2
             #TE
             Lambda_t = Lambda_t + abs(tnet[i,inc])**2 + abs(tnet[neq_PW+i,inc])**2
 
-        Lambda_r = 0
         inc      = solar_cell[-1].zero_ord
+        Lambda_r = 0
         for i in range(solar_cell[-1].nu_prop_ords):
             #TM
             # Lambda_r = Lambda_r + abs(rnet[i,neq_PW+inc])**2 + abs(rnet[neq_PW+i,neq_PW+inc])**2
             #TE
             Lambda_r = Lambda_r + abs(rnet[i,inc])**2 + abs(rnet[neq_PW+i,inc])**2
 
-        
         absorption = 1 - Lambda_r - Lambda_t
-        print 'r', Lambda_r
-        print 't', Lambda_t
-        print 'a', absorption
 
-        # absorption = 1 - Lambda_r - Lambda_t*(solar_cell[0]/solar_cell[-1])
-        # print 'a', absorption
 
+        Transmittance.append(Lambda_t)
+        Reflectance.append(Lambda_r)
+        Absorptance.append(absorption)
+        T_save.append((wavelengths[p-1], Lambda_t))
+        R_save.append((wavelengths[p-1], Lambda_r))
+        A_save.append((wavelengths[p-1], absorption))
+
+    np.savetxt('Transmittance.txt', T_save, fmt=['%18.10f','%25.17f'], delimiter='')
+    np.savetxt('Reflectance.txt', R_save, fmt=['%18.10f','%25.17f'], delimiter='')
+    np.savetxt('Absorptance.txt', A_save, fmt=['%18.10f','%25.17f'], delimiter='')
+
+    relative_wave_nu = 120/wavelengths
+
+    tmp_plot(relative_wave_nu, Reflectance, 'R_Spec')
+    tmp_plot(relative_wave_nu, Transmittance, 'T_Spec')
+    tmp_plot(relative_wave_nu, Absorptance, 'A_Spec')

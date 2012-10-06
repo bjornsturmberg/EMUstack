@@ -30,7 +30,7 @@ start = time.time()
 label_nu = 0
 ################ Simulation parameters ################
 
-simo_para  = objects.Controls(debug = 0,max_order_PWs = 4, num_cores = 6)
+simo_para  = objects.Controls(debug = 0,max_order_PWs = 1, num_cores = 6)
 
 # Remove results of previous simulations
 clear_previous.clean('.txt')
@@ -38,20 +38,20 @@ clear_previous.clean('.pdf')
 clear_previous.clean('.log')
 
 ################ Light parameters #####################
-# wl_1     = 310
-# wl_2     = 410   # < 400 Im(n(cSi)) large
-# wl_3     = 1010  # > 1010 Im(n(cSi)) = 0
-# wl_4     = 1110
-# wl_5     = 1127
-# no_wl_1  = 1#46    # 2 nm steps
-# no_wl_2  = 2#610   # 1 nm steps
-# no_wl_3  = 1#10    # 10 nm steps - total 667 wavelengths
-# # Set up light objects
-# wl_array_1  = np.linspace(wl_1, wl_2, no_wl_1)
-# wl_array_2  = np.linspace(wl_2+1, wl_3, no_wl_2)
-# wl_array_3  = np.linspace(wl_3+1, wl_4, no_wl_3)
-# wavelengths = np.concatenate((wl_array_1,wl_array_2, wl_array_3, [wl_5]))
-# light_list  = [objects.Light(wl) for wl in wavelengths]
+wl_1     = 310
+wl_2     = 410   # < 400 Im(n(cSi)) large
+wl_3     = 1010  # > 1010 Im(n(cSi)) = 0
+wl_4     = 1110
+wl_5     = 1127
+no_wl_1  = 1#46    # 2 nm steps
+no_wl_2  = 2#610   # 1 nm steps
+no_wl_3  = 1#10    # 10 nm steps - total 667 wavelengths
+# Set up light objects
+wl_array_1  = np.linspace(wl_1, wl_2, no_wl_1)
+wl_array_2  = np.linspace(wl_2+1, wl_3, no_wl_2)
+wl_array_3  = np.linspace(wl_3+1, wl_4, no_wl_3)
+wavelengths = np.concatenate((wl_array_1,wl_array_2, wl_array_3, [wl_5]))
+light_list  = [objects.Light(wl) for wl in wavelengths]
 # Single wavelength run
 wl_super = 700
 wavelengths = np.array([wl_super])
@@ -75,17 +75,17 @@ label_nu = scat_mats(cover, light_list, simo_para)
 
 radius1     = 60
 ff          = calculate_ff(period,radius1)
-max_num_BMs = 180
+max_num_BMs = 20
 # mesh = 'bj_can_a60_d600.mail'
 grating_1 = objects.NanoStruct(period, ff, radius1,
     # mesh_file = mesh,
     set_ff = False, height_1 = 2200, height_2 = 2400, num_h = 1,
-    inclusion_a = materials.SiO2_a, background = materials.Si_c,
+    inclusion_a = 2.0, background = materials.Si_c,
     superstrate = materials.Air, substrate = materials.Air, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = False,
     lc_bkg = 0.1, lc2_surf= 1.9, lc3_inc1 = 1.9, lc4_inc2 = 1.9, lc5_inc3 = 1.9, lc6_inc4 = 1.9,
     posx = 0, posy = 0, max_num_BMs = max_num_BMs, label_nu = label_nu)
-# label_nu = scat_mats(grating_1, light_list, simo_para)
+label_nu = scat_mats(grating_1, light_list, simo_para)
 
 
 homo_film  = objects.ThinFilm(simo_period = period, height_1 = 1000, height_2 = 1000, num_h = 1,
@@ -110,7 +110,7 @@ solar_cell list MUST be ordered from bottom to top!
 solar_cell = [bottom, homo_film, cover]
 # test that all structures have the same period!
 
-net_scat_mats(solar_cell,len(wavelengths))
+net_scat_mats(solar_cell,wavelengths)
 
 
 

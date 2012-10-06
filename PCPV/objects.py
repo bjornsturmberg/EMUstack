@@ -52,7 +52,7 @@ class NanoStruct(object):
         self.nb_typ_el   = nb_typ_el
         self.set_ff      = set_ff
         self.max_num_BMs = max_num_BMs
-        self.label_nu       = label_nu
+        self.label_nu    = label_nu
         if substrate == superstrate:
             self.has_substrate = 0
         else:
@@ -238,7 +238,7 @@ class NanoStruct(object):
 class ThinFilm(object):
     """ Represents homogeneous film """
     def __init__(self, simo_period, height_1 = 2330, height_2 = 2330,
-         num_h = 1, film_material = materials.Si_c, 
+        num_h = 1, film_material = materials.Si_c, 
         superstrate = materials.Air, substrate = materials.Air, 
         nu_tot_ords = 0, nu_prop_ords = 0, zero_ord = 0, 
         set_ord_in = 0, set_ord_out = 0, loss = True, label_nu = 0):

@@ -28,19 +28,54 @@ class Simmo(object):
 
 
     def inclusion_a_n(self):
-        return self.structure.inclusion_a.n(self.light.Lambda)
+        if isinstance(self.structure.inclusion_a, float):
+            return complex(self.structure.inclusion_a)
+        if isinstance(self.structure.inclusion_a, complex):
+            return self.structure.inclusion_a
+        if isinstance(self.structure.inclusion_a, int):
+            return complex(self.structure.inclusion_a)
+        else:
+            return self.structure.inclusion_a.n(self.light.Lambda)
 
     def inclusion_b_n(self):
-        return self.structure.inclusion_b.n(self.light.Lambda)
+        if isinstance(self.structure.inclusion_b, float):
+            return complex(self.structure.inclusion_b)
+        if isinstance(self.structure.inclusion_b, complex):
+            return self.structure.inclusion_b
+        if isinstance(self.structure.inclusion_b, int):
+            return complex(self.structure.inclusion_b)
+        else:
+            return self.structure.inclusion_b.n(self.light.Lambda)
 
     def background_n(self):
-        return self.structure.background.n(self.light.Lambda)
+        if isinstance(self.structure.background, float):
+            return complex(self.structure.background)
+        if isinstance(self.structure.background, complex):
+            return self.structure.background
+        if isinstance(self.structure.background, int):
+            return complex(self.structure.background)
+        else:
+            return self.structure.background.n(self.light.Lambda)
 
     def superstrate_n(self):
-        return self.structure.superstrate.n(self.light.Lambda)
+        if isinstance(self.structure.superstrate, float):
+            return complex(self.structure.superstrate)
+        if isinstance(self.structure.superstrate, complex):
+            return self.structure.superstrate
+        if isinstance(self.structure.superstrate, int):
+            return complex(self.structure.superstrate)
+        else:
+            return self.structure.superstrate.n(self.light.Lambda)
 
     def substrate_n(self):
-        return self.structure.substrate.n(self.light.Lambda)
+        if isinstance(self.structure.substrate, float):
+            return complex(self.structure.substrate)
+        if isinstance(self.structure.substrate, complex):
+            return self.structure.substrate
+        if isinstance(self.structure.substrate, int):
+            return complex(self.structure.substrate)
+        else:
+            return self.structure.substrate.n(self.light.Lambda)
         
     def fortran_command_str(self):
         """Return a string that runs the simmo, to execute in a shell"""
@@ -56,7 +91,10 @@ class Simmo(object):
             superstrate_n = np.real(superstrate_n)
             substrate_n   = np.real(substrate_n)
         if self.light.Lambda > self.var_BM_min:
-            max_n         = self.structure.inclusion_a.max_n()
+            if isinstance(inclusion_a_n, complex):
+                max_n = self.structure.inclusion_a
+            else:
+                max_n         = self.structure.inclusion_a.max_n()
             nval_tmp      = self.max_num_BMs*inclusion_a_n.real/max_n
             nval          = round(nval_tmp)
             ordre_ls      = round(self.max_order_PWs*nval/self.max_num_BMs)
@@ -204,6 +242,7 @@ def calc_k_perp(layer, k_list, d, theta, phi, ordre_ls,
     k_perp = []
     zero_ord = 0
     k_el = 0
+    layer.nu_prop_ords = 0
     for k in k_list:
         common_factor = np.sin(theta*pi/180.0)*k
         bloch1 = common_factor*np.cos(phi*pi/180.0)
@@ -305,8 +344,19 @@ def scat_mats(layer, light_list, simo_para):
             # refractive indeces listed so that thin film is first,
             # that way can order plane waves of infintesimal air layers
             # as per thin film, which is ordered consistent with FEM.
-            n = np.array([layer.film_material.n(wl), layer.substrate.n(wl),
-                layer.superstrate.n(wl)])
+            if isinstance(layer.film_material, complex):
+                n_1 = layer.film_material
+            else:
+                n_1 = layer.film_material.n(wl)
+            if isinstance(layer.substrate, complex):
+                n_2 = layer.substrate
+            else:
+                n_2 = layer.substrate.n(wl)
+            if isinstance(layer.superstrate, complex):
+                n_3 = layer.superstrate
+            else:
+                n_3 = layer.superstrate.n(wl)
+            n = np.array([n_1, n_2, n_3])
             if layer.loss == False:
                 n = np.real(n)
 
@@ -350,12 +400,7 @@ def scat_mats(layer, light_list, simo_para):
             t23 = np.mat(np.diag((2.*sqrt(Z_3*Z_2))/(Z_3 + Z_2)))
 
 
-
-
             # saving matrices to file
-            # save_scat_mat(np.mat(np.diag(Z_1)), 'Z1', layer.label_nu, p, matrix_size)
-            # save_scat_mat(np.mat(np.diag(Z_2)), 'Z2', layer.label_nu, p, matrix_size)
-            # save_scat_mat(np.mat(np.diag(Z_3)), 'Z3', layer.label_nu, p, matrix_size)
             if layer.substrate == layer.superstrate:
                 save_scat_mat(r12, 'R12', layer.label_nu, p, matrix_size)
                 save_scat_mat(t12, 'T12', layer.label_nu, p, matrix_size)
@@ -366,13 +411,16 @@ def scat_mats(layer, light_list, simo_para):
                 save_scat_mat(t12, 'T12', layer.label_nu, p, matrix_size)
                 save_scat_mat(r23, 'R23', layer.label_nu, p, matrix_size)
                 save_scat_mat(t23, 'T23', layer.label_nu, p, matrix_size)
+            # save_scat_mat(np.mat(np.diag(Z_1)), 'Z1', layer.label_nu, p, matrix_size)
+            # save_scat_mat(np.mat(np.diag(Z_2)), 'Z2', layer.label_nu, p, matrix_size)
+            # save_scat_mat(np.mat(np.diag(Z_3)), 'Z3', layer.label_nu, p, matrix_size)
 
             if layer.height_1 != 'semi_inf':
                 # layer thickness in units of period d in nanometers
                 h_normed = float(layer.height_1)/d_in_nm
-                P_array = np.exp(1j*np.array(k_film, complex)*h_normed)
-                P_array = np.append(P_array, P_array)
-                P       = np.matrix(np.diag(P_array),dtype='D')
+                P_array  = np.exp(1j*np.array(k_film, complex)*h_normed)
+                P_array  = np.append(P_array, P_array)
+                P        = np.matrix(np.diag(P_array),dtype='D')
                 save_scat_mat(P, 'P', layer.label_nu, p, matrix_size)
 
             p += 1
