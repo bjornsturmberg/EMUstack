@@ -59,6 +59,11 @@ light_list  = [objects.Light(wl) for wl in wavelengths]
 
 
 ################ Scattering matrices (for distinct layers) ##############
+""" Calculate scattering matrices for each distinct layer.
+Calculated in the order listed below, however this does not influence final 
+structure which is defined later
+"""
+
 # period must be consistent throughout simulation!!!
 period      = 600
 
@@ -70,7 +75,7 @@ label_nu = scat_mats(cover, light_list, simo_para)
 
 radius1     = 60
 ff          = calculate_ff(period,radius1)
-max_num_BMs = 20
+max_num_BMs = 180
 # mesh = 'bj_can_a60_d600.mail'
 grating_1 = objects.NanoStruct(period, ff, radius1,
     # mesh_file = mesh,
@@ -83,23 +88,26 @@ grating_1 = objects.NanoStruct(period, ff, radius1,
 # label_nu = scat_mats(grating_1, light_list, simo_para)
 
 
-homo_film  = objects.ThinFilm(simo_period = period, height_1 = 2200, height_2 = 2400, num_h = 1,
-    film_material = materials.Air, superstrate = materials.Air, 
+homo_film  = objects.ThinFilm(simo_period = period, height_1 = 1000, height_2 = 1000, num_h = 1,
+    film_material = materials.Si_c, superstrate = materials.Air, 
     substrate = materials.Air,loss = True, label_nu = label_nu)
-# label_nu = scat_mats(homo_film, light_list, simo_para)
+label_nu = scat_mats(homo_film, light_list, simo_para)
 
 
 # will only ever use top scattering matrices for the bottom layer
 bottom = objects.ThinFilm(simo_period = period, height_1 = 'semi_inf',
-    film_material = materials.Si_c, superstrate = materials.Air, 
-    loss = False, label_nu = label_nu)
+    film_material = materials.Air, superstrate = materials.Air, 
+    loss = True, label_nu = label_nu)
 label_nu = scat_mats(bottom, light_list, simo_para)
 
 
 
 ################ Construct full solar cell structure ##############
+""" Now when defining full structure order is critical and
+solar_cell list MUST be ordered from bottom to top!
+"""
 # starting from bottom, building upwards
-solar_cell = [bottom, cover]
+solar_cell = [bottom, homo_film, cover]
 # test that all structures have the same period!
 
 net_scat_mats(solar_cell,len(wavelengths))

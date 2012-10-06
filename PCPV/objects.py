@@ -240,8 +240,8 @@ class ThinFilm(object):
     def __init__(self, simo_period, height_1 = 2330, height_2 = 2330,
          num_h = 1, film_material = materials.Si_c, 
         superstrate = materials.Air, substrate = materials.Air, 
-        nu_tot_ords = 0, nu_prop_ords = 0, inv_zero_ord = 0, 
-        loss = True, label_nu = 0):
+        nu_tot_ords = 0, nu_prop_ords = 0, zero_ord = 0, 
+        set_ord_in = 0, set_ord_out = 0, loss = True, label_nu = 0):
         self.simo_period   = simo_period
         self.height_1      = height_1
         self.height_2      = height_2
@@ -251,10 +251,12 @@ class ThinFilm(object):
         self.substrate     = substrate
         self.nu_tot_ords   = nu_tot_ords
         self.nu_prop_ords  = nu_prop_ords
-        self.inv_zero_ord  = inv_zero_ord
+        self.zero_ord      = zero_ord
+        self.set_ord_in    = set_ord_in
+        self.set_ord_out   = set_ord_out
         self.loss          = loss
         self.label_nu      = label_nu
-        
+       
 
 
 class Light(object):
@@ -313,8 +315,10 @@ class Controls(object):
     def __init__(self, debug = 0, traLambda = 1 , PrintOmega = 1, PrintSolution = 0, 
         PrintSupModes = 0, PrintAll = 0, Checks = 0, PropModes = 0, q_average = 0, 
         plot_real = 1, plot_imag = 0, plot_abs = 0, tol = 0, E_H_field = 1, 
-        i_cond = 2, itermax = 30, incident = 0, what4incident = 2, out4incident = 0,
-        Animate = False, var_BM_min = 370, max_order_PWs = 3, num_cores = 8, leave_cpus = False):
+        i_cond = 2, itermax = 30, incident = 0, 
+        x_order_in = 0, x_order_out = 0, y_order_in = 0, y_order_out = 0,
+        what4incident = 2, out4incident = 0, Animate = False, 
+        var_BM_min = 370, max_order_PWs = 3, num_cores = 8, leave_cpus = False):
         self.debug         = debug
         self.traLambda     = traLambda
         self.PrintOmega    = PrintOmega
@@ -332,6 +336,10 @@ class Controls(object):
         self.i_cond        = i_cond
         self.itermax       = itermax
         self.incident      = incident
+        self.x_order_in    = x_order_in
+        self.x_order_out   = x_order_out
+        self.y_order_in    = y_order_in
+        self.y_order_out   = y_order_out
         self.what4incident = what4incident
         self.out4incident  = out4incident
         self.Animate       = Animate

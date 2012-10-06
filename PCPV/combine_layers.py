@@ -79,39 +79,50 @@ def net_scat_mats(solar_cell, nu_wls):
         rnet = r21s[0]
         tnet = t21s[0]
         for i in range(1,len(solar_cell)-1):
-            print 'bugger'
-            # P = load_scat_mat('P', solar_cell[i].label_nu, p).T
-            # I_mat   = np.matrix(np.eye(len(P)),dtype='D')
-            # inverse_term = (I_mat - r12s[i]*P*rnet*P).I
-            # repeated_term = P*inverse_term*t21s[i]
-            # tnet = tnet*repeated_term
-            # rnet = r21s[i] + t12s[i]*P*rnet*repeated_term
+            P = load_scat_mat('P', solar_cell[i].label_nu, p).T
+            I_mat   = np.matrix(np.eye(len(P)),dtype='D')
+            inverse_term = (I_mat - r12s[i]*P*rnet*P).I
+            repeated_term = P*inverse_term*t21s[i]
+            tnet = tnet*repeated_term
+            rnet = r21s[i] + t12s[i]*P*rnet*repeated_term
 
         save_TR_mats(tnet, 'Tnet', p)
         save_TR_mats(rnet, 'Rnet', p)
 
 
+    # NEED to implement more involved selections from Tnet Rnet matrices, 
+    #      eg for Left, Right pol and CD
+    # atm inc in and all prop out
+    # also want absorption in each layer etc
+
         # select elements of Tnet, Rnet matrices to calculate absorption etc.
         neq_PW   = solar_cell[0].nu_tot_ords
+        select_ord_in  = solar_cell[-1].set_ord_in
+        select_ord_out = solar_cell[0].set_ord_out
+
         Lambda_t = 0
-        inc      = solar_cell[0].inv_zero_ord
-        # print inc
-        tnet = load_scat_mat('T12', solar_cell[0].label_nu, p)#.T
+        inc      = solar_cell[0].zero_ord
+        # tnet = load_scat_mat('T12', solar_cell[0].label_nu, p)#.T
         for i in range(solar_cell[0].nu_prop_ords):
             #TM
-            Lambda_t = Lambda_t + abs(tnet[i,neq_PW+inc])**2 + abs(tnet[neq_PW+i,neq_PW+inc])**2
-            # print abs(tnet[i,neq_PW+inc])**2
-            # print abs(tnet[neq_PW+i,neq_PW+inc])**2
+            # Lambda_t = Lambda_t + abs(tnet[i,neq_PW+inc])**2 + abs(tnet[neq_PW+i,neq_PW+inc])**2
             #TE
-            # Lambda_t = Lambda_t + abs(tnet[i,inc])**2 + abs(tnet[neq_PW+i,inc])**2
-        print 't', Lambda_t
+            Lambda_t = Lambda_t + abs(tnet[i,inc])**2 + abs(tnet[neq_PW+i,inc])**2
 
         Lambda_r = 0
-        inc      = solar_cell[-1].inv_zero_ord
-        # print inc
+        inc      = solar_cell[-1].zero_ord
         for i in range(solar_cell[-1].nu_prop_ords):
             #TM
-            Lambda_r = Lambda_r + abs(rnet[i,neq_PW+inc])**2 + abs(rnet[neq_PW+i,neq_PW+inc])**2
+            # Lambda_r = Lambda_r + abs(rnet[i,neq_PW+inc])**2 + abs(rnet[neq_PW+i,neq_PW+inc])**2
             #TE
-            # Lambda_r = Lambda_r + abs(rnet[i,inc])**2 + abs(rnet[neq_PW+i,inc])**2
+            Lambda_r = Lambda_r + abs(rnet[i,inc])**2 + abs(rnet[neq_PW+i,inc])**2
+
+        
+        absorption = 1 - Lambda_r - Lambda_t
         print 'r', Lambda_r
+        print 't', Lambda_t
+        print 'a', absorption
+
+        # absorption = 1 - Lambda_r - Lambda_t*(solar_cell[0]/solar_cell[-1])
+        # print 'a', absorption
+

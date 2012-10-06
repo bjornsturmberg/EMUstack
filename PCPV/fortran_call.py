@@ -199,7 +199,8 @@ def run_command_in_shell(command):
     """Submit full string of fortran call to command line"""
     return subprocess.call(command, shell = True)
 
-def calc_k_perp(layer, k_list, d, theta, phi, ordre_ls):
+def calc_k_perp(layer, k_list, d, theta, phi, ordre_ls, 
+        x_order_in, x_order_out, y_order_in, y_order_out):
     k_perp = []
     zero_ord = 0
     k_el = 0
@@ -210,35 +211,39 @@ def calc_k_perp(layer, k_list, d, theta, phi, ordre_ls):
         vec_kx = 2.0*pi/d
         vec_ky = 2.0*pi/d
 
-        beta_z_pw    = np.array([])
-        beta_z_pw_re = np.array([])
-        beta_z_pw_im = np.array([])
+        raw_beta_z_pw = np.array([])
         for px in np.linspace(-ordre_ls, ordre_ls, 2*ordre_ls +1):
             for py in np.linspace(-ordre_ls, ordre_ls, 2*ordre_ls +1):
                 if (px**2 + py**2) <= ordre_ls**2:
                     alpha = bloch1 + vec_kx*px  # Bloch vector along x
                     beta  = bloch2 + vec_ky*py  # Bloch vector along y
                     z_tmp = k**2 - alpha**2 - beta**2
-                    if np.real(sqrt(z_tmp)) > 0:
-                        beta_z_pw_re = np.append(beta_z_pw_re,sqrt(z_tmp))
-                        if k_el == 1:
+                    raw_beta_z_pw  = np.append(raw_beta_z_pw,sqrt(z_tmp))
+                    # number of propagating plane waves in thin film layer
+                    if k_el == 0:
+                        if np.real(z_tmp) > 0.0e-5:
                             layer.nu_prop_ords += 1
-                            if px == py == 0:
-                                zero_ord = len(beta_z_pw_re) - 1
-                    else:
-                        beta_z_pw_im = np.append(beta_z_pw_im,sqrt(z_tmp))
+                        if px == py == 0:
+                            zero_ord = len(raw_beta_z_pw)-1
+                        if px == x_order_in and py == y_order_in:
+                            select_order_in = len(raw_beta_z_pw)-1
+                        if px == x_order_out and py == y_order_out:
+                            select_order_out = len(raw_beta_z_pw)-1
 
-        # sort plane wave orders from most propagating to most evenescent - as in FEM
-        ind            = np.argsort(beta_z_pw_re)
-        if k_el == 1:
-            layer.inv_zero_ord = ind[zero_ord]
-        rev_ind        = np.argsort(-beta_z_pw_re) # reverses indices
-        beta_z_pw_re = beta_z_pw_re[rev_ind]
-        beta_z_pw_im = np.sort(beta_z_pw_im)
-        beta_z_pw    = np.concatenate((beta_z_pw_re, beta_z_pw_im))  
-        k_perp.append(beta_z_pw)
+        # sort plane waves as [propagating big -> small, evanescent small -> big]
+        # which is consistent with FEM
+        # to be consistent in impedances Z, sub/superstrate sorted to order of thin film
+        if k_el == 0: # if thin film layer
+            rev_ind = np.argsort(-1*np.real(raw_beta_z_pw) + np.imag(raw_beta_z_pw))
+            layer.zero_ord    = int(np.where(rev_ind==zero_ord)[0])
+            layer.set_ord_in  = int(np.where(rev_ind==select_order_in)[0])
+            layer.set_ord_out = int(np.where(rev_ind==select_order_out)[0])
+        sorted_beta_z_pw = raw_beta_z_pw[rev_ind]
+        k_perp.append(sorted_beta_z_pw)
         k_el += 1
-    print k_perp[1]
+    # print 'k_perp[0]', k_perp[0]
+    # print 'k_perp[1]', k_perp[1]
+    # print 'k_perp[2]', k_perp[2]
     return k_perp
 
 
@@ -297,7 +302,10 @@ def scat_mats(layer, light_list, simo_para):
 
         p          = 1
         for wl in wavelengths:
-            n = np.array([layer.substrate.n(wl), layer.film_material.n(wl),
+            # refractive indeces listed so that thin film is first,
+            # that way can order plane waves of infintesimal air layers
+            # as per thin film, which is ordered consistent with FEM.
+            n = np.array([layer.film_material.n(wl), layer.substrate.n(wl),
                 layer.superstrate.n(wl)])
             if layer.loss == False:
                 n = np.real(n)
@@ -311,15 +319,19 @@ def scat_mats(layer, light_list, simo_para):
             light_angles = light_list[0]
             k_list   = 2*pi*n/wl_norm
             k_perp   = calc_k_perp(layer, k_list, d_norm,
-                light_angles.theta, light_angles.phi, simo_para.max_order_PWs)
+                light_angles.theta, light_angles.phi, simo_para.max_order_PWs,
+                simo_para.x_order_in, simo_para.x_order_out,
+                simo_para.y_order_in, simo_para.y_order_out)
+            k_film  = k_perp[0]
 
             # Impedance method only holds when pereability = 1 (good approx for Ag Al etc)
             shape_k_perp = np.shape(k_perp)
+            num_ks       = shape_k_perp[0]
             num_pw       = shape_k_perp[1]
             layer.nu_tot_ords = num_pw
             matrix_size  = 2*num_pw
-            wave_imp_mat = np.zeros((shape_k_perp[0],matrix_size),complex)
-            for i in range(shape_k_perp[0]):
+            wave_imp_mat = np.zeros((num_ks,matrix_size),complex)
+            for i in range(num_ks):
                 impedance = np.ones(num_pw)/n[i]
                 k         = np.ones(num_pw)*k_list[i]
                 wave_imp  = np.zeros(matrix_size, complex)
@@ -329,26 +341,20 @@ def scat_mats(layer, light_list, simo_para):
                 wave_imp_mat[i,:] = wave_imp #numpy array rather than matrix!
 
             # Scattering matrices from wave impedances
-            Z_1 = wave_imp_mat[0,:]
-            Z_2 = wave_imp_mat[1,:]
-            Z_3 = wave_imp_mat[2,:]
+            Z_1 = wave_imp_mat[1,:] # for substrate
+            Z_2 = wave_imp_mat[0,:] # for thin film
+            Z_3 = wave_imp_mat[2,:] # for superstrate
             r12 = np.mat(np.diag((Z_2-Z_1)/(Z_2 + Z_1)))
             r23 = np.mat(np.diag((Z_3-Z_2)/(Z_3 + Z_2)))
-            # t12 = np.mat(np.diag((2*Z_2)/(Z_2 + Z_1)))
-            # t23 = np.mat(np.diag((2*Z_3)/(Z_3 + Z_2)))
-            # t23 = np.mat(np.diag((2*Z_3)/(Z_3 + Z_2)))
-            # print Z_1[6]
-            # print Z_2[6]
-            # print Z_3[6]
-
-
             t12 = np.mat(np.diag((2.*sqrt(Z_2*Z_1))/(Z_2 + Z_1)))
             t23 = np.mat(np.diag((2.*sqrt(Z_3*Z_2))/(Z_3 + Z_2)))
 
 
+
+
             # saving matrices to file
             # save_scat_mat(np.mat(np.diag(Z_1)), 'Z1', layer.label_nu, p, matrix_size)
-            save_scat_mat(np.mat(np.diag(Z_2)), 'Z2', layer.label_nu, p, matrix_size)
+            # save_scat_mat(np.mat(np.diag(Z_2)), 'Z2', layer.label_nu, p, matrix_size)
             # save_scat_mat(np.mat(np.diag(Z_3)), 'Z3', layer.label_nu, p, matrix_size)
             if layer.substrate == layer.superstrate:
                 save_scat_mat(r12, 'R12', layer.label_nu, p, matrix_size)
@@ -362,8 +368,9 @@ def scat_mats(layer, light_list, simo_para):
                 save_scat_mat(t23, 'T23', layer.label_nu, p, matrix_size)
 
             if layer.height_1 != 'semi_inf':
-                h_normed = layer.height_1/d_in_nm
-                P_array = np.exp(1j*np.array(k_perp[1], complex)*h_normed)
+                # layer thickness in units of period d in nanometers
+                h_normed = float(layer.height_1)/d_in_nm
+                P_array = np.exp(1j*np.array(k_film, complex)*h_normed)
                 P_array = np.append(P_array, P_array)
                 P       = np.matrix(np.diag(P_array),dtype='D')
                 save_scat_mat(P, 'P', layer.label_nu, p, matrix_size)
