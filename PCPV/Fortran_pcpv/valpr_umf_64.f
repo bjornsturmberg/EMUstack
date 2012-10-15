@@ -73,7 +73,7 @@ c
       complex*16 energ
       complex*16 d(nval+1), shift2, vp(neq,nval)
       integer*8 max_nvect
-      parameter(max_nvect=2000) ! previously 1500
+      parameter(max_nvect=2500) ! previously 1500
       complex*16 workev(3*max_nvect), z_tmp0, z_tmp
 c
       double precision rwork(max_nvect), tol

@@ -28,54 +28,44 @@ class Simmo(object):
 
 
     def inclusion_a_n(self):
-        if isinstance(self.structure.inclusion_a, float):
-            return complex(self.structure.inclusion_a)
         if isinstance(self.structure.inclusion_a, complex):
             return self.structure.inclusion_a
-        if isinstance(self.structure.inclusion_a, int):
-            return complex(self.structure.inclusion_a)
-        else:
+        elif isinstance(self.structure.inclusion_a,materials.Material):
             return self.structure.inclusion_a.n(self.light.Lambda)
+        else:
+            raise  NotImplementedError, "inclusion_a must either be complex number or material instance from materials.py"
 
     def inclusion_b_n(self):
-        if isinstance(self.structure.inclusion_b, float):
-            return complex(self.structure.inclusion_b)
         if isinstance(self.structure.inclusion_b, complex):
             return self.structure.inclusion_b
-        if isinstance(self.structure.inclusion_b, int):
-            return complex(self.structure.inclusion_b)
-        else:
+        elif isinstance(self.structure.inclusion_b,materials.Material):
             return self.structure.inclusion_b.n(self.light.Lambda)
+        else:
+            raise  NotImplementedError, "inclusion_b must either be complex number or material instance from materials.py"
 
     def background_n(self):
-        if isinstance(self.structure.background, float):
-            return complex(self.structure.background)
         if isinstance(self.structure.background, complex):
             return self.structure.background
-        if isinstance(self.structure.background, int):
-            return complex(self.structure.background)
-        else:
+        elif isinstance(self.structure.background,materials.Material):
             return self.structure.background.n(self.light.Lambda)
+        else:
+            raise  NotImplementedError, "background must either be complex number or material instance from materials.py"
 
     def superstrate_n(self):
-        if isinstance(self.structure.superstrate, float):
-            return complex(self.structure.superstrate)
         if isinstance(self.structure.superstrate, complex):
             return self.structure.superstrate
-        if isinstance(self.structure.superstrate, int):
-            return complex(self.structure.superstrate)
-        else:
+        elif isinstance(self.structure.superstrate,materials.Material):
             return self.structure.superstrate.n(self.light.Lambda)
+        else:
+            raise  NotImplementedError, "superstrate must either be complex number or material instance from materials.py"
 
     def substrate_n(self):
-        if isinstance(self.structure.substrate, float):
-            return complex(self.structure.substrate)
         if isinstance(self.structure.substrate, complex):
             return self.structure.substrate
-        if isinstance(self.structure.substrate, int):
-            return complex(self.structure.substrate)
-        else:
+        elif isinstance(self.structure.substrate,materials.Material):
             return self.structure.substrate.n(self.light.Lambda)
+        else:
+            raise  NotImplementedError, "substrate must either be complex number or material instance from materials.py"
         
     def fortran_command_str(self):
         """Return a string that runs the simmo, to execute in a shell"""
@@ -91,7 +81,7 @@ class Simmo(object):
             superstrate_n = np.real(superstrate_n)
             substrate_n   = np.real(substrate_n)
         if self.light.Lambda > self.var_BM_min:
-            if isinstance(inclusion_a_n, complex):
+            if isinstance(self.structure.inclusion_a, complex):
                 max_n = self.structure.inclusion_a
             else:
                 max_n         = self.structure.inclusion_a.max_n()
@@ -289,7 +279,7 @@ def calc_k_perp(layer, k_list, d, theta, phi, ordre_ls,
 def save_scat_mat(matrix, name, st, p, num_pw):
             # reshape matrices to be consistent with pcpv.exe output
             format_label_nu = '%04d' % st
-            format_p     = '%04d' % p
+            format_p        = '%04d' % p
 
             file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
                 'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
@@ -299,8 +289,18 @@ def save_scat_mat(matrix, name, st, p, num_pw):
                         data = [i+1,  k+1, np.real(matrix[i,k]), np.imag(matrix[i,k]),
                             np.abs(matrix[i,k])**2]
                         data = np.reshape(data, (1,5))
-                        np.savetxt(outfile, data, fmt=['%4i','%4i','%25.17f','%25.17f','%25.17f'], delimiter='')
+                        np.savetxt(outfile, data, fmt=['%4i','%4i','%25.17G','%25.17G','%25.17G'], delimiter='')
 
+def save_k_perp(matrix, name, st, p, num_pw):
+            format_label_nu = '%04d' % st
+            format_p        = '%04d' % p
+
+            file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
+                'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
+            with file(file_name, 'w') as outfile:
+                for k in range(num_pw):
+                    data = [[float(np.real(matrix[k])), float(np.imag(matrix[k]))]]
+                    np.savetxt(outfile, data, fmt=['%25.17G', '%25.17G'], delimiter='')
 
 
 
@@ -318,8 +318,11 @@ def scat_mats(layer, light_list, simo_para):
     if isinstance(layer,objects.NanoStruct):
         # Interpolate refractive indecies over wavelength array
         # materials.interp_all(wavelengths)
-        materials.interp_needed(wavelengths, layer.inclusion_a, layer.inclusion_b,
-                 layer.background, layer.superstrate, layer.substrate)
+        materials.interp_needed(wavelengths, layer.inclusion_a)
+        materials.interp_needed(wavelengths, layer.inclusion_b)
+        materials.interp_needed(wavelengths, layer.background)
+        materials.interp_needed(wavelengths, layer.superstrate)
+        materials.interp_needed(wavelengths, layer.substrate)
 
         # List of simulations to calculate, with full arguments
         simmo_list = []
@@ -336,8 +339,9 @@ def scat_mats(layer, light_list, simo_para):
 
 # For homogeneous layers calculate scattering matrices analytically
     elif isinstance(layer,objects.ThinFilm):
-        materials.interp_needed(wavelengths, layer.film_material,
-                 layer.superstrate, layer.substrate)
+        materials.interp_needed(wavelengths, layer.film_material)
+        materials.interp_needed(wavelengths, layer.superstrate)
+        materials.interp_needed(wavelengths, layer.substrate)
 
         p          = 1
         for wl in wavelengths:
@@ -346,16 +350,25 @@ def scat_mats(layer, light_list, simo_para):
             # as per thin film, which is ordered consistent with FEM.
             if isinstance(layer.film_material, complex):
                 n_1 = layer.film_material
-            else:
+            elif isinstance(layer.film_material,materials.Material):
                 n_1 = layer.film_material.n(wl)
+            else:
+                raise  NotImplementedError, "film_material must either be complex number or material instance from materials.py"
+
             if isinstance(layer.substrate, complex):
                 n_2 = layer.substrate
-            else:
+            elif isinstance(layer.substrate,materials.Material):
                 n_2 = layer.substrate.n(wl)
+            else:
+                raise  NotImplementedError, "substrate must either be complex number or material instance from materials.py"
+
             if isinstance(layer.superstrate, complex):
                 n_3 = layer.superstrate
-            else:
+            elif isinstance(layer.superstrate,materials.Material):
                 n_3 = layer.superstrate.n(wl)
+            else:
+                raise  NotImplementedError, "superstrate must either be complex number or material instance from materials.py"
+
             n = np.array([n_1, n_2, n_3])
             if layer.loss == False:
                 n = np.real(n)
@@ -417,9 +430,10 @@ def scat_mats(layer, light_list, simo_para):
 
             if layer.height_1 != 'semi_inf':
                 # layer thickness in units of period d in nanometers
+                save_k_perp(k_film, 'beta', layer.label_nu, p, num_pw)
                 h_normed = float(layer.height_1)/d_in_nm
                 P_array  = np.exp(1j*np.array(k_film, complex)*h_normed)
-                P_array  = np.append(P_array, P_array)
+                P_array  = np.append(P_array, P_array) # add 2nd polarisation
                 P        = np.matrix(np.diag(P_array),dtype='D')
                 save_scat_mat(P, 'P', layer.label_nu, p, matrix_size)
 

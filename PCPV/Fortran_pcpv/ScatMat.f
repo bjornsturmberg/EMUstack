@@ -377,14 +377,7 @@ C
 C      if (PrintAll .eq. 1) then
       write(buf1,'(I4.4)') title
       write(buf2,'(I4.4)') parallel_1 
-      open (unit=345, file="st"//buf1//"_wl"//buf2//"_P.txt",
-     *         status='unknown')
-      do k=1,nval
-        do i=1,nval
-          write(345,101) i, k, P(i,k), abs(P(i,k))**2
-        enddo
-      enddo 
-      close(345)
+
 C      open (unit=345, file='Matrices/R12.txt',   
       open (unit=345, file="st"//buf1//"_wl"//buf2//"_R12.txt",
      *         status='unknown')
@@ -421,9 +414,28 @@ C      open (unit=345, file='Matrices/T21.txt',
         enddo
       enddo 
       close(345)
-C      endif ! PrintAll .ne. 0.0d0
+C     P matrix for propagation through finite thickness
+      open (unit=345, file="st"//buf1//"_wl"//buf2//"_P.txt",
+     *         status='unknown')
+      do k=1,nval
+        do i=1,nval
+          write(345,1000) i, k, P(i,k), abs(P(i,k))**2
+        enddo
+      enddo 
+      close(345)
+C     Beta as will be used in P matrix      
+      open (unit=345, file="st"//buf1//"_wl"//buf2//'_beta.txt',
+     *         status='unknown')
+      do k=1,nval
+        write(345,1001) Beta(k)
+      enddo 
+      close(345)
+
 C
 101   format(I4,I4,3(G25.17))
+1000  format(I4,I4,3(G27.18E3))
+1001  format(2(G25.17))
+C      endif ! PrintAll .ne. 0.0d0
 C
 CCCCCCCCCC Check implementation of scattering matrices
 C

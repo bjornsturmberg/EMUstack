@@ -1,7 +1,10 @@
 # doc
 
 import numpy as np
-import copy
+from scipy.interpolate import UnivariateSpline
+# import copy
+
+
 
 data_location = '../PCPV/Data/'
 
@@ -18,6 +21,32 @@ class Material(object):
         self.data_im_ns = n_data[:,2]
         self.stored_ns  = {}
 
+    def n_spline(self, wavelengths):
+        if wavelengths.min() < self.data_wls.min():
+            raise ValueError, "Input wavelength: %(in)f smaller than \
+             data min of %(d)f" % {
+         'in' : wavelengths.min(), 'd' : self.data_wls.min()
+            }
+        if wavelengths.max() > self.data_wls.max():
+            raise ValueError, "Input wavelength: %(in)f larger than \
+             data max of %(d)f" % {
+         'in' : wavelengths.max(), 'd' : self.data_wls.max()
+            }
+        # for i in range(len(self.data_wls)-1):
+        #     if self.data_wls[i] == self.data_wls[i+1]:
+        #         print self.data_wls[i]
+        spline_fit  = UnivariateSpline(self.data_wls, self.data_re_ns, s = 1)
+        interp_re_n = spline_fit(wavelengths)
+        spline_fit  = UnivariateSpline(self.data_wls, self.data_im_ns, s = 1)
+        interp_im_n = spline_fit(wavelengths)
+        self.interp_data = interp_re_n + 1j*interp_im_n
+        # for single wavelength simo turn self.interp_data into array for zipping
+        if isinstance(interp_re_n, float): 
+            self.interp_data = np.array([interp_re_n + 1j*interp_im_n])
+        print repr(self.interp_data)
+        self.stored_ns   = dict(zip(wavelengths, self.interp_data))
+        # print self.stored_ns
+
     def n_interp(self, wavelengths):
         if wavelengths.min() < self.data_wls.min():
             raise ValueError, "Input wavelength: %(in)f smaller than \
@@ -29,14 +58,13 @@ class Material(object):
              data max of %(d)f" % {
          'in' : wavelengths.max(), 'd' : self.data_wls.max()
             }
-        # spline_fit = interp1d(self.data_wls, self.data_re_ns, kind = 2)
-        # interp_re_n = spline_fit(wavelengths)
         interp_re_n = np.interp(wavelengths, 
             self.data_wls, self.data_re_ns)
         interp_im_n = np.interp(wavelengths, 
             self.data_wls, self.data_im_ns)
         self.interp_data = interp_re_n + 1j*interp_im_n
         self.stored_ns   = dict(zip(wavelengths, self.interp_data))
+        # print self.stored_ns
 
 
     def n(self, wl):
@@ -76,57 +104,62 @@ test   = Material(np.loadtxt('%sTuniz.txt'% data_location))#copy.deepcopy(Air)
 #     FeS2.n_interp(wavelengths)
 #     Zn3P2.n_interp(wavelengths)
 
-def interp_needed(wavelengths, inclusion_a=Air, inclusion_b=Air, background=Air,
-                    superstrate=Air, substrate=Air):
-    if inclusion_a == Air or inclusion_b == Air or background == Air or superstrate == Air or substrate == Air:
-        Air.n_interp(wavelengths)
+from matplotlib.mlab import griddata
+import matplotlib
+matplotlib.use('pdf')
+import matplotlib.pyplot as plt
+def n_plot(spectra_name, wavelengths, data):
+    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(2,1,1)
+    ax1.plot(wavelengths, np.real(data))
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('n')    
+    ax1 = fig.add_subplot(2,1,2)
+    ax1.plot(wavelengths, np.imag(data))
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('k')
+    # plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
+    plt.suptitle(spectra_name)
+    plt.savefig(spectra_name)
+
+def interp_needed(wavelengths, material=Air):
+    if material == Air:
+        Air.n_spline(wavelengths)
+        # Air.n_interp(wavelengths)
         # n_plot('Air',wavelengths, Air.interp_data)
-    if inclusion_a == Si_c or inclusion_b == Si_c or background == Si_c or superstrate == Si_c or substrate == Si_c:
-        Si_c.n_interp(wavelengths)
+    if material == Si_c:
+        Si_c.n_spline(wavelengths)
+        # Si_c.n_interp(wavelengths)
         # n_plot('Si_c',wavelengths, Si_c.interp_data)
-    if inclusion_a == Si_a or inclusion_b == Si_a or background == Si_a or superstrate == Si_a or substrate == Si_a:
-        Si_a.n_interp(wavelengths)
+    if material == Si_a:
+        Si_a.n_spline(wavelengths)
+        # Si_a.n_interp(wavelengths)
         # n_plot('Si_a',wavelengths, Si_a.interp_data)
-    if inclusion_a == SiO2_a or inclusion_b == SiO2_a or background == SiO2_a or superstrate == SiO2_a or substrate == SiO2_a:
+    if material == SiO2_a:
+        # SiO2_a.n_spline(wavelengths)
         SiO2_a.n_interp(wavelengths)
         # n_plot('SiO2_a',wavelengths, SiO2_a.interp_data)
-    if inclusion_a == CuO or inclusion_b == CuO or background == CuO or superstrate == CuO or substrate == CuO:
-        CuO.n_interp(wavelengths)
+    if material == CuO:
+        CuO.n_spline(wavelengths)#.n_interp(wavelengths)
         # n_plot('CuO',wavelengths, CuO.interp_data)
-    if inclusion_a == CdTe or inclusion_b == CdTe or background == CdTe or superstrate == CdTe or substrate == CdTe:
-        CdTe.n_interp(wavelengths)
+    if material == CdTe:
+        CdTe.n_spline(wavelengths)#.n_interp(wavelengths)
         # n_plot('CdTe',wavelengths, CdTe.interp_data)
-    if inclusion_a == FeS2 or inclusion_b == FeS2 or background == FeS2 or superstrate == FeS2 or substrate == FeS2:
-        FeS2.n_interp(wavelengths)
+    if material == FeS2:
+        FeS2.n_spline(wavelengths)#.n_interp(wavelengths)
         # n_plot('FeS2',wavelengths, FeS2.interp_data)
-    if inclusion_a == Zn3P2 or inclusion_b == Zn3P2 or background == Zn3P2 or superstrate == Zn3P2 or substrate == Zn3P2:
-        Zn3P2.n_interp(wavelengths)
+    if material == Zn3P2:
+        Zn3P2.n_spline(wavelengths)#.n_interp(wavelengths)
         # n_plot('Zn3P2',wavelengths, Zn3P2.interp_data)
-    if inclusion_a == Au or inclusion_b == Au or background == Au or superstrate == Au or substrate == Au:
-        Au.n_interp(wavelengths)
+    if material == Au:
+        Au.n_spline(wavelengths)#.n_interp(wavelengths)
         # n_plot('Au',wavelengths, Au.interp_data)
-    if inclusion_a == Sb2S3 or inclusion_b == Sb2S3 or background == Sb2S3 or superstrate == Sb2S3 or substrate == Sb2S3:
-        Sb2S3.n_interp(wavelengths)
+    if material == Ag:
+        Ag.n_spline(wavelengths)#.n_interp(wavelengths)
+        # n_plot('Ag',wavelengths, Ag.interp_data)
+    if material == Sb2S3:
+        Sb2S3.n_spline(wavelengths)#.n_interp(wavelengths)
         # n_plot('Sb2S3',wavelengths, Sb2S3.interp_data)
-    if inclusion_a == test or inclusion_b == test or background == test or superstrate == test or substrate == test:
-        test.n_interp(wavelengths)
+    if material == test:
+        test.n_spline(wavelengths)#.n_interp(wavelengths)
 
-
-
-# from matplotlib.mlab import griddata
-# import matplotlib
-# matplotlib.use('pdf')
-# import matplotlib.pyplot as plt
-# def n_plot(spectra_name, wavelengths, data):
-#     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-#     ax1 = fig.add_subplot(2,1,1)
-#     ax1.plot(wavelengths, np.real(data))
-#     ax1.set_xlabel('Wavelength (nm)')
-#     ax1.set_ylabel('n')    
-#     ax1 = fig.add_subplot(2,1,2)
-#     ax1.plot(wavelengths, np.imag(data))
-#     ax1.set_xlabel('Wavelength (nm)')
-#     ax1.set_ylabel('k')
-#     # plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
-#     plt.suptitle(spectra_name)
-#     plt.savefig(spectra_name)
