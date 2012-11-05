@@ -30,7 +30,7 @@ start = time.time()
 label_nu = 0
 ################ Simulation parameters ################
 
-simo_para  = objects.Controls(debug = 0,max_order_PWs = 2, num_cores = 6)
+simo_para  = objects.Controls(debug = 0,max_order_PWs = 4, num_cores = 6)
 
 # Remove results of previous simulations
 clear_previous.clean('.txt')
@@ -56,6 +56,7 @@ clear_previous.clean('.log')
 # Single wavelength run
 wl_super = 700
 wavelengths = np.array([wl_super])
+# wavelengths = np.linspace(310, 900, 10)
 light_list  = [objects.Light(wl) for wl in wavelengths]
 
 
@@ -76,7 +77,7 @@ label_nu = scat_mats(cover, light_list, simo_para)
 
 radius1     = 60
 ff          = calculate_ff(period,radius1)
-max_num_BMs = 180
+max_num_BMs = 50
 # mesh = 'bj_can_a60_d600.mail'
 grating_1 = objects.NanoStruct(period, ff, radius1,
     # mesh_file = mesh,
@@ -90,10 +91,10 @@ label_nu = scat_mats(grating_1, light_list, simo_para)
 
 
 
-# homo_film  = objects.ThinFilm(simo_period = period, height_1 = 1000, height_2 = 1000, num_h = 1,
-#     film_material = materials.Si_c, superstrate = materials.Air, 
-#     substrate = materials.Air,loss = True, label_nu = label_nu)
-# # label_nu = scat_mats(homo_film, light_list, simo_para)
+homo_film  = objects.ThinFilm(simo_period = period, height_1 = 500, height_2 = 1000, num_h = 1,
+    film_material = materials.Si_c, superstrate = materials.Air, 
+    substrate = materials.Air,loss = True, label_nu = label_nu)
+# label_nu = scat_mats(homo_film, light_list, simo_para)
 
 
 # will only ever use top scattering matrices for the bottom layer
@@ -115,25 +116,16 @@ solar_cell = [bottom, grating_1, cover]
 net_scat_mats(solar_cell,wavelengths)
 
 
-
-
-
-
-
-
-
-
-
-# # ################ Concatinate results ################ 
-# # last_light_object = light_list.pop()
-# # if simo_para.traLambda  == 1:
-# #     cat_n_clean.c_c_tra(pol = last_light_object.pol)
-# # if simo_para.PrintOmega == 1:
-# #     cat_n_clean.c_c_omega()
-# # if simo_para.PropModes  == 1:
-# #     cat_n_clean.c_c_detA()
-# #     if solar_cell.loss   == False:
-# #         cat_n_clean.c_c_prop_modes()
+# ################ Concatinate results ################ 
+# last_light_object = light_list.pop()
+# if simo_para.traLambda  == 1:
+#     cat_n_clean.c_c_tra(pol = last_light_object.pol)
+# if simo_para.PrintOmega == 1:
+#     cat_n_clean.c_c_omega()
+# if simo_para.PropModes  == 1:
+#     cat_n_clean.c_c_detA()
+#     if solar_cell.loss   == False:
+#         cat_n_clean.c_c_prop_modes()
 
 # # # Plotting
 # # plotting.average_spec('Absorptance','Av_Absorb', len(wavelengths), solar_cell.num_h)

@@ -4,17 +4,17 @@ import glob
 import os
 
 
-def c_c_tra(pol = 'TM'):
+def c_c_tra(pol = 0):
     """ concatinate transmission, reflection and absorption results 
     in one file each and remove individual lambda results """
-    if pol == 0:       
-        filename1 = "p*_A_Lambda.txt"
+    if pol == 0:
+        filename1 = "wl*_A_Lambda.txt"
         Afiles = glob.glob(filename1)
         Afiles.sort()
-        filename2 = "p*_R_Lambda.txt"
+        filename2 = "wl*_R_Lambda.txt"
         Rfiles = glob.glob(filename2)
         Rfiles.sort()
-        filename3 = "p*_T_Lambda.txt"
+        filename3 = "wl*_T_Lambda.txt"
         Tfiles = glob.glob(filename3)
         Tfiles.sort()
         if len(Afiles)+len(Rfiles)+len(Tfiles)>0:
@@ -34,36 +34,36 @@ def c_c_tra(pol = 'TM'):
             os.system("cat" + listoffiles3 \
                 + "> Transmittance.txt")
             for fle in Afiles + Rfiles + Tfiles:
-                os.remove(fle)
-        # T, R matricies
-        filename1 = "p*_T_Lambda_MAT_sp.txt"
-        Afiles = glob.glob(filename1)
-        Afiles.sort()
-        filename2 = "p*_R_Lambda_MAT_sp.txt"
-        Rfiles = glob.glob(filename2)
-        Rfiles.sort()
-        if len(Afiles)+len(Rfiles)>0:
-            listoffiles1 = ""
-            for fle in Afiles:
-                listoffiles1 += " " + fle
-            os.system("cat" + listoffiles1 \
-                + "> T_Lambda_MAT_sp.txt")
-            listoffiles2 = ""
-            for fle in Rfiles:
-                listoffiles2 += " " + fle
-            os.system("cat" + listoffiles2 \
-                + "> R_Lambda_MAT_sp.txt")
-            for fle in Afiles + Rfiles:
-                os.remove(fle)
+                os.remove(fle)  
+        # # T, R matricies
+        # filename1 = "wl*_T_Lambda_MAT_sp.txt"
+        # Afiles = glob.glob(filename1)
+        # Afiles.sort()
+        # filename2 = "wl*_R_Lambda_MAT_sp.txt"
+        # Rfiles = glob.glob(filename2)
+        # Rfiles.sort()
+        # if len(Afiles)+len(Rfiles)>0:
+        #     listoffiles1 = ""
+        #     for fle in Afiles:
+        #         listoffiles1 += " " + fle
+        #     os.system("cat" + listoffiles1 \
+        #         + "> T_Lambda_MAT_sp.txt")
+        #     listoffiles2 = ""
+        #     for fle in Rfiles:
+        #         listoffiles2 += " " + fle
+        #     os.system("cat" + listoffiles2 \
+        #         + "> R_Lambda_MAT_sp.txt")
+        #     for fle in Afiles + Rfiles:
+        #         os.remove(fle)
     elif pol == 5:
         # Right hand circular polarisation
-        filename1 = "p*_A_Lambda_R.txt"
+        filename1 = "wl*_A_Lambda_R.txt"
         Afiles = glob.glob(filename1)
         Afiles.sort()
-        filename2 = "p*_R_Lambda_R.txt"
+        filename2 = "wl*_R_Lambda_R.txt"
         Rfiles = glob.glob(filename2)
         Rfiles.sort()
-        filename3 = "p*_T_Lambda_R.txt"
+        filename3 = "wl*_T_Lambda_R.txt"
         Tfiles = glob.glob(filename3)
         Tfiles.sort()
         if len(Afiles)+len(Rfiles)+len(Tfiles)>0:
@@ -85,13 +85,13 @@ def c_c_tra(pol = 'TM'):
             for fle in Afiles + Rfiles + Tfiles:
                 os.remove(fle)
         # Left hand circular polarisation
-        filename1 = "p*_A_Lambda_L.txt"
+        filename1 = "wl*_A_Lambda_L.txt"
         Afiles = glob.glob(filename1)
         Afiles.sort()
-        filename2 = "p*_R_Lambda_L.txt"
+        filename2 = "wl*_R_Lambda_L.txt"
         Rfiles = glob.glob(filename2)
         Rfiles.sort()
-        filename3 = "p*_T_Lambda_L.txt"
+        filename3 = "wl*_T_Lambda_L.txt"
         Tfiles = glob.glob(filename3)
         Tfiles.sort()
         if len(Afiles)+len(Rfiles)+len(Tfiles)>0:
@@ -113,13 +113,13 @@ def c_c_tra(pol = 'TM'):
             for fle in Afiles + Rfiles + Tfiles:
                 os.remove(fle)
         # Circular Dichroism
-        filename1 = "p*_A_Lambda_CD.txt"
+        filename1 = "wl*_A_Lambda_CD.txt"
         Afiles = glob.glob(filename1)
         Afiles.sort()
-        filename2 = "p*_R_Lambda_CD.txt"
+        filename2 = "wl*_R_Lambda_CD.txt"
         Rfiles = glob.glob(filename2)
         Rfiles.sort()
-        filename3 = "p*_T_Lambda_CD.txt"
+        filename3 = "wl*_T_Lambda_CD.txt"
         Tfiles = glob.glob(filename3)
         Tfiles.sort()
         if len(Afiles)+len(Rfiles)+len(Tfiles)>0:
@@ -141,10 +141,10 @@ def c_c_tra(pol = 'TM'):
             for fle in Afiles + Rfiles + Tfiles:
                 os.remove(fle)
         # T, R matricies
-        filename1 = "p*_T_Lambda_MAT_lr.txt"
+        filename1 = "wl*_T_Lambda_MAT_lr.txt"
         Afiles = glob.glob(filename1)
         Afiles.sort()
-        filename2 = "p*_R_Lambda_MAT_lr.txt"
+        filename2 = "wl*_R_Lambda_MAT_lr.txt"
         Rfiles = glob.glob(filename2)
         Rfiles.sort()
         if len(Afiles)+len(Rfiles)>0:
@@ -161,13 +161,13 @@ def c_c_tra(pol = 'TM'):
             for fle in Afiles + Rfiles:
                 os.remove(fle)
     else:
-        filename1 = "p*_A_Lambda.txt"
+        filename1 = "wl*_A_Lambda.txt"
         Afiles = glob.glob(filename1)
         Afiles.sort()
-        filename2 = "p*_R_Lambda.txt"
+        filename2 = "wl*_R_Lambda.txt"
         Rfiles = glob.glob(filename2)
         Rfiles.sort()
-        filename3 = "p*_T_Lambda.txt"
+        filename3 = "wl*_T_Lambda.txt"
         Tfiles = glob.glob(filename3)
         Tfiles.sort()
         if len(Afiles)+len(Rfiles)+len(Tfiles)>0:
@@ -187,6 +187,33 @@ def c_c_tra(pol = 'TM'):
             os.system("cat" + listoffiles3 \
                 + "> Transmittance.txt")
             for fle in Afiles + Rfiles + Tfiles:
+                os.remove(fle)   
+        filename1 = "wl*_A_Layers.txt"
+        Afiles = glob.glob(filename1)
+        Afiles.sort()
+        filename2 = "wl*_R_Layers.txt"
+        Rfiles = glob.glob(filename2)
+        Rfiles.sort()
+        filename3 = "wl*_T_Layers.txt"
+        Tfiles = glob.glob(filename3)
+        Tfiles.sort()
+        if len(Afiles)+len(Rfiles)+len(Tfiles)>0:
+            listoffiles1 = ""
+            for fle in Afiles:
+                listoffiles1 += " " + fle
+            os.system("cat" + listoffiles1 \
+                + "> Abs_Layers.txt")
+            listoffiles2 = ""
+            for fle in Rfiles:
+                listoffiles2 += " " + fle
+            os.system("cat" + listoffiles2 \
+                + "> Ref_Layers.txt")
+            listoffiles3 = ""
+            for fle in Tfiles:
+                listoffiles3 += " " + fle
+            os.system("cat" + listoffiles3 \
+                + "> Tran_Layers.txt")
+            for fle in Afiles + Rfiles + Tfiles:
                 os.remove(fle)
 
 
@@ -195,7 +222,7 @@ def c_c_omega():
     """ concatinate dispersion results in one file 
         and remove individual lambda results """
 
-    filename1 = "p*_omega.txt"
+    filename1 = "wl*_omega.txt"
     Afiles = glob.glob(filename1)
     Afiles.sort()
     if len(Afiles)>0:
@@ -206,7 +233,7 @@ def c_c_omega():
         for fle in Afiles:
             os.remove(fle)
         
-    filename1 = "p*_omega_pol.txt"
+    filename1 = "wl*_omega_pol.txt"
     Afiles = glob.glob(filename1)
     Afiles.sort()
     if len(Afiles)>0:
@@ -217,7 +244,7 @@ def c_c_omega():
         for fle in Afiles:
             os.remove(fle)
         
-    filename1 = "p*_omega_Fz.txt"
+    filename1 = "wl*_omega_Fz.txt"
     Afiles = glob.glob(filename1)
     Afiles.sort()
     if len(Afiles)>0:
@@ -228,7 +255,7 @@ def c_c_omega():
         for fle in Afiles:
             os.remove(fle)
         
-    filename1 = "p*_omega_Ft.txt"
+    filename1 = "wl*_omega_Ft.txt"
     Afiles = glob.glob(filename1)
     Afiles.sort()
     if len(Afiles)>0:

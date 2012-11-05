@@ -43,7 +43,7 @@ class Material(object):
         # for single wavelength simo turn self.interp_data into array for zipping
         if isinstance(interp_re_n, float): 
             self.interp_data = np.array([interp_re_n + 1j*interp_im_n])
-        print repr(self.interp_data)
+        # print repr(self.interp_data)
         self.stored_ns   = dict(zip(wavelengths, self.interp_data))
         # print self.stored_ns
 
@@ -104,32 +104,31 @@ test   = Material(np.loadtxt('%sTuniz.txt'% data_location))#copy.deepcopy(Air)
 #     FeS2.n_interp(wavelengths)
 #     Zn3P2.n_interp(wavelengths)
 
-from matplotlib.mlab import griddata
-import matplotlib
-matplotlib.use('pdf')
-import matplotlib.pyplot as plt
-def n_plot(spectra_name, wavelengths, data):
-    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-    ax1 = fig.add_subplot(2,1,1)
-    ax1.plot(wavelengths, np.real(data))
-    ax1.set_xlabel('Wavelength (nm)')
-    ax1.set_ylabel('n')    
-    ax1 = fig.add_subplot(2,1,2)
-    ax1.plot(wavelengths, np.imag(data))
-    ax1.set_xlabel('Wavelength (nm)')
-    ax1.set_ylabel('k')
-    # plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
-    plt.suptitle(spectra_name)
-    plt.savefig(spectra_name)
+# import matplotlib
+# matplotlib.use('pdf')
+# import matplotlib.pyplot as plt
+# def n_plot(spectra_name, wavelengths, data):
+#     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+#     ax1 = fig.add_subplot(2,1,1)
+#     ax1.plot(wavelengths, np.real(data))
+#     ax1.set_xlabel('Wavelength (nm)')
+#     ax1.set_ylabel('n')    
+#     ax1 = fig.add_subplot(2,1,2)
+#     ax1.plot(wavelengths, np.imag(data))
+#     ax1.set_xlabel('Wavelength (nm)')
+#     ax1.set_ylabel('k')
+#     # plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
+#     plt.suptitle(spectra_name)
+#     plt.savefig(spectra_name)
 
 def interp_needed(wavelengths, material=Air):
     if material == Air:
-        Air.n_spline(wavelengths)
-        # Air.n_interp(wavelengths)
+        # Air.n_spline(wavelengths)
+        Air.n_interp(wavelengths)
         # n_plot('Air',wavelengths, Air.interp_data)
     if material == Si_c:
-        Si_c.n_spline(wavelengths)
-        # Si_c.n_interp(wavelengths)
+        # Si_c.n_spline(wavelengths)
+        Si_c.n_interp(wavelengths)
         # n_plot('Si_c',wavelengths, Si_c.interp_data)
     if material == Si_a:
         Si_a.n_spline(wavelengths)

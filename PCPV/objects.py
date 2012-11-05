@@ -240,7 +240,7 @@ class ThinFilm(object):
     def __init__(self, simo_period, height_1 = 2330, height_2 = 2330,
         num_h = 1, film_material = materials.Si_c, 
         superstrate = materials.Air, substrate = materials.Air, 
-        nu_tot_ords = 0, nu_prop_ords = 0, zero_ord = 0, 
+        nu_tot_ords = 0, num_prop_air = 0, num_prop_TF = 0, 
         set_ord_in = 0, set_ord_out = 0, loss = True, label_nu = 0):
         self.simo_period   = simo_period
         self.height_1      = height_1
@@ -250,8 +250,8 @@ class ThinFilm(object):
         self.superstrate   = superstrate
         self.substrate     = substrate
         self.nu_tot_ords   = nu_tot_ords
-        self.nu_prop_ords  = nu_prop_ords
-        self.zero_ord      = zero_ord
+        self.num_prop_air  = num_prop_air
+        self.num_prop_TF   = num_prop_TF
         self.set_ord_in    = set_ord_in
         self.set_ord_out   = set_ord_out
         self.loss          = loss

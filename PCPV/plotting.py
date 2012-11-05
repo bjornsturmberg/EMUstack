@@ -390,3 +390,45 @@ def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
 
     plt.suptitle(imp_facts)
     plt.savefig('Disp_Diagram')
+
+
+
+
+def layers_plot(spectra_name, spec_list, wavelengths):
+    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    nu_layers = len(spec_list)/len(wavelengths)
+    for i in range(nu_layers):
+        layer_data = []
+        for wl in range(len(wavelengths)):
+            layer_data = np.append(layer_data,spec_list[wl*nu_layers + i])
+
+        ax1 = fig.add_subplot(nu_layers,1,i+1)
+        ax1.plot(wavelengths, layer_data)
+        if i == nu_layers-1:
+            ax1.set_xlabel('Wavelength (nm)')
+            ax1.set_ylabel('Total')
+        else:
+            ax1.set_xticklabels( () )
+        if spectra_name == 'Lay_Absorb':
+            # plt.axis([wavelengths[0], wavelengths[-1], 0.0, 1])
+            if i == 0: ax1.set_ylabel('Top Layer')
+            if i == nu_layers-2: ax1.set_ylabel('Bottom Layer')
+            lay_spec_name = 'Lay_Absorb'
+        elif spectra_name == 'Lay_Trans':
+            if i == 0: ax1.set_ylabel('Superstrate')
+            if i == 1: ax1.set_ylabel('Top Layer')
+            if i == nu_layers-3: ax1.set_ylabel('Bottom Layer')
+            if i == nu_layers-2: ax1.set_ylabel('Substrate')
+            lay_spec_name = 'Lay_Trans'
+        else:
+            # plt.axis([wavelengths[0], wavelengths[-1], 0.0, 1])
+            if i == 0: ax1.set_ylabel('Superstrate')
+            if i == 1: ax1.set_ylabel('Top Layer')
+            if i == nu_layers-3: ax1.set_ylabel('Bottom Layer')
+            if i == nu_layers-2: ax1.set_ylabel('Substrate')
+            lay_spec_name = 'Lay_Reflec'
+        av_array = zip(wavelengths, layer_data)
+        plt.suptitle(lay_spec_name)
+        np.savetxt('%s.txt' % lay_spec_name, av_array, fmt = '%18.12f')
+
+        plt.savefig(spectra_name)

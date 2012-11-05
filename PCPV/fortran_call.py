@@ -84,10 +84,12 @@ class Simmo(object):
             if isinstance(self.structure.inclusion_a, complex):
                 max_n = self.structure.inclusion_a
             else:
-                max_n         = self.structure.inclusion_a.max_n()
+                max_n = self.structure.inclusion_a.max_n()
             nval_tmp      = self.max_num_BMs*inclusion_a_n.real/max_n
             nval          = round(nval_tmp)
-            ordre_ls      = round(self.max_order_PWs*nval/self.max_num_BMs)
+            ordre_ls      = self.max_order_PWs 
+            # # in single layer calc scale # PWs by # of BMs to be used, in multilayer need all equal
+            # ordre_ls      = round(self.max_order_PWs*nval/self.max_num_BMs)
         else:
             nval          = self.max_num_BMs
             ordre_ls      = self.max_order_PWs          
@@ -227,12 +229,12 @@ def run_command_in_shell(command):
     """Submit full string of fortran call to command line"""
     return subprocess.call(command, shell = True)
 
-def calc_k_perp(layer, k_list, d, theta, phi, ordre_ls, 
+def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls, 
         x_order_in, x_order_out, y_order_in, y_order_out):
     k_perp = []
-    zero_ord = 0
+    # zero_ord = 0
     k_el = 0
-    layer.nu_prop_ords = 0
+    layer.num_prop_air = 0
     for k in k_list:
         common_factor = np.sin(theta*pi/180.0)*k
         bloch1 = common_factor*np.cos(phi*pi/180.0)
@@ -247,24 +249,31 @@ def calc_k_perp(layer, k_list, d, theta, phi, ordre_ls,
                     alpha = bloch1 + vec_kx*px  # Bloch vector along x
                     beta  = bloch2 + vec_ky*py  # Bloch vector along y
                     z_tmp = k**2 - alpha**2 - beta**2
-                    raw_beta_z_pw  = np.append(raw_beta_z_pw,sqrt(z_tmp))
+                    sqtmp = sqrt(z_tmp)
+                    raw_beta_z_pw  = np.append(raw_beta_z_pw,sqtmp)
                     # number of propagating plane waves in thin film layer
                     if k_el == 0:
-                        if np.real(z_tmp) > 0.0e-5:
-                            layer.nu_prop_ords += 1
-                        if px == py == 0:
-                            zero_ord = len(raw_beta_z_pw)-1
+                        if z_tmp > 0.0e-5:
+                            layer.num_prop_air += 1
+                        # if px == py == 0:
+                        #     zero_ord = len(raw_beta_z_pw)-1
                         if px == x_order_in and py == y_order_in:
-                            select_order_in = len(raw_beta_z_pw)-1
+                            select_order_in  = len(raw_beta_z_pw)-1
                         if px == x_order_out and py == y_order_out:
                             select_order_out = len(raw_beta_z_pw)-1
+                    if k_el == 1 and z_tmp > 0.0e-5:
+                            layer.num_prop_TF += 1
+
 
         # sort plane waves as [propagating big -> small, evanescent small -> big]
         # which is consistent with FEM
         # to be consistent in impedances Z, sub/superstrate sorted to order of thin film
-        if k_el == 0: # if thin film layer
+        if k_el == 0: # air superstrates as medium to consistently sort by
+            # if np.imag(n[0]) != 0.0:
+            #     rev_ind = np.argsort(1*np.imag(raw_beta_z_pw))
+            # else:
             rev_ind = np.argsort(-1*np.real(raw_beta_z_pw) + np.imag(raw_beta_z_pw))
-            layer.zero_ord    = int(np.where(rev_ind==zero_ord)[0])
+            # layer.zero_ord    = int(np.where(rev_ind==zero_ord)[0])
             layer.set_ord_in  = int(np.where(rev_ind==select_order_in)[0])
             layer.set_ord_out = int(np.where(rev_ind==select_order_out)[0])
         sorted_beta_z_pw = raw_beta_z_pw[rev_ind]
@@ -345,22 +354,22 @@ def scat_mats(layer, light_list, simo_para):
 
         p          = 1
         for wl in wavelengths:
-            # refractive indeces listed so that thin film is first,
-            # that way can order plane waves of infintesimal air layers
-            # as per thin film, which is ordered consistent with FEM.
-            if isinstance(layer.film_material, complex):
-                n_1 = layer.film_material
-            elif isinstance(layer.film_material,materials.Material):
-                n_1 = layer.film_material.n(wl)
-            else:
-                raise  NotImplementedError, "film_material must either be complex number or material instance from materials.py"
-
+            # refractive indeces listed so that thin film is 2nd,
+            # that way can order plane waves in material as in infintesimal air layers,
+            # which is ordered consistent with FEM.
             if isinstance(layer.substrate, complex):
-                n_2 = layer.substrate
+                n_1 = layer.substrate
             elif isinstance(layer.substrate,materials.Material):
-                n_2 = layer.substrate.n(wl)
+                n_1 = layer.substrate.n(wl)
             else:
                 raise  NotImplementedError, "substrate must either be complex number or material instance from materials.py"
+
+            if isinstance(layer.film_material, complex):
+                n_2 = layer.film_material
+            elif isinstance(layer.film_material,materials.Material):
+                n_2 = layer.film_material.n(wl)
+            else:
+                raise  NotImplementedError, "film_material must either be complex number or material instance from materials.py"
 
             if isinstance(layer.superstrate, complex):
                 n_3 = layer.superstrate
@@ -381,11 +390,11 @@ def scat_mats(layer, light_list, simo_para):
             wl_norm  = float(wl_in_nm/d_in_nm)
             light_angles = light_list[0]
             k_list   = 2*pi*n/wl_norm
-            k_perp   = calc_k_perp(layer, k_list, d_norm,
+            k_perp   = calc_k_perp(layer, n, k_list, d_norm,
                 light_angles.theta, light_angles.phi, simo_para.max_order_PWs,
                 simo_para.x_order_in, simo_para.x_order_out,
                 simo_para.y_order_in, simo_para.y_order_out)
-            k_film  = k_perp[0]
+            k_film   = k_perp[1]
 
             # Impedance method only holds when pereability = 1 (good approx for Ag Al etc)
             shape_k_perp = np.shape(k_perp)
@@ -404,8 +413,8 @@ def scat_mats(layer, light_list, simo_para):
                 wave_imp_mat[i,:] = wave_imp #numpy array rather than matrix!
 
             # Scattering matrices from wave impedances
-            Z_1 = wave_imp_mat[1,:] # for substrate
-            Z_2 = wave_imp_mat[0,:] # for thin film
+            Z_1 = wave_imp_mat[0,:] # for substrate
+            Z_2 = wave_imp_mat[1,:] # for thin film
             Z_3 = wave_imp_mat[2,:] # for superstrate
             r12 = np.mat(np.diag((Z_2-Z_1)/(Z_2 + Z_1)))
             r23 = np.mat(np.diag((Z_3-Z_2)/(Z_3 + Z_2)))
