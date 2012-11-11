@@ -222,7 +222,7 @@ def c_c_omega():
     """ concatinate dispersion results in one file 
         and remove individual lambda results """
 
-    filename1 = "wl*_omega.txt"
+    filename1 = "st*_omega.txt"
     Afiles = glob.glob(filename1)
     Afiles.sort()
     if len(Afiles)>0:

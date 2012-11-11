@@ -237,12 +237,12 @@ class NanoStruct(object):
          
 class ThinFilm(object):
     """ Represents homogeneous film """
-    def __init__(self, simo_period, height_1 = 2330, height_2 = 2330,
+    def __init__(self, period, height_1 = 2330, height_2 = 2330,
         num_h = 1, film_material = materials.Si_c, 
         superstrate = materials.Air, substrate = materials.Air, 
         nu_tot_ords = 0, num_prop_air = 0, num_prop_TF = 0, 
         set_ord_in = 0, set_ord_out = 0, loss = True, label_nu = 0):
-        self.simo_period   = simo_period
+        self.period        = period
         self.height_1      = height_1
         self.height_2      = height_2
         self.num_h         = num_h

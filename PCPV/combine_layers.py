@@ -120,6 +120,14 @@ def calc_tra_layers(solar_cell, rnet_list, inverted_t21_list, P_list,
 
 
 def net_scat_mats(solar_cell, wavelengths):
+
+# test that all structures have the same period
+    for cell in solar_cell:
+        if cell.period == solar_cell[0].period:
+            pass
+        else:
+            raise  NotImplementedError, "All layers in a multilayer stack must have the same period!"
+
     nu_intfaces    = 2*(len(solar_cell)-1)
     nu_TFs         = len(solar_cell)-2 # adujsted by 1 for python index start at 0
     # Transmittance = []
@@ -130,7 +138,8 @@ def net_scat_mats(solar_cell, wavelengths):
     # A_save        = []
     neq_PW         = solar_cell[0].nu_tot_ords # assumes incident from homogeneous film
     PW_pols        = 2*neq_PW
-    num_prop_air   = solar_cell[0].nu_tot_ords#solar_cell[-1].num_prop_air
+    # num_prop_air   = solar_cell[0].nu_tot_ords#solar_cell[-1].num_prop_air
+    num_prop_air   = solar_cell[-1].num_prop_air
     num_prop_in    = solar_cell[-1].num_prop_TF
     num_prop_out   = solar_cell[0].num_prop_TF
     zero_mat       = np.matrix(np.zeros((PW_pols, 1),float))
@@ -256,20 +265,26 @@ def net_scat_mats(solar_cell, wavelengths):
 #   incoming from semi-inf into top air gap
         f1_minus = inv_t21_list[-1]*d_minus
         fminus_list.append(f1_minus)
-        # energy1  = np.linalg.norm(f1_minus[0:num_prop_air])**2
-        # energy2  = np.linalg.norm(f1_minus[neq_PW:neq_PW+num_prop_air])**2
-        # fminus_eng.append(energy1 + energy2)
-        fminus_eng.append(np.linalg.norm(f1_minus)**2)
+        energy1  = np.linalg.norm(f1_minus[0:num_prop_air])**2
+        energy2  = np.linalg.norm(f1_minus[neq_PW:neq_PW+num_prop_air])**2
+        fminus_eng.append(energy1 + energy2)
+        # fminus_eng.append(np.linalg.norm(f1_minus)**2)
 
 
         for i in range(nu_TFs):
 #   d
             f1_plus = rnet_list[-2*i-2]*f1_minus
             fplus_list.append(f1_plus)
-            # energy1 = np.linalg.norm(f1_plus[0:num_prop_air])**2
-            # energy2 = np.linalg.norm(f1_plus[neq_PW:neq_PW+num_prop_air])**2
-            # fplus_eng.append(energy1 + energy2)
-            fplus_eng.append(np.linalg.norm(f1_plus)**2)
+            energy1 = np.linalg.norm(f1_plus[0:num_prop_air])**2
+            energy2 = np.linalg.norm(f1_plus[neq_PW:neq_PW+num_prop_air])**2
+            fplus_eng.append(energy1 + energy2)
+            # fplus_eng.append(np.linalg.norm(f1_plus)**2)
+            
+            # print f1_plus
+            # print f1_plus[0:num_prop_air]
+            # print f1_plus[neq_PW:neq_PW+num_prop_air]
+            # print energy1 + energy2
+            # print np.linalg.norm(f1_plus)**2
 
             f2_minus = inv_t12_list[-i-1]*f1_minus
 
@@ -277,26 +292,28 @@ def net_scat_mats(solar_cell, wavelengths):
 
             f1_minus = inv_t21_list[-i-2]*P_list[-i-1]*f2_minus
             fminus_list.append(f1_minus)
-            # energy1  = np.linalg.norm(f1_minus[0:num_prop_air])**2
-            # energy2  = np.linalg.norm(f1_minus[neq_PW:neq_PW+num_prop_air])**2
-            # fminus_eng.append(energy1 + energy2)
-            fminus_eng.append(np.linalg.norm(f1_minus)**2)
+            energy1  = np.linalg.norm(f1_minus[0:num_prop_air])**2
+            energy2  = np.linalg.norm(f1_minus[neq_PW:neq_PW+num_prop_air])**2
+            fminus_eng.append(energy1 + energy2)
+            # fminus_eng.append(np.linalg.norm(f1_minus)**2)
           
 # bottom air to semi-inf substrate
         f1_plus = rnet_list[0]*f1_minus
         fplus_list.append(f1_plus)
-        # energy1 = np.linalg.norm(f1_plus[0:num_prop_air])**2
-        # energy2 = np.linalg.norm(f1_plus[neq_PW:neq_PW+num_prop_air])**2
-        # fplus_eng.append(energy1 + energy2)
-        fplus_eng.append(np.linalg.norm(f1_plus)**2)
+        energy1 = np.linalg.norm(f1_plus[0:num_prop_air])**2
+        energy2 = np.linalg.norm(f1_plus[neq_PW:neq_PW+num_prop_air])**2
+        fplus_eng.append(energy1 + energy2)
+        # fplus_eng.append(np.linalg.norm(f1_plus)**2)
 
         f2_minus = t12_list[0]*f1_minus
         fminus_list.append(f2_minus)
-        # energy1 = np.linalg.norm(f2_minus[0:num_prop_out])**2
-        # energy2 = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
-        # fminus_eng.append(energy1 + energy2)
-        fminus_eng.append(np.linalg.norm(f2_minus)**2)
+        energy1 = np.linalg.norm(f2_minus[0:num_prop_out])**2
+        energy2 = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
+        fminus_eng.append(energy1 + energy2)
+        # fminus_eng.append(np.linalg.norm(f2_minus)**2)
 
+        print 'num_prop_out', num_prop_out
+        print 'neq_PW', neq_PW
 
 
         t_layer = fminus_eng[1]/fminus_eng[0]
@@ -337,7 +354,9 @@ def net_scat_mats(solar_cell, wavelengths):
         a_list.append(abs_tot)
         abs_diff = (fminus_eng[0] - fminus_eng[-1] - fplus_eng[0]) - abs_tot
         a_list.append(abs_diff)
-        print 'abs_tot', abs_tot
+        print 'sum_abs', abs_tot
+        print ''        
+        print 'net_abs', fminus_eng[0] - fminus_eng[-1] - fplus_eng[0]
         print ''        
         print 'abs_diff', abs_diff
 

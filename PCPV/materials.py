@@ -91,8 +91,9 @@ Zn3P2  = Material(np.loadtxt('%sZn3P2.txt'% data_location))
 Au     = Material(np.loadtxt('%sAu.txt'% data_location))
 Ag     = Material(np.loadtxt('%sAg.txt'% data_location))
 Sb2S3  = Material(np.loadtxt('%sSb2S3.txt'% data_location))
+AlGaAs = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
 
-test   = Material(np.loadtxt('%sTuniz.txt'% data_location))#copy.deepcopy(Air)
+# test   = Material(np.loadtxt('%sTuniz.txt'% data_location))#copy.deepcopy(Air)
 
 # def interp_all(wavelengths):
 #     Air.n_interp(wavelengths)
@@ -159,6 +160,10 @@ def interp_needed(wavelengths, material=Air):
     if material == Sb2S3:
         Sb2S3.n_spline(wavelengths)#.n_interp(wavelengths)
         # n_plot('Sb2S3',wavelengths, Sb2S3.interp_data)
-    if material == test:
-        test.n_spline(wavelengths)#.n_interp(wavelengths)
+    if material == AlGaAs:
+        # AlGaAs.n_spline(wavelengths)
+        AlGaAs.n_interp(wavelengths)
+        # n_plot('AlGaAs',wavelengths, AlGaAs.interp_data)
+    # if material == test:
+    #     test.n_spline(wavelengths)#.n_interp(wavelengths)
 

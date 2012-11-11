@@ -219,6 +219,7 @@ class Simmo(object):
             # except KeyError:
             raise  NotImplementedError, "must use either 4 or 5 FEM element types"
 
+        # print command_to_run
         return command_to_run
 
 
@@ -384,7 +385,7 @@ def scat_mats(layer, light_list, simo_para):
 
             #set up equivalent plane waves to FEM calc
             # normalise to lattice constant equal 1 as in FEM
-            d_in_nm  = layer.simo_period
+            d_in_nm  = layer.period
             d_norm   = 1
             wl_in_nm = wl
             wl_norm  = float(wl_in_nm/d_in_nm)
@@ -395,6 +396,8 @@ def scat_mats(layer, light_list, simo_para):
                 simo_para.x_order_in, simo_para.x_order_out,
                 simo_para.y_order_in, simo_para.y_order_out)
             k_film   = k_perp[1]
+            # print 'k_perp[0]', k_perp[0]
+            print 'k_film', k_film
 
             # Impedance method only holds when pereability = 1 (good approx for Ag Al etc)
             shape_k_perp = np.shape(k_perp)
