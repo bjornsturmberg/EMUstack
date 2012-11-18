@@ -1,6 +1,0 @@
- 0.0d0         - polar angle (theta)
- 0.0d0         - azimuthal angle, 0 along x-axis (phi)
- 1             - Length of the reciprocal lattice vector
- 2330.0d0      - Slab thickness in nm h_1
- 2330.0d0      - Slab thickness in nm h_2
- 1             - number of heights

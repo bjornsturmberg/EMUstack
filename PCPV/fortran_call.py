@@ -235,7 +235,8 @@ def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls,
     k_perp = []
     # zero_ord = 0
     k_el = 0
-    layer.num_prop_air = 0
+    num_prop_air = 0
+    num_prop_TF  = 0
     for k in k_list:
         common_factor = np.sin(theta*pi/180.0)*k
         bloch1 = common_factor*np.cos(phi*pi/180.0)
@@ -255,7 +256,7 @@ def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls,
                     # number of propagating plane waves in thin film layer
                     if k_el == 0:
                         if z_tmp > 0.0e-5:
-                            layer.num_prop_air += 1
+                            num_prop_air += 1
                         # if px == py == 0:
                         #     zero_ord = len(raw_beta_z_pw)-1
                         if px == x_order_in and py == y_order_in:
@@ -263,7 +264,7 @@ def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls,
                         if px == x_order_out and py == y_order_out:
                             select_order_out = len(raw_beta_z_pw)-1
                     if k_el == 1 and z_tmp > 0.0e-5:
-                            layer.num_prop_TF += 1
+                        num_prop_TF += 1
 
 
         # sort plane waves as [propagating big -> small, evanescent small -> big]
@@ -280,6 +281,10 @@ def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls,
         sorted_beta_z_pw = raw_beta_z_pw[rev_ind]
         k_perp.append(sorted_beta_z_pw)
         k_el += 1
+
+    layer.num_prop_air.append(num_prop_air)
+    layer.num_prop_TF.append(num_prop_TF)
+
     # print 'k_perp[0]', k_perp[0]
     # print 'k_perp[1]', k_perp[1]
     # print 'k_perp[2]', k_perp[2]
@@ -301,16 +306,16 @@ def save_scat_mat(matrix, name, st, p, num_pw):
                         data = np.reshape(data, (1,5))
                         np.savetxt(outfile, data, fmt=['%4i','%4i','%25.17G','%25.17G','%25.17G'], delimiter='')
 
-def save_k_perp(matrix, name, st, p, num_pw):
-            format_label_nu = '%04d' % st
-            format_p        = '%04d' % p
+# def save_k_perp(matrix, name, st, p, num_pw):
+#             format_label_nu = '%04d' % st
+#             format_p        = '%04d' % p
 
-            file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
-                'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
-            with file(file_name, 'w') as outfile:
-                for k in range(num_pw):
-                    data = [[float(np.real(matrix[k])), float(np.imag(matrix[k]))]]
-                    np.savetxt(outfile, data, fmt=['%25.17G', '%25.17G'], delimiter='')
+#             file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
+#                 'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
+#             with file(file_name, 'w') as outfile:
+#                 for k in range(num_pw):
+#                     data = [[float(np.real(matrix[k])), float(np.imag(matrix[k]))]]
+#                     np.savetxt(outfile, data, fmt=['%25.17G', '%25.17G'], delimiter='')
 
 
 
@@ -353,6 +358,9 @@ def scat_mats(layer, light_list, simo_para):
         materials.interp_needed(wavelengths, layer.superstrate)
         materials.interp_needed(wavelengths, layer.substrate)
 
+        layer.num_prop_air = []
+        layer.num_prop_TF  = []
+
         p          = 1
         for wl in wavelengths:
             # refractive indeces listed so that thin film is 2nd,
@@ -382,6 +390,7 @@ def scat_mats(layer, light_list, simo_para):
             n = np.array([n_1, n_2, n_3])
             if layer.loss == False:
                 n = np.real(n)
+            # print n
 
             #set up equivalent plane waves to FEM calc
             # normalise to lattice constant equal 1 as in FEM
@@ -397,7 +406,7 @@ def scat_mats(layer, light_list, simo_para):
                 simo_para.y_order_in, simo_para.y_order_out)
             k_film   = k_perp[1]
             # print 'k_perp[0]', k_perp[0]
-            print 'k_film', k_film
+            # print 'k_film', k_film
 
             # Impedance method only holds when pereability = 1 (good approx for Ag Al etc)
             shape_k_perp = np.shape(k_perp)
@@ -442,7 +451,7 @@ def scat_mats(layer, light_list, simo_para):
 
             if layer.height_1 != 'semi_inf':
                 # layer thickness in units of period d in nanometers
-                save_k_perp(k_film, 'beta', layer.label_nu, p, num_pw)
+                # save_k_perp(k_film, 'beta', layer.label_nu, p, num_pw)
                 h_normed = float(layer.height_1)/d_in_nm
                 P_array  = np.exp(1j*np.array(k_film, complex)*h_normed)
                 P_array  = np.append(P_array, P_array) # add 2nd polarisation

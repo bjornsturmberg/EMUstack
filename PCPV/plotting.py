@@ -336,23 +336,26 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
 
 def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
     fig = plt.figure(num=None, figsize=(12, 9), dpi=80, facecolor='w', edgecolor='k')
-    ax1 = fig.add_subplot(3,1,1)
-    ax2 = fig.add_subplot(3,1,2)
-    ax3 = fig.add_subplot(3,1,3)
+    ax1 = fig.add_subplot(2,1,1)
+    ax2 = fig.add_subplot(2,1,2)
+    # ax3 = fig.add_subplot(3,1,3)
     wavelengths = np.genfromtxt('%s.txt' % 'omega', usecols=(2))
     num_BMs     = np.genfromtxt('%s.txt' % 'omega', usecols=(1))
     count = 1
-    for i in range(20):#len(num_BMs)):
+    for i in range(len(num_BMs)):
         prop = []
         prop_im = []
-        prop_4pi = []
+        # prop_4pi = []
         re = np.genfromtxt('%s.txt' % 'omega', usecols=(5+2*i), invalid_raise=False)
         im = np.genfromtxt('%s.txt' % 'omega', usecols=(5+2*i+1), invalid_raise=False)
         for j in range(len(re)):
-            # if re[j] > 0.1 and im[j] < 3.0:#im[j]:
-            prop.append(re[j])
-            prop_im.append(im[j])
-            prop_4pi.append(4*np.pi*im[j])
+            if re[j] > im[j]:
+                prop.append(re[j])
+        # for j in range(len(re)):
+        #     # if re[j] > 0.1 and im[j] < 3.0:#im[j]:
+        #     prop.append(re[j])
+        #     prop_im.append(im[j])
+        #     prop_4pi.append(4*np.pi*im[j])
         count +=1
 
         trim_wls = wavelengths[0:len(prop)]
@@ -363,13 +366,13 @@ def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
         ax2.plot(trim_wls, prop_im, 'bo')
         ax2.set_xlabel('Wavelength (nm)')
         ax2.set_ylabel(r'Im(k$_z$)')
-        abs_coeff = prop_4pi/(trim_wls*1e-7) #wl in nm, abs coeff in cm^-1
-        ax3.semilogy(trim_wls, abs_coeff, 'ks')
-        ax3.set_xlabel('Wavelength (nm)')
-        ax3.set_ylabel(r'Abs coeff')
+        # abs_coeff = prop_4pi/(trim_wls*1e-7) #wl in nm, abs coeff in cm^-1
+        # ax3.semilogy(trim_wls, abs_coeff, 'ks')
+        # ax3.set_xlabel('Wavelength (nm)')
+        # ax3.set_ylabel(r'Abs coeff')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
     ax2.set_xlim((wavelengths[0], wavelengths[-1]))
-    ax3.set_xlim((wavelengths[0], wavelengths[-1]))
+    # ax3.set_xlim((wavelengths[0], wavelengths[-1]))
 
     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
     'period'        : solar_cell.period, 'radius' : solar_cell.radius1,}
@@ -445,6 +448,6 @@ def layers_plot(spectra_name, spec_list, wavelengths):
             lay_spec_name = 'Lay_Reflec'
         av_array = zip(wavelengths, layer_data)
         plt.suptitle(lay_spec_name)
-        np.savetxt('%(s)s_%(i)i.txt '% {'s' : lay_spec_name, 'i' : i,}, av_array, fmt = '%18.12f')
+        np.savetxt('%(s)s_%(i)i.txt'% {'s' : lay_spec_name, 'i' : i,}, av_array, fmt = '%18.12f')
 
         plt.savefig(spectra_name)

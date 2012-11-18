@@ -1,7 +1,16 @@
 
 
 import numpy as np
+import subprocess
 from plotting      import layers_plot
+
+import cat_n_clean
+# import matplotlib
+# matplotlib.use('pdf')
+import matplotlib.pyplot as plt
+
+
+
 
 def load_scat_mat(name, st, p):
     # reshape matrices to be consistent with pcpv.exe output
@@ -17,6 +26,27 @@ def load_scat_mat(name, st, p):
     matrix = np.reshape(matrix, (num_2, num_1))
     return matrix
 
+# def rm_scat_mat(p):
+#     # remove all scattering matrix files for complete wavelength
+#     format_p     = '%04d' % p
+#     file_name1 = "rm st*_wl%(wl)s_R*.txt" % {
+#         'wl' : format_p}
+#     file_name2 = "rm st*_wl%(wl)s_T*.txt" % {
+#         'wl' : format_p}
+#     subprocess.call(file_name1, shell = True)
+#     subprocess.call(file_name2, shell = True)
+
+
+def deal_w_scat_mats(simo_para, nu_TFs):
+    # print images of relevant scattering matrices and delete all others
+    if simo_para.PrintOmega == 1:
+        for i in range(1,nu_TFs+1):
+            try:
+                cat_n_clean.c_c_omega(i)
+            except ValueError:
+                pass
+    file_name1 = "rm st*_wl*.txt" 
+    subprocess.call(file_name1, shell = True)
 
 
 def calc_tra_layers(solar_cell, rnet_list, inverted_t21_list, P_list,
@@ -119,7 +149,7 @@ def calc_tra_layers(solar_cell, rnet_list, inverted_t21_list, P_list,
 
 
 
-def net_scat_mats(solar_cell, wavelengths):
+def net_scat_mats(solar_cell, wavelengths, simo_para):
 
 # test that all structures have the same period
     for cell in solar_cell:
@@ -130,28 +160,31 @@ def net_scat_mats(solar_cell, wavelengths):
 
     nu_intfaces    = 2*(len(solar_cell)-1)
     nu_TFs         = len(solar_cell)-2 # adujsted by 1 for python index start at 0
+    neq_PW         = solar_cell[0].nu_tot_ords # assumes incident from homogeneous film
+    PW_pols        = 2*neq_PW
+    num_p_air_lst  = solar_cell[-1].num_prop_air
+    num_p_in_lst   = solar_cell[-1].num_prop_TF
+    num_p_out_lst  = solar_cell[0].num_prop_TF
+    zero_vec       = np.matrix(np.zeros((PW_pols, 1),complex))
+    # zero_mat_2     = np.matrix(np.zeros((2*PW_pols, 2*PW_pols),complex))
+    I_air          = np.matrix(np.eye(PW_pols),dtype='D')
+    inc            = solar_cell[-1].set_ord_in 
+    out            = solar_cell[0].set_ord_out
     # Transmittance = []
     # Reflectance   = []
     # Absorptance   = []
     # T_save        = []
     # R_save        = []
     # A_save        = []
-    neq_PW         = solar_cell[0].nu_tot_ords # assumes incident from homogeneous film
-    PW_pols        = 2*neq_PW
-    # num_prop_air   = solar_cell[0].nu_tot_ords#solar_cell[-1].num_prop_air
-    num_prop_air   = solar_cell[-1].num_prop_air
-    num_prop_in    = solar_cell[-1].num_prop_TF
-    num_prop_out   = solar_cell[0].num_prop_TF
-    zero_mat       = np.matrix(np.zeros((PW_pols, 1),float))
-    I_air          = np.matrix(np.eye(PW_pols),dtype='D')
-    inc            = solar_cell[-1].set_ord_in 
-    out            = solar_cell[0].set_ord_out
 
     t_list = []
     r_list = []
     a_list = []
 
     for p in range(len(wavelengths)):
+        num_prop_air = num_p_air_lst[p]
+        num_prop_in  = num_p_in_lst[p]
+        num_prop_out = num_p_out_lst[p]
         p += 1
 
         """ Calculate net scattering matrices starting at the bottom
@@ -169,18 +202,18 @@ def net_scat_mats(solar_cell, wavelengths):
             r21_list.append(load_scat_mat('R21', st1.label_nu, p).T)
             # potential to save on one transpose
             t12_list.append(load_scat_mat('T12', st1.label_nu, p).T)
+            # t21_list.append(load_scat_mat('T21', st1.label_nu, p).T)
             t21_list.append(t12_list[-1].T)
-            # t21s.append(tmat_through_air(st2, st1, p))
 
 # initiate (r)tnet as substrate top interface
-        tnet      = t12_list[0]
-        rnet      = r12_list[0]
         tnet_list = []
         rnet_list = []
+        tnet      = t12_list[0]
+        rnet      = r12_list[0]
         tnet_list.append(tnet)
         rnet_list.append(rnet)
-        T_hat_list = []
-        R_hat_list = []
+        # T_hat_list = []
+        # R_hat_list = []
 
         inv_t21_list   = []
         inv_t12_list   = []
@@ -206,41 +239,59 @@ def net_scat_mats(solar_cell, wavelengths):
             to_invert_hat      = (I_TF - r21_list[i]*P*r21_list[i]*P)
             inverted_t12_hat   = np.linalg.solve(to_invert_hat,t12_list[i])
             P_inverted_t12_hat = P*inverted_t12_hat
-            T_hat              = t21_list[i]*P_inverted_t12_hat
-            R_hat              = r12_list[i] + t21_list[i]*P*r21_list[i]*P_inverted_t12_hat
+            # T_hat              = t21_list[i]*P_inverted_t12_hat
+            # R_hat              = r12_list[i] + t21_list[i]*P*r21_list[i]*P_inverted_t12_hat
 
             P_list.append(P)
             inv_t12_list.append(inverted_t12)
             tnet_list.append(tnet)
             rnet_list.append(rnet)
-            T_hat_list.append(T_hat)
-            R_hat_list.append(R_hat)
+            # T_hat_list.append(T_hat)
+            # R_hat_list.append(R_hat)
 
 # into top semi-infinite medium
-        to_invert = (I_air - r12_list[-1]*rnet)
+        to_invert    = (I_air - r12_list[-1]*rnet)
         inverted_t21 = np.linalg.solve(to_invert,t21_list[-1])
-        tnet = tnet*inverted_t21
-        rnet = r21_list[-1] + t12_list[-1]*rnet*inverted_t21
+        tnet         = tnet*inverted_t21
+        rnet         = r21_list[-1] + t12_list[-1]*rnet*inverted_t21
         inv_t21_list.append(inverted_t21)
         tnet_list.append(tnet)
         rnet_list.append(rnet)
 
 
         """ Calculate field expansions for all layers (including air) starting at top
-            These correctly describe energy fluxes in and out of each TF layer,
-            from which layer absorptances can be calculated.
             Ordering is now top to bottom (inverse of above)! ie f1 is superstrate (top)
+            Calculate net downward energy flux in each infintesimal air layer & super/substrates
+            (see appendix C in Dossou et al. JOSA 2012)
         """
-        fminus_list = []
-        fplus_list  = []
-        fminus_eng  = []
-        fplus_eng   = []
+
+        down_fluxes = []
+        up_flux     = []
+
+# Start by composing U matrix which is same for all air layers.
+# diagonal with 1 for propagating, i for evanescent TE and -i for evanescent TM plane wave orders
+
+        U_mat = np.matrix(np.zeros((2*PW_pols, 2*PW_pols),complex))
+        for i in range(0,num_prop_air):
+            U_mat[i,i]                               = 1.0
+            U_mat[neq_PW+i,neq_PW+i]                 = 1.0
+            U_mat[PW_pols+i,PW_pols+i]               = -1.0
+            U_mat[PW_pols+neq_PW+i,PW_pols+neq_PW+i] = -1.0
+        for i in range(num_prop_air,neq_PW):
+            U_mat[i,PW_pols+i]                       = -1.0j
+            U_mat[neq_PW+i,PW_pols+neq_PW+i]         = 1.0j
+            U_mat[PW_pols+i,i]                       = 1.0j
+            U_mat[PW_pols+neq_PW+i,neq_PW+i]         = -1.0j
+        # print U_mat
+        # print np.shape(U_mat)
+
+
 
 #   incoming from semi-inf
-        d_minus  = zero_mat
-        # for TM polarisation
-        d_minus[inc,0] = float(1.0)
+        d_minus        = zero_vec
         # for TE polarisation
+        d_minus[inc,0] = 1.0
+        # for TM polarisation
         # f1_minus[neq_PW+inc,0] = float(1.0)
         # for Right circular polarisation
         # calc_tra_layers(rnet_list, inverted_t21_list, P_list,
@@ -250,121 +301,117 @@ def net_scat_mats(solar_cell, wavelengths):
         #     f3_minus, t21s, nu_intfaces, wavelengths[p-1], p, '_L')
         # for Circular Dichroism
 
-        energy1 = np.linalg.norm(d_minus[0:num_prop_in])**2
-        energy2 = np.linalg.norm(d_minus[neq_PW:neq_PW+num_prop_in])**2
-        fminus_eng.append(energy1 + energy2)
+
+    # total incoming flux
+        flux_TE = np.linalg.norm(d_minus[0:num_prop_in])**2
+        flux_TM = np.linalg.norm(d_minus[neq_PW:neq_PW+num_prop_in])**2
+        down_fluxes.append(flux_TE + flux_TM)
 
 #   up into semi-inf off top air gap
         d_plus  = rnet_list[-1]*d_minus
-        fminus_list.append(d_minus)
-        fplus_list.append(d_plus)
-        energy1 = np.linalg.norm(d_plus[0:num_prop_in])**2
-        energy2 = np.linalg.norm(d_plus[neq_PW:neq_PW+num_prop_in])**2
-        fplus_eng.append(energy1 + energy2)
+    # total reflected flux
+        flux_TE = np.linalg.norm(d_plus[0:num_prop_in])**2
+        flux_TM = np.linalg.norm(d_plus[neq_PW:neq_PW+num_prop_in])**2
+        up_flux.append(flux_TE + flux_TM)
 
 #   incoming from semi-inf into top air gap
         f1_minus = inv_t21_list[-1]*d_minus
-        fminus_list.append(f1_minus)
-        energy1  = np.linalg.norm(f1_minus[0:num_prop_air])**2
-        energy2  = np.linalg.norm(f1_minus[neq_PW:neq_PW+num_prop_air])**2
-        fminus_eng.append(energy1 + energy2)
-        # fminus_eng.append(np.linalg.norm(f1_minus)**2)
-
 
         for i in range(nu_TFs):
-#   d
             f1_plus = rnet_list[-2*i-2]*f1_minus
-            fplus_list.append(f1_plus)
-            energy1 = np.linalg.norm(f1_plus[0:num_prop_air])**2
-            energy2 = np.linalg.norm(f1_plus[neq_PW:neq_PW+num_prop_air])**2
-            fplus_eng.append(energy1 + energy2)
-            # fplus_eng.append(np.linalg.norm(f1_plus)**2)
-            
-            # print f1_plus
-            # print f1_plus[0:num_prop_air]
-            # print f1_plus[neq_PW:neq_PW+num_prop_air]
-            # print energy1 + energy2
-            # print np.linalg.norm(f1_plus)**2
+    # net downward flux in infintesimal air layer
+            f_mat   = np.matrix(np.concatenate((f1_minus,f1_plus)))
+            f_mat_H = f_mat.conj().transpose()
+            flux    = f_mat_H*U_mat*f_mat
+            down_fluxes.append(flux)
 
             f2_minus = inv_t12_list[-i-1]*f1_minus
-
             f2_plus  = rnet_list[-2*i-3]*P_list[-i-1]*f2_minus
 
             f1_minus = inv_t21_list[-i-2]*P_list[-i-1]*f2_minus
-            fminus_list.append(f1_minus)
-            energy1  = np.linalg.norm(f1_minus[0:num_prop_air])**2
-            energy2  = np.linalg.norm(f1_minus[neq_PW:neq_PW+num_prop_air])**2
-            fminus_eng.append(energy1 + energy2)
-            # fminus_eng.append(np.linalg.norm(f1_minus)**2)
-          
+
 # bottom air to semi-inf substrate
-        f1_plus = rnet_list[0]*f1_minus
-        fplus_list.append(f1_plus)
-        energy1 = np.linalg.norm(f1_plus[0:num_prop_air])**2
-        energy2 = np.linalg.norm(f1_plus[neq_PW:neq_PW+num_prop_air])**2
-        fplus_eng.append(energy1 + energy2)
-        # fplus_eng.append(np.linalg.norm(f1_plus)**2)
+        f1_plus  = rnet_list[0]*f1_minus
 
-        f2_minus = t12_list[0]*f1_minus
-        fminus_list.append(f2_minus)
-        energy1 = np.linalg.norm(f2_minus[0:num_prop_out])**2
-        energy2 = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
-        fminus_eng.append(energy1 + energy2)
-        # fminus_eng.append(np.linalg.norm(f2_minus)**2)
+        f2_minus = tnet_list[0]*f1_minus
+        flux_TE  = np.linalg.norm(f2_minus[0:num_prop_out])**2
+        flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
+        down_fluxes.append(flux_TE + flux_TM)
 
-        print 'num_prop_out', num_prop_out
-        print 'neq_PW', neq_PW
-
-
-        t_layer = fminus_eng[1]/fminus_eng[0]
-        r_layer = fminus_eng[0] - t_layer
-        t_list.append(t_layer)
-        r_list.append(r_layer)
-        print 't', t_layer
-        print 'r', r_layer
-        print ''
-        for i in range(1,nu_TFs+1):
-            t_layer = fminus_eng[i+1]#/fminus_eng[i]
-            r_layer = fplus_eng[i]/fminus_eng[i]
-            # t_layer = abs(T_hat_list[i-1])**2# fminus_eng[i+1]/fminus_eng[i]
-            # r_layer = abs(R_hat_list[i-1])**2#fplus_eng[i]/fminus_eng[i]
-            a_layer = fminus_eng[i] + fplus_eng[i+1] - fminus_eng[i+1] - fplus_eng[i]
-            t_list.append(t_layer)
-            r_list.append(r_layer)
+# calculate absorption in each layer
+        for i in range(1,len(down_fluxes)-1):
+            a_layer = abs(down_fluxes[i])-abs(down_fluxes[i+1])
             a_list.append(a_layer)
-            print 't', t_layer
-            print 'r', r_layer
-            print 'a', a_layer
-        t_layer = fminus_eng[-1]#/fminus_eng[-2]
-        r_layer = fplus_eng[-1]/fminus_eng[-1]
-        t_list.append(t_layer)
-        r_list.append(r_layer)
-        print 't', t_layer
-        print 'r', r_layer
-        print ''
-
-        print 'final t', fminus_eng[-1]/fminus_eng[0]
-        print 'final r', fplus_eng[0]/fminus_eng[0]
-
-        final_t  = fminus_eng[-1]/fminus_eng[0]
-        final_r  = fplus_eng[0]/fminus_eng[0]
-        abs_tot  = sum(a_list[-nu_TFs:-1]) + a_list[-1]
-        t_list.append(final_t)
-        r_list.append(final_r)
-        a_list.append(abs_tot)
-        abs_diff = (fminus_eng[0] - fminus_eng[-1] - fplus_eng[0]) - abs_tot
-        a_list.append(abs_diff)
-        print 'sum_abs', abs_tot
-        print ''        
-        print 'net_abs', fminus_eng[0] - fminus_eng[-1] - fplus_eng[0]
-        print ''        
-        print 'abs_diff', abs_diff
+        sum_abs = sum(a_list[-nu_TFs:])
+        a_layer = abs(down_fluxes[0]-down_fluxes[-1]-up_flux[0])
+        a_list.append(a_layer)
+        a_list.append(a_layer - sum_abs)
 
 
-    layers_plot('Lay_Trans', t_list, wavelengths)
-    layers_plot('Lay_Reflec', r_list, wavelengths)
+
+# plot scattering matrices as grayscale images
+        im = np.real(abs(rnet_list[-1]))
+        plt.matshow(im,cmap=plt.cm.gray)
+        cbar = plt.colorbar(extend='neither')
+        plt.xlabel('Incoming Orders')
+        plt.ylabel('Outgoing Orders')
+        plt.suptitle('Net Reflection Scattering Matrix')
+        plt.savefig('Rnet_wl%i' % p)
+        # for i in range(len(rnet_list)):
+        #     im = np.real(rnet_list[i])
+        #     plt.matshow(im,cmap=plt.cm.gray)
+        #     plt.savefig('0testmat%i' % i)
+
+        # rm_scat_mat(p)
+
+
+    # layers_plot('Lay_Trans', t_list, wavelengths)
+    # layers_plot('Lay_Reflec', r_list, wavelengths)
     layers_plot('Lay_Absorb', a_list, wavelengths)
 
+# remove scattering matrix files
+    deal_w_scat_mats(simo_para, nu_TFs)
+
+
+
+        # t_layer = fminus_eng[1]#/fminus_eng[0]
+        # r_layer = fplus_eng[1]#fminus_eng[0] - t_layer
+        # t_list.append(t_layer)
+        # r_list.append(r_layer)
+        # print 't', t_layer
+        # print 'r', r_layer
+        # print ''
+
+        # t_layer = fminus_eng[-1]#/fminus_eng[-2]
+        # r_layer = fplus_eng[-1]/fminus_eng[-1]
+        # t_list.append(t_layer)
+        # r_list.append(r_layer)
+        # print 't', t_layer
+        # print 'r', r_layer
+        # print ''
+
+        # print 'final t', fminus_eng[-1]/fminus_eng[0]
+        # print 'final r', fplus_eng[0]/fminus_eng[0]
+
+        # final_t  = fminus_eng[-1]/fminus_eng[0]
+        # final_r  = fplus_eng[0]/fminus_eng[0]
+
+        # abs_tot  = sum(a_list[-nu_TFs:])
+        # # t_list.append(final_t)
+        # # r_list.append(final_r)
+        # a_list.append(abs_tot)
+        # abs_diff = abs(down_fluxes[0] - down_fluxes[-1] - up_flux[0])
+        # a_list.append(abs_diff)
+
+        # tnet_check = tnet_list[-1]*d_minus
+        # energy1 = np.linalg.norm(tnet_check[0:num_prop_out])**2
+        # energy2 = np.linalg.norm(tnet_check[neq_PW:neq_PW+num_prop_out])**2
+        # # print ''    
+        # # print 'tnet_t', energy1 + energy2
+        # rnet_check = rnet_list[-1]*d_minus
+        # energy1 = np.linalg.norm(rnet_check[0:num_prop_in])**2
+        # energy2 = np.linalg.norm(rnet_check[neq_PW:neq_PW+num_prop_in])**2
+        # # print 'rnet_r', energy1 + energy2
 
 
 
@@ -374,49 +421,50 @@ def net_scat_mats(solar_cell, wavelengths):
 
 
 
-        # # select elements of Tnet, Rnet matrices to calculate absorption etc.
-        # neq_PW   = solar_cell[0].nu_tot_ords 
-        # # select_ord_in  = solar_cell[-1].set_ord_in
-        # # select_ord_out = solar_cell[0].set_ord_out
+
+    #     # # select elements of Tnet, Rnet matrices to calculate absorption etc.
+    #     # neq_PW   = solar_cell[0].nu_tot_ords 
+    #     # # select_ord_in  = solar_cell[-1].set_ord_in
+    #     # # select_ord_out = solar_cell[0].set_ord_out
 
 
-        # inc      = 0#solar_cell[0].zero_ord
-        # Lambda_t = 0
-        # for i in range(num_prop_out):
-        #     #TM
-        #     # Lambda_t = Lambda_t + abs(tnet[i,neq_PW+inc])**2 + abs(tnet[neq_PW+i,neq_PW+inc])**2
-        #     #TE
-        #     Lambda_t = Lambda_t + abs(tnet[i,inc])**2 + abs(tnet[neq_PW+i,inc])**2
+    #     # inc      = 0#solar_cell[0].zero_ord
+    #     # Lambda_t = 0
+    #     # for i in range(num_prop_out):
+    #     #     #TM
+    #     #     # Lambda_t = Lambda_t + abs(tnet[i,neq_PW+inc])**2 + abs(tnet[neq_PW+i,neq_PW+inc])**2
+    #     #     #TE
+    #     #     Lambda_t = Lambda_t + abs(tnet[i,inc])**2 + abs(tnet[neq_PW+i,inc])**2
 
 
-        # # inc      = solar_cell[-1].zero_ord
-        # Lambda_r = 0
-        # for i in range(num_prop_in):
-        #     #TM
-        #     # Lambda_r = Lambda_r + abs(rnet[i,neq_PW+inc])**2 + abs(rnet[neq_PW+i,neq_PW+inc])**2
-        #     #TE
-        #     Lambda_r = Lambda_r + abs(rnet[i,inc])**2 + abs(rnet[neq_PW+i,inc])**2
+    #     # # inc      = solar_cell[-1].zero_ord
+    #     # Lambda_r = 0
+    #     # for i in range(num_prop_in):
+    #     #     #TM
+    #     #     # Lambda_r = Lambda_r + abs(rnet[i,neq_PW+inc])**2 + abs(rnet[neq_PW+i,neq_PW+inc])**2
+    #     #     #TE
+    #     #     Lambda_r = Lambda_r + abs(rnet[i,inc])**2 + abs(rnet[neq_PW+i,inc])**2
 
-        # absorption = 1 - Lambda_r - Lambda_t
-        # print 't', Lambda_t
-        # print 'r', Lambda_r
-        # print 'a', absorption
+    #     # absorption = 1 - Lambda_r - Lambda_t
+    #     # print 't', Lambda_t
+    #     # print 'r', Lambda_r
+    #     # print 'a', absorption
 
 
 
-    # #     Transmittance.append(Lambda_t)
-    # #     Reflectance.append(Lambda_r)
-    # #     Absorptance.append(absorption)
-    # # # T_save.append((wavelengths[p-1], Lambda_t))
-    # # # R_save.append((wavelengths[p-1], Lambda_r))
-    # # # A_save.append((wavelengths[p-1], absorption))
+    # # #     Transmittance.append(Lambda_t)
+    # # #     Reflectance.append(Lambda_r)
+    # # #     Absorptance.append(absorption)
+    # # # # T_save.append((wavelengths[p-1], Lambda_t))
+    # # # # R_save.append((wavelengths[p-1], Lambda_r))
+    # # # # A_save.append((wavelengths[p-1], absorption))
 
-    # # # np.savetxt('Transmittance.txt', T_save, fmt=['%18.10f','%25.17G'], delimiter='')
-    # # # np.savetxt('Reflectance.txt', R_save, fmt=['%18.10f','%25.17G'], delimiter='')
-    # # # np.savetxt('Absorptance.txt', A_save, fmt=['%18.10f','%25.17G'], delimiter='')
+    # # # # np.savetxt('Transmittance.txt', T_save, fmt=['%18.10f','%25.17G'], delimiter='')
+    # # # # np.savetxt('Reflectance.txt', R_save, fmt=['%18.10f','%25.17G'], delimiter='')
+    # # # # np.savetxt('Absorptance.txt', A_save, fmt=['%18.10f','%25.17G'], delimiter='')
 
-    # # relative_wave_nu = 120/wavelengths
+    # # # relative_wave_nu = 120/wavelengths
 
-    # # tmp_plot(relative_wave_nu, Reflectance, 'R_Spec')
-    # # tmp_plot(relative_wave_nu, Transmittance, 'T_Spec')
-    # # tmp_plot(relative_wave_nu, Absorptance, 'A_Spec')
+    # # # tmp_plot(relative_wave_nu, Reflectance, 'R_Spec')
+    # # # tmp_plot(relative_wave_nu, Transmittance, 'T_Spec')
+    # # # tmp_plot(relative_wave_nu, Absorptance, 'A_Spec')

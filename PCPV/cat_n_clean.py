@@ -218,51 +218,52 @@ def c_c_tra(pol = 0):
 
 
 
-def c_c_omega():
+def c_c_omega(st):
     """ concatinate dispersion results in one file 
         and remove individual lambda results """
 
-    filename1 = "st*_omega.txt"
+    format_st     = '%04d' % st
+    filename1 = "st%s*_omega.txt" % format_st
     Afiles = glob.glob(filename1)
     Afiles.sort()
     if len(Afiles)>0:
         listoffiles1 = ""
         for fle in Afiles:
             listoffiles1 += " " + fle
-        os.system("cat" + listoffiles1 + "> omega.txt")
+        os.system("cat" + listoffiles1 + "> omega_st%s.txt" % format_st)
         for fle in Afiles:
             os.remove(fle)
         
-    filename1 = "wl*_omega_pol.txt"
+    filename1 = "st%s*_omega_pol.txt" % format_st
     Afiles = glob.glob(filename1)
     Afiles.sort()
     if len(Afiles)>0:
         listoffiles1 = ""
         for fle in Afiles:
             listoffiles1 += " " + fle
-        os.system("cat" + listoffiles1 + "> omega_pol.txt")
+        os.system("cat" + listoffiles1 + "> omega_pol_st%s.txt" % format_st)
         for fle in Afiles:
             os.remove(fle)
         
-    filename1 = "wl*_omega_Fz.txt"
+    filename1 = "st%s*_omega_Fz.txt" % format_st
     Afiles = glob.glob(filename1)
     Afiles.sort()
     if len(Afiles)>0:
         listoffiles1 = ""
         for fle in Afiles:
             listoffiles1 += " " + fle
-        os.system("cat" + listoffiles1 + "> omega_Fz.txt")
+        os.system("cat" + listoffiles1 + "> omega_Fz_st%s.txt" % format_st)
         for fle in Afiles:
             os.remove(fle)
         
-    filename1 = "wl*_omega_Ft.txt"
+    filename1 = "st%s*_omega_Ft.txt" % format_st
     Afiles = glob.glob(filename1)
     Afiles.sort()
     if len(Afiles)>0:
         listoffiles1 = ""
         for fle in Afiles:
             listoffiles1 += " " + fle
-        os.system("cat" + listoffiles1 + "> omega_Ft.txt")
+        os.system("cat" + listoffiles1 + "> omega_Ft_st%s.txt" % format_st)
         for fle in Afiles:
             os.remove(fle)
 
