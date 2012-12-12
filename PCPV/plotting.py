@@ -336,26 +336,28 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
 
 def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
     fig = plt.figure(num=None, figsize=(12, 9), dpi=80, facecolor='w', edgecolor='k')
-    ax1 = fig.add_subplot(2,1,1)
-    ax2 = fig.add_subplot(2,1,2)
+    ax1 = fig.add_subplot(2,1,1)#(3,1,1)
+    ax2 = fig.add_subplot(2,1,2)#(3,1,1)
     # ax3 = fig.add_subplot(3,1,3)
-    wavelengths = np.genfromtxt('%s.txt' % 'omega', usecols=(2))
-    num_BMs     = np.genfromtxt('%s.txt' % 'omega', usecols=(1))
+    wavelengths = np.genfromtxt('%s.txt' % 'omega_st0001', usecols=(2))
+    num_BMs     = np.genfromtxt('%s.txt' % 'omega_st0001', usecols=(1))
     count = 1
     for i in range(len(num_BMs)):
         prop = []
         prop_im = []
-        # prop_4pi = []
-        re = np.genfromtxt('%s.txt' % 'omega', usecols=(5+2*i), invalid_raise=False)
-        im = np.genfromtxt('%s.txt' % 'omega', usecols=(5+2*i+1), invalid_raise=False)
+        prop_4pi = []
+        re = np.genfromtxt('%s.txt' % 'omega_st0001', usecols=(5+2*i), invalid_raise=False)
+        im = np.genfromtxt('%s.txt' % 'omega_st0001', usecols=(5+2*i+1), invalid_raise=False)
         for j in range(len(re)):
             if re[j] > im[j]:
                 prop.append(re[j])
+                prop_im.append(im[j])
+                # prop_4pi.append(4.3429*4*np.pi*im[j])
         # for j in range(len(re)):
-        #     # if re[j] > 0.1 and im[j] < 3.0:#im[j]:
+        #     # if re[j] > 0.1:# and im[j] < 3.0:#im[j]:
         #     prop.append(re[j])
         #     prop_im.append(im[j])
-        #     prop_4pi.append(4*np.pi*im[j])
+        #     prop_4pi.append(4*np.pi*im[j]/4.3429)
         count +=1
 
         trim_wls = wavelengths[0:len(prop)]
@@ -451,3 +453,39 @@ def layers_plot(spectra_name, spec_list, wavelengths):
         np.savetxt('%(s)s_%(i)i.txt'% {'s' : lay_spec_name, 'i' : i,}, av_array, fmt = '%18.12f')
 
         plt.savefig(spectra_name)
+
+
+
+
+
+
+# ================    ===============================
+# character           description
+# ================    ===============================
+# ``'-'``             solid line style
+# ``'--'``            dashed line style
+# ``'-.'``            dash-dot line style
+# ``':'``             dotted line style
+# ``'.'``             point marker
+# ``','``             pixel marker
+# ``'o'``             circle marker
+# ``'v'``             triangle_down marker
+# ``'^'``             triangle_up marker
+# ``'<'``             triangle_left marker
+# ``'>'``             triangle_right marker
+# ``'1'``             tri_down marker
+# ``'2'``             tri_up marker
+# ``'3'``             tri_left marker
+# ``'4'``             tri_right marker
+# ``'s'``             square marker
+# ``'p'``             pentagon marker
+# ``'*'``             star marker
+# ``'h'``             hexagon1 marker
+# ``'H'``             hexagon2 marker
+# ``'+'``             plus marker
+# ``'x'``             x marker
+# ``'D'``             diamond marker
+# ``'d'``             thin_diamond marker
+# ``'|'``             vline marker
+# ``'_'``             hline marker
+# ================    ===============================

@@ -67,6 +67,16 @@ class Material(object):
         # print self.stored_ns
 
 
+    def n_drude(self, wavelengths, plasma_wl, gamma_wl):
+        # http://www.wave-scattering.com/drudefit.html
+        c = 2.98e8*1e9
+        numer = c*wavelengths**2
+        denom = c*plasma_wl**2 - 1j*2*np.pi*gamma_wl*wavelengths*plasma_wl**2
+        drude_n = 1 - numer/denom
+        self.interp_data = np.sqrt(drude_n)
+        self.stored_ns   = dict(zip(wavelengths, self.interp_data))
+
+
     def n(self, wl):
         """ Return n at the specified wavelength."""
         # if self.stored_ns.has_key(wl):
@@ -151,10 +161,15 @@ def interp_needed(wavelengths, material=Air):
         FeS2.n_spline(wavelengths)#.n_interp(wavelengths)
         # n_plot('FeS2',wavelengths, FeS2.interp_data)
     if material == Zn3P2:
-        Zn3P2.n_spline(wavelengths)#.n_interp(wavelengths)
+        Zn3P2.n_spline(wavelengths)
+        # Zn3P2.n_interp(wavelengths)
         # n_plot('Zn3P2',wavelengths, Zn3P2.interp_data)
     if material == Au:
-        Au.n_spline(wavelengths)#.n_interp(wavelengths)
+        # Au.n_spline(wavelengths)
+        Au.n_interp(wavelengths)
+        # plasma_wl_in_nm = 137.36e1*np.ones(len(wavelengths))
+        # gamma_for_wl_nm = 0#215*1e-7
+        # Au.n_drude(wavelengths, plasma_wl_in_nm, gamma_for_wl_nm)
         # n_plot('Au',wavelengths, Au.interp_data)
     if material == Ag:
         Ag.n_spline(wavelengths)#.n_interp(wavelengths)

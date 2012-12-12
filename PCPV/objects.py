@@ -16,7 +16,7 @@ class NanoStruct(object):
         set_ff = False, ff_rand = False, height_1 = 2330, height_2 = 2330, num_h = 1,
         inclusion_a = materials.Si_c, inclusion_b = materials.Air, background = materials.Air,
         superstrate = materials.Air, substrate = materials.SiO2_a,
-        loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 4, make_mesh_now = False, force_mesh = False,
+        loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 5, make_mesh_now = False, force_mesh = False,
         lc_bkg = 0.09, lc2_surf= 1.7, lc3_inc1 = 1.9, lc4_inc2 = 1.9, lc5_inc3 = 1.9, lc6_inc4 = 1.9,
         posx = 0, posy = 0, max_num_BMs = 100, label_nu = 0):
         self.radius1     = radius1
@@ -317,35 +317,36 @@ class Controls(object):
         plot_real = 1, plot_imag = 0, plot_abs = 0, tol = 0, E_H_field = 1, 
         i_cond = 2, itermax = 30, incident = 0, 
         x_order_in = 0, x_order_out = 0, y_order_in = 0, y_order_out = 0,
-        what4incident = 2, out4incident = 0, Animate = False, 
+        what4incident = 2, out4incident = 0, Animate = False, plot_scat_mats = False,
         var_BM_min = 370, max_order_PWs = 3, num_cores = 8, leave_cpus = False):
-        self.debug         = debug
-        self.traLambda     = traLambda
-        self.PrintOmega    = PrintOmega
-        self.PrintSolution = PrintSolution
-        self.PrintSupModes = PrintSupModes
-        self.PrintAll      = PrintAll
-        self.Checks        = Checks
-        self.PropModes     = PropModes
-        self.q_average     = q_average
-        self.plot_real     = plot_real
-        self.plot_imag     = plot_imag
-        self.plot_abs      = plot_abs
-        self.tol           = tol
-        self.E_H_field     = E_H_field
-        self.i_cond        = i_cond
-        self.itermax       = itermax
-        self.incident      = incident
-        self.x_order_in    = x_order_in
-        self.x_order_out   = x_order_out
-        self.y_order_in    = y_order_in
-        self.y_order_out   = y_order_out
-        self.what4incident = what4incident
-        self.out4incident  = out4incident
-        self.Animate       = Animate
-        self.var_BM_min    = var_BM_min
-        self.max_order_PWs = max_order_PWs
-        self.num_cores     = num_cores
+        self.debug          = debug
+        self.traLambda      = traLambda
+        self.PrintOmega     = PrintOmega
+        self.PrintSolution  = PrintSolution
+        self.PrintSupModes  = PrintSupModes
+        self.PrintAll       = PrintAll
+        self.Checks         = Checks
+        self.PropModes      = PropModes
+        self.q_average      = q_average
+        self.plot_real      = plot_real
+        self.plot_imag      = plot_imag
+        self.plot_abs       = plot_abs
+        self.tol            = tol
+        self.E_H_field      = E_H_field
+        self.i_cond         = i_cond
+        self.itermax        = itermax
+        self.incident       = incident
+        self.x_order_in     = x_order_in
+        self.x_order_out    = x_order_out
+        self.y_order_in     = y_order_in
+        self.y_order_out    = y_order_out
+        self.what4incident  = what4incident
+        self.out4incident   = out4incident
+        self.Animate        = Animate
+        self.plot_scat_mats = plot_scat_mats
+        self.var_BM_min     = var_BM_min
+        self.max_order_PWs  = max_order_PWs
+        self.num_cores      = num_cores
         if leave_cpus == True:
             # number of cpus to leave free
             import multiprocessing   as mp

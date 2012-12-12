@@ -298,7 +298,7 @@ def save_scat_mat(matrix, name, st, p, num_pw):
 
             file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
                 'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
-            with file(file_name, 'w') as outfile:
+            with open(file_name, 'w') as outfile:
                 for k in range(num_pw):
                     for i in range(num_pw):
                         data = [i+1,  k+1, np.real(matrix[i,k]), np.imag(matrix[i,k]),
@@ -312,7 +312,7 @@ def save_scat_mat(matrix, name, st, p, num_pw):
 
 #             file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
 #                 'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
-#             with file(file_name, 'w') as outfile:
+#             with open(file_name, 'w') as outfile:
 #                 for k in range(num_pw):
 #                     data = [[float(np.real(matrix[k])), float(np.imag(matrix[k]))]]
 #                     np.savetxt(outfile, data, fmt=['%25.17G', '%25.17G'], delimiter='')
