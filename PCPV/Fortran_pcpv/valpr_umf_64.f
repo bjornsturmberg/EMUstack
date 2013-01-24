@@ -387,6 +387,39 @@ c      ---------------------------------------------------
 
 c      ---------------------------------------------------
 c     | Error message, check the documentation in DNAUPD. |
+
+c  INFO    Integer.  (INPUT/OUTPUT)
+c          If INFO .EQ. 0, a randomly initial residual vector is used.
+c          If INFO .NE. 0, RESID contains the initial residual vector,
+c                          possibly from a previous run.
+c          Error flag on output.
+c          =  0: Normal exit.
+c          =  1: Maximum number of iterations taken.
+c                All possible eigenvalues of OP has been found. IPARAM(5)  
+c                returns the number of wanted converged Ritz values.
+c          =  2: No longer an informational error. Deprecated starting
+c                with release 2 of ARPACK.
+c          =  3: No shifts could be applied during a cycle of the 
+c                Implicitly restarted Arnoldi iteration. One possibility 
+c                is to increase the size of NCV relative to NEV. 
+c                See remark 4 below.
+c          = -1: N must be positive.
+c          = -2: NEV must be positive.
+c          = -3: NCV-NEV >= 2 and less than or equal to N.
+c          = -4: The maximum number of Arnoldi update iteration 
+c                must be greater than zero.
+c          = -5: WHICH must be one of 'LM', 'SM', 'LR', 'SR', 'LI', 'SI'
+c          = -6: BMAT must be one of 'I' or 'G'.
+c          = -7: Length of private work array is not sufficient.
+c          = -8: Error return from LAPACK eigenvalue calculation;
+c          = -9: Starting vector is zero.
+c          = -10: IPARAM(7) must be 1,2,3,4.
+c          = -11: IPARAM(7) = 1 and BMAT = 'G' are incompatable.
+c          = -12: IPARAM(1) must be equal to 0 or 1.
+c          = -9999: Could not build an Arnoldi factorization.
+c                   IPARAM(5) returns the size of the current Arnoldi
+c                   factorization.
+
 c      ---------------------------------------------------
 
          write(ui,*) 'VALPR_64:'

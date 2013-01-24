@@ -196,9 +196,13 @@ class NanoStruct(object):
             geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
             geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
             if self.posx != 0:
+                # appropriate for old definition of % of distance to touching
                 geo = geo.replace('posx = 0;', "posx = %f;" % (self.posx/self.period*(self.period/(2*np.sqrt(supercell)) - self.radius1)))
+                # appropriate for % shift of distance of centre point to (ind) unitcell boundary (ie d/2)
+                # geo = geo.replace('posx = 0;', "posx = %f;" % float(self.posx/supercell))
             if self.posy != 0:
                 geo = geo.replace('posy = 0;', "posy = %f;" % (self.posy/self.period*(self.period/(2*np.sqrt(supercell)) - self.radius1)))
+                # geo = geo.replace('posy = 0;', "posy = %f;" % float(self.posy/supercell))
             if supercell == 2:
                 if self.set_ff == False:
                     geo = geo.replace('radius2 = ((ff*(d)^2)/3.14159265 - (radius1^2))^0.5;', "radius2 = (%i/d_in_nm)*d;" % self.radius2)    
