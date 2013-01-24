@@ -132,11 +132,17 @@ def tra_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_
         plt.axis([wavelengths[0], wavelengths[-1], 0.0, 1])
     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
     'period'        : solar_cell.period, 'radius' : solar_cell.radius1,}
-    tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-    'ff'            : solar_cell.ff, 
-    'h_one'         : solar_cell.height_1,
-    'h_two'         : solar_cell.height_2,
-    'num_h'         : solar_cell.num_h, }
+    if solar_cell.geometry == '1D_grating':
+        tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+        'ff'            : solar_cell.ff, 
+        'h_one'         : solar_cell.height_1,
+        'h_two'         : solar_cell.height_2,
+        'num_h'         : solar_cell.num_h, }
+    else:
+        tmp10 ='\nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+        'h_one'         : solar_cell.height_1,
+        'h_two'         : solar_cell.height_2,
+        'num_h'         : solar_cell.num_h, }
     tmp2 = r'$\theta$ = '
     tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
     tmp4 = r'$\phi$ = '
@@ -184,11 +190,17 @@ def overlay_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_or
     plt.legend( ('posxy 100','posxy 95','posxy 98') )
     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
     'period'        : solar_cell.period, 'radius' : solar_cell.radius1,}
-    tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-    'ff'            : solar_cell.ff, 
-    'h_one'         : solar_cell.height_1,
-    'h_two'         : solar_cell.height_2,
-    'num_h'         : solar_cell.num_h, }
+    if solar_cell.geometry == '1D_grating':
+        tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+        'ff'            : solar_cell.ff, 
+        'h_one'         : solar_cell.height_1,
+        'h_two'         : solar_cell.height_2,
+        'num_h'         : solar_cell.num_h, }
+    else:
+        tmp10 ='\nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+        'h_one'         : solar_cell.height_1,
+        'h_two'         : solar_cell.height_2,
+        'num_h'         : solar_cell.num_h, }
     tmp2 = r'$\theta$ = '
     tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
     tmp4 = r'$\phi$ = '
@@ -258,11 +270,17 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
 
     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
     'period'        : solar_cell.period, 'radius' : solar_cell.radius1,}
-    tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-    'ff'            : solar_cell.ff, 
-    'h_one'         : solar_cell.height_1,
-    'h_two'         : solar_cell.height_2,
-    'num_h'         : solar_cell.num_h, }
+    if solar_cell.geometry == '1D_grating':
+        tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+        'ff'            : solar_cell.ff, 
+        'h_one'         : solar_cell.height_1,
+        'h_two'         : solar_cell.height_2,
+        'num_h'         : solar_cell.num_h, }
+    else:
+        tmp10 ='\nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+        'h_one'         : solar_cell.height_1,
+        'h_two'         : solar_cell.height_2,
+        'num_h'         : solar_cell.num_h, }
     tmp2 = r'$\theta$ = '
     tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
     tmp4 = r'$\phi$ = '
@@ -378,11 +396,17 @@ def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
 
     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
     'period'        : solar_cell.period, 'radius' : solar_cell.radius1,}
-    tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-    'ff'            : solar_cell.ff, 
-    'h_one'         : solar_cell.height_1,
-    'h_two'         : solar_cell.height_2,
-    'num_h'         : solar_cell.num_h, }
+    if solar_cell.geometry == '1D_grating':
+        tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+        'ff'            : solar_cell.ff, 
+        'h_one'         : solar_cell.height_1,
+        'h_two'         : solar_cell.height_2,
+        'num_h'         : solar_cell.num_h, }
+    else:
+        tmp10 ='\nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+        'h_one'         : solar_cell.height_1,
+        'h_two'         : solar_cell.height_2,
+        'num_h'         : solar_cell.num_h, }
     tmp2 = r'$\theta$ = '
     tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
     tmp4 = r'$\phi$ = '
