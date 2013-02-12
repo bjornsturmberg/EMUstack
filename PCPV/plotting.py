@@ -1,4 +1,5 @@
 #
+import objects
 
 import numpy as np
 from matplotlib.mlab import griddata
@@ -8,6 +9,7 @@ import matplotlib.pyplot as plt
 import os
 
 Irrad_spec_file = '../PCPV/Data/ASTM_1_5_spectrum'
+
 
 def average_spec(spec_name,av_spec_name,num_wl,num_h):
     data      = np.loadtxt('%s.txt' % spec_name)
@@ -49,6 +51,7 @@ def efficiency_h(spec_name,h_spec_name,wavelengths,num_wl,num_h, Animate):
         ps = os.system("convert -delay 3 +dither -layers Optimize -colors 16 Animated/*.pdf Animated/Abs_Spectra.gif")
         p  = os.system("gifsicle -O2 Animated/Abs_Spectra.gif -o Animated/Abs_Spectra-opt.gif")
 
+
 def spectra_h(wavelengths,h_wl, h, eta_calc,i):
     fig = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
@@ -74,8 +77,8 @@ def spectra_h(wavelengths,h_wl, h, eta_calc,i):
         plt.savefig('Animated/%d' % i)
 
 
-def irradiance(Absorb, W_Absorb, Trans, W_Trans, Reflec, W_Reflec, radius1, radius2,
-        period, ff):
+def irradiance(Absorb, W_Absorb, Trans, W_Trans, Reflec, W_Reflec, radius1, radius2=0,
+        period=0, ff=0):
     data         = np.loadtxt('%s.txt' % Absorb)
     wavelengths  = data[:,0]
     spec         = data[:,1]
@@ -132,17 +135,11 @@ def tra_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_order_
         plt.axis([wavelengths[0], wavelengths[-1], 0.0, 1])
     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
     'period'        : solar_cell.period, 'radius' : solar_cell.radius1,}
-    if solar_cell.geometry == '1D_grating':
-        tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-        'ff'            : solar_cell.ff, 
-        'h_one'         : solar_cell.height_1,
-        'h_two'         : solar_cell.height_2,
-        'num_h'         : solar_cell.num_h, }
-    else:
-        tmp10 ='\nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-        'h_one'         : solar_cell.height_1,
-        'h_two'         : solar_cell.height_2,
-        'num_h'         : solar_cell.num_h, }
+    tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+    'ff'            : solar_cell.ff, 
+    'h_one'         : solar_cell.height_1,
+    'h_two'         : solar_cell.height_2,
+    'num_h'         : solar_cell.num_h, }
     tmp2 = r'$\theta$ = '
     tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
     tmp4 = r'$\phi$ = '
@@ -190,17 +187,11 @@ def overlay_plot(spectra_name, spec_list, solar_cell, light, max_num_BMs, max_or
     plt.legend( ('posxy 100','posxy 95','posxy 98') )
     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
     'period'        : solar_cell.period, 'radius' : solar_cell.radius1,}
-    if solar_cell.geometry == '1D_grating':
-        tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-        'ff'            : solar_cell.ff, 
-        'h_one'         : solar_cell.height_1,
-        'h_two'         : solar_cell.height_2,
-        'num_h'         : solar_cell.num_h, }
-    else:
-        tmp10 ='\nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-        'h_one'         : solar_cell.height_1,
-        'h_two'         : solar_cell.height_2,
-        'num_h'         : solar_cell.num_h, }
+    tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+    'ff'            : solar_cell.ff, 
+    'h_one'         : solar_cell.height_1,
+    'h_two'         : solar_cell.height_2,
+    'num_h'         : solar_cell.num_h, }
     tmp2 = r'$\theta$ = '
     tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
     tmp4 = r'$\phi$ = '
@@ -270,17 +261,11 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
 
     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
     'period'        : solar_cell.period, 'radius' : solar_cell.radius1,}
-    if solar_cell.geometry == '1D_grating':
-        tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-        'ff'            : solar_cell.ff, 
-        'h_one'         : solar_cell.height_1,
-        'h_two'         : solar_cell.height_2,
-        'num_h'         : solar_cell.num_h, }
-    else:
-        tmp10 ='\nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-        'h_one'         : solar_cell.height_1,
-        'h_two'         : solar_cell.height_2,
-        'num_h'         : solar_cell.num_h, }
+    tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+    'ff'            : solar_cell.ff, 
+    'h_one'         : solar_cell.height_1,
+    'h_two'         : solar_cell.height_2,
+    'num_h'         : solar_cell.num_h, }
     tmp2 = r'$\theta$ = '
     tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
     tmp4 = r'$\phi$ = '
@@ -352,61 +337,57 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
     plt.savefig('%s_eta_bar' % name_out)
 
 
-def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
-    fig = plt.figure(num=None, figsize=(12, 9), dpi=80, facecolor='w', edgecolor='k')
-    ax1 = fig.add_subplot(2,1,1)#(3,1,1)
-    ax2 = fig.add_subplot(2,1,2)#(3,1,1)
-    # ax3 = fig.add_subplot(3,1,3)
-    wavelengths = np.genfromtxt('%s.txt' % 'omega_st0001', usecols=(2))
-    num_BMs     = np.genfromtxt('%s.txt' % 'omega_st0001', usecols=(1))
-    count = 1
-    for i in range(len(num_BMs)):
-        prop = []
-        prop_im = []
-        prop_4pi = []
-        re = np.genfromtxt('%s.txt' % 'omega_st0001', usecols=(5+2*i), invalid_raise=False)
-        im = np.genfromtxt('%s.txt' % 'omega_st0001', usecols=(5+2*i+1), invalid_raise=False)
-        for j in range(len(re)):
-            if re[j] > im[j]:
-                prop.append(re[j])
-                prop_im.append(im[j])
-                # prop_4pi.append(4.3429*4*np.pi*im[j])
-        # for j in range(len(re)):
-        #     # if re[j] > 0.1:# and im[j] < 3.0:#im[j]:
-        #     prop.append(re[j])
-        #     prop_im.append(im[j])
-        #     prop_4pi.append(4*np.pi*im[j]/4.3429)
-        count +=1
+def omega_plot(complete_st, layer, light, max_num_BMs, max_order_PWs, Efficiency):
+    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    nu_layers = len(complete_st)
+    for i in range(0, nu_layers):
+        #reverse order so top layer gets plotted up top
+        st = complete_st[nu_layers-1-i].label_nu
+        format_st     = '%04d' % st
+        print format_st
+        ax1 = fig.add_subplot(nu_layers,1,i+1)
+        # ax2 = fig.add_subplot(nu_layers,1,i+1)
+        if isinstance(complete_st[nu_layers-1-i],objects.ThinFilm):
+            file_name   = 'beta_st%s.txt' % format_st
+            wavelengths = np.genfromtxt(file_name, usecols=(1))
+            num_BMs     = np.genfromtxt(file_name, usecols=(0))
+            start_col   = 2
+        else:
+            file_name   = 'omega_st%s.txt' % format_st
+            wavelengths = np.genfromtxt(file_name, usecols=(2))
+            num_BMs     = np.genfromtxt(file_name, usecols=(1))
+            start_col   = 5
 
-        trim_wls = wavelengths[0:len(prop)]
-        ax1.plot(trim_wls, prop, 'ro')
-        ax1.set_xlabel('Wavelength (nm)')
-        ax1.set_ylabel(r'Re(k$_z$)')
-        plt.xlim((wavelengths[0], wavelengths[-1]))
-        ax2.plot(trim_wls, prop_im, 'bo')
-        ax2.set_xlabel('Wavelength (nm)')
-        ax2.set_ylabel(r'Im(k$_z$)')
-        # abs_coeff = prop_4pi/(trim_wls*1e-7) #wl in nm, abs coeff in cm^-1
-        # ax3.semilogy(trim_wls, abs_coeff, 'ks')
-        # ax3.set_xlabel('Wavelength (nm)')
-        # ax3.set_ylabel(r'Abs coeff')
-    ax1.set_xlim((wavelengths[0], wavelengths[-1]))
-    ax2.set_xlim((wavelengths[0], wavelengths[-1]))
-    # ax3.set_xlim((wavelengths[0], wavelengths[-1]))
+        count = 1
+        for i in range(len(num_BMs)):
+            prop = []
+            prop_im = []
+            re = np.genfromtxt(file_name, usecols=(start_col+2*i),   invalid_raise=False)
+            im = np.genfromtxt(file_name, usecols=(start_col+2*i+1), invalid_raise=False)
+            for j in range(len(re)):
+                if re[j] > im[j]:
+                    prop.append(re[j])
+                    prop_im.append(im[j])
+            count +=1
+
+            trim_wls = wavelengths[0:len(prop)]
+            ax1.plot(trim_wls, prop, 'ro')
+            ax1.set_xlabel('Wavelength (nm)')
+            ax1.set_ylabel(r'Re(k$_z$)')
+            plt.xlim((wavelengths[0], wavelengths[-1]))
+            # ax2.plot(trim_wls, prop_im, 'bo')
+            # ax2.set_xlabel('Wavelength (nm)')
+            # ax2.set_ylabel(r'Im(k$_z$)')
+        ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+        # ax2.set_xlim((wavelengths[0], wavelengths[-1]))
 
     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
-    'period'        : solar_cell.period, 'radius' : solar_cell.radius1,}
-    if solar_cell.geometry == '1D_grating':
-        tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-        'ff'            : solar_cell.ff, 
-        'h_one'         : solar_cell.height_1,
-        'h_two'         : solar_cell.height_2,
-        'num_h'         : solar_cell.num_h, }
-    else:
-        tmp10 ='\nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
-        'h_one'         : solar_cell.height_1,
-        'h_two'         : solar_cell.height_2,
-        'num_h'         : solar_cell.num_h, }
+    'period'        : layer.period, 'radius' : layer.radius1,}
+    tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, h_2 = %(h_two)d, num_h = %(num_h)d, '% {
+    'ff'            : layer.ff, 
+    'h_one'         : layer.height_1,
+    'h_two'         : layer.height_2,
+    'num_h'         : layer.num_h, }
     tmp2 = r'$\theta$ = '
     tmp3 = '%(theta)6.2f, '% {'theta' : light.theta, }
     tmp4 = r'$\phi$ = '
@@ -418,19 +399,19 @@ def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
     tmp8 = ' %'
     tmp_end = tmp10 + tmp2 + tmp3 + tmp4 + tmp5 + tmp6 + tmp7 + tmp8
 
-    if solar_cell.radius2 + solar_cell.radius3 + solar_cell.radius4 == 0:
+    if layer.radius2 + layer.radius3 + layer.radius4 == 0:
         imp_facts = tmp1 + tmp_end
-    elif solar_cell.radius3 + solar_cell.radius4 == 0:
-        tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
+    elif layer.radius3 + layer.radius4 == 0:
+        tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
         imp_facts = tmp1 +  tmp11 + tmp_end
-    elif solar_cell.radius4 == 0:
-        tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
-        tmp12 = 'a3 = %(radius)d '% {'radius' : solar_cell.radius3,}
+    elif layer.radius4 == 0:
+        tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
+        tmp12 = 'a3 = %(radius)d '% {'radius' : layer.radius3,}
         imp_facts = tmp1 + tmp11 + tmp12 + tmp_end
     else:
-        tmp11 = 'a2 = %(radius)d '% {'radius' : solar_cell.radius2,}
-        tmp12 = 'a3 = %(radius)d '% {'radius' : solar_cell.radius3,}
-        tmp13 = 'a4 = %(radius)d '% {'radius' : solar_cell.radius4,}
+        tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
+        tmp12 = 'a3 = %(radius)d '% {'radius' : layer.radius3,}
+        tmp13 = 'a4 = %(radius)d '% {'radius' : layer.radius4,}
         imp_facts = tmp1 + tmp11 + tmp12 + tmp13 + tmp_end
 
     plt.suptitle(imp_facts)
@@ -439,9 +420,10 @@ def omega_plot(solar_cell, light, max_num_BMs, max_order_PWs, Efficiency):
 
 
 
-def layers_plot(spectra_name, spec_list, wavelengths):
+def layers_plot(spectra_name, spec_list, wavelengths, total_h):
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     nu_layers = len(spec_list)/len(wavelengths)
+    h_array = np.ones(len(wavelengths))*total_h
     for i in range(nu_layers):
         layer_data = []
         for wl in range(len(wavelengths)):
@@ -455,26 +437,37 @@ def layers_plot(spectra_name, spec_list, wavelengths):
         else:
             ax1.set_xticklabels( () )
         if spectra_name == 'Lay_Absorb':
-            # plt.axis([wavelengths[0], wavelengths[-1], 0.0, 1])
             if i == 0: ax1.set_ylabel('Top Layer')
             if i == nu_layers-2: ax1.set_ylabel('Bottom Layer')
+            plt.suptitle('Absorptance in each layer')
             lay_spec_name = 'Lay_Absorb'
+            if i == nu_layers-1: 
+                ax1.set_ylabel('Total')
+                lay_spec_name = 'Absorptance'
         elif spectra_name == 'Lay_Trans':
-            if i == 0: ax1.set_ylabel('Superstrate')
-            if i == 1: ax1.set_ylabel('Top Layer')
-            if i == nu_layers-3: ax1.set_ylabel('Bottom Layer')
-            if i == nu_layers-2: ax1.set_ylabel('Substrate')
+            if i == 0: ax1.set_ylabel('Top Layer')
+            if i == nu_layers-2: ax1.set_ylabel('Bottom Layer')
+            plt.suptitle('Transmittance through each layer')
             lay_spec_name = 'Lay_Trans'
-        else:
-            # plt.axis([wavelengths[0], wavelengths[-1], 0.0, 1])
-            if i == 0: ax1.set_ylabel('Superstrate')
-            if i == 1: ax1.set_ylabel('Top Layer')
+            if i == nu_layers-1: 
+                ax1.set_ylabel('Total')
+                lay_spec_name = 'Transmittance'
+        elif spectra_name == 'Lay_Reflec':
+            if i == 0: ax1.set_ylabel('Top Layer')
             if i == nu_layers-3: ax1.set_ylabel('Bottom Layer')
             if i == nu_layers-2: ax1.set_ylabel('Substrate')
+            plt.suptitle('Reflectance off each layer')
             lay_spec_name = 'Lay_Reflec'
-        av_array = zip(wavelengths, layer_data)
-        plt.suptitle(lay_spec_name)
-        np.savetxt('%(s)s_%(i)i.txt'% {'s' : lay_spec_name, 'i' : i,}, av_array, fmt = '%18.12f')
+            if i == nu_layers-1: 
+                ax1.set_ylabel('Total')
+                lay_spec_name = 'Reflectance'
+        av_array = zip(wavelengths, layer_data, h_array)
+        # plt.xlim((0, 2000))
+        plt.ylim((0, 1))
+        if i != nu_layers-1: 
+            np.savetxt('%(s)s_%(i)i.txt'% {'s' : lay_spec_name, 'i' : i,}, av_array, fmt = '%18.12f')
+        else:
+            np.savetxt('%(s)s.txt'% {'s' : lay_spec_name,}, av_array, fmt = '%18.12f')
 
         plt.savefig(spectra_name)
 

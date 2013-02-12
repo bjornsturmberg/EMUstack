@@ -37,7 +37,12 @@ class NanoStruct(object):
         self.radius15    = radius15
         self.radius16    = radius16
         self.period      = period
-        self.ff          = ff
+        if geometry == 'NW_array':
+            self.ff      = calculate_ff(square,period,radius1,radius2,radius3,radius4,radius5,radius6,
+                radius7,radius8,radius9,radius10,radius11,radius12,radius13,radius14,radius15,radius16,
+                ellipticity)
+        elif geometry == '1D_grating':
+            self.ff      = (radius1 + radius2)/period
         self.ff_rand     = ff_rand
         self.height_1    = height_1
         self.height_2    = height_2
@@ -160,7 +165,7 @@ class NanoStruct(object):
                         select_radius = random.uniform(min_a,max_a)
                         rad_array = np.append(rad_array,select_radius)
 
-                    test_ff = calculate_ff(self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
+                    test_ff = calculate_ff(self.square, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
                     rad_array[5],rad_array[6],rad_array[7],rad_array[8],rad_array[9],rad_array[10],
                     rad_array[11],rad_array[12],rad_array[13],rad_array[14],rad_array[15])
                     print test_ff
@@ -183,7 +188,7 @@ class NanoStruct(object):
                         self.radius14  = rad_array[13]
                         self.radius15  = rad_array[14]
                         self.radius16  = rad_array[15]
-                    test_ff = calculate_ff(self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
+                    test_ff = calculate_ff(self.square, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
                     rad_array[5],rad_array[6],rad_array[7],rad_array[8],rad_array[9],rad_array[10],
                     rad_array[11],rad_array[12],rad_array[13],rad_array[14],rad_array[15])
 
@@ -232,9 +237,17 @@ class NanoStruct(object):
                     geo = geo.replace('a15 = 0;', "a15 = %i;" % self.radius15)
                     geo = geo.replace('a16 = 0;', "a16 = %i;" % self.radius16)
 
+                open(data_location + msh_name + '.geo', "w").write(geo)
+                
+                gmsh_cmd = './'+ data_location + 'gmsh_conversion/' + "conv_gmsh_py.exe "+ data_location + msh_name
+                os.system(gmsh_cmd)
+                # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
+                # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
+                # os.system(gmsh_cmd)
 
 
         elif self.geometry == '1D_grating':
+            # radius now refers to grating WIDTH!
             if self.radius2 > 0:
                 supercell = 2
                 msh_name  =  '1D_%(d)i_%(radius)i_%(radiuss)i' % {
@@ -251,6 +264,10 @@ class NanoStruct(object):
             if self.posy != 0:
                 msh_name = msh_name + 'y%(e)i' % {'e' : self.posy,}
 
+
+            self.mesh_file = msh_name + '.mail'    
+
+            
             if not os.path.exists(data_location + msh_name + '.mail') or self.force_mesh == True:
                 geo_tmp = open(data_location + '1D_%s_msh_template.geo' % supercell, "r").read()
                 geo = geo_tmp.replace('d_in_nm = 0;', "d_in_nm = %i;" % self.period)
@@ -278,15 +295,13 @@ class NanoStruct(object):
                 #     geo = geo.replace('lc5 = lc/1;', "lc5 = lc/%f;" % self.lc5)
 
 
-            self.mesh_file = msh_name + '.mail'    
-
-            open(data_location + msh_name + '.geo', "w").write(geo)
-            
-            gmsh_cmd = './'+ data_location + 'gmsh_conversion/' + "conv_gmsh_py.exe "+ data_location + msh_name
-            os.system(gmsh_cmd)
-            # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
-            # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
-            # os.system(gmsh_cmd)
+                open(data_location + msh_name + '.geo', "w").write(geo)
+                
+                gmsh_cmd = './'+ data_location + 'gmsh_conversion/' + "conv_gmsh_py.exe "+ data_location + msh_name
+                os.system(gmsh_cmd)
+                # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
+                # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
+                # os.system(gmsh_cmd)
          
 class ThinFilm(object):
     """ Represents homogeneous film """

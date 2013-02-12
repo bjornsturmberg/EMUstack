@@ -219,7 +219,8 @@ def c_c_tra(pol = 0):
 
 
 def c_c_omega(st):
-    """ concatinate dispersion results in one file 
+    """         for nanostructured layers
+        concatinate dispersion results in one file 
         and remove individual lambda results """
 
     format_st     = '%04d' % st
@@ -264,6 +265,25 @@ def c_c_omega(st):
         for fle in Afiles:
             listoffiles1 += " " + fle
         os.system("cat" + listoffiles1 + "> omega_Ft_st%s.txt" % format_st)
+        for fle in Afiles:
+            os.remove(fle)
+
+
+
+def c_c_beta(st):
+    """             for thin film layers
+        concatinate dispersion results in one file 
+        and remove individual lambda results """
+
+    format_st     = '%04d' % st
+    filename1 = "st%s*_beta.txt" % format_st
+    Afiles = glob.glob(filename1)
+    Afiles.sort()
+    if len(Afiles)>0:
+        listoffiles1 = ""
+        for fle in Afiles:
+            listoffiles1 += " " + fle
+        os.system("cat" + listoffiles1 + "> beta_st%s.txt" % format_st)
         for fle in Afiles:
             os.remove(fle)
 

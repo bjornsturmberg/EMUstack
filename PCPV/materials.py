@@ -102,6 +102,7 @@ Au     = Material(np.loadtxt('%sAu.txt'% data_location))
 Ag     = Material(np.loadtxt('%sAg.txt'% data_location))
 Sb2S3  = Material(np.loadtxt('%sSb2S3.txt'% data_location))
 AlGaAs = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
+GaAs   = Material(np.loadtxt('%sGaAs.txt'% data_location))
 Si3N4  = Material(np.loadtxt('%sSi3N4.txt'% data_location))
 TiO2   = Material(np.loadtxt('%sTiO2.txt'% data_location))
 
@@ -172,7 +173,8 @@ def interp_needed(wavelengths, material=Air):
         # Au.n_drude(wavelengths, plasma_wl_in_nm, gamma_for_wl_nm)
         # n_plot('Au',wavelengths, Au.interp_data)
     if material == Ag:
-        Ag.n_spline(wavelengths)#.n_interp(wavelengths)
+        # Ag.n_spline(wavelengths)
+        Ag.n_interp(wavelengths)
         # n_plot('Ag',wavelengths, Ag.interp_data)
     if material == Sb2S3:
         Sb2S3.n_spline(wavelengths)#.n_interp(wavelengths)
@@ -181,6 +183,10 @@ def interp_needed(wavelengths, material=Air):
         # AlGaAs.n_spline(wavelengths)
         AlGaAs.n_interp(wavelengths)
         # n_plot('AlGaAs',wavelengths, AlGaAs.interp_data)
+    if material == GaAs:
+        # GaAs.n_spline(wavelengths)
+        GaAs.n_interp(wavelengths)
+        # n_plot('GaAs',wavelengths, GaAs.interp_data)
     if material == Si3N4:
         # Si3N4.n_spline(wavelengths)
         Si3N4.n_interp(wavelengths)

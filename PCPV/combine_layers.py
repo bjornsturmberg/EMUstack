@@ -8,7 +8,7 @@ import cat_n_clean
 # import matplotlib
 # matplotlib.use('pdf')
 import matplotlib.pyplot as plt
-
+import objects
 
 
 
@@ -26,25 +26,22 @@ def load_scat_mat(name, st, p):
     matrix = np.reshape(matrix, (num_2, num_1))
     return matrix
 
-# def rm_scat_mat(p):
-#     # remove all scattering matrix files for complete wavelength
-#     format_p     = '%04d' % p
-#     file_name1 = "rm st*_wl%(wl)s_R*.txt" % {
-#         'wl' : format_p}
-#     file_name2 = "rm st*_wl%(wl)s_T*.txt" % {
-#         'wl' : format_p}
-#     subprocess.call(file_name1, shell = True)
-#     subprocess.call(file_name2, shell = True)
 
-
-def deal_w_scat_mats(simo_para, nu_TFs):
+def deal_w_scat_mats(solar_cell, simo_para, nu_TFs):
     # print images of relevant scattering matrices and delete all others
     if simo_para.PrintOmega == 1:
-        for i in range(1,nu_TFs+1):
-            try:
-                cat_n_clean.c_c_omega(i)
-            except ValueError:
-                pass
+        for i in range(0,nu_TFs+2):
+            j = solar_cell[i].label_nu
+            if isinstance(solar_cell[i],objects.ThinFilm):
+                try:
+                    cat_n_clean.c_c_beta(j)
+                except ValueError:
+                    pass
+            else:
+                try:
+                    cat_n_clean.c_c_omega(j)
+                except ValueError:
+                    pass
     file_name1 = "rm st*_wl*.txt" 
     subprocess.call(file_name1, shell = True)
 
@@ -73,6 +70,10 @@ def net_scat_mats(solar_cell, wavelengths, simo_para):
     t_list = []
     r_list = []
     a_list = []
+
+    total_h = 0
+    for st in solar_cell[1:-1]:
+        total_h += st.height_1
 
     for p in range(len(wavelengths)):
         num_prop_air = num_p_air_lst[p]
@@ -222,7 +223,7 @@ def net_scat_mats(solar_cell, wavelengths, simo_para):
         flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
         down_fluxes.append(flux_TE + flux_TM)
 
-# calculate absorption in each layer
+# calculate absorptance in each layer
         for i in range(1,len(down_fluxes)-1):
             a_layer = abs(abs(down_fluxes[i])-abs(down_fluxes[i+1]))
             a_list.append(a_layer)
@@ -231,6 +232,19 @@ def net_scat_mats(solar_cell, wavelengths, simo_para):
         # sum_abs = sum(a_list[-nu_TFs:])
         # a_list.append(a_layer - sum_abs)
 
+# calculate reflectance in each layer
+        for i in range(1,len(up_flux)-1):
+            r_layer = abs(abs(up_flux[i])/abs(down_flux[i]))
+            r_list.append(r_layer)
+        r_layer = abs(up_flux[0]/down_fluxes[0])
+        r_list.append(r_layer)
+
+# calculate transmittance in each layer
+        for i in range(0,len(down_fluxes)-2):
+            t_layer = abs(abs(down_fluxes[i+2])/abs(down_fluxes[i]))
+            t_list.append(t_layer)
+        t_layer = abs(down_fluxes[-1]/down_fluxes[0])
+        t_list.append(t_layer)
 
 
 # plot scattering matrices as grayscale images
@@ -247,12 +261,10 @@ def net_scat_mats(solar_cell, wavelengths, simo_para):
             #     plt.matshow(im,cmap=plt.cm.gray)
             #     plt.savefig('0testmat%i' % i)
 
-        # rm_scat_mat(p)
-
-
-    # layers_plot('Lay_Trans', t_list, wavelengths)
-    # layers_plot('Lay_Reflec', r_list, wavelengths)
-    layers_plot('Lay_Absorb', a_list, wavelengths)
+# plot t,r,a plots each containing results for each layer and total. Also save text t,r,a to files
+    layers_plot('Lay_Absorb', a_list, wavelengths, total_h)
+    layers_plot('Lay_Trans',  t_list, wavelengths, total_h)
+    layers_plot('Lay_Reflec', r_list, wavelengths, total_h)
 
 # remove scattering matrix files
-    deal_w_scat_mats(simo_para, nu_TFs)
+    deal_w_scat_mats(solar_cell, simo_para, nu_TFs)

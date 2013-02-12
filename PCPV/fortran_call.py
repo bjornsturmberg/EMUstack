@@ -94,6 +94,7 @@ class Simmo(object):
             nval          = self.max_num_BMs
             ordre_ls      = self.max_order_PWs          
 
+
         if self.structure.nb_typ_el == 4:
             command_to_run  = "%(pcpv_location)spcpv.exe %(parallel)d %(Lambda)s %(nval)d \
             %(ordre_ls)d %(d_in_nm)d %(debug)d %(mesh_file)s %(mesh_format)d \
@@ -104,7 +105,7 @@ class Simmo(object):
             %(E_H_field)d %(i_cond)d %(itermax)d %(pol)d %(traLambda)d %(PropModes)d \
             %(PrintSolution)d %(PrintSupModes)d %(PrintOmega)d %(PrintAll)d \
             %(Checks)d %(q_average)d %(plot_real)d %(plot_imag)d %(plot_abs)d \
-            %(incident)d %(whatincident)d %(outincident)d %(Loss)d %(label_nu)d" % {
+            %(incident)d %(whatincident)d %(outincident)d %(Loss)d %(label_nu)d " % {
                 'pcpv_location' : pcpv_location,
                 'parallel'      : self.p,
                 'nval'          : nval,
@@ -151,7 +152,7 @@ class Simmo(object):
                 'incident'      : self.other_para.incident,
                 'whatincident'  : self.other_para.what4incident,
                 'outincident'   : self.other_para.out4incident,
-                'label_nu'         : self.structure.label_nu,
+                'label_nu'      : self.structure.label_nu,
             }
 
         elif self.structure.nb_typ_el == 5:
@@ -306,16 +307,20 @@ def save_scat_mat(matrix, name, st, p, num_pw):
                         data = np.reshape(data, (1,5))
                         np.savetxt(outfile, data, fmt=['%4i','%4i','%25.17G','%25.17G','%25.17G'], delimiter='')
 
-# def save_k_perp(matrix, name, st, p, num_pw):
-#             format_label_nu = '%04d' % st
-#             format_p        = '%04d' % p
+def save_k_perp(matrix, name, st, p, num_pw, wl):
+            format_label_nu = '%04d' % st
+            format_p        = '%04d' % p
 
-#             file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
-#                 'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
-#             with open(file_name, 'w') as outfile:
-#                 for k in range(num_pw):
-#                     data = [[float(np.real(matrix[k])), float(np.imag(matrix[k]))]]
-#                     np.savetxt(outfile, data, fmt=['%25.17G', '%25.17G'], delimiter='')
+            file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
+                'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
+            data_list = [num_pw, wl]
+            with open(file_name, 'w') as outfile:
+                for k in range(num_pw):
+                    # data = [[float(np.real(matrix[k])), float(np.imag(matrix[k]))]]
+                    # np.savetxt(outfile, data, fmt=['%25.17G', '%25.17G'], delimiter='')
+                    data_list.append(float(np.real(matrix[k])))
+                    data_list.append(float(np.imag(matrix[k])))
+                np.savetxt(outfile, np.atleast_2d(data_list), fmt='%25.17G', delimiter='')
 
 
 
@@ -451,12 +456,13 @@ def scat_mats(layer, light_list, simo_para):
 
             if layer.height_1 != 'semi_inf':
                 # layer thickness in units of period d in nanometers
-                # save_k_perp(k_film, 'beta', layer.label_nu, p, num_pw)
                 h_normed = float(layer.height_1)/d_in_nm
                 P_array  = np.exp(1j*np.array(k_film, complex)*h_normed)
                 P_array  = np.append(P_array, P_array) # add 2nd polarisation
                 P        = np.matrix(np.diag(P_array),dtype='D')
                 save_scat_mat(P, 'P', layer.label_nu, p, matrix_size)
+
+            save_k_perp(k_film, 'beta', layer.label_nu, p, num_pw, wl)
 
             p += 1
 
