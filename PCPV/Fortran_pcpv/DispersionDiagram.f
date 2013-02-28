@@ -43,11 +43,11 @@ C
       if(nval .gt. 1000) write(ui,*) 
      *      'nval>1000 need to make more spaces in DispDiag.f'
 C        will need to increase fmt below   \/  to accomodate all Evalues
-        write(241,fmt="(2(I6),3(f16.10,2x),1000(2x,f15.10,f11.6,2x))") 
+      write(241,fmt="(2(I6),3(f16.10,2x),1000(2x,f15.10,f11.6,2x))") 
      *       n_conv, nval, lambda_nm, 
      *       (bloch_vec(i)/(2.0d0*pi),i=1,2),
      *       (beta(i),i=1,nval)
-        write(231,fmt="(2(I6),3(f16.10,2x),1000(2x,f15.10,f11.6,2x))") 
+      write(231,fmt="(2(I6),3(f16.10,2x),1000(2x,f15.10,f11.6,2x))") 
      *       n_conv, nval, lambda_nm,
      *       (bloch_vec(i)/(2.0d0*pi),i=1,2),
      *       (dble(mode_pol(4,i)),i=1,nval)

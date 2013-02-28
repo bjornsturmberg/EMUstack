@@ -82,7 +82,7 @@ class Simmo(object):
             substrate_n   = np.real(substrate_n)
         if self.light.Lambda > self.var_BM_min:
             if isinstance(self.structure.inclusion_a, complex):
-                max_n = self.structure.inclusion_a
+                max_n = self.structure.inclusion_a.real
             else:
                 max_n = self.structure.inclusion_a.max_n()
             nval_tmp      = self.max_num_BMs*inclusion_a_n.real/max_n

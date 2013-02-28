@@ -312,7 +312,7 @@ def height_plot(name_out, name_in, solar_cell, light, max_num_BMs, max_order_PWs
     int_Eff_e_t = np.fliplr(int_Eff_e.T)
 
     CS = plt.imshow(int_Eff_e_t, cmap=plt.cm.hot, norm=None, aspect='auto', interpolation=None,
-      alpha=None, vmin=0, vmax=s_data.max(), origin='lower', extent=(e_2, e_1, h_1, h_2))#, shape=None, filternorm=1, filterrad=4.0, imlim=None, resample=None, url=None, hold=None
+      alpha=None, vmin=0, vmax=s_data.max(), origin='lower', extent=(e_2, e_1, h_1, h_2))
     ax1.set_xlabel('Energy (eV)')
     ax1.set_ylabel('Height (nm)')
     cbar = plt.colorbar(extend='neither',ticks=tick_array)
@@ -344,7 +344,6 @@ def omega_plot(complete_st, layer, light, max_num_BMs, max_order_PWs, Efficiency
         #reverse order so top layer gets plotted up top
         st = complete_st[nu_layers-1-i].label_nu
         format_st     = '%04d' % st
-        print format_st
         ax1 = fig.add_subplot(nu_layers,1,i+1)
         # ax2 = fig.add_subplot(nu_layers,1,i+1)
         if isinstance(complete_st[nu_layers-1-i],objects.ThinFilm):
@@ -364,17 +363,23 @@ def omega_plot(complete_st, layer, light, max_num_BMs, max_order_PWs, Efficiency
             prop_im = []
             re = np.genfromtxt(file_name, usecols=(start_col+2*i),   invalid_raise=False)
             im = np.genfromtxt(file_name, usecols=(start_col+2*i+1), invalid_raise=False)
-            for j in range(len(re)):
+            nu_real_modes = len(re)
+            for j in range(nu_real_modes):
                 if re[j] > im[j]:
                     prop.append(re[j])
                     prop_im.append(im[j])
             count +=1
+            if len(prop) == 0:
+                for j in range(nu_real_modes):
+                    prop.append(re[j])
+                    prop_im.append(im[j])
+                count +=1
 
             trim_wls = wavelengths[0:len(prop)]
             ax1.plot(trim_wls, prop, 'ro')
             ax1.set_xlabel('Wavelength (nm)')
             ax1.set_ylabel(r'Re(k$_z$)')
-            plt.xlim((wavelengths[0], wavelengths[-1]))
+            # plt.xlim((wavelengths[0], wavelengths[-1]))
             # ax2.plot(trim_wls, prop_im, 'bo')
             # ax2.set_xlabel('Wavelength (nm)')
             # ax2.set_ylabel(r'Im(k$_z$)')
@@ -472,6 +477,36 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h):
         plt.savefig(spectra_name)
 
 
+
+
+
+def omega_plot_concentration(st, BM_min,BM_max):
+    fig = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(1,1,1)
+    format_st     = '%04d' % st
+
+    file_name   = '../000-simo_template/omega_pol.txt'#_st%s.txt' % format_st
+    # file_name   = '../000-simo_template/omega_pol_st%s.txt' % format_st
+    wavelengths = np.genfromtxt(file_name, usecols=(2))
+    num_BMs     = np.genfromtxt(file_name, usecols=(1))
+    start_col   = 5
+
+    for i in range(BM_min,BM_max+1):
+        e_conc = np.genfromtxt(file_name, usecols=(start_col+i),   invalid_raise=False)
+        # print e_conc
+
+        trim_wls = wavelengths[0:len(e_conc)]
+        ax1.plot(trim_wls, e_conc, 'ro')
+        ax1.set_xlabel('Wavelength (nm)')
+        ax1.set_ylabel(r'$E_{cyl} / E_{cell}$')
+        ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+        # ax1.set_xlim((400, 700))
+
+    plt.savefig('../000-simo_template/Energy_c')
+
+if __name__ == "__main__":
+    import sys
+    omega_plot_concentration(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
 
 
 

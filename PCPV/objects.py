@@ -12,7 +12,7 @@ class NanoStruct(object):
     """
     def __init__(self, geometry, period, radius1, radius2=0, radius3=0, radius4=0, radius5=0,
         radius6=0, radius7=0, radius8=0, radius9=0, radius10=0, radius11=0, radius12=0, radius13=0,
-        radius14=0, radius15=0, radius16=0, ellipticity = 0.0, square = False, mesh_file = 'NEED_FILE.geo',
+        radius14=0, radius15=0, radius16=0, ellipticity = 0.0, square = False, mesh_file = 'NEED_FILE.mail',
         ff=0, set_ff = False, ff_rand = False, height_1 = 2330, height_2 = 2330, num_h = 1,
         inclusion_a = materials.Si_c, inclusion_b = materials.Air, background = materials.Air,
         superstrate = materials.Air, substrate = materials.SiO2_a,

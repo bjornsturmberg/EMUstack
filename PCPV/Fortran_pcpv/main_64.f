@@ -132,8 +132,8 @@ CCCCCCCCCCCCCCCCCCCC  Start Program - get parameters  CCCCCCCCCCCCCCCCCCC
 C 
 
       n_64 = 2
-      cmplx_max=n_64**26 !n_64**28 on Vayu
-      real_max=n_64**21
+      cmplx_max=n_64**27 !n_64**28 on Vayu
+      real_max=n_64**22
       int_max=n_64**22
 
       !write(*,*) "cmplx_max = ", cmplx_max
@@ -576,11 +576,11 @@ C     *    nb_typ_el, b(jp_x))
 C
       call lattice_vec (npt, b(jp_x), lat_vecs)
 C
-      if (PrintSupModes + PrintSolution .ge. 1) then
-        call gmsh_interface_c4 (nel, npt, nnodes, a(ip_type_el), 
-     *    a(ip_type_nod), a(ip_table_nod), 
-     *    nb_typ_el, b(jp_x), lat_vecs)
-      endif
+C     if (PrintSupModes + PrintSolution .ge. 1) then
+C        call gmsh_interface_c4 (nel, npt, nnodes, a(ip_type_el), 
+C     *    a(ip_type_nod), a(ip_table_nod), 
+C     *    nb_typ_el, b(jp_x), lat_vecs)
+C      endif
 C
 C      V = number of vertices
 C      E = number of edges

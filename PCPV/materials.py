@@ -105,18 +105,8 @@ AlGaAs = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
 GaAs   = Material(np.loadtxt('%sGaAs.txt'% data_location))
 Si3N4  = Material(np.loadtxt('%sSi3N4.txt'% data_location))
 TiO2   = Material(np.loadtxt('%sTiO2.txt'% data_location))
+InP    = Material(np.loadtxt('%sInP.txt'% data_location))
 
-# test   = Material(np.loadtxt('%sTuniz.txt'% data_location))#copy.deepcopy(Air)
-
-# def interp_all(wavelengths):
-#     Air.n_interp(wavelengths)
-#     Si_c.n_interp(wavelengths)
-#     Si_a.n_interp(wavelengths)
-#     SiO2_a.n_interp(wavelengths)
-#     CuO.n_interp(wavelengths)
-#     CdTe.n_interp(wavelengths)
-#     FeS2.n_interp(wavelengths)
-#     Zn3P2.n_interp(wavelengths)
 
 # import matplotlib
 # matplotlib.use('pdf')
@@ -195,5 +185,7 @@ def interp_needed(wavelengths, material=Air):
         # TiO2.n_spline(wavelengths)
         TiO2.n_interp(wavelengths)
         # n_plot('TiO2',wavelengths, TiO2.interp_data)
-    # if material == test:
-    #     test.n_spline(wavelengths)#.n_interp(wavelengths)
+    if material == InP:
+        # InP.n_spline(wavelengths)
+        InP.n_interp(wavelengths)
+        # n_plot('InP',wavelengths, InP.interp_data)

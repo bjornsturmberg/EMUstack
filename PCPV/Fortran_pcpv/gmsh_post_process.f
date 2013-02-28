@@ -119,15 +119,18 @@ c
       if (plot_real .eq. 1) then
 
 c    All_plots.geo (unit=34)
-      if (plot_val .eq. 1) then
-      tchar = """../../"//dir_name(1:namelength)// "/"
-     *  //"interface_c4.geo"";"
-      namelen2 = len_trim(tchar)
-        write(34,*) "Merge ", tchar(1:namelen2)
-      else
-        write(34,*)
-        write(34,*) "Delete View[0];"
-      endif
+C      if (plot_val .eq. 1) then
+C      tchar = """../../"//dir_name(1:namelength)// "/"
+C     *  //"interface_c4.geo"";"
+C      namelen2 = len_trim(tchar)
+C        write(34,*) "Merge ", tchar(1:namelen2)
+C      else
+C        write(34,*)
+C        write(34,*) "Delete View[0];"
+C      endif
+      
+      write(34,*) "Delete View[0];"
+      
       tchar = '../../'//dir_name(1:namelength)// '/' 
      *  //gmsh_file_pos(1:namelen) // '_' // tval // '_abs2_eE.pos'
       namelen2 = len_trim(tchar)
@@ -142,7 +145,7 @@ C
       tchar = gmsh_file_pos(1:namelen) // '_' // tval // '_abs2.pos'
         namelen2 = len_trim(tchar)
         write(26,*) " Include """, tchar(1:namelen2), """;"
-        write(26,*) "Merge ""interface_c4.geo"";"
+C        write(26,*) "Merge ""interface_c4.geo"";"
       close (unit=26)
 C
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
@@ -151,7 +154,7 @@ C
       tchar = gmsh_file_pos(1:namelen) // '_' // tval // '_abs2_eE.pos'
         namelen2 = len_trim(tchar)
         write(32,*) " Include """, tchar(1:namelen2), """;"
-        write(32,*) "Merge ""interface_c4.geo"";"
+C        write(32,*) "Merge ""interface_c4.geo"";"
       close (unit=32)
       
 C      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 

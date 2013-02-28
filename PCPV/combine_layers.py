@@ -26,6 +26,20 @@ def load_scat_mat(name, st, p):
     matrix = np.reshape(matrix, (num_2, num_1))
     return matrix
 
+def save_scat_mat(name, data):
+    # reshape matrices to be consistent with pcpv.exe output
+    # format_title = '%04d' % st
+    # format_p     = '%04d' % p
+
+    file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
+        'st' : format_title, 'wl' : format_p, 'mat_name' : name }
+    np.savetxt(file_name, data)#, fmt = '%18.12f')
+    # num_1  = max(data[:,0])
+    # num_2  = max(data[:,1])
+    # matrix = np.mat(data[:,2] + data[:,3]*(0+1j))
+    # matrix = np.reshape(matrix, (num_2, num_1))
+    # return matrix
+
 
 def deal_w_scat_mats(solar_cell, simo_para, nu_TFs):
     # print images of relevant scattering matrices and delete all others
@@ -146,6 +160,8 @@ def net_scat_mats(solar_cell, wavelengths, simo_para):
         tnet_list.append(tnet)
         rnet_list.append(rnet)
 
+# print (r)tnet matrices
+        # np.savetxt('blah.txt', rnet)
 
         """ Calculate field expansions for all layers (including air) starting at top
             Ordering is now top to bottom (inverse of above)! ie f1 is superstrate (top)
