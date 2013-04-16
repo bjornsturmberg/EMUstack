@@ -765,7 +765,7 @@ c
 *     ..
 *     .. External Functions ..
       REAL               ETIME
-      EXTERNAL           ETIME
+      INTRINSIC          ETIME
 *     ..
 *     .. Executable Statements ..
 *

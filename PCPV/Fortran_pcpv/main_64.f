@@ -1288,7 +1288,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCC  End Prime, Adjoint Loop  CCCCCCCCCCCCCCCCCCCCCC
 C
 
-CCCC Hardcore Debuging - Print all arrays + some variables CCCCC
+CCCC Hardcore Debugging - Print all arrays + some variables CCCCC
       if (debug .eq. 2 .and. i_lambda .eq. debug_i_lambda) then
         PrintAll = 1
         Checks = 2
@@ -1307,7 +1307,7 @@ CCCC Hardcore Debuging - Print all arrays + some variables CCCCC
      *       b(jp_eigenval1+i-1)
         enddo
       endif
-CCCC Hardcore Debuging - End                               CCCCC
+CCCC Hardcore Debugging - End                               CCCCC
 
       bloch_vec(1) = bloch_vec0(1)
       bloch_vec(2) = bloch_vec0(2)

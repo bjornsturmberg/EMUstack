@@ -144,7 +144,7 @@ C  For TM polarisation:
           enddo
         endif
 C  For LEFT polarisation:   
-        if (pol .eq. 3 .or. 5) then        
+        if ((pol .eq. 3) .or. (pol .eq. 5)) then        
           TECoeff = 1.0
           TMCoeff = -1.0*ii
           do i=1,numberprop_S_b
@@ -183,7 +183,7 @@ C  For LEFT polarisation:
           Lambda_r_l = 0.5*(R_11 + R_21)
         endif
 C  For RIGHT polarisation:
-        if (pol .eq. 4 .or. 5) then      
+        if ((pol .eq. 4) .or. (pol .eq. 5)) then      
           TECoeff = 1.0
           TMCoeff = 1.0*ii
           do i=1,numberprop_S_b
@@ -331,7 +331,7 @@ C  For TM polarisation:
           enddo
         endif
 C  For LEFT polarisation:
-        if (pol .eq. 3 .or. 5) then 
+        if ((pol .eq. 3) .or. (pol .eq. 5)) then 
           TECoeff = 1.0
           TMCoeff = -1.0*ii
           do i=1,numberprop_S_b
@@ -366,7 +366,7 @@ C  For LEFT polarisation:
           Lambda_r_l = 0.5*(R_11 + R_21)
         endif
 C  For RIGHT polarisation:
-        if (pol .eq. 4 .or. 5) then 
+        if ((pol .eq. 4) .or. (pol .eq. 5)) then 
           TECoeff = 1
           TMCoeff = 1.0*ii
           do i=1,numberprop_S_b
@@ -490,7 +490,7 @@ C  For TM polarisation:
      *         + ABS(RLambda(neq_PW+out4incident,neq_PW+inc))**2
         endif
 C  For LEFT polarisation:
-        if (pol .eq. 3 .or. 5) then 
+        if ((pol .eq. 3) .or. (pol .eq. 5)) then 
           TECoeff = 1
           TMCoeff = -1.0*ii
           T_11 = ABS(TECoeff*TLambda(out4incident,inc)
@@ -525,7 +525,7 @@ C  For LEFT polarisation:
           Lambda_r_l = 0.5*(R_11 + R_21)
         endif
 C  For RIGHT polarisation:
-        if (pol .eq. 4 .or. 5) then 
+        if ((pol .eq. 4) .or. (pol .eq. 5)) then 
           TECoeff = 1
           TMCoeff = 1.0*ii
           T_12 = ABS(TECoeff*TLambda(out4incident,inc)
