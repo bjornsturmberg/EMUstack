@@ -7,12 +7,13 @@ OBJS = $(CODE:.f=.o)
 
 BIN = conv_gmsh_py.exe
 
-FC = ifort
+FC = gfortran
 
 # Libraries
 LIBS = 
 
-CFLAGS = -c -w -O2 -I./ -traceback -check
+#CFLAGS = -c -w -O2 -I./ -traceback -check
+CFLAGS = -c -w -O2 -I./ 
 LFLAGS = 
 
 $(BIN):	$(OBJS)

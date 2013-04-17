@@ -229,6 +229,7 @@ class Simmo(object):
 
 def run_command_in_shell(command):
     """Submit full string of fortran call to command line"""
+    print command
     return subprocess.call(command, shell = True)
 
 def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls, 

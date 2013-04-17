@@ -101,11 +101,11 @@ Zn3P2  = Material(np.loadtxt('%sZn3P2.txt'% data_location))
 Au     = Material(np.loadtxt('%sAu.txt'% data_location))
 Ag     = Material(np.loadtxt('%sAg.txt'% data_location))
 Sb2S3  = Material(np.loadtxt('%sSb2S3.txt'% data_location))
-AlGaAs = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
-GaAs   = Material(np.loadtxt('%sGaAs.txt'% data_location))
-Si3N4  = Material(np.loadtxt('%sSi3N4.txt'% data_location))
-TiO2   = Material(np.loadtxt('%sTiO2.txt'% data_location))
-InP    = Material(np.loadtxt('%sInP.txt'% data_location))
+# AlGaAs = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
+# GaAs   = Material(np.loadtxt('%sGaAs.txt'% data_location))
+# Si3N4  = Material(np.loadtxt('%sSi3N4.txt'% data_location))
+# TiO2   = Material(np.loadtxt('%sTiO2.txt'% data_location))
+# InP    = Material(np.loadtxt('%sInP.txt'% data_location))
 
 
 # import matplotlib
@@ -169,23 +169,23 @@ def interp_needed(wavelengths, material=Air):
     if material == Sb2S3:
         Sb2S3.n_spline(wavelengths)#.n_interp(wavelengths)
         # n_plot('Sb2S3',wavelengths, Sb2S3.interp_data)
-    if material == AlGaAs:
-        # AlGaAs.n_spline(wavelengths)
-        AlGaAs.n_interp(wavelengths)
-        # n_plot('AlGaAs',wavelengths, AlGaAs.interp_data)
-    if material == GaAs:
-        # GaAs.n_spline(wavelengths)
-        GaAs.n_interp(wavelengths)
-        # n_plot('GaAs',wavelengths, GaAs.interp_data)
-    if material == Si3N4:
-        # Si3N4.n_spline(wavelengths)
-        Si3N4.n_interp(wavelengths)
-        # n_plot('Si3N4',wavelengths, Si3N4.interp_data)
-    if material == TiO2:
-        # TiO2.n_spline(wavelengths)
-        TiO2.n_interp(wavelengths)
-        # n_plot('TiO2',wavelengths, TiO2.interp_data)
-    if material == InP:
-        # InP.n_spline(wavelengths)
-        InP.n_interp(wavelengths)
-        # n_plot('InP',wavelengths, InP.interp_data)
+    # if material == AlGaAs:
+    #     # AlGaAs.n_spline(wavelengths)
+    #     AlGaAs.n_interp(wavelengths)
+    #     # n_plot('AlGaAs',wavelengths, AlGaAs.interp_data)
+    # if material == GaAs:
+    #     # GaAs.n_spline(wavelengths)
+    #     GaAs.n_interp(wavelengths)
+    #     # n_plot('GaAs',wavelengths, GaAs.interp_data)
+    # if material == Si3N4:
+    #     # Si3N4.n_spline(wavelengths)
+    #     Si3N4.n_interp(wavelengths)
+    #     # n_plot('Si3N4',wavelengths, Si3N4.interp_data)
+    # if material == TiO2:
+    #     # TiO2.n_spline(wavelengths)
+    #     TiO2.n_interp(wavelengths)
+    #     # n_plot('TiO2',wavelengths, TiO2.interp_data)
+    # if material == InP:
+    #     # InP.n_spline(wavelengths)
+    #     InP.n_interp(wavelengths)
+    #     # n_plot('InP',wavelengths, InP.interp_data)
