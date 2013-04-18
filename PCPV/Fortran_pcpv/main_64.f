@@ -1,5 +1,10 @@
-      program main
-
+      subroutine main(parallel, lambda, nval, ordre_ls, d_in_nm,
+     *    debug, mesh_file, mesh_format, nb_typ_el, n_eff,
+     *    substrate, theta, phi, h_1, h_2, num_h, lx, ly, tol, 
+     *    E_H_field, i_cond, itermax, pol, traLambda, PropModes,
+     *    PrintSolution, PrintSupModes, PrintOmega, PrintAll,
+     *    Checks, q_average, plot_real, plot_imag, plot_abs,
+     *    incident, what4incident, out4incident, Loss, title)
 C************************************************************************
 C
 C  Program:
@@ -17,12 +22,16 @@ C  Local parameters:
       integer*8 real_max, real_used, n_64
 C      parameter (int_max=2**22, cmplx_max=2**26)
 C      parameter (real_max=2**21)
-      integer*8, dimension(:), allocatable :: a  !   a(int_max)
-      complex*16, dimension(:), allocatable :: b  !  b(cmplx_max)
-      double precision, dimension(:), allocatable :: c !  c(real_max)
+C     !   a(int_max)
+      integer*8, dimension(:), allocatable :: a
+C     !  b(cmplx_max)
+      complex*16, dimension(:), allocatable :: b
+C     !  c(real_max)
+      double precision, dimension(:), allocatable :: c
       integer :: allocate_status=0
 C
-      integer*8 python    !take inputs from python (1) txt files (0)
+C     !take inputs from python (1) txt files (0)
+      integer*8 python
       parameter (python=1)
 C
 C  Declare the pointers of the integer super-vector
@@ -128,11 +137,13 @@ C  python passing
       double precision re_tmp, im_tmp
 C
 C
+
 CCCCCCCCCCCCCCCCCCCC  Start Program - get parameters  CCCCCCCCCCCCCCCCCCC
 C 
 
       n_64 = 2
-      cmplx_max=n_64**27 !n_64**28 on Vayu
+C     !n_64**28 on Vayu
+      cmplx_max=n_64**27
       real_max=n_64**22
       int_max=n_64**22
 
@@ -172,244 +183,49 @@ C
 
 
       
-      ui = 6     !ui = Unite dImpression
-      nnodes = 6 ! Number of nodes per element
+C     !ui = Unite dImpression
+      ui = 6
+C     ! Number of nodes per element
+      nnodes = 6
       pi = 3.141592653589793d0
 C      nsym = 1 ! nsym = 0 => symmetric or hermitian matrices
 C
+
+CCCCCCCCCCCCCCCCC F2PY CCCCCCCCCCCCCCCCCCCCCCCCC
+
+
+C     clean mesh_format
+      namelength = len_trim(mesh_file)
+C        gmsh_file = 'Normed/'//mesh_file(1:namelength)//'.msh'
+      gmsh_file = mesh_file(1:namelength)//'.msh'
+      gmsh_file_pos = mesh_file(1:namelength)
+C        log_file = 'Normed/'//mesh_file(1:namelength)//'.log'
+      log_file = mesh_file(1:namelength)//'.log'
+      if (debug .eq. 1) then
+        write(*,*) "get_param: mesh_file = ", mesh_file
+        write(*,*) "get_param: gmsh_file = ", gmsh_file
+      endif    
+      open (unit=24,file="../PCPV/Data/"//mesh_file,
+     *  status='unknown')
+          read(24,*) npt, nel
+      close(24)
+
+
+C     nb_typ_el & n_eff logic
+      do i_32=1,nb_typ_el
+        eps_eff(i_32) = n_eff(i_32)**2
+      enddo
+
+
+
+
+CCCCCCCCCCCCCCCCC END F2PY CCCCCCCCCCCCCCCCCCCCC
+
+
 C############### using with python for each wavelength #################C
 C
       if (python .eq. 1) then
-        input = 1
-C parallel - int
-        CALL GETARG(input, get_args)
-        read (get_args,'(I5)') parallel(1)
-        parallel(2) = parallel(1)
-C        write(ui,*) parallel(1), parallel(2)
-        input = input + 1
-C lambda - double
-        CALL GETARG(input, get_py)
-        read (get_py,'(F18.12)') lambda
-C        write(ui,*) lambda 
-        input = input + 1
-C nval - int
-        CALL GETARG(input, get_args)
-        read (get_args,'(I5)') nval
-C        write(ui,*) nval
-        input = input + 1
-C ordre_ls - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') ordre_ls 
-C        write(ui,*) ordre_ls
-        input = input + 1
-C d_in_nm - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') d_in_nm
-C        write(ui,*) d_in_nm
-        input = input + 1
-C debug - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') debug
-C        write(ui,*) debug
-        input = input + 1
-C mesh_file - char
-        CALL GETARG(input, get_char)
-        read (get_char,'(a100)') mesh_file 
-C        write(ui,*) mesh_file
-        input = input + 1
-C mesh_format - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') mesh_format
-C        write(ui,*) mesh_format
-        input = input + 1
-C
-        namelength = len_trim(mesh_file)
-C        gmsh_file = 'Normed/'//mesh_file(1:namelength)//'.msh'
-        gmsh_file = mesh_file(1:namelength)//'.msh'
-        gmsh_file_pos = mesh_file(1:namelength)
-C        log_file = 'Normed/'//mesh_file(1:namelength)//'.log'
-        log_file = mesh_file(1:namelength)//'.log'
-        if (debug .eq. 1) then
-          write(*,*) "get_param: mesh_file = ", mesh_file
-          write(*,*) "get_param: gmsh_file = ", gmsh_file
-        endif    
-        open (unit=24,file="../PCPV/Data/"//mesh_file,
-     *     status='unknown')
-            read(24,*) npt, nel
-        close(24)
-C nb_typ_el -int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') nb_typ_el
-        if(nb_typ_el .gt. max_typ_el) then
-           write(ui,*)
-           write(ui,*) "   ???"
-           write(ui,*) "MAIN: nb_typ_el > max_typ_el : ",
-     *    nb_typ_el, max_typ_el
-           write(ui,*) "MAIN: Aborting..."
-           stop
-        endif
-C        write(ui,*) nb_typ_el
-        input = input + 1
-C n_eff - 2* doubles, per el type
-        do i_32 = 1,nb_typ_el
-          CALL GETARG(input, get_py)
-          read (get_py,'(F18.12)') re_tmp
-          CALL GETARG(input+1, get_py)
-          read (get_py,'(F18.12)') im_tmp
-          n_eff(i_32) = dcmplx(re_tmp,im_tmp)
-C          write(ui,*) n_eff(i_32)
-          input = input + 2
-C eps_eff
-          eps_eff(i_32) = n_eff(i_32)**2
-C          write(ui,*) eps_eff(i_32)
-        enddo
-C substrate - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') substrate
-C        write(ui,*) substrate
-        input = input + 1
-C theta - double 
-        CALL GETARG(input, get_py)
-        read (get_py,'(F18.12)') theta
-C        write(ui,*) theta
-        input = input + 1
-C phi - double 
-        CALL GETARG(input, get_py)
-        read (get_py,'(F18.12)') phi
-C        write(ui,*) phi
-        input = input + 1
-C h_1 - double
-        CALL GETARG(input, get_py)
-        read (get_py,'(F18.12)') h_1
-C        write(ui,*) h_1
-        input = input + 1
-C h_2 - double
-        CALL GETARG(input, get_py)
-        read (get_py,'(F18.12)') h_2
-C        write(ui,*) h_2
-        input = input + 1
-C num_h - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') num_h
-C        write(ui,*) num_h
-        input = input + 1
-C lx - double 
-        CALL GETARG(input, get_py)
-        read (get_py,'(F18.12)') lx
-C        write(ui,*) lx
-        input = input + 1
-C ly - double 
-        CALL GETARG(input, get_py)
-        read (get_py,'(F18.12)') ly
-C        write(ui,*) ly
-        input = input + 1
-C tol - double 
-        CALL GETARG(input, get_py)
-        read (get_py,'(F18.12)') tol
-C        write(ui,*) tol
-        input = input + 1
-C E_H_field - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') E_H_field
-C        write(ui,*) E_H_field
-        input = input + 1
-C i_cond - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') i_cond
-C        write(ui,*) i_cond
-        input = input + 1
-C itermax - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') itermax
-C        write(ui,*) itermax
-        input = input + 1
-C pol - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') pol
-C        write(ui,*) pol
-        input = input + 1
-C traLambda - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') traLambda 
-C        write(ui,*) traLambda 
-        input = input + 1
-C PropModes - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') PropModes
-C        write(ui,*) PropModes
-        input = input + 1
-C PrintSolution - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') PrintSolution
-C        write(ui,*) PrintSolution
-        input = input + 1
-C PrintSupModes - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') PrintSupModes
-C        write(ui,*) PrintSupModes
-        input = input + 1
-C PrintOmega - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') PrintOmega
-C        write(ui,*) PrintOmega
-        input = input + 1
-C PrintAll - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') PrintAll
-C        write(ui,*) PrintAll
-        input = input + 1
-C Checks - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') Checks
-C        write(ui,*) Checks
-        input = input + 1
-C q_average - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') q_average
-C        write(ui,*) q_average
-        input = input + 1
-C plot_real - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') plot_real
-C        write(ui,*) plot_real
-        input = input + 1
-C plot_imag - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') plot_imag
-C        write(ui,*) plot_imag
-        input = input + 1
-C plot_abs - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') plot_abs
-C        write(ui,*) plot_abs
-        input = input + 1
-C incident - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') incident
-C        write(ui,*) incident
-        input = input + 1
-C  what4incident- int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') what4incident
-C        write(ui,*) what4incident
-        input = input + 1
-C out4incident - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') out4incident
-C        write(ui,*) out4incident
-        input = input + 1
-C Loss - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') Loss
-C        write(ui,*) Loss
-        input = input + 1
-C title - int
-        CALL GETARG(input,get_args)
-        read (get_args,'(I5)') title
-C        write(ui,*) title
-        input = input + 1
-C
-C
+
         nvect = 2*nval + nval/2 +3
 C
 C        write(ui,*) "MAIN: Aborting..."
@@ -462,7 +278,8 @@ C
           read (get_args,'(I5)') parallel(i_32)
         enddo
       else
-        parallel(1) = 1       ! n_par_start
+C     ! n_par_start
+        parallel(1) = 1
         parallel(2) = 0       
       endif
 c
@@ -486,7 +303,8 @@ C
 C
 CCCCCCC end of parameter intake options
 C
-      call cpu_time(time1)  ! initial time  in unit = sec.
+C     ! initial time  in unit = sec.
+      call cpu_time(time1)
       call date_and_time ( start_date, start_time )
 C
       if (debug .eq. 2) then
@@ -503,7 +321,8 @@ C
           if (nx_PW**2 + ny_PW**2 .le. ordre_ls**2) then
             neq_PW = neq_PW + 1
             if (nx_PW .eq. 0 .and. ny_PW .eq. 0) then
-              Zeroth_Order = neq_PW       !using neq_PW as counter
+C     !using neq_PW as counter
+              Zeroth_Order = neq_PW
             endif
           endif
         enddo
@@ -546,7 +365,8 @@ C
       endif
       ip_type_nod = 1
       ip_type_el = ip_type_nod + npt
-      ip_table_nod = ip_type_el + nel ! pointer to FEM connectivity table
+C     ! pointer to FEM connectivity table
+      ip_table_nod = ip_type_el + nel
       jp_x = 1
 C
       if (python .eq. 1) then
@@ -590,7 +410,8 @@ C
 C     From Euler's theorem on 3D graphs: V-E+F-C = 1 - (number of holes)
 C     npt = (number of vertices) + (number of mid-edge point) = V + E;
 C
-      n_face = nel  ! each element is a face
+C     ! each element is a face
+      n_face = nel
       ip_table_N_E_F = ip_table_nod + nnodes*nel
       call list_face (nel, a(ip_table_N_E_F))
 
@@ -616,7 +437,8 @@ C
         write(ui,*) "MAIN: 2D case of the Euler characteristic : ",
      *    "V-E+F=1-(number of holes)"
         write(ui,*) "MAIN: Euler characteristic: V - E + F = ", 
-     *    (npt - n_edge) - n_edge + n_face !  - nel
+C     !  - nel
+     *    (npt - n_edge) - n_edge + n_face
       endif
 cC
 cC-----------
@@ -779,7 +601,8 @@ c      jp_vect1 = jp_matU2 + len_skyl
       jp_sol2 = jp_sol1 + 3*(nnodes+7)*nval*nel
       jp_eigenval1 = jp_sol2 + 3*(nnodes+7)*nval*nel
       jp_eigenval2 = jp_eigenval1 + nval + 1
-      jp_vschur = jp_eigenval2 + nval + 1     ! Eigenvectors
+C     ! Eigenvectors
+      jp_vschur = jp_eigenval2 + nval + 1
       jp_eigenval = jp_vschur + neq*nvect
       jp_eigen_pol = jp_eigenval + nval + 1
       jp_eigenval_tmp = jp_eigen_pol + nval*4
@@ -856,9 +679,11 @@ c
 C
 C#####################  End FEM PRE-PROCESSING  #########################
 C
-      h_1 = h_1/d_in_nm   ! convert h from nm to lattice vector units d
+C     ! convert h from nm to lattice vector units d
+      h_1 = h_1/d_in_nm
       h_2 = h_2/d_in_nm 
-      if (python .eq. 1) then ! lambda from nm - lattice vector units d
+C     ! lambda from nm - lattice vector units d
+      if (python .eq. 1) then
 C  Avoid directly hitting Wood anomalies
         if (lambda .eq. d_in_nm) then
           lambda = lambda/d_in_nm + 1.0d-15
@@ -891,7 +716,8 @@ C  Avoid directly hitting Wood anomalies
       endif
       endif
 C
-      Lambda_count = 1    !  index wavelength loops for A_and_W_Lambda
+C     !  index wavelength loops for A_and_W_Lambda
+      Lambda_count = 1
 C
 C
       if (python .eq. 1) then
@@ -1061,7 +887,8 @@ C
         open(unit=566, file="Matrices/detAo"//buf2//".txt",
      *         status="unknown")
       endif
-      endif !python 1 or 0 (different data structures)
+C     !python 1 or 0 (different data structures)
+      endif
 C
 C
 C#####################  Loop over Wavelengths  ##########################
@@ -1227,7 +1054,8 @@ C         re(z_beta) > 0 for forward propagating mode
 C         im(z_beta) > 0 for forward decaying evanescent mode
           if (imag(z_beta) .lt. 0) z_beta = -z_beta
         endif
-C        z_beta = sqrt(z_tmp)/k_0 !  Effective index
+C     !  Effective index
+C        z_beta = sqrt(z_tmp)/k_0
         b(jp_eigenval+i-1) = z_beta
       enddo
 c
@@ -1243,7 +1071,8 @@ c          write(ui,"(i4,2(g22.14),2(g18.10))") i,
          write(ui,*) sqrt(1.01d0*Dble(n_eff(n_core(1)))**2 ),
      *                1.01d0*Dble(n_eff(n_core(1)))**2 
          do i=1,nb_typ_el
-            write(ui,*) "i, n_eff(i) = ", i,  n_eff(i)     ! ,  eps_eff(i)
+C     ! ,  eps_eff(i)
+            write(ui,*) "i, n_eff(i) = ", i,  n_eff(i)
          enddo
       endif
 C
@@ -1433,7 +1262,8 @@ C
      *    numberprop_S, numberprop_S_b, freq, Zeroth_Order_inv,
      *    debug, incident, what4incident, out4incident,
      *    title, parallel(1))
-      else  !No Substrate
+C     !No Substrate
+      else
 C  Scattering Matrices
       if (debug .eq. 1) then
         write(ui,*) "MAIN: Scattering Matrices"
@@ -1447,7 +1277,8 @@ C  Scattering Matrices
      *    numberprop_S, freq, Zeroth_Order_inv,
      *    debug, incident, what4incident, out4incident,
      *    title, parallel(1))
-      endif  !End Substrate Options
+C     !End Substrate Options
+      endif
 C
       if (debug .eq. 2 .and. i_lambda .eq. debug_i_lambda) then
         write(1111,*) 
@@ -1485,16 +1316,20 @@ C     Coefficent of the modes travelling upward
         vec_coef(i+nval) = 0.0d0
       enddo
       dir_name = "Output/Fields"
-      hz = 0.0d0  ! hz=0 => top interface; hz=h => bottom interface
-      i = 1 ! reference number of the field
+C     ! hz=0 => top interface; hz=h => bottom interface
+      hz = 0.0d0
+C     ! reference number of the field
+      i = 1
       call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
      *     nnodes, a(ip_table_nod), a(ip_type_el), eps_eff, b(jp_x),  
      *     b(jp_eigenval1), b(jp_sol1), b(jp_rhs), 
      *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
      *       q_average, plot_real, plot_imag, plot_abs)
 C
-      hz = h_1  ! hz=0 => top interface; hz=h => bottom interface
-      i = 2 ! reference number of the field
+C     ! hz=0 => top interface; hz=h => bottom interface
+      hz = h_1
+C     ! reference number of the field
+      i = 2
       call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
      *     nnodes, a(ip_table_nod), a(ip_type_el), eps_eff, b(jp_x),
      *     b(jp_eigenval1), b(jp_sol1), b(jp_rhs), 
@@ -1504,12 +1339,15 @@ C
       do i=1,2*neq_PW
         vec_coef_down(i) = 0.0d0
       enddo
-      vec_coef_down(1) = 1.0d0  ! Incident field
+C     ! Incident field
+      vec_coef_down(1) = 1.0d0
       do i=1,2*neq_PW
-        vec_coef_up(i) = b(jp_R12+i-1) ! Reflected field
+C     ! Reflected field
+        vec_coef_up(i) = b(jp_R12+i-1)
       enddo
 
-      hz = 0.0d0 ! Upper semi-inifinite medium: Plane wave expansion
+C     ! Upper semi-inifinite medium: Plane wave expansion
+      hz = 0.0d0
       i = 1
       call gmsh_plot_PW (i, E_H_field, 
      *     nel, npt, nnodes, neq_PW, bloch_vec, 
@@ -1518,7 +1356,8 @@ C
      *  a(ip_index_pw_inv), ordre_ls, h_1, hz, gmsh_file_pos,
      *  dir_name, q_average, plot_real, plot_imag, plot_abs)
 
-      hz = h_1 ! Upper semi-inifinite medium: Plane wave expansion
+C     ! Upper semi-inifinite medium: Plane wave expansion
+      hz = h_1
       i = 2
       call gmsh_plot_PW (i, E_H_field, 
      *     nel, npt, nnodes, neq_PW, bloch_vec, 
@@ -1727,8 +1566,9 @@ C
       write(ui,*) "   .      .      ."
       write(ui,*) "   .      .      ."
       write(ui,*) "   .      . (d=",d_in_nm,")"
-      write(ui,*) "  and   we're   done!"
+
+      write(ui,*) "  and   we're  done!"
       endif
 C
       stop
-      end 
+      end subroutine main

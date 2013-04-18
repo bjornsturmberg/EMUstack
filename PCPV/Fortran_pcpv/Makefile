@@ -6,7 +6,10 @@ OBJS = $(CODE:.f=.o)
 
 BIN = pcpv.exe
 
-FC = gfortran
+MODULE_NAME = pcpv
+SIGNATURE_FILE = $(MODULE_NAME).pyf
+
+COMPILER_VENDOR = g95
 
 # Libraries
 # LIBS = -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_sequential \
@@ -33,7 +36,10 @@ LIBS = -lumfpack -lcholmod -lcolamd -lcamd -lmetis -lcerbla \
 # Lib/umf4_f77zwrapper.o -LLib -lumfpack -lamd #./Lib/blas_LINUX.a
 
 $(BIN):	$(OBJS)
-	$(FC) $(OBJS) $(EXTRA) -L$(LIBRARY_PATH) $(LIBS) $(LFLAGS) -o $(BIN)
+	# Hack for now
+	f2py -c pcpv.pyf *.f Lib/umf4_f77zwrapper64.o --link-lapack_opt --link-umfpack --link-blas_opt
+	# f2py -c $(SIGNATURE_FILE) --fcompiler=$(COMPILER_VENDOR) $(OBJS) \
+	# 	$(EXTRA) -L$(LIBRARY_PATH) $(LIBS) $(LFLAGS) -o $(BIN)
 	 # $(FC) $(OBJS) $(LFLAGS) -o $(BIN)
 .f.o:	$(CODE)	
 	$(FC) $(CFLAGS) $?
@@ -41,7 +47,8 @@ $(BIN):	$(OBJS)
 clean:
 	rm *.o
 
-
+signature:
+	f2py -m $(MODULE_NAME) -h $(SIGNATURE_FILE) main_64.f --overwrite-signature
 
 
 
