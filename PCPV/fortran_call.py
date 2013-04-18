@@ -7,9 +7,10 @@ import multiprocessing   as mp
 from scipy import sqrt
 sys.path.append("../PCPV/")
 
-from fort_dp     import fort_dp
 import materials
 import objects
+
+from Fortran_pcpv import pcpv
 
 pcpv_location = '../PCPV/'
 
@@ -67,19 +68,20 @@ class Simmo(object):
         else:
             raise  NotImplementedError, "substrate must either be complex number or material instance from materials.py"
         
-    def fortran_command_str(self):
+    def run_fortran(self):
         """Return a string that runs the simmo, to execute in a shell"""
         inclusion_a_n = self.inclusion_a_n()
         inclusion_b_n = self.inclusion_b_n()
         background_n  = self.background_n()
         superstrate_n = self.superstrate_n()
         substrate_n   = self.substrate_n()
+
+        n_effs = np.array([self.superstrate_n(), self.substrate_n(), self.background_n(), 
+            self.inclusion_a_n(), self.inclusion_b_n()])
+        n_effs = n_effs[:self.structure.nb_typ_el]
+
         if self.structure.loss == False:
-            inclusion_a_n = np.real(inclusion_a_n)
-            inclusion_b_n = np.real(inclusion_b_n)
-            background_n  = np.real(background_n)
-            superstrate_n = np.real(superstrate_n)
-            substrate_n   = np.real(substrate_n)
+            n_effs = n_effs.real
         if self.light.Lambda > self.var_BM_min:
             if isinstance(self.structure.inclusion_a, complex):
                 max_n = self.structure.inclusion_a.real
@@ -94,143 +96,32 @@ class Simmo(object):
             nval          = self.max_num_BMs
             ordre_ls      = self.max_order_PWs          
 
-
-        if self.structure.nb_typ_el == 4:
-            command_to_run  = "%(pcpv_location)spcpv.exe %(parallel)d %(Lambda)s %(nval)d \
-            %(ordre_ls)d %(d_in_nm)d %(debug)d %(mesh_file)s %(mesh_format)d \
-            %(nb_typ_el)d %(re_n_eff_super)s %(im_n_eff_super)s \
-            %(re_n_eff_sub)s %(im_n_eff_sub)s %(re_n_eff_bkg)s %(im_n_eff_bkg)s \
-            %(re_n_eff_inc_a)s %(im_n_eff_inc_a)s \
-            %(has_substrate)d %(theta)s %(phi)s %(h_one)s %(h_two)s %(num_h)s %(lx)s %(ly)s %(tol)s \
-            %(E_H_field)d %(i_cond)d %(itermax)d %(pol)d %(traLambda)d %(PropModes)d \
-            %(PrintSolution)d %(PrintSupModes)d %(PrintOmega)d %(PrintAll)d \
-            %(Checks)d %(q_average)d %(plot_real)d %(plot_imag)d %(plot_abs)d \
-            %(incident)d %(whatincident)d %(outincident)d %(Loss)d %(label_nu)d " % {
-                'pcpv_location' : pcpv_location,
-                'parallel'      : self.p,
-                'nval'          : nval,
-                'ordre_ls'      : ordre_ls,
-                'h_one'         : fort_dp(self.structure.height_1),
-                'h_two'         : fort_dp(self.structure.height_2),
-                'num_h'         : self.structure.num_h,
-                'lx'            : fort_dp(self.structure.lx),
-                'ly'            : fort_dp(self.structure.ly),
-                'd_in_nm'       : self.structure.period,
-                'has_substrate' : self.structure.has_substrate,
-                'mesh_file'     : self.structure.mesh_file,
-                'mesh_format'   : self.structure.mesh_format,
-                'nb_typ_el'     : self.structure.nb_typ_el,
-                'Loss'          : self.structure.loss,
-                're_n_eff_super': fort_dp(superstrate_n.real),
-                'im_n_eff_super': fort_dp(superstrate_n.imag),
-                're_n_eff_sub'  : fort_dp(substrate_n.real),
-                'im_n_eff_sub'  : fort_dp(substrate_n.imag),
-                're_n_eff_bkg'  : fort_dp(background_n.real),
-                'im_n_eff_bkg'  : fort_dp(background_n.imag),
-                're_n_eff_inc_a': fort_dp(inclusion_a_n.real),
-                'im_n_eff_inc_a': fort_dp(inclusion_a_n.imag),
-                'Lambda'        : fort_dp(self.light.Lambda),
-                'theta'         : fort_dp(self.light.theta),
-                'phi'           : fort_dp(self.light.phi),
-                'pol'           : self.light.pol,
-                'tol'           : fort_dp(self.other_para.tol),
-                'debug'         : self.other_para.debug,
-                'E_H_field'     : self.other_para.E_H_field,
-                'i_cond'        : self.other_para.i_cond,
-                'itermax'       : self.other_para.itermax,
-                'traLambda'     : self.other_para.traLambda,
-                'PropModes'     : self.other_para.PropModes,
-                'PrintSolution' : self.other_para.PrintSolution,
-                'PrintSupModes' : self.other_para.PrintSupModes,
-                'PrintOmega'    : self.other_para.PrintOmega,
-                'PrintAll'      : self.other_para.PrintAll,
-                'Checks'        : self.other_para.Checks,
-                'q_average'     : self.other_para.q_average,
-                'plot_real'     : self.other_para.plot_real,
-                'plot_imag'     : self.other_para.plot_imag,
-                'plot_abs'      : self.other_para.plot_abs,
-                'incident'      : self.other_para.incident,
-                'whatincident'  : self.other_para.what4incident,
-                'outincident'   : self.other_para.out4incident,
-                'label_nu'      : self.structure.label_nu,
-            }
-
-        elif self.structure.nb_typ_el == 5:
-            command_to_run  = "%(pcpv_location)spcpv.exe %(parallel)d %(Lambda)s %(nval)d \
-            %(ordre_ls)d %(d_in_nm)d %(debug)d %(mesh_file)s %(mesh_format)d \
-            %(nb_typ_el)d %(re_n_eff_super)s %(im_n_eff_super)s \
-            %(re_n_eff_sub)s %(im_n_eff_sub)s %(re_n_eff_bkg)s %(im_n_eff_bkg)s \
-            %(re_n_eff_inc_a)s %(im_n_eff_inc_a)s %(re_n_eff_inc_b)s %(im_n_eff_inc_b)s \
-            %(has_substrate)d %(theta)s %(phi)s %(h_one)s %(h_two)s %(num_h)s %(lx)s %(ly)s %(tol)s \
-            %(E_H_field)d %(i_cond)d %(itermax)d %(pol)d %(traLambda)d %(PropModes)d \
-            %(PrintSolution)d %(PrintSupModes)d %(PrintOmega)d %(PrintAll)d \
-            %(Checks)d %(q_average)d %(plot_real)d %(plot_imag)d %(plot_abs)d \
-            %(incident)d %(whatincident)d %(outincident)d %(Loss)d %(label_nu)d" % {
-                'pcpv_location' : pcpv_location,
-                'parallel'      : self.p,
-                'nval'          : nval,
-                'ordre_ls'      : ordre_ls,
-                'h_one'         : fort_dp(self.structure.height_1),
-                'h_two'         : fort_dp(self.structure.height_2),
-                'num_h'         : self.structure.num_h,
-                'lx'            : fort_dp(self.structure.lx),
-                'ly'            : fort_dp(self.structure.ly),
-                'd_in_nm'       : self.structure.period,
-                'has_substrate' : self.structure.has_substrate,
-                'mesh_file'     : self.structure.mesh_file,
-                'mesh_format'   : self.structure.mesh_format,
-                'nb_typ_el'     : self.structure.nb_typ_el,
-                'Loss'          : self.structure.loss,
-                're_n_eff_super': fort_dp(superstrate_n.real),
-                'im_n_eff_super': fort_dp(superstrate_n.imag),
-                're_n_eff_sub'  : fort_dp(substrate_n.real),
-                'im_n_eff_sub'  : fort_dp(substrate_n.imag),
-                're_n_eff_bkg'  : fort_dp(background_n.real),
-                'im_n_eff_bkg'  : fort_dp(background_n.imag),
-                're_n_eff_inc_a': fort_dp(inclusion_a_n.real),
-                'im_n_eff_inc_a': fort_dp(inclusion_a_n.imag),
-                're_n_eff_inc_b': fort_dp(inclusion_b_n.real),
-                'im_n_eff_inc_b': fort_dp(inclusion_b_n.imag),
-                'Lambda'        : fort_dp(self.light.Lambda),
-                'theta'         : fort_dp(self.light.theta),
-                'phi'           : fort_dp(self.light.phi),
-                'pol'           : self.light.pol,
-                'tol'           : fort_dp(self.other_para.tol),
-                'debug'         : self.other_para.debug,
-                'E_H_field'     : self.other_para.E_H_field,
-                'i_cond'        : self.other_para.i_cond,
-                'itermax'       : self.other_para.itermax,
-                'traLambda'     : self.other_para.traLambda,
-                'PropModes'     : self.other_para.PropModes,
-                'PrintSolution' : self.other_para.PrintSolution,
-                'PrintSupModes' : self.other_para.PrintSupModes,
-                'PrintOmega'    : self.other_para.PrintOmega,
-                'PrintAll'      : self.other_para.PrintAll,
-                'Checks'        : self.other_para.Checks,
-                'q_average'     : self.other_para.q_average,
-                'plot_real'     : self.other_para.plot_real,
-                'plot_imag'     : self.other_para.plot_imag,
-                'plot_abs'      : self.other_para.plot_abs,
-                'incident'      : self.other_para.incident,
-                'whatincident'  : self.other_para.what4incident,
-                'outincident'   : self.other_para.out4incident,
-                'label_nu'      : self.structure.label_nu,
-            }
-        else:
-            # except KeyError:
-            raise  NotImplementedError, "must use either 4 or 5 FEM element types"
-
-        # print command_to_run
-        return command_to_run
+        # Run the fortran!
+        pcpv.main(
+            np.array([self.p, self.p]), self.light.Lambda, nval, 
+            ordre_ls, self.structure.period, self.other_para.debug, 
+            self.structure.mesh_file, self.structure.mesh_format, 
+            n_effs, self.structure.has_substrate, self.light.theta, 
+            self.light.phi, self.structure.height_1, 
+            self.structure.height_2, self.structure.num_h, 
+            self.structure.lx, self.structure.ly, self.other_para.tol, 
+            self.other_para.E_H_field, self.other_para.i_cond, 
+            self.other_para.itermax, self.light.pol, 
+            self.other_para.traLambda, self.other_para.PropModes, 
+            self.other_para.PrintSolution, self.other_para.PrintSupModes, 
+            self.other_para.PrintOmega, self.other_para.PrintAll, 
+            self.other_para.Checks, self.other_para.q_average, 
+            self.other_para.plot_real, self.other_para.plot_imag, 
+            self.other_para.plot_abs, self.other_para.incident, 
+            self.other_para.what4incident, self.other_para.out4incident, 
+            self.structure.loss, self.structure.label_nu
+        )
 
 
-
-
-
-def run_command_in_shell(command):
-    """Submit full string of fortran call to command line"""
-    print command
-    return subprocess.call(command, shell = True)
+# def run_command_in_shell(command):
+#     """Submit full string of fortran call to command line"""
+#     print command
+#     return subprocess.call(command, shell = True)
 
 def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls, 
         x_order_in, x_order_out, y_order_in, y_order_out):
@@ -352,10 +243,14 @@ def scat_mats(layer, light_list, simo_para):
             simmo_list += [Simmo(layer, light, simo_para, p)]
             p += 1
 
-        # Launch simos using pool to limit simultaneous instances 
-        command_list = [s.fortran_command_str() for s in simmo_list]
-        pool = mp.Pool(simo_para.num_cores)
-        pool.map(run_command_in_shell, command_list)
+        # # Launch simos using pool to limit simultaneous instances 
+        # command_list = [s.fortran_command_str() for s in simmo_list]
+        # pool = mp.Pool(simo_para.num_cores)
+        # pool.map(run_command_in_shell, command_list)
+
+        # Run simmos sequentially for now
+        for s in simmo_list:
+            s.run_fortran()
 
 
 # For homogeneous layers calculate scattering matrices analytically

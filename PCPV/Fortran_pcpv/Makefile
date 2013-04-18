@@ -50,5 +50,7 @@ clean:
 signature:
 	f2py -m $(MODULE_NAME) -h $(SIGNATURE_FILE) main_64.f --overwrite-signature
 
-
+f2py:
+	f2py -c pcpv.pyf *.f Lib/umf4_f77zwrapper64.o --link-lapack_opt \
+		--link-umfpack --link-blas_opt
 

@@ -57,10 +57,9 @@ C      integer*8 jp_matD2, jp_matL2, jp_matU2
       integer*8 jp_X_mat_b
 C  Plane wave parameteres
       integer*8 neq_PW, nx_PW, ny_PW, ordre_ls
-      integer*8 Zeroth_Order, Zeroth_Order_inv, max_typ_el, nb_typ_el
-      parameter (max_typ_el=10)
-      complex*16 pp(max_typ_el),  qq(max_typ_el)
-      complex*16 eps_eff(max_typ_el), n_eff(max_typ_el), test
+      integer*8 Zeroth_Order, Zeroth_Order_inv, nb_typ_el
+      complex*16 pp(nb_typ_el),  qq(nb_typ_el)
+      complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el), test
       double precision n_eff_0, n_eff_sub, eps_eff_sub
       integer*8 nel, npt, nnodes, ui, i_cond
 C, len_skyl, nsym
@@ -191,16 +190,15 @@ C     ! Number of nodes per element
 C      nsym = 1 ! nsym = 0 => symmetric or hermitian matrices
 C
 
-CCCCCCCCCCCCCCCCC F2PY CCCCCCCCCCCCCCCCCCCCCCCCC
-
+CCCCCCCCCCCCCCCCC POST F2PY CCCCCCCCCCCCCCCCCCCCCCCCC
 
 C     clean mesh_format
       namelength = len_trim(mesh_file)
 C        gmsh_file = 'Normed/'//mesh_file(1:namelength)//'.msh'
-      gmsh_file = mesh_file(1:namelength)//'.msh'
+      gmsh_file = mesh_file(1:namelength-5)//'.msh'
       gmsh_file_pos = mesh_file(1:namelength)
 C        log_file = 'Normed/'//mesh_file(1:namelength)//'.log'
-      log_file = mesh_file(1:namelength)//'.log'
+      log_file = mesh_file(1:namelength-5)//'.log'
       if (debug .eq. 1) then
         write(*,*) "get_param: mesh_file = ", mesh_file
         write(*,*) "get_param: gmsh_file = ", gmsh_file
@@ -210,17 +208,11 @@ C        log_file = 'Normed/'//mesh_file(1:namelength)//'.log'
           read(24,*) npt, nel
       close(24)
 
-
-C     nb_typ_el & n_eff logic
       do i_32=1,nb_typ_el
         eps_eff(i_32) = n_eff(i_32)**2
       enddo
 
-
-
-
-CCCCCCCCCCCCCCCCC END F2PY CCCCCCCCCCCCCCCCCCCCC
-
+CCCCCCCCCCCCCCCCC END POST F2PY CCCCCCCCCCCCCCCCCCCCC
 
 C############### using with python for each wavelength #################C
 C

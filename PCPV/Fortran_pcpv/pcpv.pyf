@@ -12,8 +12,8 @@ python module pcpv ! in
             integer*8 :: debug
             character*100 :: mesh_file
             integer*8 :: mesh_format
-            integer*8 :: nb_typ_el
-            complex*16 dimension(10) :: n_eff
+            integer*8, optional,check(len(n_eff)>=nb_typ_el),depend(n_eff) :: nb_typ_el=len(n_eff)
+            complex*16 dimension(nb_typ_el) :: n_eff
             integer*8 :: substrate
             double precision :: theta
             double precision :: phi
