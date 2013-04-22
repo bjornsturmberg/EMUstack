@@ -152,7 +152,7 @@ C     !n_64**28 on Vayu
 
       allocate(b(cmplx_max), STAT=allocate_status)
       if (allocate_status /= 0) then
-        write(*,*) "The allocation is unseccesfull"
+        write(*,*) "The allocation is unsuccessful"
         write(*,*) "allocate_status = ", allocate_status
         write(*,*) "Not enough memory for the complex array b"
         write(*,*) "cmplx_max = ", cmplx_max
@@ -162,7 +162,7 @@ C     !n_64**28 on Vayu
 
       allocate(c(real_max), STAT=allocate_status)
       if (allocate_status /= 0) then
-        write(*,*) "The allocation is unseccesfull"
+        write(*,*) "The allocation is unsuccessful"
         write(*,*) "allocate_status = ", allocate_status
         write(*,*) "Not enough memory for the real array c"
         write(*,*) "real_max = ", real_max
@@ -172,7 +172,7 @@ C     !n_64**28 on Vayu
 
       allocate(a(int_max), STAT=allocate_status)
       if (allocate_status /= 0) then
-        write(*,*) "The allocation is unseccesfull"
+        write(*,*) "The allocation is unsuccessful"
         write(*,*) "allocate_status = ", allocate_status
         write(*,*) "Not enough memory for the integer array a"
         write(*,*) "int_max = ", int_max
@@ -208,9 +208,9 @@ C        log_file = 'Normed/'//mesh_file(1:namelength)//'.log'
           read(24,*) npt, nel
       close(24)
 
-      do i_32=1,nb_typ_el
+      do i_32 = 1, nb_typ_el
         eps_eff(i_32) = n_eff(i_32)**2
-      enddo
+      end do
 
 CCCCCCCCCCCCCCCCC END POST F2PY CCCCCCCCCCCCCCCCCCCCC
 
@@ -656,12 +656,12 @@ c       ----------------------------------------------------------------
 c       convert from 1-based to 0-based
 c       ----------------------------------------------------------------
 c
-        do 60 j = 1, neq+1
-            a(j+ip_col_ptr-1) = a(j+ip_col_ptr-1) - 1
-60      continue
-        do 70 j = 1, nonz
-            a(j+ip_row-1) = a(j+ip_row-1) - 1
-70      continue
+      do j = 1, neq+1
+          a(j+ip_col_ptr-1) = a(j+ip_col_ptr-1) - 1
+      end do
+      do  j = 1, nonz
+          a(j+ip_row-1) = a(j+ip_row-1) - 1
+      end do
 c
 c
 c     The CSC indexing, i.e., ip_col_ptr, is 1-based 
@@ -1113,7 +1113,7 @@ CCCC Hardcore Debugging - Print all arrays + some variables CCCCC
       if (debug .eq. 2 .and. i_lambda .eq. debug_i_lambda) then
         PrintAll = 1
         Checks = 2
-        
+
         open (unit=1111,file="Normed/Debug_data.txt", status='unknown')
         write(1111,*) "i_lambda = ", i_lambda
         write(1111,*) "lambda = ", lambda
@@ -1562,5 +1562,5 @@ C
       write(ui,*) "  and   we're  done!"
       endif
 C
-      stop
+C      stop
       end subroutine main
