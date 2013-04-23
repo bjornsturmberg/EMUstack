@@ -90,29 +90,14 @@ solar_cell = [bottom, grating_1, cover]
 
 net_scat_mats(solar_cell, wavelengths, simo_para)
 
+def results_match_reference(filename):
+    reference = np.loadtxt("ref/case_1/" + filename)
+    result    = np.loadtxt(filename)
+    np.testing.assert_allclose(result, reference, 1e-7, 1e-8, filename)
 
-
-def test_absorbtance():
-    absorptance_ref = np.loadtxt("Ref/case_1/Absorptance.txt")
-    absorptance = np.loadtxt("Absorptance.txt")
-    np.testing.assert_allclose(absorptance, absorptance_ref)
-
-def test_lay_absorb():
-    lay_absorb_ref = np.loadtxt("Ref/case_1/Lay_Absorb_0.txt")
-    lay_absorb = np.loadtxt("Lay_Absorb_0.txt")
-    np.testing.assert_allclose(lay_absorb, lay_absorb_ref)
-
-def test_lay_trans():
-    lay_trans_ref = np.loadtxt("Ref/case_1/Lay_Trans_0.txt")
-    lay_trans = np.loadtxt("Lay_Trans_0.txt")
-    np.testing.assert_allclose(lay_trans, lay_trans_ref)
-
-def test_reflectance():
-    reflectance_ref = np.loadtxt("Ref/case_1/Reflectance.txt")
-    reflectance = np.loadtxt("Reflectance.txt")
-    np.testing.assert_allclose(reflectance, reflectance_ref)
-
-def test_transmittance():
-    transmittance_ref = np.loadtxt("Ref/case_1/Transmittance.txt")
-    transmittance = np.loadtxt("Transmittance.txt")
-    np.testing.assert_allclose(transmittance, transmittance_ref)
+def test_results():
+    result_files = ("Absorptance.txt", "Lay_Absorb_0.txt",
+                    "Lay_Trans_0.txt", "Reflectance.txt",
+                    "Transmittance.txt")
+    for f in result_files:
+        yield results_match_reference, f

@@ -161,3 +161,27 @@ python_log.close()
 
 print hms_string
 print '*******************************************'
+
+
+def results_match_reference(filename):
+    reference = np.loadtxt("ref/case_2/" + filename)
+    result    = np.loadtxt(filename)
+    np.testing.assert_allclose(result, reference, 1e-7, 1e-8, filename)
+
+def test_results():
+    result_files = (
+                    "Absorptance.txt",      "beta_st0002.txt",
+                    "Lay_Trans_0.txt",      "omega_st0003.txt",
+                    "Av_Absorb.txt",        "beta_st0004.txt",
+                    "Lay_Trans_1.txt",      "Reflectance.txt",
+                    "Av_Reflec.txt",        "Efficiency.txt",
+                    "Lay_Trans_2.txt",      "Transmittance.txt",
+                    "Av_Trans.txt",         "Lay_Absorb_0.txt",
+                    "omega_Ft_st0003.txt",  "Weighted_Absorb.txt",
+                    "beta_st0000.txt",      "Lay_Absorb_1.txt",
+                    "omega_Fz_st0003.txt",  "Weighted_Reflec.txt",
+                    "beta_st0001.txt",      "Lay_Absorb_2.txt",
+                    "omega_pol_st0003.txt", "Weighted_Trans.txt",
+                    )
+    for f in result_files:
+        yield results_match_reference, f

@@ -57,7 +57,8 @@ def deal_w_scat_mats(solar_cell, simo_para, nu_TFs):
                 except ValueError:
                     pass
     file_name1 = "rm st*_wl*.txt" 
-    subprocess.call(file_name1, shell = True)
+    #FELIXFIXME: I commented out the below
+    #subprocess.call(file_name1, shell = True)
 
 
 def net_scat_mats(solar_cell, wavelengths, simo_para):

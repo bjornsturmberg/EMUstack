@@ -5,7 +5,7 @@ import os
 
 
 def c_c_tra(pol = 0):
-    """ concatinate transmission, reflection and absorption results 
+    """ concatenate transmission, reflection and absorption results 
     in one file each and remove individual lambda results """
     if pol == 0:
         filename1 = "wl*_A_Lambda.txt"
@@ -220,7 +220,7 @@ def c_c_tra(pol = 0):
 
 def c_c_omega(st):
     """         for nanostructured layers
-        concatinate dispersion results in one file 
+        concatenate dispersion results in one file 
         and remove individual lambda results """
 
     format_st     = '%04d' % st
@@ -272,7 +272,7 @@ def c_c_omega(st):
 
 def c_c_beta(st):
     """             for thin film layers
-        concatinate dispersion results in one file 
+        concatenate dispersion results in one file 
         and remove individual lambda results """
 
     format_st     = '%04d' % st
@@ -290,7 +290,7 @@ def c_c_beta(st):
 
    
 def c_c_detA():
-    """ concatinate Fabry-Perot resonance determinant results in one file 
+    """ concatenate Fabry-Perot resonance determinant results in one file 
         and remove individual lambda results """
 
     filename1 = "detAe*.txt"
@@ -318,7 +318,7 @@ def c_c_detA():
 
 
 def c_c_prop_modes():
-    """ concatinate number of propagating modes (lossless) """
+    """ concatenate number of propagating modes (lossless) """
 
     filename1 = "SuperModes*.txt"
     Afiles = glob.glob(filename1)
