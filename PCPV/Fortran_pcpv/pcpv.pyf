@@ -3,7 +3,7 @@
 
 python module pcpv ! in 
     interface  ! in :pcpv
-        subroutine main(parallel,lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,nb_typ_el,n_eff,substrate,theta,phi,h_1,h_2,num_h,lx,ly,tol,e_h_field,i_cond,itermax,pol,tralambda,propmodes,printsolution,printsupmodes,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,incident,what4incident,out4incident,loss,title) ! in :pcpv:main_64.f
+        subroutine main(parallel,lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,nb_typ_el,n_eff,substrate,theta,phi,h_1,h_2,num_h,lx,ly,tol,e_h_field,i_cond,itermax,pol,tralambda,propmodes,printsolution,printsupmodes,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,incident,what4incident,out4incident,loss,title,neq_pw,zeroth_order) ! in :pcpv:main_64.f
             integer*8 dimension(2) :: parallel
             double precision :: lambda
             integer*8 :: nval
@@ -43,6 +43,8 @@ python module pcpv ! in
             integer*8 :: out4incident
             integer*8 :: loss
             integer*8 :: title
+            integer*8 :: neq_pw
+            integer*8 :: zeroth_order
         end subroutine main
     end interface 
 end python module pcpv

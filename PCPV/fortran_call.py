@@ -94,16 +94,33 @@ class Simmo(object):
             # ordre_ls      = round(self.max_order_PWs*nval/self.max_num_BMs)
         else:
             nval          = self.max_num_BMs
-            ordre_ls      = self.max_order_PWs          
+            ordre_ls      = self.max_order_PWs
+
+        #TODO: break this stuff off into subfunctions
+        pw_ords_x_1d = np.arange(-ordre_ls, ordre_ls + 1)
+        pw_ords_y_1d = np.arange(-ordre_ls, ordre_ls + 1)
+        # Y is inner loop in fortran
+        #FIXME: make X the inner loop?
+        pw_ords_y, pw_ords_x = np.meshgrid(pw_ords_y_1d, pw_ords_x_1d)
+        sum_sq_ords = pw_ords_x**2 + pw_ords_y**2
+        neq_pw = (sum_sq_ords <= ordre_ls**2).sum()
+        # Fortran counter starts at 1
+        zeroth_order = sum_sq_ords.reshape(-1).argmin() + 1
+
+        # Avoid hitting Wood anomalies
+        d = self.structure.period
+        norm_wl = float(self.light.Lambda) / d
+        if self.light.Lambda % d == 0:
+            norm_wl += 1e-15
 
         # Run the fortran!
         pcpv.main(
-            np.array([self.p, self.p]), self.light.Lambda, nval, 
-            ordre_ls, self.structure.period, self.other_para.debug, 
+            np.array([self.p, self.p]), norm_wl, nval, 
+            ordre_ls, d, self.other_para.debug, 
             self.structure.mesh_file, self.structure.mesh_format, 
             n_effs, self.structure.has_substrate, self.light.theta, 
-            self.light.phi, self.structure.height_1, 
-            self.structure.height_2, self.structure.num_h, 
+            self.light.phi, float(self.structure.height_1) / d, 
+            float(self.structure.height_2) / d, self.structure.num_h, 
             self.structure.lx, self.structure.ly, self.other_para.tol, 
             self.other_para.E_H_field, self.other_para.i_cond, 
             self.other_para.itermax, self.light.pol, 
@@ -114,7 +131,8 @@ class Simmo(object):
             self.other_para.plot_real, self.other_para.plot_imag, 
             self.other_para.plot_abs, self.other_para.incident, 
             self.other_para.what4incident, self.other_para.out4incident, 
-            self.structure.loss, self.structure.label_nu
+            self.structure.loss, self.structure.label_nu,
+            neq_pw, zeroth_order
         )
 
 

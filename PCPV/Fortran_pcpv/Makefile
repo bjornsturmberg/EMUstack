@@ -24,4 +24,4 @@ purge:
 	-rm Lib/umf4_f77zwrapper64.o
 
 clean:
-	rm pcpv.so
+	-rm pcpv.so

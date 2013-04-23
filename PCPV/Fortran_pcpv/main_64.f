@@ -4,7 +4,8 @@
      *    E_H_field, i_cond, itermax, pol, traLambda, PropModes,
      *    PrintSolution, PrintSupModes, PrintOmega, PrintAll,
      *    Checks, q_average, plot_real, plot_imag, plot_abs,
-     *    incident, what4incident, out4incident, Loss, title)
+     *    incident, what4incident, out4incident, Loss, title,
+     *    neq_PW, Zeroth_Order)
 C************************************************************************
 C
 C  Program:
@@ -61,31 +62,38 @@ C  Plane wave parameteres
       complex*16 pp(nb_typ_el),  qq(nb_typ_el)
       complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el), test
       double precision n_eff_0, n_eff_sub, eps_eff_sub
+c     i_cond = 0 => Dirichlet boundary condition
+c     i_cond = 1 => Neumann boundary condition
+c     i_cond = 2 => Periodic boundary condition
       integer*8 nel, npt, nnodes, ui, i_cond
 C, len_skyl, nsym
-      integer*8 neq, debug, E_H_field
+c     E_H_field = 1 => Electric field formulation (E-Field)
+c     E_H_field = 2 => Magnetic field formulation (H-Field)
+      integer*8 E_H_field
+      integer*8 neq, debug
       integer*8 npt_p3, numberprop_S, numberprop_N, numberprop_S_b
 C  Variable used by valpr
       integer*8 nval, nvect, itermax, ltrav
       integer*8 n_conv, i_base
       double precision ls_data(10)
 c      integer*8 pointer_int(20), pointer_cmplx(20)
-      integer*8 index(1000), index2(1000), n_core(2)
+      integer*8 index(1000), n_core(2)
       complex*16 z_beta, z_tmp, z_tmp0
       integer*8 n_edge, n_face, n_ddl, n_ddl_max, n_k
 c     variable used by UMFPACK
       double precision control (20), info_umf (90)
-      integer*8 numeric, symbolic, status, sys, filenum
+      integer*8 numeric, status, filenum
 C  Renumbering
 c      integer*8 ip_row_ptr, ip_bandw_1, ip_adjncy
 c      integer*8 len_adj, len_adj_max, len_0_adj_max
 c, iout, nonz_1, nonz_2
       integer*8 i, j, mesh_format
-      integer*8 i_lambda, n_lambda, Lambda_Res, debug_i_lambda
+      integer*8 i_lambda, n_lambda, Lambda_Res
+c     Wavelength lambda is in normalised units of d_in_nm
       double precision lambda, lambda_1, lambda_2, d_lambda
       double precision d_freq, freq, lat_vecs(2,2), tol, theta, phi
       double precision k_0, pi, lx, ly, bloch_vec(2), bloch_vec0(2)
-      complex*16 energ, shift, shift_eps_max
+      complex*16 shift
 C  Timing variables
       double precision time1, time2
       double precision time1_fact, time2_fact
@@ -98,15 +106,16 @@ C  Timing variables
       character*(10) start_time, end_time
 C  Names and Controls
       character mesh_file*100, gmsh_file*100, log_file*100
-      character gmsh_file_pos*100, get_args*5
+      character gmsh_file_pos*100
       character overlap_file*100, dir_name*100, buf1*4, buf2*4
       character*100 tchar
       integer*8 namelength, PrintAll, PrintOmega, Checks, traLambda
       integer*8 PrintSolution, hole_wire, pol, PrintSupModes
       integer*8 substrate, num_h
       integer*8 Lambda_count, parallel_comp, PropModes
+C     Thicknesses h_1 and h_2 are in normalised units of d_on_lambda
       double precision h_1, h_2, hz
-      integer*8 d_in_nm, pair_warning, parallel(2), max_arg, Loss
+      integer*8 d_in_nm, pair_warning, parallel(2), Loss
       complex*16 Complex_refract1(818), Complex_refract2(1635)
       complex*16 Complex_refract3(818), Complex_refract4(1635)
       integer*8 incident, what4incident, out4incident
@@ -129,16 +138,7 @@ c     Declare the pointers of for sparse matrix storage
 
       integer*8 ip
       integer i_32
-C  python passing
-      integer input
-      character*15 get_py
-      character*100 get_char
-      double precision re_tmp, im_tmp
-C
-C
 
-CCCCCCCCCCCCCCCCCCCC  Start Program - get parameters  CCCCCCCCCCCCCCCCCCC
-C 
 
       n_64 = 2
 C     !n_64**28 on Vayu
@@ -194,10 +194,8 @@ CCCCCCCCCCCCCCCCC POST F2PY CCCCCCCCCCCCCCCCCCCCCCCCC
 
 C     clean mesh_format
       namelength = len_trim(mesh_file)
-C        gmsh_file = 'Normed/'//mesh_file(1:namelength)//'.msh'
       gmsh_file = mesh_file(1:namelength-5)//'.msh'
       gmsh_file_pos = mesh_file(1:namelength)
-C        log_file = 'Normed/'//mesh_file(1:namelength)//'.log'
       log_file = mesh_file(1:namelength-5)//'.log'
       if (debug .eq. 1) then
         write(*,*) "get_param: mesh_file = ", mesh_file
@@ -208,117 +206,20 @@ C        log_file = 'Normed/'//mesh_file(1:namelength)//'.log'
           read(24,*) npt, nel
       close(24)
 
-      do i_32 = 1, nb_typ_el
+c     Calculate effective permittivity
+      do i_32 = 1, int(nb_typ_el)
         eps_eff(i_32) = n_eff(i_32)**2
       end do
 
+      nvect = 2*nval + nval/2 +3
+c     FIXME: get rid of nlambda
+      n_lambda = 1
+
 CCCCCCCCCCCCCCCCC END POST F2PY CCCCCCCCCCCCCCCCCCCCC
 
-C############### using with python for each wavelength #################C
-C
-      if (python .eq. 1) then
-
-        nvect = 2*nval + nval/2 +3
-C
-C        write(ui,*) "MAIN: Aborting..."
-C        stop
-C
-C############ using as independent program w text files ################C
-C
-      elseif (python .eq. 0) then
-C
-      open(3,file='Parameters/controls.txt',status='old')
-        read(3,*) debug
-        read(3,*) parallel_comp
-        read(3,*) Loss
-        read(3,*) hole_wire
-        read(3,*) substrate
-        read(3,*) pol
-        read(3,*) traLambda
-        read(3,*) PropModes
-        read(3,*) PrintSolution
-        read(3,*) PrintSupModes
-        read(3,*) PrintOmega
-        read(3,*) PrintAll
-        read(3,*) Checks
-      close(3)
-C
-      open(4,file='Parameters/bloch_vec.txt',status='old')
-        read(4,*) theta
-        read(4,*) phi
-        read(4,*) ordre_ls
-        read(4,*) h_1
-        read(4,*) h_2
-        read(4,*) num_h
-      close(4)
-C
-      open (unit=346, file='Parameters/output.txt', status='old')
-        read(346,*) q_average
-        read(346,*) plot_real
-        read(346,*) plot_imag
-        read(346,*) plot_abs
-        read(346,*) 
-        read(346,*) incident
-        read(346,*) what4incident
-        read(346,*) out4incident
-      close(346)
-C
-      if (parallel_comp .eq. 1) then
-        max_arg = 2
-        do i_32=1,max_arg
-          CALL GETARG(i_32, get_args)
-          read (get_args,'(I5)') parallel(i_32)
-        enddo
-      else
-C     ! n_par_start
-        parallel(1) = 1
-        parallel(2) = 0       
-      endif
-c
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: parallel (A) ", parallel(1), parallel(2)
-      endif
-C
-      call get_param(E_H_field, n_lambda, lambda_1, lambda_2, 
-     *      npt, nel, i_cond, nval, nvect, itermax, tol,
-     *      lx, ly, mesh_file, mesh_format, gmsh_file,
-     *      gmsh_file_pos, log_file, Lambda_Res, d_in_nm, debug)
-C
-      call cmp_ref_index(Lambda_Res, Complex_refract1, Complex_refract2,
-     *              Complex_refract3, Complex_refract4, Loss)
-C
-      else
-        write(ui,*) "MAIN: either use python or text files"
-        write(ui,*) "MAIN: Aborting..."
-        stop
-      endif
-C
-CCCCCCC end of parameter intake options
-C
 C     ! initial time  in unit = sec.
       call cpu_time(time1)
       call date_and_time ( start_date, start_time )
-C
-      if (debug .eq. 2) then
-        open(4,file='Parameters/debug_lambda.txt',status='old')
-          read(4,*) debug_i_lambda
-        close(4)
-      else
-        debug_i_lambda = 0
-      endif
-C
-      neq_PW = 0
-      do nx_PW = -ordre_ls, ordre_ls
-        do ny_PW = -ordre_ls, ordre_ls
-          if (nx_PW**2 + ny_PW**2 .le. ordre_ls**2) then
-            neq_PW = neq_PW + 1
-            if (nx_PW .eq. 0 .and. ny_PW .eq. 0) then
-C     !using neq_PW as counter
-              Zeroth_Order = neq_PW
-            endif
-          endif
-        enddo
-      enddo      
 C      
       if (debug .eq. 1) then
         write(ui,*)
@@ -670,43 +571,6 @@ c       (but valpr.f will change the CSC indexing to 0-based indexing)
 c
 C
 C#####################  End FEM PRE-PROCESSING  #########################
-C
-C     ! convert h from nm to lattice vector units d
-      h_1 = h_1/d_in_nm
-      h_2 = h_2/d_in_nm 
-C     ! lambda from nm - lattice vector units d
-      if (python .eq. 1) then
-C  Avoid directly hitting Wood anomalies
-        if (lambda .eq. d_in_nm) then
-          lambda = lambda/d_in_nm + 1.0d-15
-        elseif (2*lambda .eq. d_in_nm) then
-          lambda = lambda/d_in_nm + 1.0d-15
-        elseif (3*lambda .eq. d_in_nm) then
-          lambda = lambda/d_in_nm + 1.0d-15
-        elseif (4*lambda .eq. d_in_nm) then
-          lambda = lambda/d_in_nm + 1.0d-15
-        elseif (5*lambda .eq. d_in_nm) then
-          lambda = lambda/d_in_nm + 1.0d-15
-        elseif (6*lambda .eq. d_in_nm) then
-          lambda = lambda/d_in_nm + 1.0d-15
-        elseif (7*lambda .eq. d_in_nm) then
-          lambda = lambda/d_in_nm + 1.0d-15
-        else
-          lambda = lambda/d_in_nm
-        endif
-      elseif (python .eq. 0) then
-      lambda_1 = lambda_1/d_in_nm
-      lambda_2 = lambda_2/d_in_nm
-
-      if(n_lambda .gt. 1) then
-        d_lambda = (lambda_2 - lambda_1)/dble(n_lambda-1)
-        d_freq   = (1.0d0/lambda_2 - 1.0d0/lambda_1) /
-     *             dble(n_lambda-1)
-      else
-        d_lambda = 0.0d0
-        d_freq   = 0.0d0
-      endif
-      endif
 C
 C     !  index wavelength loops for A_and_W_Lambda
       Lambda_count = 1
@@ -1110,7 +974,7 @@ CCCCCCCCCCCCCCCCCCCCCCCC  End Prime, Adjoint Loop  CCCCCCCCCCCCCCCCCCCCCC
 C
 
 CCCC Hardcore Debugging - Print all arrays + some variables CCCCC
-      if (debug .eq. 2 .and. i_lambda .eq. debug_i_lambda) then
+      if (debug .eq. 2) then
         PrintAll = 1
         Checks = 2
 
@@ -1272,7 +1136,7 @@ C  Scattering Matrices
 C     !End Substrate Options
       endif
 C
-      if (debug .eq. 2 .and. i_lambda .eq. debug_i_lambda) then
+      if (debug .eq. 2) then
         write(1111,*) 
         write(1111,*) "neq_PW = ", neq_PW
         write(1111,*) "numberprop_S = ", numberprop_S
@@ -1562,5 +1426,4 @@ C
       write(ui,*) "  and   we're  done!"
       endif
 C
-C      stop
       end subroutine main
