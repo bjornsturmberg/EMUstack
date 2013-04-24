@@ -59,8 +59,8 @@ period  = 600
 
 cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     film_material = materials.Air, superstrate = materials.Air, 
-    substrate = materials.Air,loss = False, label_nu = label_nu)
-label_nu = scat_mats(cover, light_list, simo_para)
+    substrate = materials.Air,loss = False, label_nu = 0)
+scat_mats(cover, light_list, simo_para)
 
 radius1 = 60
 max_num_BMs = 30
@@ -70,15 +70,15 @@ grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
     superstrate = materials.Air, substrate = materials.Air, loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True,
     lc_bkg = 0.15, lc2= 1.5, lc3= 1.5,
-    max_num_BMs = max_num_BMs, label_nu = label_nu)
-label_nu = scat_mats(grating_1, light_list, simo_para)
+    max_num_BMs = max_num_BMs, label_nu = 1)
+scat_mats(grating_1, light_list, simo_para)
 
 
 # will only ever use top scattering matrices for the bottom layer
 bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     film_material = materials.SiO2_a, superstrate = materials.Air, 
-    loss = False, label_nu = label_nu)
-label_nu = scat_mats(bottom, light_list, simo_para)
+    loss = False, label_nu = 2)
+scat_mats(bottom, light_list, simo_para)
 
 
 
@@ -98,6 +98,9 @@ def results_match_reference(filename):
 def test_results():
     result_files = ("Absorptance.txt", "Lay_Absorb_0.txt",
                     "Lay_Trans_0.txt", "Reflectance.txt",
-                    "Transmittance.txt")
+                    "Transmittance.txt", "beta_st0000.txt",
+                    "beta_st0002.txt", "omega_Ft_st0001.txt",
+                    "omega_Fz_st0001.txt", "omega_pol_st0001.txt",
+                    "omega_st0001.txt",)
     for f in result_files:
         yield results_match_reference, f

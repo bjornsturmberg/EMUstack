@@ -46,18 +46,14 @@ def deal_w_scat_mats(solar_cell, simo_para, nu_TFs):
     if simo_para.PrintOmega == 1:
         for i in range(0,nu_TFs+2):
             j = solar_cell[i].label_nu
-            if isinstance(solar_cell[i],objects.ThinFilm):
-                try:
-                    cat_n_clean.c_c_beta(j)
-                except ValueError:
-                    pass
+            if isinstance(solar_cell[i], objects.ThinFilm):
+                pass
             else:
-                try:
+                # try:
                     cat_n_clean.c_c_omega(j)
-                except ValueError:
-                    pass
-    file_name1 = "rm st*_wl*.txt" 
-    #FELIXFIXME: I commented out the below
+                # except ValueError:
+                    # pass
+    # file_name1 = "rm st*_wl*.txt" 
     #subprocess.call(file_name1, shell = True)
 
 
@@ -68,7 +64,7 @@ def net_scat_mats(solar_cell, wavelengths, simo_para):
         if cell.period == solar_cell[0].period:
             pass
         else:
-            raise  NotImplementedError, "All layers in a multilayer stack must have the same period!"
+            raise ValueError, "All layers in a multilayer stack must have the same period!"
 
     nu_intfaces    = 2*(len(solar_cell)-1)
     nu_TFs         = len(solar_cell)-2 # adujsted by 1 for python index start at 0

@@ -1309,7 +1309,7 @@ C  Completeness Check
      *    b(jp_sol2), pp, qq, lambda, freq, b(jp_overlap_K), neq_PW,
      *    lat_vecs, bloch_vec, b(jp_eigenval2), a(ip_index_pw_inv),
      *    PrintAll, k_0, ordre_ls)
-        write(ui,*) "MAIN: Completenes Test"
+        write(ui,*) "MAIN: Completeness Test"
         call Completeness (nval, neq_PW, 
      *    b(jp_overlap_K), b(jp_overlap_J))
 C  Search for number of propagating Bloch Modes

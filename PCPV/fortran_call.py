@@ -9,6 +9,7 @@ sys.path.append("../PCPV/")
 
 import materials
 import objects
+import temporary_bullshit as bs
 
 from Fortran_pcpv import pcpv
 
@@ -136,11 +137,6 @@ class Simmo(object):
         )
 
 
-# def run_command_in_shell(command):
-#     """Submit full string of fortran call to command line"""
-#     print command
-#     return subprocess.call(command, shell = True)
-
 def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls, 
         x_order_in, x_order_out, y_order_in, y_order_out):
     k_perp = []
@@ -201,42 +197,17 @@ def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls,
     # print 'k_perp[2]', k_perp[2]
     return k_perp
 
-
-def save_scat_mat(matrix, name, st, p, num_pw):
-            # reshape matrices to be consistent with pcpv.exe output
-            format_label_nu = '%04d' % st
-            format_p        = '%04d' % p
-
-            file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
-                'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
-            with open(file_name, 'w') as outfile:
-                for k in range(num_pw):
-                    for i in range(num_pw):
-                        data = [i+1,  k+1, np.real(matrix[i,k]), np.imag(matrix[i,k]),
-                            np.abs(matrix[i,k])**2]
-                        data = np.reshape(data, (1,5))
-                        np.savetxt(outfile, data, fmt=['%4i','%4i','%25.17G','%25.17G','%25.17G'], delimiter='')
-
-def save_k_perp(matrix, name, st, p, num_pw, wl):
-            format_label_nu = '%04d' % st
-            format_p        = '%04d' % p
-
-            file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
-                'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
-            data_list = [num_pw, wl]
-            with open(file_name, 'w') as outfile:
-                for k in range(num_pw):
-                    # data = [[float(np.real(matrix[k])), float(np.imag(matrix[k]))]]
-                    # np.savetxt(outfile, data, fmt=['%25.17G', '%25.17G'], delimiter='')
-                    data_list.append(float(np.real(matrix[k])))
-                    data_list.append(float(np.imag(matrix[k])))
-                np.savetxt(outfile, np.atleast_2d(data_list), fmt='%25.17G', delimiter='')
-
-
-
+class Anallo(object):
+    """ Like a :Simmo:, but for a thin film, and calculated analytically."""
+    def __init__(self, thin_film, light, other_para, p):
+        self.thin_film = thin_film
+        self.light = light
+        self.other_para = other_para
+        self.p = p
+        self.beta = None
 
 def scat_mats(layer, light_list, simo_para):
-    """Run the calculation of this structures/films scattering matrices"""
+    """ Calculate this structure's/film's scattering matrices"""
 
     print "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
     print "LAYER %s" % layer.label_nu
@@ -244,9 +215,9 @@ def scat_mats(layer, light_list, simo_para):
 
     wavelengths = np.array([l.Lambda for l in light_list], float)
 
-# For nanostructured layers run pcpv.exe to find scattering matrices
+    # For nanostructured layers run pcpv.exe to find scattering matrices
     if isinstance(layer,objects.NanoStruct):
-        # Interpolate refractive indecies over wavelength array
+        # Interpolate refractive indices over wavelength array
         # materials.interp_all(wavelengths)
         materials.interp_needed(wavelengths, layer.inclusion_a)
         materials.interp_needed(wavelengths, layer.inclusion_b)
@@ -255,11 +226,8 @@ def scat_mats(layer, light_list, simo_para):
         materials.interp_needed(wavelengths, layer.substrate)
 
         # List of simulations to calculate, with full arguments
-        simmo_list = []
-        p          = 1
-        for light in light_list:
-            simmo_list += [Simmo(layer, light, simo_para, p)]
-            p += 1
+        simmo_list = [Simmo(layer, l, simo_para, p+1) 
+                        for p, l in enumerate(light_list)]
 
         # # Launch simos using pool to limit simultaneous instances 
         # command_list = [s.fortran_command_str() for s in simmo_list]
@@ -270,8 +238,10 @@ def scat_mats(layer, light_list, simo_para):
         for s in simmo_list:
             s.run_fortran()
 
+        bs.save_omegas(simmo_list)
 
-# For homogeneous layers calculate scattering matrices analytically
+
+    # For homogeneous layers calculate scattering matrices analytically
     elif isinstance(layer,objects.ThinFilm):
         materials.interp_needed(wavelengths, layer.film_material)
         materials.interp_needed(wavelengths, layer.superstrate)
@@ -280,8 +250,13 @@ def scat_mats(layer, light_list, simo_para):
         layer.num_prop_air = []
         layer.num_prop_TF  = []
 
+
+        anallo_list = [Anallo(layer, l, simo_para, p+1)
+                        for p, l in enumerate(light_list)]
+
         p          = 1
-        for wl in wavelengths:
+        for an in anallo_list:
+            wl = an.light.Lambda
             # refractive indeces listed so that thin film is 2nd,
             # that way can order plane waves in material as in infintesimal air layers,
             # which is ordered consistent with FEM.
@@ -324,6 +299,7 @@ def scat_mats(layer, light_list, simo_para):
                 simo_para.x_order_in, simo_para.x_order_out,
                 simo_para.y_order_in, simo_para.y_order_out)
             k_film   = k_perp[1]
+            an.beta = k_film
             # print 'k_perp[0]', k_perp[0]
             # print 'k_film', k_film
 
@@ -355,18 +331,18 @@ def scat_mats(layer, light_list, simo_para):
 
             # saving matrices to file
             if layer.substrate == layer.superstrate:
-                save_scat_mat(r12, 'R12', layer.label_nu, p, matrix_size)
-                save_scat_mat(t12, 'T12', layer.label_nu, p, matrix_size)
-                save_scat_mat(r23, 'R21', layer.label_nu, p, matrix_size)
-                save_scat_mat(t23, 'T21', layer.label_nu, p, matrix_size)
+                bs.save_scat_mat(r12, 'R12', layer.label_nu, p, matrix_size)
+                bs.save_scat_mat(t12, 'T12', layer.label_nu, p, matrix_size)
+                bs.save_scat_mat(r23, 'R21', layer.label_nu, p, matrix_size)
+                bs.save_scat_mat(t23, 'T21', layer.label_nu, p, matrix_size)
             else:
-                save_scat_mat(r12, 'R12', layer.label_nu, p, matrix_size)
-                save_scat_mat(t12, 'T12', layer.label_nu, p, matrix_size)
-                save_scat_mat(r23, 'R23', layer.label_nu, p, matrix_size)
-                save_scat_mat(t23, 'T23', layer.label_nu, p, matrix_size)
-            # save_scat_mat(np.mat(np.diag(Z_1)), 'Z1', layer.label_nu, p, matrix_size)
-            # save_scat_mat(np.mat(np.diag(Z_2)), 'Z2', layer.label_nu, p, matrix_size)
-            # save_scat_mat(np.mat(np.diag(Z_3)), 'Z3', layer.label_nu, p, matrix_size)
+                bs.save_scat_mat(r12, 'R12', layer.label_nu, p, matrix_size)
+                bs.save_scat_mat(t12, 'T12', layer.label_nu, p, matrix_size)
+                bs.save_scat_mat(r23, 'R23', layer.label_nu, p, matrix_size)
+                bs.save_scat_mat(t23, 'T23', layer.label_nu, p, matrix_size)
+            # bs.save_scat_mat(np.mat(np.diag(Z_1)), 'Z1', layer.label_nu, p, matrix_size)
+            # bs.save_scat_mat(np.mat(np.diag(Z_2)), 'Z2', layer.label_nu, p, matrix_size)
+            # bs.save_scat_mat(np.mat(np.diag(Z_3)), 'Z3', layer.label_nu, p, matrix_size)
 
             if layer.height_1 != 'semi_inf':
                 # layer thickness in units of period d in nanometers
@@ -374,11 +350,14 @@ def scat_mats(layer, light_list, simo_para):
                 P_array  = np.exp(1j*np.array(k_film, complex)*h_normed)
                 P_array  = np.append(P_array, P_array) # add 2nd polarisation
                 P        = np.matrix(np.diag(P_array),dtype='D')
-                save_scat_mat(P, 'P', layer.label_nu, p, matrix_size)
+                bs.save_scat_mat(P, 'P', layer.label_nu, p, matrix_size)
 
-            save_k_perp(k_film, 'beta', layer.label_nu, p, num_pw, wl)
+            #bs.save_k_perp(k_film, 'beta', layer.label_nu, p, num_pw, wl)
 
             p += 1
+        bs.save_k_perps(anallo_list, num_pw)
+        # TODO: cleave this function into one for simmos and one for anallos
+        simmo_list = anallo_list
 
     label_nu = layer.label_nu + 1
-    return label_nu
+    return simmo_list

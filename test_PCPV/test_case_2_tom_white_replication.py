@@ -60,32 +60,32 @@ period = 120
 
 cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     film_material = (3.5 + 0.0j), superstrate = materials.Air, 
-    substrate = materials.Air,loss = True, label_nu = label_nu)
-label_nu = scat_mats(cover, light_list, simo_para)
+    substrate = materials.Air,loss = True, label_nu = 0)
+scat_mats(cover, light_list, simo_para)
 
 homo_film  = objects.ThinFilm(period = period, height_1 = 5, num_h = 1,
     film_material = (3.6 + 0.27j), superstrate = materials.Air, 
-    substrate = materials.Air,loss = True, label_nu = label_nu)
-label_nu = scat_mats(homo_film, light_list, simo_para)
+    substrate = materials.Air,loss = True, label_nu = 1)
+scat_mats(homo_film, light_list, simo_para)
 
 bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     film_material = materials.Air, superstrate = materials.Air, 
-    loss = False, label_nu = label_nu)
-label_nu = scat_mats(bottom, light_list, simo_para)
+    loss = False, label_nu = 2)
+scat_mats(bottom, light_list, simo_para)
 
 
 max_num_BMs = 120
 grating_1 = objects.NanoStruct('1D_grating', period, 100, height_1 = 25, num_h = 1,
     inclusion_a = materials.Ag, background = (1.5 + 0.0j), loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 4.0,
-    max_num_BMs = max_num_BMs, label_nu = label_nu)
-label_nu = scat_mats(grating_1, light_list, simo_para)
+    max_num_BMs = max_num_BMs, label_nu = 3)
+scat_mats(grating_1, light_list, simo_para)
 
 
 mirror = objects.ThinFilm(period = period, height_1 = 100,
     film_material = materials.Ag, superstrate = materials.Air, 
-    loss = True, label_nu = label_nu)
-label_nu = scat_mats(mirror, light_list, simo_para)
+    loss = True, label_nu = 4)
+scat_mats(mirror, light_list, simo_para)
 
 ################ Construct & solve for full solar cell structure ##############
 """ Now when defining full structure order is critical and

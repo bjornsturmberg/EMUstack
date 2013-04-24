@@ -232,8 +232,8 @@ def c_c_omega(st):
         for fle in Afiles:
             listoffiles1 += " " + fle
         os.system("cat" + listoffiles1 + "> omega_st%s.txt" % format_st)
-        for fle in Afiles:
-            os.remove(fle)
+        # for fle in Afiles:
+        #     os.remove(fle)
         
     filename1 = "st%s*_omega_pol.txt" % format_st
     Afiles = glob.glob(filename1)
@@ -243,8 +243,8 @@ def c_c_omega(st):
         for fle in Afiles:
             listoffiles1 += " " + fle
         os.system("cat" + listoffiles1 + "> omega_pol_st%s.txt" % format_st)
-        for fle in Afiles:
-            os.remove(fle)
+        # for fle in Afiles:
+        #     os.remove(fle)
         
     filename1 = "st%s*_omega_Fz.txt" % format_st
     Afiles = glob.glob(filename1)
@@ -254,8 +254,8 @@ def c_c_omega(st):
         for fle in Afiles:
             listoffiles1 += " " + fle
         os.system("cat" + listoffiles1 + "> omega_Fz_st%s.txt" % format_st)
-        for fle in Afiles:
-            os.remove(fle)
+        # for fle in Afiles:
+        #     os.remove(fle)
         
     filename1 = "st%s*_omega_Ft.txt" % format_st
     Afiles = glob.glob(filename1)
@@ -265,8 +265,8 @@ def c_c_omega(st):
         for fle in Afiles:
             listoffiles1 += " " + fle
         os.system("cat" + listoffiles1 + "> omega_Ft_st%s.txt" % format_st)
-        for fle in Afiles:
-            os.remove(fle)
+        # for fle in Afiles:
+        #     os.remove(fle)
 
 
 
@@ -284,8 +284,8 @@ def c_c_beta(st):
         for fle in Afiles:
             listoffiles1 += " " + fle
         os.system("cat" + listoffiles1 + "> beta_st%s.txt" % format_st)
-        for fle in Afiles:
-            os.remove(fle)
+        # for fle in Afiles:
+        #     os.remove(fle)
 
 
    
