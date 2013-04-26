@@ -3,7 +3,7 @@
 
 python module pcpv ! in 
     interface  ! in :pcpv
-        subroutine main(parallel,lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,nb_typ_el,n_eff,substrate,theta,phi,h_1,h_2,num_h,lx,ly,tol,e_h_field,i_cond,itermax,pol,tralambda,propmodes,printsolution,printsupmodes,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,incident,what4incident,out4incident,loss,title,neq_pw,zeroth_order) ! in :pcpv:main_64.f
+        subroutine main(parallel,lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,nb_typ_el,n_eff,substrate,bloch_vec0,h_1,h_2,num_h,lx,ly,tol,e_h_field,i_cond,itermax,pol,tralambda,propmodes,printsolution,printsupmodes,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,incident,what4incident,out4incident,loss,title,neq_pw,zeroth_order,beta,mode_pol) ! in :pcpv:main_64.f
             integer*8 dimension(2) :: parallel
             double precision :: lambda
             integer*8 :: nval
@@ -15,8 +15,7 @@ python module pcpv ! in
             integer*8, optional,check(len(n_eff)>=nb_typ_el),depend(n_eff) :: nb_typ_el=len(n_eff)
             complex*16 dimension(nb_typ_el) :: n_eff
             integer*8 :: substrate
-            double precision :: theta
-            double precision :: phi
+            double precision dimension(2) :: bloch_vec0
             double precision :: h_1
             double precision :: h_2
             integer*8 :: num_h
@@ -45,6 +44,8 @@ python module pcpv ! in
             integer*8 :: title
             integer*8 :: neq_pw
             integer*8 :: zeroth_order
+            complex*16 dimension(nval),intent(out),depend(nval) :: beta
+            complex*16 dimension(4,nval),intent(out),depend(nval) :: mode_pol
         end subroutine main
     end interface 
 end python module pcpv

@@ -17,7 +17,24 @@ pcpv_location = '../PCPV/'
 
 pi = np.pi
 
-class Simmo(object):
+class Anallo(object):
+    """ Like a :Simmo:, but for a thin film, and calculated analytically."""
+    def __init__(self, thin_film, light, other_para, p):
+        self.thin_film = thin_film
+        self.light = light
+        self.other_para = other_para
+        self.p = p
+        self.omega = None
+        self.mode_pol = None
+
+    def bloch_vec(self):
+        # FIXME: Felix believes the following line is wrong but it's 
+        # how it's always been done
+        n_eff = self.superstrate_n()
+        return self.light.bloch_vec(self.structure.period, n_eff)
+
+
+class Simmo(Anallo):
     """docstring for Simmo"""
     def __init__(self, structure, light, other_para, p):
         self.structure     = structure
@@ -71,12 +88,6 @@ class Simmo(object):
         
     def run_fortran(self):
         """Return a string that runs the simmo, to execute in a shell"""
-        inclusion_a_n = self.inclusion_a_n()
-        inclusion_b_n = self.inclusion_b_n()
-        background_n  = self.background_n()
-        superstrate_n = self.superstrate_n()
-        substrate_n   = self.substrate_n()
-
         n_effs = np.array([self.superstrate_n(), self.substrate_n(), self.background_n(), 
             self.inclusion_a_n(), self.inclusion_b_n()])
         n_effs = n_effs[:self.structure.nb_typ_el]
@@ -88,13 +99,13 @@ class Simmo(object):
                 max_n = self.structure.inclusion_a.real
             else:
                 max_n = self.structure.inclusion_a.max_n()
-            nval_tmp      = self.max_num_BMs*inclusion_a_n.real/max_n
-            nval          = round(nval_tmp)
+            nval_tmp      = self.max_num_BMs*self.inclusion_a_n().real/max_n
+            self.nval     = round(nval_tmp)
             ordre_ls      = self.max_order_PWs 
             # # in single layer calc scale # PWs by # of BMs to be used, in multilayer need all equal
             # ordre_ls      = round(self.max_order_PWs*nval/self.max_num_BMs)
         else:
-            nval          = self.max_num_BMs
+            self.nval     = self.max_num_BMs
             ordre_ls      = self.max_order_PWs
 
         #TODO: break this stuff off into subfunctions
@@ -115,12 +126,12 @@ class Simmo(object):
             norm_wl += 1e-15
 
         # Run the fortran!
-        pcpv.main(
-            np.array([self.p, self.p]), norm_wl, nval, 
+        res = pcpv.main(
+            np.array([self.p, self.p]), norm_wl, self.nval, 
             ordre_ls, d, self.other_para.debug, 
             self.structure.mesh_file, self.structure.mesh_format, 
-            n_effs, self.structure.has_substrate, self.light.theta, 
-            self.light.phi, float(self.structure.height_1) / d, 
+            n_effs, self.structure.has_substrate, self.bloch_vec(), 
+            float(self.structure.height_1) / d, 
             float(self.structure.height_2) / d, self.structure.num_h, 
             self.structure.lx, self.structure.ly, self.other_para.tol, 
             self.other_para.E_H_field, self.other_para.i_cond, 
@@ -135,6 +146,11 @@ class Simmo(object):
             self.structure.loss, self.structure.label_nu,
             neq_pw, zeroth_order
         )
+
+        if 1 == self.other_para.PrintOmega:
+            self.omega, mode_pol = res
+            #TODO: throw out mode_pol[:3]?
+            self.mode_pol = mode_pol
 
 
 def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls, 
@@ -196,15 +212,6 @@ def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls,
     # print 'k_perp[1]', k_perp[1]
     # print 'k_perp[2]', k_perp[2]
     return k_perp
-
-class Anallo(object):
-    """ Like a :Simmo:, but for a thin film, and calculated analytically."""
-    def __init__(self, thin_film, light, other_para, p):
-        self.thin_film = thin_film
-        self.light = light
-        self.other_para = other_para
-        self.p = p
-        self.beta = None
 
 def scat_mats(layer, light_list, simo_para):
     """ Calculate this structure's/film's scattering matrices"""

@@ -40,23 +40,6 @@ def save_scat_mat(name, data):
     # matrix = np.reshape(matrix, (num_2, num_1))
     # return matrix
 
-
-def deal_w_scat_mats(solar_cell, simo_para, nu_TFs):
-    # print images of relevant scattering matrices and delete all others
-    if simo_para.PrintOmega == 1:
-        for i in range(0,nu_TFs+2):
-            j = solar_cell[i].label_nu
-            if isinstance(solar_cell[i], objects.ThinFilm):
-                pass
-            else:
-                # try:
-                    cat_n_clean.c_c_omega(j)
-                # except ValueError:
-                    # pass
-    # file_name1 = "rm st*_wl*.txt" 
-    #subprocess.call(file_name1, shell = True)
-
-
 def net_scat_mats(solar_cell, wavelengths, simo_para):
 
 # test that all structures have the same period
@@ -279,5 +262,3 @@ def net_scat_mats(solar_cell, wavelengths, simo_para):
     layers_plot('Lay_Trans',  t_list, wavelengths, total_h)
     layers_plot('Lay_Reflec', r_list, wavelengths, total_h)
 
-# remove scattering matrix files
-    deal_w_scat_mats(solar_cell, simo_para, nu_TFs)

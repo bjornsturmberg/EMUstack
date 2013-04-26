@@ -71,7 +71,7 @@ grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
     make_mesh_now = True, force_mesh = True,
     lc_bkg = 0.15, lc2= 1.5, lc3= 1.5,
     max_num_BMs = max_num_BMs, label_nu = 1)
-scat_mats(grating_1, light_list, simo_para)
+simmo_list = scat_mats(grating_1, light_list, simo_para)
 
 
 # will only ever use top scattering matrices for the bottom layer
@@ -93,7 +93,7 @@ net_scat_mats(solar_cell, wavelengths, simo_para)
 def results_match_reference(filename):
     reference = np.loadtxt("ref/case_1/" + filename)
     result    = np.loadtxt(filename)
-    np.testing.assert_allclose(result, reference, 1e-7, 1e-8, filename)
+    np.testing.assert_allclose(result, reference, 1e-7, 1e-6, filename)
 
 def test_results():
     result_files = ("Absorptance.txt", "Lay_Absorb_0.txt",

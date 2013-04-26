@@ -328,7 +328,14 @@ class ThinFilm(object):
 
 
 class Light(object):
-    """ Represents the light incident on structure """
+    """ Represents the light incident on structure 
+
+        INPUTS:
+
+        - `theta`   : polar angle of incidence
+
+        - `phi`     : azimuthal angle of incidence
+    """
     def __init__(self, Lambda, pol = 'TM', theta = 0, phi = 0):
         self.Lambda = Lambda
         if  pol == 'Unpol':
@@ -347,6 +354,24 @@ class Light(object):
             raise TypeError, "Polarisation must be either 'Unpol','TE', 'TM', 'Left', 'Right', or 'CD'."
         self.theta = theta
         self.phi   = phi
+
+    def bloch_vec(self, period, n_eff = 1.):
+        """ Calculate k_x and k_y from self.theta, self.phi, and self.Lambda.
+
+            k_x and k_y are both the values in a medium with ref index n_eff.
+        """
+        rtheta  = self.theta * np.pi/180.
+        rphi    = self.phi * np.pi/180.
+
+        k = 2.*np.pi * n_eff.real * period / self.Lambda
+        # calculate bloch vectors - for derivation see Bjorns Theory Notes
+        bloch_vec = np.array(   (np.sin(rtheta * k) * np.cos(rphi),
+                                 np.sin(rtheta * k) * np.sin(rphi) ))
+        
+        # FEM allegedly dislikes normal incidence and associated degeneracy
+        if abs(bloch_vec).sum() < 1e-9:
+            bloch_vec[0] += 1e-9
+        return bloch_vec
 
         
 

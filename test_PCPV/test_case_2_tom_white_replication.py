@@ -79,7 +79,7 @@ grating_1 = objects.NanoStruct('1D_grating', period, 100, height_1 = 25, num_h =
     inclusion_a = materials.Ag, background = (1.5 + 0.0j), loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 4.0,
     max_num_BMs = max_num_BMs, label_nu = 3)
-scat_mats(grating_1, light_list, simo_para)
+simmo_list = scat_mats(grating_1, light_list, simo_para)
 
 
 mirror = objects.ThinFilm(period = period, height_1 = 100,

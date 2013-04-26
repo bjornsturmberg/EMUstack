@@ -1,11 +1,12 @@
       subroutine main(parallel, lambda, nval, ordre_ls, d_in_nm,
      *    debug, mesh_file, mesh_format, nb_typ_el, n_eff,
-     *    substrate, theta, phi, h_1, h_2, num_h, lx, ly, tol, 
+     *    substrate, bloch_vec0, h_1, h_2, num_h, lx, ly, tol, 
      *    E_H_field, i_cond, itermax, pol, traLambda, PropModes,
      *    PrintSolution, PrintSupModes, PrintOmega, PrintAll,
      *    Checks, q_average, plot_real, plot_imag, plot_abs,
      *    incident, what4incident, out4incident, Loss, title,
-     *    neq_PW, Zeroth_Order)
+     *    neq_PW, Zeroth_Order,
+     *    beta, mode_pol)
 C************************************************************************
 C
 C  Program:
@@ -48,7 +49,7 @@ C  Declare the pointers of the real super-vector
 C      integer*8 jp_matD, jp_matL, jp_matU
 C      integer*8 jp_matD2, jp_matL2, jp_matU2
       integer*8 jp_vect1, jp_vect2, jp_workd, jp_resid, jp_vschur
-      integer*8 jp_eigenval_tmp, jp_trav, jp_vp, jp_eigen_pol
+      integer*8 jp_eigenval_tmp, jp_trav, jp_vp
       integer*8 jp_overlap_L, jp_overlap_J, jp_overlap_J_dagger
       integer*8 jp_overlap_K, jp_X_mat
       integer*8 jp_sol, jp_sol1, jp_sol2
@@ -91,7 +92,7 @@ c, iout, nonz_1, nonz_2
       integer*8 i_lambda, n_lambda, Lambda_Res
 c     Wavelength lambda is in normalised units of d_in_nm
       double precision lambda, lambda_1, lambda_2, d_lambda
-      double precision d_freq, freq, lat_vecs(2,2), tol, theta, phi
+      double precision d_freq, freq, lat_vecs(2,2), tol
       double precision k_0, pi, lx, ly, bloch_vec(2), bloch_vec0(2)
       complex*16 shift
 C  Timing variables
@@ -138,6 +139,13 @@ c     Declare the pointers of for sparse matrix storage
 
       integer*8 ip
       integer i_32
+
+c     new breed of variables to prise out of a, b and c
+
+      complex*16 beta(nval)
+      complex*16 mode_pol(4,nval)
+
+Cf2py intent(out) beta, mode_pol
 
 
       n_64 = 2
@@ -497,8 +505,9 @@ c      jp_vect1 = jp_matU2 + len_skyl
 C     ! Eigenvectors
       jp_vschur = jp_eigenval2 + nval + 1
       jp_eigenval = jp_vschur + neq*nvect
-      jp_eigen_pol = jp_eigenval + nval + 1
-      jp_eigenval_tmp = jp_eigen_pol + nval*4
+C      jp_eigen_pol = jp_eigenval + nval + 1
+      jp_eigenval_tmp = jp_eigenval + nval + 1
+C      jp_eigenval_tmp = jp_eigen_pol + nval*4
       jp_trav = jp_eigenval_tmp + nval + 1
 
       ltrav = 3*nvect*(nvect+2)
@@ -576,19 +585,8 @@ C     !  index wavelength loops for A_and_W_Lambda
       Lambda_count = 1
 C
 C
-      if (python .eq. 1) then
       write(buf1,'(I4.4)') title
       write(buf2,'(I4.4)') parallel(1)
-      if (PrintOmega .eq. 1) then
-        open (unit=241, file="st"//buf1//"_wl"//buf2//
-     *    "_omega.txt", status='unknown')
-        open (unit=231, file="st"//buf1//"_wl"//buf2//
-     *    "_omega_pol.txt",  status='unknown')
-        open (unit=221, file="st"//buf1//"_wl"//buf2//
-     *    "_omega_Fz.txt", status='unknown')
-        open (unit=211, file="st"//buf1//"_wl"//buf2//
-     *    "_omega_Ft.txt", status='unknown')
-      endif
       if (debug .eq. 1) then
         write(ui,*) "MAIN: parallel (B) ", parallel(1), parallel(2)
       endif
@@ -657,94 +655,6 @@ C
      *         status="unknown")
       endif
 C
-      elseif (python .eq. 0) then
-      write(buf1,'(I4.4)') d_in_nm
-      write(buf2,'(I4.4)') parallel(1)
-      if (PrintOmega .eq. 1) then
-        open (unit=241, file="Output/Dispersion/p_"//buf2//
-     *    "_omega.txt", status='unknown')
-        open (unit=231, file="Output/Dispersion/p_"//buf2//
-     *    "_omega_pol.txt",  status='unknown')
-        open (unit=221, file="Output/Dispersion/p_"//buf2//
-     *    "_omega_Fz.txt", status='unknown')
-        open (unit=211, file="Output/Dispersion/p_"//buf2//
-     *    "_omega_Ft.txt", status='unknown')
-      endif
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: parallel (B) ", parallel(1), parallel(2)
-      endif
-      if (parallel(2) .eq. 0) parallel(2)=n_lambda
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: parallel (C) ", parallel(1), parallel(2)
-      endif
-C
-      if (parallel_comp .ne. 1) write(buf2,'(I4.4)') 0000
-C
-      if (traLambda .eq. 1) then
-        if (pol .eq. 0) then
-          open(643,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_T_Lambda.txt",status='unknown')
-          open(644,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_R_Lambda.txt",status='unknown')
-          open(645,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_A_Lambda.txt",status='unknown')
-          open(660,file="p_"//buf2//
-     *    "_T_MAT_sp.txt",status='unknown')
-          open(661,file="p_"//buf2//
-     *    "_R_MAT_sp.txt",status='unknown')
-          open(662,file="p_"//buf2//
-     *    "_T_phase_sp.txt",status='unknown')
-          open(663,file="p_"//buf2//
-     *    "_R_phase_sp.txt",status='unknown')
-        elseif (pol .eq. 5) then
-          open(643,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_T_Lambda_R.txt",status='unknown')
-          open(644,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_R_Lambda_R.txt",status='unknown')
-          open(645,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_A_Lambda_R.txt",status='unknown')
-          open(646,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_T_Lambda_L.txt",status='unknown')
-          open(647,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_R_Lambda_L.txt",status='unknown')
-          open(648,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_A_Lambda_L.txt",status='unknown')
-          open(649,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_T_Lambda_CD.txt",status='unknown')
-          open(650,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_R_Lambda_CD.txt",status='unknown')
-          open(651,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_A_Lambda_CD.txt",status='unknown')
-          open(660,file="p_"//buf2//
-     *    "_T_MAT_lr.txt",status='unknown')
-          open(661,file="p_"//buf2//
-     *    "_R_MAT_lr.txt",status='unknown')
-          open(662,file="p_"//buf2//
-     *    "_T_phase_lr.txt",status='unknown')
-          open(663,file="p_"//buf2//
-     *    "_R_phase_lr.txt",status='unknown')
-        else
-          open(643,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_T_Lambda.txt",status='unknown')
-          open(644,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_R_Lambda.txt",status='unknown')
-          open(645,file="Output/d_"//buf1//"p_"//buf2//
-     *    "_A_Lambda.txt",status='unknown')
-        endif
-      endif
-C
-      if (PropModes .eq. 1) then
-        if (Loss .eq. 0) then
-          open(unit=200, file="Normed/SuperModes"//buf2//".txt",
-     *           status="unknown")   
-        endif
-        open(unit=565, file="Matrices/detAe"//buf2//".txt",
-     *         status="unknown")
-        open(unit=566, file="Matrices/detAo"//buf2//".txt",
-     *         status="unknown")
-      endif
-C     !python 1 or 0 (different data structures)
-      endif
 C
 C
 C#####################  Loop over Wavelengths  ##########################
@@ -752,27 +662,10 @@ C
       do i_lambda=parallel(1),parallel(2)
       call cpu_time(time_Lambda_start)
 C
-      if (python .eq. 1) then
-        write(ui,*) 
-        write(ui,*) "--------------------------------------------",
+      write(ui,*) 
+      write(ui,*) "--------------------------------------------",
      *     "-------"
-        write(ui,*) "MAIN: Wavelength Slice", parallel(1)
-      elseif (python .eq. 0) then
-        write(ui,*) 
-        write(ui,*) "--------------------------------------------",
-     *     "-------"
-        write(ui,*) "MAIN: Wavelength Slice", parallel(1)
-        write(ui,*) "MAIN: Slice Progress  ", 
-     *     i_lambda-parallel(1)+1,'/', parallel(2)-parallel(1)+1
-C
-C  For uniformly spaced wavelengths
-        lambda = lambda_1 + (i_lambda-1)*d_lambda
-C  Avoid directly hitting Wood anomalies
-        if (lambda .eq. 1.0d0) lambda = lambda + 1.0d-15
-        if (lambda .eq. 0.5d0) lambda = lambda + 1.0d-15
-        if (lambda-1 .eq. 0.5d0) lambda = lambda + 1.0d-15
-        if (lambda+1 .eq. 0.5d0) lambda = lambda + 1.0d-15
-      endif
+      write(ui,*) "MAIN: Wavelength Slice", parallel(1)
 C
 C  For uniformly spaced frequencies
 C        freq = 1.0d0/lambda_1 + (i_lambda-1)*d_freq
@@ -781,8 +674,6 @@ C
         n_eff_0 = DBLE(n_eff(1))
         freq = 1.0d0/lambda
         k_0 = 2.0d0*pi*n_eff_0*freq
-C
-      call Angular_Bloch_Vec(theta, phi, bloch_vec0, k_0)
 C
       if (python .eq. 0) then
 C  Find refractive index at lambda from cmp_ref_index list
@@ -830,11 +721,12 @@ C
            stop
          endif
 C
-CCCCCCCCCCCCCCCCCCCC  Loop over Prime and Adjoint  CCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCC  Loop over Adjoint and Prime  CCCCCCCCCCCCCCCCCCCCCC
 C
          do n_k = 1,2
 C
-           if (n_k .eq. 1) then
+C        Loop over prime last because we want to send its beta etc to Python
+           if (n_k .eq. 2) then
              dir_name = "Output"
              jp_sol = jp_sol1
              jp_eigenval = jp_eigenval1
@@ -867,7 +759,7 @@ C     factorization of the globale matrice
 C     -----------------------------------
 C
       if (debug .eq. 1) then
-        write(ui,*) "MAIN:        Prime(1) / Adjoint(2)", n_k
+        write(ui,*) "MAIN:        Adjoint(1) / Prime(2)", n_k
 c        write(ui,*) "MAIN: factorisation: call to znsy"
       endif
 C
@@ -889,7 +781,7 @@ c
          write(ui,*) "n_core(1), n_eff(n_core(1)) = ",
      *                n_core(1), n_eff(n_core(1))
          write(ui,*) "MAIN: Aborting..."
-c         stop
+         stop
       endif
 c
       time1_fact = ls_data(1)
@@ -915,23 +807,6 @@ C        z_beta = sqrt(z_tmp)/k_0
         b(jp_eigenval+i-1) = z_beta
       enddo
 c
-      if (n_conv .ne. nval) then
-        do i=1,nval
-c          write(ui,"(i4,2(g22.14),2(g18.10))") i,
-          write(ui,*) i, b(jp_eigenval+i-1)
-        enddo
-         write(ui,*) "MAIN: n_conv != nval : ",
-     *    n_conv, nval
-         write(ui,*) "n_core(1), n_eff(n_core(1)) = ",
-     *                n_core(1), n_eff(n_core(1))
-         write(ui,*) sqrt(1.01d0*Dble(n_eff(n_core(1)))**2 ),
-     *                1.01d0*Dble(n_eff(n_core(1)))**2 
-         do i=1,nb_typ_el
-C     ! ,  eps_eff(i)
-            write(ui,*) "i, n_eff(i) = ", i,  n_eff(i)
-         enddo
-      endif
-C
       call cpu_time(time1_postp)
 C
       call z_indexx (nval, b(jp_eigenval), index)
@@ -943,7 +818,7 @@ C                 using the permutation vector index
      *   n_core, bloch_vec, index, a(ip_table_nod), 
      *   a(ip_table_N_E_F), a(ip_type_el), a(ip_eq), a(ip_period_N), 
      *   a(ip_period_N_E_F), b(jp_x), b(jp_x_N_E_F), b(jp_eigenval), 
-     *   b(jp_eigenval_tmp), b(jp_eigen_pol), b(jp_vp), b(jp_sol))
+     *   b(jp_eigenval_tmp), mode_pol, b(jp_vp), b(jp_sol))
 C
       if(debug .eq. 1) then
         write(ui,*) 'index = ', (index(i), i=1,nval)
@@ -960,12 +835,19 @@ C
       endif
 C
 C  Dispersion Diagram
-      if (PrintOmega .eq. 1 .and. n_k .eq. 1) then
+      if (PrintOmega .eq. 1 .and. n_k .eq. 2) then
         call mode_energy (nval, nel, npt, n_ddl, nnodes, 
      *     n_core, a(ip_table_nod), a(ip_type_el), nb_typ_el, eps_eff, 
-     *     b(jp_x), b(jp_sol), b(jp_eigenval), b(jp_eigen_pol))
-        call DispersionDiagram(lambda, bloch_vec, shift,
-     *     nval, n_conv, b(jp_eigenval), b(jp_eigen_pol), d_in_nm)
+     *     b(jp_x), b(jp_sol), b(jp_eigenval), mode_pol)
+C        call DispersionDiagram(lambda, bloch_vec, shift,
+C     *     nval, n_conv, b(jp_eigenval), mode_pol, d_in_nm)
+C     START: LOOP TO BE REMOVED
+C     TODO: remove the following loop
+C     (once b doesn't store all the goodies)
+        do i=1,nval
+          beta(i) = b(jp_eigenval+i-1)
+        enddo
+C     END: LOOP TO BE REMOVED
       endif
 C
       enddo
@@ -1238,12 +1120,6 @@ C
 C
 C#########################  End Wavelength Loop  ########################
 C
-      if (PrintOmega .eq. 1) then
-        close(241)
-        close(231)
-        close(221)
-        close(211)
-      endif
       if (PropModes .eq. 1) then
         if (Loss .eq. 0) then
           close(200)
