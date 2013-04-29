@@ -6,7 +6,7 @@ c   type_nod != 0 => boundary point
 c
 c
       subroutine geometry (nel, npt, nnodes, nb_typ_el,
-     *    lx, ly, type_nod, type_el, table_nod, x, eps_eff, n_eff,
+     *    lx, ly, type_nod, type_el, table_nod, x, 
      *    mesh_file)
 c
       implicit none
@@ -16,7 +16,6 @@ c
       double precision lx, ly
       parameter (max_typ_el=10)
       complex*16 x(2,npt)
-      complex*16 eps_eff(max_typ_el), n_eff(max_typ_el)
       double precision xx(2), re_tmp, im_tmp
 
       character mesh_file*100
@@ -26,8 +25,7 @@ c
 c
       ui = 6
 c
-      open (unit=24,file="../Mesh/"//mesh_file,status='old')
-c
+        open (unit=24,file="../PCPV/Data/"//mesh_file,status='old')
         read(24,*) npt2, nel2
 c
       if(npt .ne. npt2) then
@@ -61,25 +59,6 @@ c     Connectivity table
         endif
       enddo
       close(24)
-c
-      open (unit=25,file="Parameters/refrac_index.txt",status='old')
-        read(25,*)
-        read(25,*)
-        read(25,*) nb_typ_el
-      if(nb_typ_el .gt. max_typ_el) then
-         write(ui,*)
-         write(ui,*) "   ???"
-         write(ui,*) "geometry: nb_typ_el > max_typ_el : ", 
-     *    nb_typ_el, max_typ_el
-         write(ui,*) "geometry: Aborting..."
-         stop
-      endif
-      do i=1,nb_typ_el
-        read(25,*) re_tmp, im_tmp
-        n_eff(i) = dcmplx(re_tmp,im_tmp)
-        eps_eff(i) = n_eff(i)**2
-      enddo
-      close(25)
 
       if(nb_typ_el2 .gt. nb_typ_el) then
          write(ui,*)

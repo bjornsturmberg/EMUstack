@@ -37,10 +37,6 @@ C     !  c(real_max)
       double precision, dimension(:), allocatable :: c
       integer :: allocate_status=0
 C
-C     !take inputs from python (1) txt files (0)
-      integer*8 python
-      parameter (python=1)
-C
 C  Declare the pointers of the integer super-vector
       integer*8 ip_type_nod, ip_type_el, ip_table_nod
       integer*8 ip_table_E, ip_table_N_E_F, ip_visite
@@ -95,10 +91,10 @@ c      integer*8 ip_row_ptr, ip_bandw_1, ip_adjncy
 c      integer*8 len_adj, len_adj_max, len_0_adj_max
 c, iout, nonz_1, nonz_2
       integer*8 i, j, mesh_format
-      integer*8 i_lambda, n_lambda, Lambda_Res
+      integer*8 i_lambda, n_lambda
 c     Wavelength lambda is in normalised units of d_in_nm
-      double precision lambda, lambda_1, lambda_2, d_lambda
-      double precision d_freq, freq, lat_vecs(2,2), tol
+      double precision lambda
+      double precision freq, lat_vecs(2,2), tol
       double precision k_0, pi, lx, ly, bloch_vec(2), bloch_vec_k(2)
       complex*16 shift
 C  Timing variables
@@ -108,7 +104,6 @@ C  Timing variables
       double precision time1_postp, time2_postp
       double precision time1_arpack, time2_arpack
       double precision time1_J, time2_J
-      double precision time_Lambda_end, time_Lambda_start
       character*(8) start_date, end_date
       character*(10) start_time, end_time
 C  Names and Controls
@@ -117,14 +112,12 @@ C  Names and Controls
       character overlap_file*100, dir_name*100, buf1*4, buf2*4
       character*100 tchar
       integer*8 namelength, PrintAll, PrintOmega, Checks, traLambda
-      integer*8 PrintSolution, hole_wire, pol, PrintSupModes
+      integer*8 PrintSolution, pol, PrintSupModes
       integer*8 substrate, num_h
-      integer*8 Lambda_count, parallel_comp, PropModes
+      integer*8 PropModes
 C     Thicknesses h_1 and h_2 are in normalised units of d_on_lambda
       double precision h_1, h_2, hz
-      integer*8 d_in_nm, pair_warning, parallel(2), Loss
-      complex*16 Complex_refract1(818), Complex_refract2(1635)
-      complex*16 Complex_refract3(818), Complex_refract4(1635)
+      integer*8 d_in_nm, pair_warning, parallel, Loss
       integer*8 incident, what4incident, out4incident
       integer*8 q_average, plot_real, plot_imag, plot_abs
       integer*8 title
@@ -161,7 +154,7 @@ Cf2py intent(out) beta, mode_pol, T12, R12, T21, R21
       n_64 = 2
 C     !n_64**28 on Vayu
       cmplx_max=n_64**27
-C     Felix is subtracting off the size of matrices he's extracted
+C     Felix is subtracting off the size of matrices he's extracted.
 C     mode_pol
       cmplx_max = cmplx_max - nval*4
 C     T12, R12, T21, R21
@@ -221,8 +214,8 @@ C     clean mesh_format
       gmsh_file_pos = mesh_file(1:namelength)
       log_file = mesh_file(1:namelength-5)//'.log'
       if (debug .eq. 1) then
-        write(*,*) "get_param: mesh_file = ", mesh_file
-        write(*,*) "get_param: gmsh_file = ", gmsh_file
+        write(*,*) "mesh_file = ", mesh_file
+        write(*,*) "gmsh_file = ", gmsh_file
       endif    
       open (unit=24,file="../PCPV/Data/"//mesh_file,
      *  status='unknown')
@@ -285,19 +278,9 @@ C     ! pointer to FEM connectivity table
       ip_table_nod = ip_type_el + nel
       jp_x = 1
 C
-      if (python .eq. 1) then
-      call geometry_py (nel, npt, nnodes, nb_typ_el,
-     *     lx, ly, a(ip_type_nod), a(ip_type_el), a(ip_table_nod), 
-     *     b(jp_x), mesh_file)
-      elseif (python .eq. 0) then
       call geometry (nel, npt, nnodes, nb_typ_el,
      *     lx, ly, a(ip_type_nod), a(ip_type_el), a(ip_table_nod), 
-     *     b(jp_x), eps_eff, n_eff, mesh_file)
-      else
-         write(ui,*) "MAIN: python = 0 or = 1 !!!"
-         write(ui,*) "MAIN: Aborting..."
-         stop
-      endif
+     *     b(jp_x), mesh_file)
 C
       if (PrintSupModes + PrintSolution .ge. 1) then
 C  Export the mesh to gmsh format
@@ -600,68 +583,7 @@ c
 C
 C#####################  End FEM PRE-PROCESSING  #########################
 C
-C     !  index wavelength loops for A_and_W_Lambda
-      Lambda_count = 1
 C
-C
-      write(buf1,'(I4.4)') title
-      write(buf2,'(I4.4)') parallel(1)
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: parallel (B) ", parallel(1), parallel(2)
-      endif
-      if (parallel(2) .eq. 0) parallel(2)=n_lambda
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: parallel (C) ", parallel(1), parallel(2)
-      endif
-C
-      if (traLambda .eq. 1) then
-        if (pol .eq. 0) then
-          open(643,file="st"//buf1//"_wl"//buf2//
-     *    "_T_Lambda.txt",status='unknown')
-          open(644,file="st"//buf1//"_wl"//buf2//
-     *    "_R_Lambda.txt",status='unknown')
-          open(645,file="st"//buf1//"_wl"//buf2//
-     *    "_A_Lambda.txt",status='unknown')
-          open(660,file="st"//buf1//"_wl"//buf2//
-     *    "_T_MAT_sp.txt",status='unknown')
-          open(661,file="st"//buf1//"_wl"//buf2//
-     *    "_R_MAT_sp.txt",status='unknown')
-        elseif (pol .eq. 5) then
-          open(643,file="st"//buf1//"_wl"//buf2//
-     *    "_T_Lambda_R.txt",status='unknown')
-          open(644,file="st"//buf1//"_wl"//buf2//
-     *    "_R_Lambda_R.txt",status='unknown')
-          open(645,file="st"//buf1//"_wl"//buf2//
-     *    "_A_Lambda_R.txt",status='unknown')
-          open(646,file="st"//buf1//"_wl"//buf2//
-     *    "_T_Lambda_L.txt",status='unknown')
-          open(647,file="st"//buf1//"_wl"//buf2//
-     *    "_R_Lambda_L.txt",status='unknown')
-          open(648,file="st"//buf1//"_wl"//buf2//
-     *    "_A_Lambda_L.txt",status='unknown')
-          open(649,file="st"//buf1//"_wl"//buf2//
-     *    "_T_Lambda_CD.txt",status='unknown')
-          open(650,file="st"//buf1//"_wl"//buf2//
-     *    "_R_Lambda_CD.txt",status='unknown')
-          open(651,file="st"//buf1//"_wl"//buf2//
-     *    "_A_Lambda_CD.txt",status='unknown')
-          open(660,file="st"//buf1//"_wl"//buf2//
-     *    "_T_MAT_lr.txt",status='unknown')
-          open(661,file="st"//buf1//"_wl"//buf2//
-     *    "_R_MAT_lr.txt",status='unknown')
-          open(662,file="st"//buf1//"_wl"//buf2//
-     *    "_T_phase_lr.txt",status='unknown')
-          open(663,file="st"//buf1//"_wl"//buf2//
-     *    "_R_phase_lr.txt",status='unknown')
-        else
-          open(643,file="st"//buf1//"_wl"//buf2//
-     *    "_T_Lambda.txt",status='unknown')
-          open(644,file="st"//buf1//"_wl"//buf2//
-     *    "_R_Lambda.txt",status='unknown')
-          open(645,file="st"//buf1//"_wl"//buf2//
-     *    "_A_Lambda.txt",status='unknown')
-        endif
-      endif
 
       if (PropModes .eq. 1) then
         if (Loss .eq. 0) then
@@ -678,31 +600,14 @@ C
 C
 C#####################  Loop over Wavelengths  ##########################
 C
-      do i_lambda=parallel(1),parallel(2)
-      call cpu_time(time_Lambda_start)
-C
       write(ui,*) 
       write(ui,*) "--------------------------------------------",
      *     "-------"
-      write(ui,*) "MAIN: Wavelength Slice", parallel(1)
-C
-C  For uniformly spaced frequencies
-C        freq = 1.0d0/lambda_1 + (i_lambda-1)*d_freq
-C        lambda = 1.0d0/freq
+      write(ui,*) "MAIN: Wavelength Slice", parallel
 C
         n_eff_0 = DBLE(n_eff(1))
         freq = 1.0d0/lambda
         k_0 = 2.0d0*pi*n_eff_0*freq
-C
-      if (python .eq. 0) then
-C  Find refractive index at lambda from cmp_ref_index list
-C     - only works for Lambda_Res calculations 
-C     - not single lambdas where need to set n const.
-      call cmp_ref_ind_lambda (hole_wire, Lambda_Res, eps_eff,
-     *    n_eff, Complex_refract1, Complex_refract2,
-     *    Complex_refract3, Complex_refract4, 
-     *    i_lambda, substrate)
-      endif
 C
 C  Index number of the core materials (material with highest Re(eps_eff))
       if(dble(eps_eff(3)) .gt. dble(eps_eff(4))) then
@@ -960,6 +865,62 @@ C  Orthonormal integral
      *    (time2_J-time1_J)
       endif
 C
+
+
+CCCCCC CUT HERE CCCCCC
+
+      write(buf1,'(I4.4)') title
+      write(buf2,'(I4.4)') parallel
+
+      if (traLambda .eq. 1) then
+        if (pol .eq. 0) then
+          open(643,file="st"//buf1//"_wl"//buf2//
+     *    "_T_Lambda.txt",status='unknown')
+          open(644,file="st"//buf1//"_wl"//buf2//
+     *    "_R_Lambda.txt",status='unknown')
+          open(645,file="st"//buf1//"_wl"//buf2//
+     *    "_A_Lambda.txt",status='unknown')
+          open(660,file="st"//buf1//"_wl"//buf2//
+     *    "_T_MAT_sp.txt",status='unknown')
+          open(661,file="st"//buf1//"_wl"//buf2//
+     *    "_R_MAT_sp.txt",status='unknown')
+        elseif (pol .eq. 5) then
+          open(643,file="st"//buf1//"_wl"//buf2//
+     *    "_T_Lambda_R.txt",status='unknown')
+          open(644,file="st"//buf1//"_wl"//buf2//
+     *    "_R_Lambda_R.txt",status='unknown')
+          open(645,file="st"//buf1//"_wl"//buf2//
+     *    "_A_Lambda_R.txt",status='unknown')
+          open(646,file="st"//buf1//"_wl"//buf2//
+     *    "_T_Lambda_L.txt",status='unknown')
+          open(647,file="st"//buf1//"_wl"//buf2//
+     *    "_R_Lambda_L.txt",status='unknown')
+          open(648,file="st"//buf1//"_wl"//buf2//
+     *    "_A_Lambda_L.txt",status='unknown')
+          open(649,file="st"//buf1//"_wl"//buf2//
+     *    "_T_Lambda_CD.txt",status='unknown')
+          open(650,file="st"//buf1//"_wl"//buf2//
+     *    "_R_Lambda_CD.txt",status='unknown')
+          open(651,file="st"//buf1//"_wl"//buf2//
+     *    "_A_Lambda_CD.txt",status='unknown')
+          open(660,file="st"//buf1//"_wl"//buf2//
+     *    "_T_MAT_lr.txt",status='unknown')
+          open(661,file="st"//buf1//"_wl"//buf2//
+     *    "_R_MAT_lr.txt",status='unknown')
+          open(662,file="st"//buf1//"_wl"//buf2//
+     *    "_T_phase_lr.txt",status='unknown')
+          open(663,file="st"//buf1//"_wl"//buf2//
+     *    "_R_phase_lr.txt",status='unknown')
+        else
+          open(643,file="st"//buf1//"_wl"//buf2//
+     *    "_T_Lambda.txt",status='unknown')
+          open(644,file="st"//buf1//"_wl"//buf2//
+     *    "_R_Lambda.txt",status='unknown')
+          open(645,file="st"//buf1//"_wl"//buf2//
+     *    "_A_Lambda.txt",status='unknown')
+        endif
+      endif
+
 C  Plane wave ordering
       call pw_ordering (neq_PW, lat_vecs, bloch_vec, 
      *  a(ip_index_pw_inv), Zeroth_Order, Zeroth_Order_inv, 
@@ -1007,7 +968,9 @@ C  Scattering Matrices
       if (debug .eq. 1) then
         write(ui,*) "MAIN: Scattering Matrices substrate"
       endif
-C
+
+
+
       call ScatMat_sub ( b(jp_overlap_J), b(jp_overlap_J_dagger),  
      *    b(jp_X_mat), b(jp_X_mat_b), neq_PW, nval, 
      *    b(jp_eigenval1), T12, R12, T21, R21,
@@ -1016,7 +979,7 @@ C
      *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
      *    numberprop_S, numberprop_S_b, freq, Zeroth_Order_inv,
      *    debug, incident, what4incident, out4incident,
-     *    title, parallel(1))
+     *    title, parallel)
 C     !No Substrate
       else
 C  Scattering Matrices
@@ -1031,10 +994,40 @@ C  Scattering Matrices
      *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
      *    numberprop_S, freq, Zeroth_Order_inv,
      *    debug, incident, what4incident, out4incident,
-     *    title, parallel(1))
+     *    title, parallel)
 C     !End Substrate Options
       endif
 C
+      if (traLambda .eq. 1) then
+        if (pol .eq. 0) then
+          close(643)
+          close(644)
+          close(645)
+          close(660)
+          close(661)
+          close(662)
+          close(663)
+        elseif (pol .eq. 5) then
+          close(643)
+          close(644)
+          close(645)
+          close(646)
+          close(647)
+          close(648)
+          close(649)
+          close(650)
+          close(651)
+          close(660)
+          close(661)
+          close(662)
+          close(663)
+        else
+          close(643)
+          close(644)
+          close(645)
+        endif
+      endif
+
       if (debug .eq. 2) then
         write(1111,*) 
         write(1111,*) "neq_PW = ", neq_PW
@@ -1122,20 +1115,6 @@ C     ! Upper semi-inifinite medium: Plane wave expansion
      *  dir_name, q_average, plot_real, plot_imag, plot_abs)
       endif
 C
-      Lambda_count = Lambda_count + 1
-C
-      call cpu_time(time_Lambda_end)
-      if (python .eq. 0) then
-      write(ui,*) "MAIN: Time for Lambda loop:    ", 
-     *                time_Lambda_end-time_Lambda_start
-      write(ui,*)"-----------------------------------Time-Remaining==",
-     *  (parallel(2)-parallel(1)+2-Lambda_count)
-     *  *(time_Lambda_end-time_Lambda_start)
-      endif
-C
-      enddo
-C
-C#########################  End Wavelength Loop  ########################
 C
       if (PropModes .eq. 1) then
         if (Loss .eq. 0) then
@@ -1143,46 +1122,6 @@ C
         endif
         close(565)
         close(566)
-      endif
-      if (traLambda .eq. 1) then
-        if (pol .eq. 0) then
-          close(643)
-          close(644)
-          close(645)
-          close(660)
-          close(661)
-          close(662)
-          close(663)
-        elseif (pol .eq. 5) then
-          close(643)
-          close(644)
-          close(645)
-          close(646)
-          close(647)
-          close(648)
-          close(649)
-          close(650)
-          close(651)
-          close(660)
-          close(661)
-          close(662)
-          close(663)
-        else
-          close(643)
-          close(644)
-          close(645)
-        endif
-      endif
-C
-CCCCCCCCCCCCCCCCCCCCC Ultimate Efficiency CCCCCCCCCCCCCCCCCCCCC
-C                          as in Lin and Povinelli 09
-      if (python .eq. 0) then
-      if (parallel_comp .ne. 1 .and. Lambda_Res .ne. 0) then
-        if (debug .eq. 1) then
-          write(ui,*) "MAIN: Ultimate Efficiency calculation"
-        endif
-        call Ultimate_Efficiency(Lambda_Res, d_in_nm)
-      endif
       endif
 C
       if (pair_warning .ne. 0) then
@@ -1225,11 +1164,11 @@ C
       call date_and_time ( end_date, end_time )
       call cpu_time(time2)
 C
-        if (python .eq. 0) then
+      if (debug .eq. 1) then
         write(ui,*) 
         write(ui,*) 'Total CPU time (sec.)  = ', (time2-time1)
 
-      open (unit=26,file=log_file)
+        open (unit=26,file=log_file)
         write(26,*)
         write(26,*) "Date and time formats = ccyymmdd ; hhmmss.sss"
         write(26,*) "Start date and time   = ", start_date, 
@@ -1281,15 +1220,15 @@ C
         write(26,*) "Real super-vector : "
         write(26,*) "real_used, real_max, real_max/real_used = ",
      *     real_used, real_max, dble(real_max)/dble(real_used)
-         write(26,*)
-         write(26,*) "neq_PW = ", neq_PW
-         write(26,*) "nval, nvect, n_conv = ", nval, nvect, n_conv
-         write(26,*) "nonz, npt*nval, nonz/(npt*nval) = ",
-     *   nonz, npt*nval, dble(nonz)/dble(npt*nval)
-         write(26,*) "nonz, nonz_max, nonz_max/nonz = ", 
-     *   nonz, nonz_max, dble(nonz_max)/dble(nonz)
-         write(26,*) "nonz, int_used, int_used/nonz = ", 
-     *   nonz, int_used, dble(int_used)/dble(nonz)
+        write(26,*)
+        write(26,*) "neq_PW = ", neq_PW
+        write(26,*) "nval, nvect, n_conv = ", nval, nvect, n_conv
+        write(26,*) "nonz, npt*nval, nonz/(npt*nval) = ",
+     *  nonz, npt*nval, dble(nonz)/dble(npt*nval)
+        write(26,*) "nonz, nonz_max, nonz_max/nonz = ", 
+     *  nonz, nonz_max, dble(nonz_max)/dble(nonz)
+        write(26,*) "nonz, int_used, int_used/nonz = ", 
+     *  nonz, int_used, dble(int_used)/dble(nonz)
 c
 c         write(26,*) "len_skyl, npt*nval, len_skyl/(npt*nval) = ",
 c     *   len_skyl, npt*nval, dble(len_skyl)/dble(npt*nval)
@@ -1310,13 +1249,13 @@ c
         write(26,*) "mesh_file = ", mesh_file
         write(26,*) "gmsh_file = ", gmsh_file
         write(26,*) "log_file  = ", log_file
-      close(26)
+        close(26)
 C
-      write(ui,*) "   .      .      ."
-      write(ui,*) "   .      .      ."
-      write(ui,*) "   .      . (d=",d_in_nm,")"
+        write(ui,*) "   .      .      ."
+        write(ui,*) "   .      .      ."
+        write(ui,*) "   .      . (d=",d_in_nm,")"
 
-      write(ui,*) "  and   we're  done!"
+        write(ui,*) "  and   we're  done!"
       endif
 C
       end subroutine main

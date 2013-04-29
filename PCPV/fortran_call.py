@@ -138,7 +138,7 @@ class Simmo(Anallo):
 
         # Run the fortran!
         res = pcpv.main(
-            np.array([self.p, self.p]), norm_wl, self.nval, 
+            self.p, norm_wl, self.nval, 
             ordre_ls, d, self.other_para.debug, 
             self.structure.mesh_file, self.structure.mesh_format, 
             n_effs, self.structure.has_substrate, self.bloch_vec(), 
