@@ -3,7 +3,7 @@
 
 python module pcpv ! in 
     interface  ! in :pcpv
-        subroutine main(parallel,lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,npt,nel,n_eff,substrate,bloch_vec,h_1,h_2,num_h,lx,ly,tol,e_h_field,i_cond,itermax,pol,tralambda,propmodes,printsolution,printsupmodes,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,incident,what4incident,out4incident,loss,title,neq_pw,zeroth_order,nb_typ_el,beta,mode_pol,t12,r12,t21,r21) ! in :pcpv:main_64.f
+        subroutine main(parallel,lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,npt,nel,n_eff,substrate,bloch_vec,h_1,h_2,num_h,lx,ly,tol,e_h_field,i_cond,itermax,pol,tralambda,propmodes,printsolution,printsupmodes,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,incident,what4incident,out4incident,loss,title,neq_pw,zeroth_order,nb_typ_el,beta1,mode_pol,t12,r12,t21,r21) ! in :pcpv:main_64.f
             integer*8 :: parallel
             double precision :: lambda
             integer*8 :: nval
@@ -46,7 +46,7 @@ python module pcpv ! in
             integer*8 :: neq_pw
             integer*8 :: zeroth_order
             integer*8, optional,check(len(n_eff)>=nb_typ_el),depend(n_eff) :: nb_typ_el=len(n_eff)
-            complex*16 dimension(nval),intent(out),depend(nval) :: beta
+            complex*16, target,dimension(nval),intent(out),depend(nval) :: beta1
             complex*16 dimension(4,nval),intent(out),depend(nval) :: mode_pol
             complex*16 dimension(nval,2 * neq_pw),intent(out),depend(nval,neq_pw) :: t12
             complex*16 dimension(2 * neq_pw,2 * neq_pw),intent(out),depend(neq_pw,neq_pw) :: r12

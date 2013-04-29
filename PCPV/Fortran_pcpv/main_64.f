@@ -12,7 +12,7 @@ c     Explicit inputs
 c     "Optional" inputs (Python guesses these)
      *    nb_typ_el,
 c     Outputs
-     *    beta, mode_pol, T12, R12, T21, R21)
+     *    beta1, mode_pol, T12, R12, T21, R21)
 C************************************************************************
 C
 C  Program:
@@ -45,20 +45,17 @@ C  Declare the pointers of the integer super-vector
       integer*8 ip_period_N_E_F, ip_nperiod_N_E_F
 C      integer*8 ip_col_ptr, ip_bandw 
 C  Declare the pointers of the real super-vector
-      integer*8 jp_x, jp_x_N_E_F, jp_rhs
+      integer*8 jp_x_N_E_F, jp_rhs
 C      integer*8 jp_matD, jp_matL, jp_matU
 C      integer*8 jp_matD2, jp_matL2, jp_matU2
       integer*8 jp_vect1, jp_vect2, jp_workd, jp_resid, jp_vschur
       integer*8 jp_eigenval_tmp, jp_trav, jp_vp
-      integer*8 jp_overlap_L, jp_overlap_J, jp_overlap_J_dagger
-      integer*8 jp_overlap_K, jp_X_mat
-      integer*8 jp_sol, jp_sol1, jp_sol2
-      integer*8 jp_eigenval, jp_eigenval1, jp_eigenval2
+      integer*8 jp_overlap_L, jp_overlap_J_dagger
+      integer*8 jp_overlap_K
       integer*8 jp_T, jp_R
-c      , jp_T12, jp_R12, jp_T21, jp_R21
       integer*8 jp_T_Lambda, jp_R_Lambda
       integer*8 jp_X_mat_b
-C  Plane wave parameteres
+C  Plane wave parameters
       integer*8 neq_PW, nx_PW, ny_PW, ordre_ls
       integer*8 index_pw_inv(neq_PW)
       integer*8 Zeroth_Order, Zeroth_Order_inv, nb_typ_el
@@ -150,7 +147,8 @@ c     Declare the pointers of for sparse matrix storage
       complex*16 X_mat(2*neq_PW, 2*neq_PW)
 
 c     new breed of variables to prise out of a, b and c
-      complex*16 beta(nval)
+      complex*16, target :: beta1(nval), beta2(nval)
+      complex*16, pointer :: beta(:)
       complex*16 mode_pol(4,nval)
 c     Fresnel scattering matrices
       complex*16 T12(nval,2*neq_PW)
@@ -158,7 +156,7 @@ c     Fresnel scattering matrices
       complex*16 T21(2*neq_PW,nval)
       complex*16 R21(nval,nval)
  
-Cf2py intent(out) beta, mode_pol, T12, R12, T21, R21
+Cf2py intent(out) beta1, mode_pol, T12, R12, T21, R21
 
 
       n_64 = 2
@@ -495,14 +493,9 @@ c      jp_vect1 = jp_matU2 + len_skyl
       jp_workd = jp_vect2 + neq
       jp_resid = jp_workd + 3*neq
 
-      jp_eigenval1 = jp_resid + neq
-      jp_eigenval2 = jp_eigenval1 + nval + 1
 C     ! Eigenvectors
-      jp_vschur = jp_eigenval2 + nval + 1
-      jp_eigenval = jp_vschur + neq*nvect
-C      jp_eigen_pol = jp_eigenval + nval + 1
-      jp_eigenval_tmp = jp_eigenval + nval + 1
-C      jp_eigenval_tmp = jp_eigen_pol + nval*4
+      jp_vschur = jp_resid + neq
+      jp_eigenval_tmp = jp_vschur + neq*nvect
       jp_trav = jp_eigenval_tmp + nval + 1
 
       ltrav = 3*nvect*(nvect+2)
@@ -648,15 +641,13 @@ C        Loop over prime last because we want to send its beta etc to Python
            if (n_k .eq. 2) then
              dir_name = "Output"
              sol => sol1
-             jp_eigenval = jp_eigenval1
-             bloch_vec_k(1) = bloch_vec(1)
-             bloch_vec_k(2) = bloch_vec(2)
+             beta => beta1
+             bloch_vec_k = bloch_vec
            else
              dir_name = "Output-"
              sol => sol2
-             jp_eigenval = jp_eigenval2
-             bloch_vec_k(1) = -bloch_vec(1)
-             bloch_vec_k(2) = -bloch_vec(2)
+             beta => beta2
+             bloch_vec_k = -bloch_vec
            endif  
            namelength = len_trim(dir_name)
 C
@@ -688,7 +679,7 @@ C
       call valpr_64 (i_base, nvect, nval, neq, itermax, ltrav,
      *  tol, nonz, a(ip_row), a(ip_col_ptr), c(kp_mat1_re),
      *  c(kp_mat1_im), b(jp_mat2), b(jp_vect1), b(jp_vect2),
-     *  b(jp_workd), b(jp_resid), b(jp_vschur), b(jp_eigenval),
+     *  b(jp_workd), b(jp_resid), b(jp_vschur), beta,
      *  b(jp_trav), b(jp_vp), c(kp_rhs_re), c(kp_rhs_im),
      *  c(kp_lhs_re), c(kp_lhs_im), n_conv, ls_data,
      *  numeric, filenum, status, control, info_umf, debug)
@@ -710,7 +701,7 @@ c
       time2_arpack = ls_data(4)
 C
       do i=1,nval
-        z_tmp0 = b(jp_eigenval+i-1)
+        z_tmp0 = beta(i)
         z_tmp = 1.0d0/z_tmp0+shift
         z_beta = sqrt(z_tmp)
 C       Mode classification - we want the forward propagating mode
@@ -723,12 +714,12 @@ C         im(z_beta) > 0 for forward decaying evanescent mode
         endif
 C     !  Effective index
 C        z_beta = sqrt(z_tmp)/k_0
-        b(jp_eigenval+i-1) = z_beta
+        beta(i) = z_beta
       enddo
 c
       call cpu_time(time1_postp)
 C
-      call z_indexx (nval, b(jp_eigenval), index)
+      call z_indexx (nval, beta, index)
 C
 C       The eigenvectors will be stored in the array sol
 C       The eigenvalues and eigenvectors will be renumbered  
@@ -736,7 +727,7 @@ C                 using the permutation vector index
         call array_sol (i_cond, nval, nel, npt, n_ddl, neq, nnodes, 
      *   n_core, bloch_vec_k, index, table_nod, 
      *   a(ip_table_N_E_F), type_el, a(ip_eq), a(ip_period_N), 
-     *   a(ip_period_N_E_F), x_arr, b(jp_x_N_E_F), b(jp_eigenval), 
+     *   a(ip_period_N_E_F), x_arr, b(jp_x_N_E_F), beta, 
      *   b(jp_eigenval_tmp), mode_pol, b(jp_vp), sol)
 C
       if(debug .eq. 1) then
@@ -749,7 +740,7 @@ C
         write(ui,*) "sqrt(shift) = ", sqrt(shift)
         do i=1,nval
           write(ui,"(i4,2(g22.14),2(g18.10))") i, 
-     *       b(jp_eigenval+i-1)
+     *       beta(i)
         enddo
       endif
 C
@@ -757,16 +748,9 @@ C  Dispersion Diagram
       if (PrintOmega .eq. 1 .and. n_k .eq. 2) then
         call mode_energy (nval, nel, npt, n_ddl, nnodes, 
      *     n_core, table_nod, type_el, nb_typ_el, eps_eff, 
-     *     x_arr, sol, b(jp_eigenval), mode_pol)
+     *     x_arr, sol, beta, mode_pol)
 C        call DispersionDiagram(lambda, bloch_vec_k, shift,
-C     *     nval, n_conv, b(jp_eigenval), mode_pol, d_in_nm)
-C     START: LOOP TO BE REMOVED
-C     TODO: remove the following loop
-C     (once b doesn't store all the goodies)
-        do i=1,nval
-          beta(i) = b(jp_eigenval+i-1)
-        enddo
-C     END: LOOP TO BE REMOVED
+C     *     nval, n_conv, beta, mode_pol, d_in_nm)
       endif
 C
       enddo
@@ -790,7 +774,7 @@ CCCC Hardcore Debugging - Print all arrays + some variables CCCCC
         write(1111,*) 
         do i=1,nval
           write(1111,"(i4,2(g22.14),g18.10)") i, 
-     *       b(jp_eigenval1+i-1)
+     *       beta1(i)
         enddo
       endif
 CCCC Hardcore Debugging - End                               CCCCC
@@ -803,7 +787,7 @@ C  Orthogonal integral
       call cpu_time(time1_J)
       call orthogonal (nval, nel, npt, nnodes, 
      *  nb_typ_el, pp, qq, table_nod, 
-     *  type_el, x_arr, b(jp_eigenval1), b(jp_eigenval2),
+     *  type_el, x_arr, beta1, beta2,
      *  sol1, sol2, b(jp_overlap_L),
      *  overlap_file, PrintAll, d_in_nm, pair_warning, k_0)
       call cpu_time(time2_J)
@@ -815,7 +799,7 @@ C    Save Original solution
       if (PrintSolution .eq. 1) then
         dir_name = "Output/Fields"
         call write_sol (nval, nel, nnodes, E_H_field, lambda,
-     *       b(jp_eigenval1), sol1, mesh_file, dir_name)
+     *       beta1, sol1, mesh_file, dir_name)
         call write_param (E_H_field, lambda, npt, nel, i_cond,
      *       nval, nvect, itermax, tol, shift, lx, ly, 
      *       mesh_file, mesh_format, n_conv, nb_typ_el, eps_eff,
@@ -825,7 +809,7 @@ C    Save Original solution
         do i=1,nval
           call gmsh_post_process (i, E_H_field, nval, nel, npt, 
      *       nnodes, table_nod, type_el, nb_typ_el,
-     *       n_eff, x_arr, b(jp_eigenval1), sol1,
+     *       n_eff, x_arr, beta1, sol1,
      *       b(jp_rhs), a(ip_visite), gmsh_file_pos, dir_name, 
      *       q_average, plot_real, plot_imag, plot_abs)
         enddo 
@@ -852,7 +836,7 @@ C  Orthonormal integral
         call cpu_time(time1_J)
         call orthogonal (nval, nel, npt, nnodes, 
      *    nb_typ_el, pp, qq, table_nod, 
-     *    type_el, x_arr, b(jp_eigenval1), b(jp_eigenval2),
+     *    type_el, x_arr, beta1, beta2,
      *    sol1, sol2, b(jp_overlap_L),
      *    overlap_file, PrintAll, d_in_nm, pair_warning, k_0)
         call cpu_time(time2_J)
@@ -968,7 +952,7 @@ C  Scattering Matrices
 
       call ScatMat_sub ( overlap_J, b(jp_overlap_J_dagger),  
      *    X_mat, b(jp_X_mat_b), neq_PW, nval, 
-     *    b(jp_eigenval1), T12, R12, T21, R21,
+     *    beta1, T12, R12, T21, R21,
      *    PrintAll, PrintSolution, 
      *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
      *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
@@ -983,7 +967,7 @@ C  Scattering Matrices
       endif
       call ScatMat( overlap_J, b(jp_overlap_J_dagger),  
      *    X_mat, neq_PW, nval, 
-     *    b(jp_eigenval1), T12, R12, T21, R21,
+     *    beta1, T12, R12, T21, R21,
      *    PrintAll, PrintSolution, 
      *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
      *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
@@ -1040,7 +1024,7 @@ C  Search for number of propagating Bloch Modes
       if (PropModes .eq. 1 .and. Loss .eq. 0) then
       numberprop_N = 0
       do i=1,nval
-        test = b(jp_eigenval1 + i - 1)
+        test = beta1(i)
         if (ABS(IMAG(test)) .lt. 1.0d-5) then
           numberprop_N = numberprop_N + 1
         endif
@@ -1065,7 +1049,7 @@ C     ! reference number of the field
       i = 1
       call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
      *     nnodes, table_nod, type_el, eps_eff, x_arr,  
-     *     b(jp_eigenval1), sol1, b(jp_rhs), 
+     *     beta1, sol1, b(jp_rhs), 
      *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
      *       q_average, plot_real, plot_imag, plot_abs)
 C
@@ -1075,7 +1059,7 @@ C     ! reference number of the field
       i = 2
       call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
      *     nnodes, table_nod, type_el, eps_eff, x_arr,
-     *     b(jp_eigenval1), sol1, b(jp_rhs), 
+     *     beta1, sol1, b(jp_rhs), 
      *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
      *       q_average, plot_real, plot_imag, plot_abs)
 
@@ -1134,7 +1118,7 @@ C  Completeness Check
         call K_overlap(nval, nel, npt, nnodes, 
      *    nb_typ_el, type_el, table_nod, x_arr,   
      *    sol2, pp, qq, lambda, freq, b(jp_overlap_K), neq_PW,
-     *    lat_vecs, bloch_vec, b(jp_eigenval2), index_pw_inv,
+     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
      *    PrintAll, k_0, ordre_ls)
         write(ui,*) "MAIN: Completeness Test"
         call Completeness (nval, neq_PW, 
@@ -1142,7 +1126,7 @@ C  Completeness Check
 C  Search for number of propagating Bloch Modes
       numberprop_N = 0
       do i=1,nval
-        test = b(jp_eigenval1 + i - 1)
+        test = beta1(i)
         if (ABS(IMAG(test)) .lt. 1.0d-5) then
           numberprop_N = numberprop_N + 1
         endif
@@ -1231,7 +1215,7 @@ c
         write(26,*) 
         do i=1,nval
           write(26,"(i4,2(g22.14),g18.10)") i, 
-     *       b(jp_eigenval1+i-1)
+     *       beta1(i)
         enddo
         write(26,*)
         write(26,*) "n_core = ", n_core

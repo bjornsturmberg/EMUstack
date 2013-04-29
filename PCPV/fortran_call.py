@@ -140,6 +140,7 @@ class Simmo(Anallo):
         with open("../PCPV/Data/"+self.structure.mesh_file) as f:
             n_msh_pts, n_msh_el = [int(i) for i in f.readline().split()]
 
+        print self.structure.mesh_format
         # Run the fortran!
         res = pcpv.main(
             self.p, norm_wl, self.nval, 
