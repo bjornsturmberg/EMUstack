@@ -1,7 +1,8 @@
       subroutine main(
 c     Explicit inputs
      *    parallel, lambda, nval, ordre_ls, d_in_nm,
-     *    debug, mesh_file, mesh_format, n_eff,
+     *    debug, mesh_file, mesh_format, npt, nel,
+     *    n_eff,
      *    substrate, bloch_vec, h_1, h_2, num_h, lx, ly, tol, 
      *    E_H_field, i_cond, itermax, pol, traLambda, PropModes,
      *    PrintSolution, PrintSupModes, PrintOmega, PrintAll,
@@ -38,12 +39,10 @@ C     !  c(real_max)
       integer :: allocate_status=0
 C
 C  Declare the pointers of the integer super-vector
-      integer*8 ip_type_nod, ip_type_el, ip_table_nod
       integer*8 ip_table_E, ip_table_N_E_F, ip_visite
       integer*8 ip_type_N_E_F, ip_eq
       integer*8 ip_period_N, ip_nperiod_N
       integer*8 ip_period_N_E_F, ip_nperiod_N_E_F
-      integer*8 ip_index_pw_inv
 C      integer*8 ip_col_ptr, ip_bandw 
 C  Declare the pointers of the real super-vector
       integer*8 jp_x, jp_x_N_E_F, jp_rhs
@@ -61,6 +60,7 @@ c      , jp_T12, jp_R12, jp_T21, jp_R21
       integer*8 jp_X_mat_b
 C  Plane wave parameteres
       integer*8 neq_PW, nx_PW, ny_PW, ordre_ls
+      integer*8 index_pw_inv(neq_PW)
       integer*8 Zeroth_Order, Zeroth_Order_inv, nb_typ_el
       complex*16 pp(nb_typ_el),  qq(nb_typ_el)
       complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el), test
@@ -69,6 +69,9 @@ c     i_cond = 0 => Dirichlet boundary condition
 c     i_cond = 1 => Neumann boundary condition
 c     i_cond = 2 => Periodic boundary condition
       integer*8 nel, npt, nnodes, ui, i_cond
+C     ! Number of nodes per element
+      parameter(nnodes=6)
+      integer*8 type_nod(npt), type_el(nel), table_nod(nnodes, nel)
 C, len_skyl, nsym
 c     E_H_field = 1 => Electric field formulation (E-Field)
 c     E_H_field = 2 => Magnetic field formulation (H-Field)
@@ -139,6 +142,13 @@ c     Declare the pointers of for sparse matrix storage
       integer*8 ip
       integer i_32
 
+      complex*16 x_arr(2,npt)
+      complex*16, target :: sol1(3,nnodes+7,nval,nel)
+      complex*16, target :: sol2(3,nnodes+7,nval,nel)
+      complex*16, pointer :: sol(:,:,:,:)
+      complex*16 overlap_J(2*neq_PW, nval)
+      complex*16 X_mat(2*neq_PW, 2*neq_PW)
+
 c     new breed of variables to prise out of a, b and c
       complex*16 beta(nval)
       complex*16 mode_pol(4,nval)
@@ -161,6 +171,7 @@ C     T12, R12, T21, R21
       cmplx_max = cmplx_max - (2*neq_PW + nval)**2
       real_max=n_64**22
       int_max=n_64**22
+c      3*npt+nel+nnodes*nel 
 
       !write(*,*) "cmplx_max = ", cmplx_max
       !write(*,*) "real_max = ", real_max
@@ -198,13 +209,6 @@ C     T12, R12, T21, R21
 
 
       
-C     !ui = Unite dImpression
-      ui = 6
-C     ! Number of nodes per element
-      nnodes = 6
-      pi = 3.141592653589793d0
-C      nsym = 1 ! nsym = 0 => symmetric or hermitian matrices
-C
 
 CCCCCCCCCCCCCCCCC POST F2PY CCCCCCCCCCCCCCCCCCCCCCCCC
 
@@ -217,16 +221,18 @@ C     clean mesh_format
         write(*,*) "mesh_file = ", mesh_file
         write(*,*) "gmsh_file = ", gmsh_file
       endif    
-      open (unit=24,file="../PCPV/Data/"//mesh_file,
-     *  status='unknown')
-          read(24,*) npt, nel
-      close(24)
 
 c     Calculate effective permittivity
       do i_32 = 1, int(nb_typ_el)
         eps_eff(i_32) = n_eff(i_32)**2
       end do
 
+C     !ui = Unite dImpression
+      ui = 6
+C     ! Number of nodes per element
+      pi = 3.141592653589793d0
+C      nsym = 1 ! nsym = 0 => symmetric or hermitian matrices
+C
       nvect = 2*nval + nval/2 +3
 c     FIXME: get rid of nlambda
       n_lambda = 1
@@ -272,33 +278,28 @@ C
          write(ui,*) "MAIN: Aborting..."
          stop
       endif
-      ip_type_nod = 1
-      ip_type_el = ip_type_nod + npt
-C     ! pointer to FEM connectivity table
-      ip_table_nod = ip_type_el + nel
-      jp_x = 1
 C
       call geometry (nel, npt, nnodes, nb_typ_el,
-     *     lx, ly, a(ip_type_nod), a(ip_type_el), a(ip_table_nod), 
-     *     b(jp_x), mesh_file)
+     *     lx, ly, type_nod, type_el, table_nod, 
+     *     x_arr, mesh_file)
 C
       if (PrintSupModes + PrintSolution .ge. 1) then
 C  Export the mesh to gmsh format
-        call mail_to_gmsh (nel, npt, nnodes, a(ip_type_el), 
-     *    a(ip_type_nod), a(ip_table_nod), 
-     *    nb_typ_el, n_eff, b(jp_x), gmsh_file)
+        call mail_to_gmsh (nel, npt, nnodes, type_el, 
+     *    type_nod, table_nod, 
+     *    nb_typ_el, n_eff, x_arr, gmsh_file)
 C
-C        call gmsh_interface_cyl (nel, npt, nnodes, a(ip_type_el), 
-C     *    a(ip_type_nod), a(ip_table_nod), 
-C     *    nb_typ_el, b(jp_x))
+C        call gmsh_interface_cyl (nel, npt, nnodes, type_el, 
+C     *    type_nod, table_nod, 
+C     *    nb_typ_el, x_arr)
       endif
 C
-      call lattice_vec (npt, b(jp_x), lat_vecs)
+      call lattice_vec (npt, x_arr, lat_vecs)
 C
 C     if (PrintSupModes + PrintSolution .ge. 1) then
-C        call gmsh_interface_c4 (nel, npt, nnodes, a(ip_type_el), 
-C     *    a(ip_type_nod), a(ip_table_nod), 
-C     *    nb_typ_el, b(jp_x), lat_vecs)
+C        call gmsh_interface_c4 (nel, npt, nnodes, type_el, 
+C     *    type_nod, table_nod, 
+C     *    nb_typ_el, x_arr, lat_vecs)
 C      endif
 C
 C      V = number of vertices
@@ -311,7 +312,7 @@ C     npt = (number of vertices) + (number of mid-edge point) = V + E;
 C
 C     ! each element is a face
       n_face = nel
-      ip_table_N_E_F = ip_table_nod + nnodes*nel
+      ip_table_N_E_F = 1
       call list_face (nel, a(ip_table_N_E_F))
 
 C     n_ddl_max = max(N_Vertices) + max(N_Edge) + max(N_Face)
@@ -322,10 +323,10 @@ C     note: each element has 1 face, 3 edges and 10 P3 nodes
       ip_table_E = ip_visite + n_ddl_max
 C
       call list_edge (nel, npt, nnodes, n_edge, 
-     *    a(ip_type_nod), a(ip_table_nod), 
+     *    type_nod, table_nod, 
      *    a(ip_table_E), a(ip_table_N_E_F), a(ip_visite))
       call list_node_P3 (nel, npt, nnodes, n_edge, npt_p3, 
-     *    a(ip_table_nod), a(ip_table_N_E_F), a(ip_visite))
+     *    table_nod, a(ip_table_N_E_F), a(ip_visite))
       n_ddl = n_edge + n_face + npt_p3
 C
       if (debug .eq. 1) then
@@ -346,15 +347,15 @@ cC     overwriting pointers ip_row_ptr, ..., ip_adjncy
 c
       ip_type_N_E_F = ip_table_E + 4*n_edge
 C
-      jp_x_N_E_F = jp_x + 2*npt
+      jp_x_N_E_F = 1
       call type_node_edge_face (nel, npt, nnodes, n_ddl, 
-     *      a(ip_type_nod), a(ip_table_nod), a(ip_table_N_E_F), 
+     *      type_nod, table_nod, a(ip_table_N_E_F), 
      *      a(ip_visite), a(ip_type_N_E_F), 
-     *      b(jp_x), b(jp_x_N_E_F))
+     *      x_arr, b(jp_x_N_E_F))
 C
       call get_coord_p3 (nel, npt, nnodes, n_ddl, 
-     *      a(ip_table_nod), a(ip_type_nod), a(ip_table_N_E_F), 
-     *      a(ip_type_N_E_F), b(jp_x), b(jp_x_N_E_F), a(ip_visite))
+     *      table_nod, type_nod, a(ip_table_N_E_F), 
+     *      a(ip_type_N_E_F), x_arr, b(jp_x_N_E_F), a(ip_visite))
 C
         ip_period_N = ip_type_N_E_F + 2*n_ddl
         ip_nperiod_N = ip_period_N + npt
@@ -369,9 +370,9 @@ C
         if (debug .eq. 1) then
           write(ui,*) "###### periodic_node"
         endif
-        call periodic_node(nel, npt, nnodes, a(ip_type_nod), 
-     *      b(jp_x), a(ip_period_N), a(ip_nperiod_N),
-     *      a(ip_table_nod), lat_vecs)
+        call periodic_node(nel, npt, nnodes, type_nod, 
+     *      x_arr, a(ip_period_N), a(ip_nperiod_N),
+     *      table_nod, lat_vecs)
         if (debug .eq. 1) then
           write(ui,*) "MAIN: ###### periodic_N_E_F"
         endif
@@ -398,8 +399,7 @@ C     Determine the pointer for the Symmetric Sparse Skyline format
 c
 c      ip_col_ptr = ip_eq + 3*n_ddl
 c      ip_bandw  = ip_col_ptr + neq + 1
-c      ip_index_pw_inv = ip_bandw + neq + 1
-c      int_used = ip_index_pw_inv + neq_PW 
+c      int_used = ip_bandw + neq + 1
 cC
 c      if (int_max .lt. int_used) then
 c        write(ui,*)
@@ -414,8 +414,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 c
 c     Sparse matrix storage
 c
-      ip_index_pw_inv = ip_eq + 3*n_ddl
-      ip_col_ptr = ip_index_pw_inv + neq_PW 
+      ip_col_ptr = ip_eq + 3*n_ddl
 
       call csr_max_length (nel, n_ddl, neq, nnodes, 
      *  a(ip_table_N_E_F), a(ip_eq), a(ip_col_ptr), nonz_max)
@@ -496,9 +495,7 @@ c      jp_vect1 = jp_matU2 + len_skyl
       jp_workd = jp_vect2 + neq
       jp_resid = jp_workd + 3*neq
 
-      jp_sol1 = jp_resid + neq
-      jp_sol2 = jp_sol1 + 3*(nnodes+7)*nval*nel
-      jp_eigenval1 = jp_sol2 + 3*(nnodes+7)*nval*nel
+      jp_eigenval1 = jp_resid + neq
       jp_eigenval2 = jp_eigenval1 + nval + 1
 C     ! Eigenvectors
       jp_vschur = jp_eigenval2 + nval + 1
@@ -511,16 +508,14 @@ C      jp_eigenval_tmp = jp_eigen_pol + nval*4
       ltrav = 3*nvect*(nvect+2)
       jp_vp = jp_trav + ltrav
       jp_overlap_L = jp_vp + neq*nval
-      jp_overlap_J = jp_overlap_L + nval*nval
-      jp_overlap_J_dagger = jp_overlap_J + 2*neq_PW*nval
+      jp_overlap_J_dagger = jp_overlap_L + nval*nval
       jp_overlap_K = jp_overlap_J_dagger + 2*neq_PW*nval
-      jp_X_mat = jp_overlap_K + 2*neq_PW*nval
 c      jp_T12 = jp_X_mat + 2*neq_PW*2*neq_PW
 c      jp_T21 = jp_T12 + 2*neq_PW*nval
 c      jp_R12 = jp_T21 + 2*neq_PW*nval
 c      jp_R21 = jp_R12 + 4*neq_PW*neq_PW
 c      jp_T = jp_R21 + nval*nval
-      jp_T = jp_X_mat + 2*neq_PW*2*neq_PW
+      jp_T = jp_overlap_K + 2*neq_PW*nval
       jp_R = jp_T + 2*neq_PW*2*neq_PW
       jp_T_Lambda = jp_R + 2*neq_PW*2*neq_PW
       jp_R_Lambda = jp_T_Lambda + 2*neq_PW*2*neq_PW
@@ -652,13 +647,13 @@ C
 C        Loop over prime last because we want to send its beta etc to Python
            if (n_k .eq. 2) then
              dir_name = "Output"
-             jp_sol = jp_sol1
+             sol => sol1
              jp_eigenval = jp_eigenval1
              bloch_vec_k(1) = bloch_vec(1)
              bloch_vec_k(2) = bloch_vec(2)
            else
              dir_name = "Output-"
-             jp_sol = jp_sol2
+             sol => sol2
              jp_eigenval = jp_eigenval2
              bloch_vec_k(1) = -bloch_vec(1)
              bloch_vec_k(2) = -bloch_vec(2)
@@ -672,9 +667,9 @@ C     finite element equations
       endif
       call cpu_time(time1_asmbl)
       call asmbly (i_cond, i_base, nel, npt, n_ddl, neq, nnodes,
-     *  shift, bloch_vec_k, nb_typ_el, pp, qq, a(ip_table_nod), 
-     *  a(ip_table_N_E_F), a(ip_type_el), a(ip_eq),
-     *   a(ip_period_N), a(ip_period_N_E_F), b(jp_x), b(jp_x_N_E_F), 
+     *  shift, bloch_vec_k, nb_typ_el, pp, qq, table_nod, 
+     *  a(ip_table_N_E_F), type_el, a(ip_eq),
+     *   a(ip_period_N), a(ip_period_N_E_F), x_arr, b(jp_x_N_E_F), 
      *   nonz, a(ip_row), a(ip_col_ptr), c(kp_mat1_re), 
      *   c(kp_mat1_im), b(jp_mat2), a(ip_work))
       call cpu_time(time2_asmbl)
@@ -735,14 +730,14 @@ c
 C
       call z_indexx (nval, b(jp_eigenval), index)
 C
-C       The eigenvectors will be stored in the array b(jp_sol)
+C       The eigenvectors will be stored in the array sol
 C       The eigenvalues and eigenvectors will be renumbered  
 C                 using the permutation vector index
         call array_sol (i_cond, nval, nel, npt, n_ddl, neq, nnodes, 
-     *   n_core, bloch_vec_k, index, a(ip_table_nod), 
-     *   a(ip_table_N_E_F), a(ip_type_el), a(ip_eq), a(ip_period_N), 
-     *   a(ip_period_N_E_F), b(jp_x), b(jp_x_N_E_F), b(jp_eigenval), 
-     *   b(jp_eigenval_tmp), mode_pol, b(jp_vp), b(jp_sol))
+     *   n_core, bloch_vec_k, index, table_nod, 
+     *   a(ip_table_N_E_F), type_el, a(ip_eq), a(ip_period_N), 
+     *   a(ip_period_N_E_F), x_arr, b(jp_x_N_E_F), b(jp_eigenval), 
+     *   b(jp_eigenval_tmp), mode_pol, b(jp_vp), sol)
 C
       if(debug .eq. 1) then
         write(ui,*) 'index = ', (index(i), i=1,nval)
@@ -761,8 +756,8 @@ C
 C  Dispersion Diagram
       if (PrintOmega .eq. 1 .and. n_k .eq. 2) then
         call mode_energy (nval, nel, npt, n_ddl, nnodes, 
-     *     n_core, a(ip_table_nod), a(ip_type_el), nb_typ_el, eps_eff, 
-     *     b(jp_x), b(jp_sol), b(jp_eigenval), mode_pol)
+     *     n_core, table_nod, type_el, nb_typ_el, eps_eff, 
+     *     x_arr, sol, b(jp_eigenval), mode_pol)
 C        call DispersionDiagram(lambda, bloch_vec_k, shift,
 C     *     nval, n_conv, b(jp_eigenval), mode_pol, d_in_nm)
 C     START: LOOP TO BE REMOVED
@@ -807,9 +802,9 @@ C  Orthogonal integral
       overlap_file = "Normed/Orthogonal.txt"
       call cpu_time(time1_J)
       call orthogonal (nval, nel, npt, nnodes, 
-     *  nb_typ_el, pp, qq, a(ip_table_nod), 
-     *  a(ip_type_el), b(jp_x), b(jp_eigenval1), b(jp_eigenval2),
-     *  b(jp_sol1), b(jp_sol2), b(jp_overlap_L),
+     *  nb_typ_el, pp, qq, table_nod, 
+     *  type_el, x_arr, b(jp_eigenval1), b(jp_eigenval2),
+     *  sol1, sol2, b(jp_overlap_L),
      *  overlap_file, PrintAll, d_in_nm, pair_warning, k_0)
       call cpu_time(time2_J)
       if (debug .eq. 1) then
@@ -820,7 +815,7 @@ C    Save Original solution
       if (PrintSolution .eq. 1) then
         dir_name = "Output/Fields"
         call write_sol (nval, nel, nnodes, E_H_field, lambda,
-     *       b(jp_eigenval1), b(jp_sol1), mesh_file, dir_name)
+     *       b(jp_eigenval1), sol1, mesh_file, dir_name)
         call write_param (E_H_field, lambda, npt, nel, i_cond,
      *       nval, nvect, itermax, tol, shift, lx, ly, 
      *       mesh_file, mesh_format, n_conv, nb_typ_el, eps_eff,
@@ -829,8 +824,8 @@ C    Save Original solution
       open (unit=34,file=tchar)
         do i=1,nval
           call gmsh_post_process (i, E_H_field, nval, nel, npt, 
-     *       nnodes, a(ip_table_nod), a(ip_type_el), nb_typ_el,
-     *       n_eff, b(jp_x), b(jp_eigenval1), b(jp_sol1),
+     *       nnodes, table_nod, type_el, nb_typ_el,
+     *       n_eff, x_arr, b(jp_eigenval1), sol1,
      *       b(jp_rhs), a(ip_visite), gmsh_file_pos, dir_name, 
      *       q_average, plot_real, plot_imag, plot_abs)
         enddo 
@@ -842,8 +837,8 @@ C  Normalisation
         write(ui,*) "MAIN: Field  Normalisation"
       endif 
       call cpu_time(time1_J)
-      call normalisation (nval, nel, nnodes, a(ip_table_nod),
-     *  b(jp_sol1), b(jp_sol2), b(jp_overlap_L))  
+      call normalisation (nval, nel, nnodes, table_nod,
+     *  sol1, sol2, b(jp_overlap_L))  
       call cpu_time(time2_J)
       if (debug .eq. 1) then
         write(ui,*) "MAIN: CPU time for normalisation :",
@@ -856,9 +851,9 @@ C  Orthonormal integral
         overlap_file = "Normed/Orthogonal_n.txt"
         call cpu_time(time1_J)
         call orthogonal (nval, nel, npt, nnodes, 
-     *    nb_typ_el, pp, qq, a(ip_table_nod), 
-     *    a(ip_type_el), b(jp_x), b(jp_eigenval1), b(jp_eigenval2),
-     *    b(jp_sol1), b(jp_sol2), b(jp_overlap_L),
+     *    nb_typ_el, pp, qq, table_nod, 
+     *    type_el, x_arr, b(jp_eigenval1), b(jp_eigenval2),
+     *    sol1, sol2, b(jp_overlap_L),
      *    overlap_file, PrintAll, d_in_nm, pair_warning, k_0)
         call cpu_time(time2_J)
           write(ui,*) "MAIN: CPU time for orthogonal :",
@@ -923,7 +918,7 @@ CCCCCC CUT HERE CCCCCC
 
 C  Plane wave ordering
       call pw_ordering (neq_PW, lat_vecs, bloch_vec, 
-     *  a(ip_index_pw_inv), Zeroth_Order, Zeroth_Order_inv, 
+     *  index_pw_inv, Zeroth_Order, Zeroth_Order_inv, 
      *  debug, ordre_ls, k_0)
 C  J_overlap
       if (debug .eq. 1) then
@@ -931,10 +926,10 @@ C  J_overlap
       endif
       call cpu_time(time1_J)
       call J_overlap (nval, nel, npt, nnodes, 
-     *  nb_typ_el, a(ip_type_el), a(ip_table_nod), b(jp_x), 
-     *  b(jp_sol1), pp, qq, lat_vecs, lambda, freq, n_eff_0,
-     *  b(jp_overlap_J), neq_PW, bloch_vec, b(jp_X_mat), numberprop_S,
-     *  a(ip_index_pw_inv), PrintAll, debug, ordre_ls, k_0)
+     *  nb_typ_el, type_el, table_nod, x_arr, 
+     *  sol1, pp, qq, lat_vecs, lambda, freq, n_eff_0,
+     *  overlap_J, neq_PW, bloch_vec, X_mat, numberprop_S,
+     *  index_pw_inv, PrintAll, debug, ordre_ls, k_0)
       call cpu_time(time2_J)
       if (debug .eq. 1) then
         write(ui,*) "MAIN: CPU time for J_overlap :",
@@ -947,10 +942,10 @@ C  J_dagger_overlap
       endif
       call cpu_time(time1_J)
       call J_dagger_overlap (nval, nel, npt, nnodes, 
-     *  nb_typ_el, a(ip_type_el), a(ip_table_nod), b(jp_x), 
-     *  b(jp_sol2), pp, qq, lat_vecs, lambda, freq,
+     *  nb_typ_el, type_el, table_nod, x_arr, 
+     *  sol2, pp, qq, lat_vecs, lambda, freq,
      *  b(jp_overlap_J_dagger), neq_PW, bloch_vec,
-     *  a(ip_index_pw_inv), PrintAll, ordre_ls)
+     *  index_pw_inv, PrintAll, ordre_ls)
       call cpu_time(time2_J)
       if (debug .eq. 1) then
         write(ui,*) "MAIN: CPU time for J_dagger_overlap :",
@@ -963,7 +958,7 @@ C  Overlaps at bottom Substrate
         eps_eff_sub = DBLE(eps_eff(2))
       call J_overlap_sub ( lat_vecs, lambda, freq, n_eff_sub,
      *  eps_eff_sub, neq_PW, bloch_vec, b(jp_X_mat_b), numberprop_S_b,
-     *  a(ip_index_pw_inv), PrintAll, ordre_ls, k_0)
+     *  index_pw_inv, PrintAll, ordre_ls, k_0)
 C  Scattering Matrices
       if (debug .eq. 1) then
         write(ui,*) "MAIN: Scattering Matrices substrate"
@@ -971,8 +966,8 @@ C  Scattering Matrices
 
 
 
-      call ScatMat_sub ( b(jp_overlap_J), b(jp_overlap_J_dagger),  
-     *    b(jp_X_mat), b(jp_X_mat_b), neq_PW, nval, 
+      call ScatMat_sub ( overlap_J, b(jp_overlap_J_dagger),  
+     *    X_mat, b(jp_X_mat_b), neq_PW, nval, 
      *    b(jp_eigenval1), T12, R12, T21, R21,
      *    PrintAll, PrintSolution, 
      *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
@@ -986,8 +981,8 @@ C  Scattering Matrices
       if (debug .eq. 1) then
         write(ui,*) "MAIN: Scattering Matrices"
       endif
-      call ScatMat( b(jp_overlap_J), b(jp_overlap_J_dagger),  
-     *    b(jp_X_mat), neq_PW, nval, 
+      call ScatMat( overlap_J, b(jp_overlap_J_dagger),  
+     *    X_mat, neq_PW, nval, 
      *    b(jp_eigenval1), T12, R12, T21, R21,
      *    PrintAll, PrintSolution, 
      *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
@@ -1069,8 +1064,8 @@ C     ! hz=0 => top interface; hz=h => bottom interface
 C     ! reference number of the field
       i = 1
       call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
-     *     nnodes, a(ip_table_nod), a(ip_type_el), eps_eff, b(jp_x),  
-     *     b(jp_eigenval1), b(jp_sol1), b(jp_rhs), 
+     *     nnodes, table_nod, type_el, eps_eff, x_arr,  
+     *     b(jp_eigenval1), sol1, b(jp_rhs), 
      *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
      *       q_average, plot_real, plot_imag, plot_abs)
 C
@@ -1079,8 +1074,8 @@ C     ! hz=0 => top interface; hz=h => bottom interface
 C     ! reference number of the field
       i = 2
       call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
-     *     nnodes, a(ip_table_nod), a(ip_type_el), eps_eff, b(jp_x),
-     *     b(jp_eigenval1), b(jp_sol1), b(jp_rhs), 
+     *     nnodes, table_nod, type_el, eps_eff, x_arr,
+     *     b(jp_eigenval1), sol1, b(jp_rhs), 
      *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
      *       q_average, plot_real, plot_imag, plot_abs)
 
@@ -1099,9 +1094,9 @@ C     ! Upper semi-inifinite medium: Plane wave expansion
       i = 1
       call gmsh_plot_PW (i, E_H_field, 
      *     nel, npt, nnodes, neq_PW, bloch_vec, 
-     *  a(ip_table_nod), b(jp_x), lat_vecs, lambda, eps_eff(1),
+     *  table_nod, x_arr, lat_vecs, lambda, eps_eff(1),
      *  b(jp_rhs), vec_coef_down, vec_coef_up, 
-     *  a(ip_index_pw_inv), ordre_ls, h_1, hz, gmsh_file_pos,
+     *  index_pw_inv, ordre_ls, h_1, hz, gmsh_file_pos,
      *  dir_name, q_average, plot_real, plot_imag, plot_abs)
 
 C     ! Upper semi-inifinite medium: Plane wave expansion
@@ -1109,9 +1104,9 @@ C     ! Upper semi-inifinite medium: Plane wave expansion
       i = 2
       call gmsh_plot_PW (i, E_H_field, 
      *     nel, npt, nnodes, neq_PW, bloch_vec, 
-     *  a(ip_table_nod), b(jp_x), lat_vecs, lambda, eps_eff(1),
+     *  table_nod, x_arr, lat_vecs, lambda, eps_eff(1),
      *  b(jp_rhs), vec_coef_down, vec_coef_up, 
-     *  a(ip_index_pw_inv), ordre_ls, h_1, hz, gmsh_file_pos,
+     *  index_pw_inv, ordre_ls, h_1, hz, gmsh_file_pos,
      *  dir_name, q_average, plot_real, plot_imag, plot_abs)
       endif
 C
@@ -1137,13 +1132,13 @@ C  Completeness Check
       if (Checks .eq. 1) then
         write(ui,*) "MAIN: K_overlap Integral"
         call K_overlap(nval, nel, npt, nnodes, 
-     *    nb_typ_el, a(ip_type_el), a(ip_table_nod), b(jp_x),   
-     *    b(jp_sol2), pp, qq, lambda, freq, b(jp_overlap_K), neq_PW,
-     *    lat_vecs, bloch_vec, b(jp_eigenval2), a(ip_index_pw_inv),
+     *    nb_typ_el, type_el, table_nod, x_arr,   
+     *    sol2, pp, qq, lambda, freq, b(jp_overlap_K), neq_PW,
+     *    lat_vecs, bloch_vec, b(jp_eigenval2), index_pw_inv,
      *    PrintAll, k_0, ordre_ls)
         write(ui,*) "MAIN: Completeness Test"
         call Completeness (nval, neq_PW, 
-     *    b(jp_overlap_K), b(jp_overlap_J))
+     *    b(jp_overlap_K), overlap_J)
 C  Search for number of propagating Bloch Modes
       numberprop_N = 0
       do i=1,nval

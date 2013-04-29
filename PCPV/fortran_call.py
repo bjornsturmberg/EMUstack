@@ -136,11 +136,16 @@ class Simmo(Anallo):
         if self.light.Lambda % d == 0:
             norm_wl += 1e-15
 
+        # Prepare for the mesh
+        with open("../PCPV/Data/"+self.structure.mesh_file) as f:
+            n_msh_pts, n_msh_el = [int(i) for i in f.readline().split()]
+
         # Run the fortran!
         res = pcpv.main(
             self.p, norm_wl, self.nval, 
             ordre_ls, d, self.other_para.debug, 
             self.structure.mesh_file, self.structure.mesh_format, 
+            n_msh_pts, n_msh_el,
             n_effs, self.structure.has_substrate, self.bloch_vec(), 
             float(self.structure.height_1) / d, 
             float(self.structure.height_2) / d, self.structure.num_h, 
