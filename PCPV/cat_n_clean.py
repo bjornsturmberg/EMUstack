@@ -1,4 +1,4 @@
-# concatination of results and clean up
+# concatenation of results and clean up
 
 import glob
 import os
