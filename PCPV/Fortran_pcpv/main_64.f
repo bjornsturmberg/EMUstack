@@ -45,16 +45,13 @@ C  Declare the pointers of the integer super-vector
       integer*8 ip_period_N_E_F, ip_nperiod_N_E_F
 C      integer*8 ip_col_ptr, ip_bandw 
 C  Declare the pointers of the real super-vector
-      integer*8 jp_x_N_E_F, jp_rhs
+      integer*8 jp_x_N_E_F
 C      integer*8 jp_matD, jp_matL, jp_matU
 C      integer*8 jp_matD2, jp_matL2, jp_matU2
       integer*8 jp_vect1, jp_vect2, jp_workd, jp_resid, jp_vschur
       integer*8 jp_eigenval_tmp, jp_trav, jp_vp
-      integer*8 jp_overlap_L, jp_overlap_J_dagger
-      integer*8 jp_overlap_K
+      integer*8 jp_overlap_L
       integer*8 jp_T, jp_R
-      integer*8 jp_T_Lambda, jp_R_Lambda
-      integer*8 jp_X_mat_b
 C  Plane wave parameters
       integer*8 neq_PW, nx_PW, ny_PW, ordre_ls
       integer*8 index_pw_inv(neq_PW)
@@ -91,7 +88,6 @@ c      integer*8 ip_row_ptr, ip_bandw_1, ip_adjncy
 c      integer*8 len_adj, len_adj_max, len_0_adj_max
 c, iout, nonz_1, nonz_2
       integer*8 i, j, mesh_format
-      integer*8 i_lambda, n_lambda
 c     Wavelength lambda is in normalised units of d_in_nm
       double precision lambda
       double precision freq, lat_vecs(2,2), tol
@@ -139,14 +135,18 @@ c     Declare the pointers of for sparse matrix storage
       integer*8 ip
       integer i_32
 
+c     new breed of variables to prise out of a, b and c
       complex*16 x_arr(2,npt)
       complex*16, target :: sol1(3,nnodes+7,nval,nel)
       complex*16, target :: sol2(3,nnodes+7,nval,nel)
       complex*16, pointer :: sol(:,:,:,:)
+      complex*16 sol_avg(3, npt)
       complex*16 overlap_J(2*neq_PW, nval)
+      complex*16 overlap_J_dagger(nval, 2*neq_PW)
+      complex*16 overlap_K(nval, 2*neq_PW)
       complex*16 X_mat(2*neq_PW, 2*neq_PW)
+      complex*16 X_mat_b(2*neq_PW, 2*neq_PW)
 
-c     new breed of variables to prise out of a, b and c
       complex*16, target :: beta1(nval), beta2(nval)
       complex*16, pointer :: beta(:)
       complex*16 mode_pol(4,nval)
@@ -155,6 +155,9 @@ c     Fresnel scattering matrices
       complex*16 R12(2*neq_PW,2*neq_PW)
       complex*16 T21(2*neq_PW,nval)
       complex*16 R21(nval,nval)
+
+      complex*16 T_Lambda(2*neq_PW, 2*neq_PW)
+      complex*16 R_Lambda(2*neq_PW, 2*neq_PW)
  
 Cf2py intent(out) beta1, mode_pol, T12, R12, T21, R21
 
@@ -232,8 +235,6 @@ C     ! Number of nodes per element
 C      nsym = 1 ! nsym = 0 => symmetric or hermitian matrices
 C
       nvect = 2*nval + nval/2 +3
-c     FIXME: get rid of nlambda
-      n_lambda = 1
 
 CCCCCCCCCCCCCCCCC END POST F2PY CCCCCCCCCCCCCCCCCCCCC
 
@@ -464,29 +465,7 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 cC
-      jp_rhs = jp_x_N_E_F + 3*n_ddl
-c     jp_rhs will also be used (in gmsh_post_process) to store a solution
-      jp_mat2 = jp_rhs + max(neq, 3*npt)
-
-cC     jp_rhs will also be used (in gmsh_post_process) to store a solution
-cC     jp_matD = jp_rhs + max(neq, 3*npt)
-c      jp_matD = jp_rhs + max(neq, 3*(nnodes+7)*nel)
-c      jp_matL = jp_matD + neq
-c      if (nsym .eq. 0) then
-c        jp_matU = jp_matL
-c      else
-c        jp_matU = jp_matL + len_skyl
-c      endif
-cC
-c      jp_matD2 = jp_matU + len_skyl
-c      jp_matL2 = jp_matD2 + neq
-c      if (nsym .eq. 0) then
-c        jp_matU2 = jp_matL2
-c      else
-c        jp_matU2 = jp_matL2 + len_skyl
-c      endif
-C
-c      jp_vect1 = jp_matU2 + len_skyl
+      jp_mat2 = jp_x_N_E_F + 3*n_ddl
 
       jp_vect1 = jp_mat2 + nonz
       jp_vect2 = jp_vect1 + neq
@@ -501,24 +480,10 @@ C     ! Eigenvectors
       ltrav = 3*nvect*(nvect+2)
       jp_vp = jp_trav + ltrav
       jp_overlap_L = jp_vp + neq*nval
-      jp_overlap_J_dagger = jp_overlap_L + nval*nval
-      jp_overlap_K = jp_overlap_J_dagger + 2*neq_PW*nval
-c      jp_T12 = jp_X_mat + 2*neq_PW*2*neq_PW
-c      jp_T21 = jp_T12 + 2*neq_PW*nval
-c      jp_R12 = jp_T21 + 2*neq_PW*nval
-c      jp_R21 = jp_R12 + 4*neq_PW*neq_PW
-c      jp_T = jp_R21 + nval*nval
-      jp_T = jp_overlap_K + 2*neq_PW*nval
+      jp_T = jp_overlap_L + nval*nval
       jp_R = jp_T + 2*neq_PW*2*neq_PW
-      jp_T_Lambda = jp_R + 2*neq_PW*2*neq_PW
-      jp_R_Lambda = jp_T_Lambda + 2*neq_PW*2*neq_PW
  
-      if (substrate .eq. 1) then
-      jp_X_mat_b = jp_R_Lambda + 2*neq_PW*2*neq_PW
-      cmplx_used = jp_X_mat_b + 2*neq_PW*2*neq_PW  
-      else
-        cmplx_used = jp_R_Lambda + 2*neq_PW*2*neq_PW
-      endif
+      cmplx_used = jp_R + 2*neq_PW*2*neq_PW
 
       write(ui,*) "cmplx_max  = ", cmplx_max
       write(ui,*) "cmplx_used = ", cmplx_used
@@ -637,8 +602,7 @@ CCCCCCCCCCCCCCCCCCCC  Loop over Adjoint and Prime  CCCCCCCCCCCCCCCCCCCCCC
 C
          do n_k = 1,2
 C
-C        Loop over prime last because we want to send its beta etc to Python
-           if (n_k .eq. 2) then
+           if (n_k .eq. 1) then
              dir_name = "Output"
              sol => sol1
              beta => beta1
@@ -764,7 +728,6 @@ CCCC Hardcore Debugging - Print all arrays + some variables CCCCC
         Checks = 2
 
         open (unit=1111,file="Normed/Debug_data.txt", status='unknown')
-        write(1111,*) "i_lambda = ", i_lambda
         write(1111,*) "lambda = ", lambda
         write(1111,*) "eps_eff = ", (eps_eff(i),i=1,nb_typ_el)
         write(1111,*) "shift = ", shift
@@ -810,7 +773,7 @@ C    Save Original solution
           call gmsh_post_process (i, E_H_field, nval, nel, npt, 
      *       nnodes, table_nod, type_el, nb_typ_el,
      *       n_eff, x_arr, beta1, sol1,
-     *       b(jp_rhs), a(ip_visite), gmsh_file_pos, dir_name, 
+     *       sol_avg, a(ip_visite), gmsh_file_pos, dir_name, 
      *       q_average, plot_real, plot_imag, plot_abs)
         enddo 
       close (unit=34)
@@ -928,7 +891,7 @@ C  J_dagger_overlap
       call J_dagger_overlap (nval, nel, npt, nnodes, 
      *  nb_typ_el, type_el, table_nod, x_arr, 
      *  sol2, pp, qq, lat_vecs, lambda, freq,
-     *  b(jp_overlap_J_dagger), neq_PW, bloch_vec,
+     *  overlap_J_dagger, neq_PW, bloch_vec,
      *  index_pw_inv, PrintAll, ordre_ls)
       call cpu_time(time2_J)
       if (debug .eq. 1) then
@@ -941,7 +904,7 @@ C  Overlaps at bottom Substrate
         n_eff_sub = DBLE(n_eff(2))
         eps_eff_sub = DBLE(eps_eff(2))
       call J_overlap_sub ( lat_vecs, lambda, freq, n_eff_sub,
-     *  eps_eff_sub, neq_PW, bloch_vec, b(jp_X_mat_b), numberprop_S_b,
+     *  eps_eff_sub, neq_PW, bloch_vec, X_mat_b, numberprop_S_b,
      *  index_pw_inv, PrintAll, ordre_ls, k_0)
 C  Scattering Matrices
       if (debug .eq. 1) then
@@ -950,12 +913,12 @@ C  Scattering Matrices
 
 
 
-      call ScatMat_sub ( overlap_J, b(jp_overlap_J_dagger),  
-     *    X_mat, b(jp_X_mat_b), neq_PW, nval, 
+      call ScatMat_sub ( overlap_J, overlap_J_dagger,  
+     *    X_mat, X_mat_b, neq_PW, nval, 
      *    beta1, T12, R12, T21, R21,
      *    PrintAll, PrintSolution, 
-     *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
-     *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
+     *    lx, h_1, h_2, num_h, Checks, T_Lambda, 
+     *    R_Lambda, traLambda, pol, PropModes, lambda, d_in_nm,
      *    numberprop_S, numberprop_S_b, freq, Zeroth_Order_inv,
      *    debug, incident, what4incident, out4incident,
      *    title, parallel)
@@ -965,12 +928,12 @@ C  Scattering Matrices
       if (debug .eq. 1) then
         write(ui,*) "MAIN: Scattering Matrices"
       endif
-      call ScatMat( overlap_J, b(jp_overlap_J_dagger),  
+      call ScatMat( overlap_J, overlap_J_dagger,  
      *    X_mat, neq_PW, nval, 
      *    beta1, T12, R12, T21, R21,
      *    PrintAll, PrintSolution, 
-     *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
-     *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
+     *    lx, h_1, h_2, num_h, Checks, T_Lambda, 
+     *    R_Lambda, traLambda, pol, PropModes, lambda, d_in_nm,
      *    numberprop_S, freq, Zeroth_Order_inv,
      *    debug, incident, what4incident, out4incident,
      *    title, parallel)
@@ -1049,7 +1012,7 @@ C     ! reference number of the field
       i = 1
       call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
      *     nnodes, table_nod, type_el, eps_eff, x_arr,  
-     *     beta1, sol1, b(jp_rhs), 
+     *     beta1, sol1, sol_avg, 
      *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
      *       q_average, plot_real, plot_imag, plot_abs)
 C
@@ -1059,7 +1022,7 @@ C     ! reference number of the field
       i = 2
       call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
      *     nnodes, table_nod, type_el, eps_eff, x_arr,
-     *     beta1, sol1, b(jp_rhs), 
+     *     beta1, sol1, sol_avg, 
      *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
      *       q_average, plot_real, plot_imag, plot_abs)
 
@@ -1079,7 +1042,7 @@ C     ! Upper semi-inifinite medium: Plane wave expansion
       call gmsh_plot_PW (i, E_H_field, 
      *     nel, npt, nnodes, neq_PW, bloch_vec, 
      *  table_nod, x_arr, lat_vecs, lambda, eps_eff(1),
-     *  b(jp_rhs), vec_coef_down, vec_coef_up, 
+     *  sol_avg, vec_coef_down, vec_coef_up, 
      *  index_pw_inv, ordre_ls, h_1, hz, gmsh_file_pos,
      *  dir_name, q_average, plot_real, plot_imag, plot_abs)
 
@@ -1089,7 +1052,7 @@ C     ! Upper semi-inifinite medium: Plane wave expansion
       call gmsh_plot_PW (i, E_H_field, 
      *     nel, npt, nnodes, neq_PW, bloch_vec, 
      *  table_nod, x_arr, lat_vecs, lambda, eps_eff(1),
-     *  b(jp_rhs), vec_coef_down, vec_coef_up, 
+     *  sol_avg, vec_coef_down, vec_coef_up, 
      *  index_pw_inv, ordre_ls, h_1, hz, gmsh_file_pos,
      *  dir_name, q_average, plot_real, plot_imag, plot_abs)
       endif
@@ -1117,12 +1080,12 @@ C  Completeness Check
         write(ui,*) "MAIN: K_overlap Integral"
         call K_overlap(nval, nel, npt, nnodes, 
      *    nb_typ_el, type_el, table_nod, x_arr,   
-     *    sol2, pp, qq, lambda, freq, b(jp_overlap_K), neq_PW,
+     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
      *    lat_vecs, bloch_vec, beta2, index_pw_inv,
      *    PrintAll, k_0, ordre_ls)
         write(ui,*) "MAIN: Completeness Test"
         call Completeness (nval, neq_PW, 
-     *    b(jp_overlap_K), overlap_J)
+     *    overlap_K, overlap_J)
 C  Search for number of propagating Bloch Modes
       numberprop_N = 0
       do i=1,nval
