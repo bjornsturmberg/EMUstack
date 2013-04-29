@@ -75,6 +75,7 @@ scat_mats(bottom, light_list, simo_para)
 
 
 max_num_BMs = 120
+# Problem: superstrate is SiO2_a by default but should be air
 grating_1 = objects.NanoStruct('1D_grating', period, 100, height_1 = 25, num_h = 1,
     inclusion_a = materials.Ag, background = (1.5 + 0.0j), loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 4.0,

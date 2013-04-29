@@ -34,7 +34,7 @@ def c_c_tra(pol = 0):
             os.system("cat" + listoffiles3 \
                 + "> Transmittance.txt")
             for fle in Afiles + Rfiles + Tfiles:
-                os.remove(fle)  
+                pass
         # # T, R matricies
         # filename1 = "wl*_T_Lambda_MAT_sp.txt"
         # Afiles = glob.glob(filename1)
@@ -83,7 +83,7 @@ def c_c_tra(pol = 0):
             os.system("cat" + listoffiles3 \
                 + "> Transmittance_R.txt")
             for fle in Afiles + Rfiles + Tfiles:
-                os.remove(fle)
+                pass
         # Left hand circular polarisation
         filename1 = "wl*_A_Lambda_L.txt"
         Afiles = glob.glob(filename1)
@@ -111,7 +111,7 @@ def c_c_tra(pol = 0):
             os.system("cat" + listoffiles3 \
                 + "> Transmittance_L.txt")
             for fle in Afiles + Rfiles + Tfiles:
-                os.remove(fle)
+                pass
         # Circular Dichroism
         filename1 = "wl*_A_Lambda_CD.txt"
         Afiles = glob.glob(filename1)
@@ -139,7 +139,7 @@ def c_c_tra(pol = 0):
             os.system("cat" + listoffiles3 \
                 + "> Transmittance_CD.txt")
             for fle in Afiles + Rfiles + Tfiles:
-                os.remove(fle)
+                pass
         # T, R matricies
         filename1 = "wl*_T_Lambda_MAT_lr.txt"
         Afiles = glob.glob(filename1)
@@ -159,7 +159,7 @@ def c_c_tra(pol = 0):
             os.system("cat" + listoffiles2 \
                 + "> R_Lambda_MAT_lr.txt")
             for fle in Afiles + Rfiles:
-                os.remove(fle)
+                pass
     else:
         filename1 = "wl*_A_Lambda.txt"
         Afiles = glob.glob(filename1)
@@ -187,7 +187,7 @@ def c_c_tra(pol = 0):
             os.system("cat" + listoffiles3 \
                 + "> Transmittance.txt")
             for fle in Afiles + Rfiles + Tfiles:
-                os.remove(fle)   
+                pass   
         filename1 = "wl*_A_Layers.txt"
         Afiles = glob.glob(filename1)
         Afiles.sort()
@@ -214,7 +214,7 @@ def c_c_tra(pol = 0):
             os.system("cat" + listoffiles3 \
                 + "> Tran_Layers.txt")
             for fle in Afiles + Rfiles + Tfiles:
-                os.remove(fle)
+                pass
 
 
 

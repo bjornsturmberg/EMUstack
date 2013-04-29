@@ -1,5 +1,5 @@
 C     Calculate absorption (A = 1 - t - r) and write Transmission,
-C          Refelction and Absorption for each Lambda to file
+C          Reflection and Absorption for each Lambda to file
 C                 
       subroutine A_and_W_Lambda_sub(TLambda, RLambda, neq_PW,  
      * numberprop_S, numberprop_S_b, lambda, pol,

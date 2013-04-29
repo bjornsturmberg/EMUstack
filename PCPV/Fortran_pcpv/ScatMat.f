@@ -12,7 +12,7 @@ C
       implicit none
 C
       integer*8 neq_PW, nval, PropModes, d_in_nm, num_h
-c     32-but integers for BLAS and LAPACK
+C     32-bit integers for BLAS and LAPACK
       integer*4 nval_max_32, PW_max_32, h_i
       integer*8 debug, numberprop_S, Zeroth_Order_inv
       integer*8 title, parallel_1
@@ -378,42 +378,42 @@ C      if (PrintAll .eq. 1) then
       write(buf1,'(I4.4)') title
       write(buf2,'(I4.4)') parallel_1 
 
-C      open (unit=345, file='Matrices/R12.txt',   
-      open (unit=345, file="st"//buf1//"_wl"//buf2//"_R12.txt",
-     *         status='unknown')
-      do k=1,2*neq_PW
-        do i=1,2*neq_PW
-          write(345,101) i, k, R12(i,k), abs(R12(i,k))**2
-        enddo
-      enddo 
-      close(345)
-C      open (unit=345, file='Matrices/T12.txt',
-      open (unit=345, file="st"//buf1//"_wl"//buf2//'_T12.txt',
-     *         status='unknown')
-      do k=1,2*neq_PW
-        do i=1,nval
-          write(345,101) i, k, T12(i,k), abs(T12(i,k))**2
-        enddo
-      enddo 
-      close(345)
-C      open (unit=345, file='Matrices/R21.txt',
-      open (unit=345, file="st"//buf1//"_wl"//buf2//'_R21.txt',
-     *         status='unknown')
-      do k=1,nval
-        do i=1,nval
-          write(345,101) i, k, R21(i,k), abs(R21(i,k))**2
-        enddo
-      enddo 
-      close(345)
-C      open (unit=345, file='Matrices/T21.txt',
-      open (unit=345, file="st"//buf1//"_wl"//buf2//'_T21.txt',
-     *         status='unknown')
-      do k=1,nval
-        do i=1,2*neq_PW
-          write(345,101) i, k, T21(i,k), abs(T21(i,k))**2
-        enddo
-      enddo 
-      close(345)
+CC      open (unit=345, file='Matrices/R12.txt',   
+C      open (unit=345, file="st"//buf1//"_wl"//buf2//"_R12.txt",
+C     *         status='unknown')
+C      do k=1,2*neq_PW
+C        do i=1,2*neq_PW
+C          write(345,101) i, k, R12(i,k), abs(R12(i,k))**2
+C        enddo
+C      enddo 
+C      close(345)
+CC      open (unit=345, file='Matrices/T12.txt',
+C      open (unit=345, file="st"//buf1//"_wl"//buf2//'_T12.txt',
+C     *         status='unknown')
+C      do k=1,2*neq_PW
+C        do i=1,nval
+C          write(345,101) i, k, T12(i,k), abs(T12(i,k))**2
+C        enddo
+C      enddo 
+C      close(345)
+CC      open (unit=345, file='Matrices/R21.txt',
+C      open (unit=345, file="st"//buf1//"_wl"//buf2//'_R21.txt',
+C     *         status='unknown')
+C      do k=1,nval
+C        do i=1,nval
+C          write(345,101) i, k, R21(i,k), abs(R21(i,k))**2
+C        enddo
+C      enddo 
+C      close(345)
+CC      open (unit=345, file='Matrices/T21.txt',
+C      open (unit=345, file="st"//buf1//"_wl"//buf2//'_T21.txt',
+C     *         status='unknown')
+C      do k=1,nval
+C        do i=1,2*neq_PW
+C          write(345,101) i, k, T21(i,k), abs(T21(i,k))**2
+C        enddo
+C      enddo 
+C      close(345)
 C     P matrix for propagation through finite thickness
       open (unit=345, file="st"//buf1//"_wl"//buf2//"_P.txt",
      *         status='unknown')

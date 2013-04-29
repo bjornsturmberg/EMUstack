@@ -36,6 +36,7 @@ simo_para  = objects.Controls(debug = 0, max_order_PWs = 0, num_cores = 1)
 clear_previous.clean('.txt')
 clear_previous.clean('.pdf')
 clear_previous.clean('.log')
+clear_previous.clean('.npy')
 
 ################ Light parameters #####################
 
@@ -60,7 +61,7 @@ period  = 600
 cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     film_material = materials.Air, superstrate = materials.Air, 
     substrate = materials.Air,loss = False, label_nu = 0)
-scat_mats(cover, light_list, simo_para)
+sim_cover = scat_mats(cover, light_list, simo_para)
 
 radius1 = 60
 max_num_BMs = 30
@@ -71,14 +72,14 @@ grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
     make_mesh_now = True, force_mesh = True,
     lc_bkg = 0.15, lc2= 1.5, lc3= 1.5,
     max_num_BMs = max_num_BMs, label_nu = 1)
-simmo_list = scat_mats(grating_1, light_list, simo_para)
+sim_grat1 = scat_mats(grating_1, light_list, simo_para)
 
 
 # will only ever use top scattering matrices for the bottom layer
 bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     film_material = materials.SiO2_a, superstrate = materials.Air, 
     loss = False, label_nu = 2)
-scat_mats(bottom, light_list, simo_para)
+sim_bot = scat_mats(bottom, light_list, simo_para)
 
 
 
@@ -96,11 +97,17 @@ def results_match_reference(filename):
     np.testing.assert_allclose(result, reference, 1e-7, 1e-6, filename)
 
 def test_results():
-    result_files = ("Absorptance.txt", "Lay_Absorb_0.txt",
-                    "Lay_Trans_0.txt", "Reflectance.txt",
-                    "Transmittance.txt", "beta_st0000.txt",
-                    "beta_st0002.txt", "omega_Ft_st0001.txt",
-                    "omega_Fz_st0001.txt", "omega_pol_st0001.txt",
-                    "omega_st0001.txt",)
+    result_files = (
+        "Absorptance.txt",       "st0001_wl0001_A_Lambda.txt",
+        "beta_st0000.txt",       "st0001_wl0001_beta.txt",
+        "beta_st0002.txt",       "st0001_wl0001_P.txt",
+        "Lay_Absorb_0.txt",      
+        "Lay_Trans_0.txt",      
+        "omega_Ft_st0001.txt",   "st0001_wl0001_R_Lambda.txt",
+        "omega_Fz_st0001.txt",  
+        "omega_pol_st0001.txt",  
+        "omega_st0001.txt",      "st0001_wl0001_T_Lambda.txt",
+        "Reflectance.txt",       "Transmittance.txt",
+        )
     for f in result_files:
         yield results_match_reference, f

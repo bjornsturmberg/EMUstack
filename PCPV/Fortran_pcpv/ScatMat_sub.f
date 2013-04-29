@@ -12,7 +12,7 @@ C
       implicit none
 C
       integer*8 neq_PW, nval, PropModes, d_in_nm, num_h
-C     32-but integers for BLAS and LAPACK
+C     32-bit integers for BLAS and LAPACK
       integer*4 nval_max_32, PW_max_32, h_i
       integer*8 debug, numberprop_S, numberprop_S_b
       integer*8 Zeroth_Order_inv

@@ -9,36 +9,9 @@ import cat_n_clean
 # matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 import objects
+import temporary_bullshit as bs
 
 
-
-def load_scat_mat(name, st, p):
-    # reshape matrices to be consistent with pcpv.exe output
-    format_title = '%04d' % st
-    format_p     = '%04d' % p
-
-    file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
-        'st' : format_title, 'wl' : format_p, 'mat_name' : name }
-    data   = np.loadtxt(file_name)
-    num_1  = max(data[:,0])
-    num_2  = max(data[:,1])
-    matrix = np.mat(data[:,2] + data[:,3]*(0+1j))
-    matrix = np.reshape(matrix, (num_2, num_1))
-    return matrix
-
-def save_scat_mat(name, data):
-    # reshape matrices to be consistent with pcpv.exe output
-    # format_title = '%04d' % st
-    # format_p     = '%04d' % p
-
-    file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
-        'st' : format_title, 'wl' : format_p, 'mat_name' : name }
-    np.savetxt(file_name, data)#, fmt = '%18.12f')
-    # num_1  = max(data[:,0])
-    # num_2  = max(data[:,1])
-    # matrix = np.mat(data[:,2] + data[:,3]*(0+1j))
-    # matrix = np.reshape(matrix, (num_2, num_1))
-    # return matrix
 
 def net_scat_mats(solar_cell, wavelengths, simo_para):
 
@@ -86,12 +59,12 @@ def net_scat_mats(solar_cell, wavelengths, simo_para):
         t21_list = []
         P_list   = []
         for st1 in solar_cell:
-            r12_list.append(load_scat_mat('R12', st1.label_nu, p).T)
-            r21_list.append(load_scat_mat('R21', st1.label_nu, p).T)
+            r12_list.append(bs.load_scat_mat('R12', st1.label_nu, p))
+            r21_list.append(bs.load_scat_mat('R21', st1.label_nu, p))
             # potential to save on one transpose
-            t12_list.append(load_scat_mat('T12', st1.label_nu, p).T)
-            # t21_list.append(load_scat_mat('T21', st1.label_nu, p).T)
-            t21_list.append(t12_list[-1].T)
+            t12_list.append(bs.load_scat_mat('T12', st1.label_nu, p))
+            t21_list.append(bs.load_scat_mat('T21', st1.label_nu, p))
+            #t21_list.append(t12_list[-1].T)
 
 # initiate (r)tnet as substrate top interface
         tnet_list = []
@@ -114,7 +87,7 @@ def net_scat_mats(solar_cell, wavelengths, simo_para):
             tnet_list.append(tnet)
             rnet_list.append(rnet)
 # through TF layer
-            P              = load_scat_mat('P', solar_cell[i].label_nu, p).T
+            P              = bs.load_scat_mat_old('P', solar_cell[i].label_nu, p).T
             I_TF           = np.matrix(np.eye(len(P)),dtype='D')
             to_invert      = (I_TF - r21_list[i]*P*rnet*P)
             inverted_t12   = np.linalg.solve(to_invert,t12_list[i])

@@ -20,12 +20,16 @@ pi = np.pi
 class Anallo(object):
     """ Like a :Simmo:, but for a thin film, and calculated analytically."""
     def __init__(self, thin_film, light, other_para, p):
-        self.thin_film = thin_film
+        self.structure = thin_film
         self.light = light
         self.other_para = other_para
         self.p = p
         self.omega = None
         self.mode_pol = None
+        self.T12            = None
+        self.R12            = None
+        self.T21            = None
+        self.R21            = None
 
     def bloch_vec(self):
         # FIXME: Felix believes the following line is wrong but it's 
@@ -37,13 +41,20 @@ class Anallo(object):
 class Simmo(Anallo):
     """docstring for Simmo"""
     def __init__(self, structure, light, other_para, p):
-        self.structure     = structure
-        self.light         = light
-        self.other_para    = other_para
-        self.max_num_BMs   = structure.max_num_BMs
-        self.var_BM_min    = other_para.var_BM_min
-        self.max_order_PWs = other_para.max_order_PWs
-        self.p             = p
+        self.structure      = structure
+        self.light          = light
+        self.other_para     = other_para
+        self.max_num_BMs    = structure.max_num_BMs
+        self.var_BM_min     = other_para.var_BM_min
+        self.max_order_PWs  = other_para.max_order_PWs
+        self.p              = p
+        self.omega          = None
+        self.mode_pol       = None
+        self.T12            = None
+        self.R12            = None
+        self.T21            = None
+        self.R21            = None
+
 
 
     def inclusion_a_n(self):
@@ -148,9 +159,14 @@ class Simmo(Anallo):
         )
 
         if 1 == self.other_para.PrintOmega:
-            self.omega, mode_pol = res
+            self.omega, mode_pol, self.T12, self.R12, self.T21, self.R21 = res
             #TODO: throw out mode_pol[:3]?
             self.mode_pol = mode_pol
+            bs.save_scat_mat(self.T12, 'T12', self.structure.label_nu, self.p, None)
+            bs.save_scat_mat(self.R12, 'R12', self.structure.label_nu, self.p, None)
+            bs.save_scat_mat(self.T21, 'T21', self.structure.label_nu, self.p, None)
+            bs.save_scat_mat(self.R21, 'R21', self.structure.label_nu, self.p, None)
+
 
 
 def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls, 
@@ -338,11 +354,16 @@ def scat_mats(layer, light_list, simo_para):
 
             # saving matrices to file
             if layer.substrate == layer.superstrate:
+                an.T12 = t12
+                an.R12 = r12
+                an.T21 = t23
+                an.R12 = r23
                 bs.save_scat_mat(r12, 'R12', layer.label_nu, p, matrix_size)
                 bs.save_scat_mat(t12, 'T12', layer.label_nu, p, matrix_size)
                 bs.save_scat_mat(r23, 'R21', layer.label_nu, p, matrix_size)
                 bs.save_scat_mat(t23, 'T21', layer.label_nu, p, matrix_size)
             else:
+                #FIXME: convert this to storing in the object itself
                 bs.save_scat_mat(r12, 'R12', layer.label_nu, p, matrix_size)
                 bs.save_scat_mat(t12, 'T12', layer.label_nu, p, matrix_size)
                 bs.save_scat_mat(r23, 'R23', layer.label_nu, p, matrix_size)

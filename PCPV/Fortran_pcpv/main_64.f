@@ -1,12 +1,17 @@
-      subroutine main(parallel, lambda, nval, ordre_ls, d_in_nm,
-     *    debug, mesh_file, mesh_format, nb_typ_el, n_eff,
-     *    substrate, bloch_vec0, h_1, h_2, num_h, lx, ly, tol, 
+      subroutine main(
+c     Explicit inputs
+     *    parallel, lambda, nval, ordre_ls, d_in_nm,
+     *    debug, mesh_file, mesh_format, n_eff,
+     *    substrate, bloch_vec, h_1, h_2, num_h, lx, ly, tol, 
      *    E_H_field, i_cond, itermax, pol, traLambda, PropModes,
      *    PrintSolution, PrintSupModes, PrintOmega, PrintAll,
      *    Checks, q_average, plot_real, plot_imag, plot_abs,
      *    incident, what4incident, out4incident, Loss, title,
      *    neq_PW, Zeroth_Order,
-     *    beta, mode_pol)
+c     "Optional" inputs (Python guesses these)
+     *    nb_typ_el,
+c     Outputs
+     *    beta, mode_pol, T12, R12, T21, R21)
 C************************************************************************
 C
 C  Program:
@@ -54,7 +59,8 @@ C      integer*8 jp_matD2, jp_matL2, jp_matU2
       integer*8 jp_overlap_K, jp_X_mat
       integer*8 jp_sol, jp_sol1, jp_sol2
       integer*8 jp_eigenval, jp_eigenval1, jp_eigenval2
-      integer*8 jp_T, jp_R, jp_T12, jp_R12, jp_T21, jp_R21
+      integer*8 jp_T, jp_R
+c      , jp_T12, jp_R12, jp_T21, jp_R21
       integer*8 jp_T_Lambda, jp_R_Lambda
       integer*8 jp_X_mat_b
 C  Plane wave parameteres
@@ -93,7 +99,7 @@ c, iout, nonz_1, nonz_2
 c     Wavelength lambda is in normalised units of d_in_nm
       double precision lambda, lambda_1, lambda_2, d_lambda
       double precision d_freq, freq, lat_vecs(2,2), tol
-      double precision k_0, pi, lx, ly, bloch_vec(2), bloch_vec0(2)
+      double precision k_0, pi, lx, ly, bloch_vec(2), bloch_vec_k(2)
       complex*16 shift
 C  Timing variables
       double precision time1, time2
@@ -141,16 +147,25 @@ c     Declare the pointers of for sparse matrix storage
       integer i_32
 
 c     new breed of variables to prise out of a, b and c
-
       complex*16 beta(nval)
       complex*16 mode_pol(4,nval)
-
-Cf2py intent(out) beta, mode_pol
+c     Fresnel scattering matrices
+      complex*16 T12(nval,2*neq_PW)
+      complex*16 R12(2*neq_PW,2*neq_PW)
+      complex*16 T21(2*neq_PW,nval)
+      complex*16 R21(nval,nval)
+ 
+Cf2py intent(out) beta, mode_pol, T12, R12, T21, R21
 
 
       n_64 = 2
 C     !n_64**28 on Vayu
       cmplx_max=n_64**27
+C     Felix is subtracting off the size of matrices he's extracted
+C     mode_pol
+      cmplx_max = cmplx_max - nval*4
+C     T12, R12, T21, R21
+      cmplx_max = cmplx_max - (2*neq_PW + nval)**2
       real_max=n_64**22
       int_max=n_64**22
 
@@ -517,11 +532,12 @@ C      jp_eigenval_tmp = jp_eigen_pol + nval*4
       jp_overlap_J_dagger = jp_overlap_J + 2*neq_PW*nval
       jp_overlap_K = jp_overlap_J_dagger + 2*neq_PW*nval
       jp_X_mat = jp_overlap_K + 2*neq_PW*nval
-      jp_T12 = jp_X_mat + 2*neq_PW*2*neq_PW  
-      jp_T21 = jp_T12 + 2*neq_PW*nval
-      jp_R12 = jp_T21 + 2*neq_PW*nval
-      jp_R21 = jp_R12 + 4*neq_PW*neq_PW
-      jp_T = jp_R21 + nval*nval
+c      jp_T12 = jp_X_mat + 2*neq_PW*2*neq_PW
+c      jp_T21 = jp_T12 + 2*neq_PW*nval
+c      jp_R12 = jp_T21 + 2*neq_PW*nval
+c      jp_R21 = jp_R12 + 4*neq_PW*neq_PW
+c      jp_T = jp_R21 + nval*nval
+      jp_T = jp_X_mat + 2*neq_PW*2*neq_PW
       jp_R = jp_T + 2*neq_PW*2*neq_PW
       jp_T_Lambda = jp_R + 2*neq_PW*2*neq_PW
       jp_R_Lambda = jp_T_Lambda + 2*neq_PW*2*neq_PW
@@ -532,6 +548,9 @@ C      jp_eigenval_tmp = jp_eigen_pol + nval*4
       else
         cmplx_used = jp_R_Lambda + 2*neq_PW*2*neq_PW
       endif
+
+      write(ui,*) "cmplx_max  = ", cmplx_max
+      write(ui,*) "cmplx_used = ", cmplx_used
 C
       if (cmplx_max .lt. cmplx_used)  then
          write(ui,*) 'The size of the real supervector is too small'
@@ -693,7 +712,7 @@ C  Index number of the core materials (material with highest Re(eps_eff))
       endif
       n_core(2) = n_core(1)
       shift = 1.01d0*Dble(n_eff(n_core(1)))**2 * k_0**2
-     *    - bloch_vec0(1)**2 - bloch_vec0(2)**2
+     *    - bloch_vec(1)**2 - bloch_vec(2)**2
       If(debug .eq. 1) then
         write(ui,*) "MAIN: n_core = ", n_core
         if(E_H_field .eq. 1) then
@@ -730,14 +749,14 @@ C        Loop over prime last because we want to send its beta etc to Python
              dir_name = "Output"
              jp_sol = jp_sol1
              jp_eigenval = jp_eigenval1
-             bloch_vec(1) = bloch_vec0(1)
-             bloch_vec(2) = bloch_vec0(2)
+             bloch_vec_k(1) = bloch_vec(1)
+             bloch_vec_k(2) = bloch_vec(2)
            else
              dir_name = "Output-"
              jp_sol = jp_sol2
              jp_eigenval = jp_eigenval2
-             bloch_vec(1) = -bloch_vec0(1)
-             bloch_vec(2) = -bloch_vec0(2)
+             bloch_vec_k(1) = -bloch_vec(1)
+             bloch_vec_k(2) = -bloch_vec(2)
            endif  
            namelength = len_trim(dir_name)
 C
@@ -748,7 +767,7 @@ C     finite element equations
       endif
       call cpu_time(time1_asmbl)
       call asmbly (i_cond, i_base, nel, npt, n_ddl, neq, nnodes,
-     *  shift, bloch_vec, nb_typ_el, pp, qq, a(ip_table_nod), 
+     *  shift, bloch_vec_k, nb_typ_el, pp, qq, a(ip_table_nod), 
      *  a(ip_table_N_E_F), a(ip_type_el), a(ip_eq),
      *   a(ip_period_N), a(ip_period_N_E_F), b(jp_x), b(jp_x_N_E_F), 
      *   nonz, a(ip_row), a(ip_col_ptr), c(kp_mat1_re), 
@@ -815,7 +834,7 @@ C       The eigenvectors will be stored in the array b(jp_sol)
 C       The eigenvalues and eigenvectors will be renumbered  
 C                 using the permutation vector index
         call array_sol (i_cond, nval, nel, npt, n_ddl, neq, nnodes, 
-     *   n_core, bloch_vec, index, a(ip_table_nod), 
+     *   n_core, bloch_vec_k, index, a(ip_table_nod), 
      *   a(ip_table_N_E_F), a(ip_type_el), a(ip_eq), a(ip_period_N), 
      *   a(ip_period_N_E_F), b(jp_x), b(jp_x_N_E_F), b(jp_eigenval), 
      *   b(jp_eigenval_tmp), mode_pol, b(jp_vp), b(jp_sol))
@@ -826,7 +845,7 @@ C
       if(debug .eq. 1) then
         write(ui,*)
         write(ui,*) "lambda, 1/lambda = ", lambda, 1.0d0/lambda
-        write(ui,*) (bloch_vec(i)/(2.0d0*pi),i=1,2)
+        write(ui,*) (bloch_vec_k(i)/(2.0d0*pi),i=1,2)
         write(ui,*) "sqrt(shift) = ", sqrt(shift)
         do i=1,nval
           write(ui,"(i4,2(g22.14),2(g18.10))") i, 
@@ -839,7 +858,7 @@ C  Dispersion Diagram
         call mode_energy (nval, nel, npt, n_ddl, nnodes, 
      *     n_core, a(ip_table_nod), a(ip_type_el), nb_typ_el, eps_eff, 
      *     b(jp_x), b(jp_sol), b(jp_eigenval), mode_pol)
-C        call DispersionDiagram(lambda, bloch_vec, shift,
+C        call DispersionDiagram(lambda, bloch_vec_k, shift,
 C     *     nval, n_conv, b(jp_eigenval), mode_pol, d_in_nm)
 C     START: LOOP TO BE REMOVED
 C     TODO: remove the following loop
@@ -876,8 +895,6 @@ CCCC Hardcore Debugging - Print all arrays + some variables CCCCC
       endif
 CCCC Hardcore Debugging - End                               CCCCC
 
-      bloch_vec(1) = bloch_vec0(1)
-      bloch_vec(2) = bloch_vec0(2)
 C  Orthogonal integral
       if (debug .eq. 1) then 
         write(ui,*) "MAIN: Field product"
@@ -928,7 +945,7 @@ C  Normalisation
      *  (time2_J-time1_J)
       endif  
 C
-C  Orthnormal integral
+C  Orthonormal integral
       if (PrintAll .eq. 1) then
         write(ui,*) "MAIN: Product of normalised field"
         overlap_file = "Normed/Orthogonal_n.txt"
@@ -993,7 +1010,7 @@ C  Scattering Matrices
 C
       call ScatMat_sub ( b(jp_overlap_J), b(jp_overlap_J_dagger),  
      *    b(jp_X_mat), b(jp_X_mat_b), neq_PW, nval, 
-     *    b(jp_eigenval1), b(jp_T12), b(jp_R12), b(jp_T21), b(jp_R21),
+     *    b(jp_eigenval1), T12, R12, T21, R21,
      *    PrintAll, PrintSolution, 
      *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
      *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
@@ -1008,7 +1025,7 @@ C  Scattering Matrices
       endif
       call ScatMat( b(jp_overlap_J), b(jp_overlap_J_dagger),  
      *    b(jp_X_mat), neq_PW, nval, 
-     *    b(jp_eigenval1), b(jp_T12), b(jp_R12), b(jp_T21), b(jp_R21),
+     *    b(jp_eigenval1), T12, R12, T21, R21,
      *    PrintAll, PrintSolution, 
      *    lx, h_1, h_2, num_h, Checks, b(jp_T_Lambda), 
      *    b(jp_R_Lambda), traLambda, pol, PropModes, lambda, d_in_nm,
@@ -1047,7 +1064,7 @@ C  Plot superposition of fields
       if (PrintSupModes .eq. 1) then
 C     Coefficent of the modes travelling downward 
       do i=1,nval
-        vec_coef(i) = b(jp_T12+i-1)
+        vec_coef(i) = T12(1,i)
       enddo
 C     Coefficent of the modes travelling upward 
       do i=1,nval
@@ -1081,7 +1098,7 @@ C     ! Incident field
       vec_coef_down(1) = 1.0d0
       do i=1,2*neq_PW
 C     ! Reflected field
-        vec_coef_up(i) = b(jp_R12+i-1)
+        vec_coef_up(i) = R12(1,i)
       enddo
 
 C     ! Upper semi-inifinite medium: Plane wave expansion
@@ -1199,7 +1216,7 @@ C  Search for number of propagating Bloch Modes
       write(ui,*) "numberprop_N = ", numberprop_N
 C  Energy Conservation Check
         write(ui,*) "MAIN: Energy Check"
-        call Energy_Cons(b(jp_R12), b(jp_T12), b(jp_R21), b(jp_T21),
+        call Energy_Cons(R12, T12, R21, T21,
      *    numberprop_S, numberprop_N, neq_PW, nval)
       endif 
 C
