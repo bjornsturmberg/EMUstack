@@ -3,7 +3,7 @@
 
 python module pcpv ! in 
     interface  ! in :pcpv
-        subroutine main(parallel,lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,npt,nel,n_eff,substrate,bloch_vec,h_1,h_2,num_h,lx,ly,tol,e_h_field,i_cond,itermax,pol,tralambda,propmodes,printsolution,printsupmodes,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,incident,what4incident,out4incident,loss,title,neq_pw,zeroth_order,nb_typ_el,beta1,mode_pol,t12,r12,t21,r21) ! in :pcpv:main_64.f
+        subroutine main(parallel,lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,npt,nel,n_eff,substrate,bloch_vec,h_1,h_2,num_h,lx,ly,tol,e_h_field,i_cond,itermax,pol,tralambda,propmodes,printsolution,printsupmodes,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,incident,what4incident,out4incident,loss,title,neq_pw,zeroth_order,nb_typ_el,beta1,mode_pol,t12,r12,t21,r21) ! in :pcpv:py_main_64.f
             integer*8 :: parallel
             double precision :: lambda
             integer*8 :: nval
@@ -53,7 +53,7 @@ python module pcpv ! in
             complex*16 dimension(2 * neq_pw,nval),intent(out),depend(neq_pw,nval) :: t21
             complex*16 dimension(nval,nval),intent(out),depend(nval,nval) :: r21
         end subroutine main
-        subroutine calc_modes(lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,npt,nel,n_eff,bloch_vec,lx,ly,tol,e_h_field,i_cond,itermax,propmodes,printsolution,printsupmodes,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,loss,neq_pw,nb_typ_el,beta1,sol1,sol2,mode_pol,type_el,table_nod,x_arr,pp,qq) ! in :pcpv:calc_modes.f
+        subroutine calc_modes(lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,npt,nel,n_eff,bloch_vec,lx,ly,tol,e_h_field,i_cond,itermax,propmodes,printsolution,printsupmodes,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,loss,neq_pw,nb_typ_el,beta1,sol1,sol2,mode_pol,type_el,table_nod,x_arr,pp,qq) ! in :pcpv:py_calc_modes.f
             double precision :: lambda
             integer*8 :: nval
             integer*8 :: ordre_ls
@@ -94,7 +94,7 @@ python module pcpv ! in
             complex*16 dimension(nb_typ_el),intent(out),depend(nb_typ_el) :: pp
             complex*16 dimension(nb_typ_el),intent(out),depend(nb_typ_el) :: qq
         end subroutine calc_modes
-        subroutine calc_scat(parallel,lambda,ordre_ls,d_in_nm,debug,n_eff,bloch_vec,h_1,h_2,num_h,lx,ly,pol,tralambda,propmodes,printsolution,printall,checks,incident,what4incident,out4incident,title,neq_pw,zeroth_order,beta1,sol1,sol2,type_el,table_nod,x_arr,pp,qq,nval,npt,nel,nb_typ_el,t12,r12,t21,r21) ! in :pcpv:calc_scat.f
+        subroutine calc_scat(parallel,lambda,ordre_ls,d_in_nm,debug,n_eff,bloch_vec,h_1,h_2,num_h,lx,ly,pol,tralambda,propmodes,printsolution,printall,checks,incident,what4incident,out4incident,title,neq_pw,zeroth_order,beta1,sol1,sol2,type_el,table_nod,x_arr,pp,qq,nval,npt,nel,nb_typ_el,t12,r12,t21,r21) ! in :pcpv:py_calc_scat.f
             integer*8 :: parallel
             double precision :: lambda
             integer*8 :: ordre_ls

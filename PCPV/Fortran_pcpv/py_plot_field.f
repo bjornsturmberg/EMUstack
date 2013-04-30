@@ -903,9 +903,11 @@ C  Overlaps at bottom Substrate
       if (substrate .eq. 1) then
         n_eff_sub = DBLE(n_eff(2))
         eps_eff_sub = DBLE(eps_eff(2))
-      call J_overlap_sub ( lat_vecs, lambda, freq, n_eff_sub,
-     *  eps_eff_sub, neq_PW, bloch_vec, X_mat_b, numberprop_S_b,
-     *  index_pw_inv, PrintAll, ordre_ls, k_0)
+      write(ui,*) "J_overlap_sub has been removed..."
+      stop
+C      call J_overlap_sub ( lat_vecs, lambda, freq, n_eff_sub,
+C     *  eps_eff_sub, neq_PW, bloch_vec, X_mat_b, numberprop_S_b,
+C     *  index_pw_inv, PrintAll, ordre_ls, k_0)
 C  Scattering Matrices
       if (debug .eq. 1) then
         write(ui,*) "MAIN: Scattering Matrices substrate"
@@ -913,15 +915,17 @@ C  Scattering Matrices
 
 
 
-      call ScatMat_sub ( overlap_J, overlap_J_dagger,  
-     *    X_mat, X_mat_b, neq_PW, nval, 
-     *    beta1, T12, R12, T21, R21,
-     *    PrintAll, PrintSolution, 
-     *    lx, h_1, h_2, num_h, Checks, T_Lambda, 
-     *    R_Lambda, traLambda, pol, PropModes, lambda, d_in_nm,
-     *    numberprop_S, numberprop_S_b, freq, Zeroth_Order_inv,
-     *    debug, incident, what4incident, out4incident,
-     *    title, parallel)
+      write(ui,*) "Scatmat_sub has been removed..."
+      stop
+C      call ScatMat_sub ( overlap_J, overlap_J_dagger,  
+C     *    X_mat, X_mat_b, neq_PW, nval, 
+C     *    beta1, T12, R12, T21, R21,
+C     *    PrintAll, PrintSolution, 
+C     *    lx, h_1, h_2, num_h, Checks, T_Lambda, 
+C     *    R_Lambda, traLambda, pol, PropModes, lambda, d_in_nm,
+C     *    numberprop_S, numberprop_S_b, freq, Zeroth_Order_inv,
+C     *    debug, incident, what4incident, out4incident,
+C     *    title, parallel)
 C     !No Substrate
       else
 C  Scattering Matrices
