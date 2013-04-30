@@ -30,7 +30,8 @@ start = time.time()
 label_nu = 0
 ################ Simulation parameters ################
 
-simo_para  = objects.Controls(debug = 0, max_order_PWs = 0, num_cores = 1)
+simo_para  = objects.Controls(debug = 0, max_order_PWs = 0, num_cores = 1,
+        Checks = 0)
 
 # Remove results of previous simulations
 clear_previous.clean('.txt')
@@ -98,15 +99,15 @@ def results_match_reference(filename):
 
 def test_results():
     result_files = (
-        "Absorptance.txt",       "st0001_wl0001_A_Lambda.txt",
+        "Absorptance.txt",
         "beta_st0000.txt",       "st0001_wl0001_beta.txt",
         "beta_st0002.txt",       "st0001_wl0001_P.txt",
-        "Lay_Absorb_0.txt",      
-        "Lay_Trans_0.txt",      
-        "omega_Ft_st0001.txt",   "st0001_wl0001_R_Lambda.txt",
-        "omega_Fz_st0001.txt",  
-        "omega_pol_st0001.txt",  
-        "omega_st0001.txt",      "st0001_wl0001_T_Lambda.txt",
+        "Lay_Absorb_0.txt",
+        "Lay_Trans_0.txt",
+        "omega_Ft_st0001.txt",
+        "omega_Fz_st0001.txt",
+        "omega_pol_st0001.txt",
+        "omega_st0001.txt",
         "Reflectance.txt",       "Transmittance.txt",
         )
     for f in result_files:

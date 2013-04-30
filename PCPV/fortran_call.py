@@ -140,38 +140,88 @@ class Simmo(Anallo):
         with open("../PCPV/Data/"+self.structure.mesh_file) as f:
             n_msh_pts, n_msh_el = [int(i) for i in f.readline().split()]
 
-        print self.structure.mesh_format
-        # Run the fortran!
-        res = pcpv.main(
-            self.p, norm_wl, self.nval, 
+        resm = pcpv.calc_modes(
+            norm_wl, self.nval, 
             ordre_ls, d, self.other_para.debug, 
             self.structure.mesh_file, self.structure.mesh_format, 
             n_msh_pts, n_msh_el,
-            n_effs, self.structure.has_substrate, self.bloch_vec(), 
-            float(self.structure.height_1) / d, 
-            float(self.structure.height_2) / d, self.structure.num_h, 
+            n_effs, self.bloch_vec(), 
             self.structure.lx, self.structure.ly, self.other_para.tol, 
             self.other_para.E_H_field, self.other_para.i_cond, 
-            self.other_para.itermax, self.light.pol, 
-            self.other_para.traLambda, self.other_para.PropModes, 
+            self.other_para.itermax, #self.light.pol, 
+            self.other_para.PropModes, 
             self.other_para.PrintSolution, self.other_para.PrintSupModes, 
             self.other_para.PrintOmega, self.other_para.PrintAll, 
             self.other_para.Checks, self.other_para.q_average, 
             self.other_para.plot_real, self.other_para.plot_imag, 
-            self.other_para.plot_abs, self.other_para.incident, 
-            self.other_para.what4incident, self.other_para.out4incident, 
-            self.structure.loss, self.structure.label_nu,
-            neq_pw, zeroth_order
+            self.other_para.plot_abs, 
+            self.structure.loss,
+            neq_pw,
         )
 
+        (   self.beta1, self.sol1, self.sol2, self.mode_pol, 
+            type_el, table_nod, x_arr, pp, qq
+            ) = resm
+
+        ress = pcpv.calc_scat(
+            self.p, norm_wl, 
+            ordre_ls, d, self.other_para.debug, 
+            n_effs, self.bloch_vec(), 
+            float(self.structure.height_1) / d, 
+            float(self.structure.height_2) / d, self.structure.num_h, 
+            self.structure.lx, self.structure.ly,
+            self.light.pol, 
+            self.other_para.traLambda, self.other_para.PropModes, 
+            self.other_para.PrintSolution, self.other_para.PrintAll, 
+            self.other_para.Checks, 
+            self.other_para.incident, 
+            self.other_para.what4incident, self.other_para.out4incident, 
+            self.structure.label_nu,
+            neq_pw, zeroth_order,
+            self.beta1, self.sol1, self.sol2, 
+            type_el, table_nod, x_arr, pp, qq
+        )
+
+        self.T12, self.R12, self.T21, self.R21 = ress
         if 1 == self.other_para.PrintOmega:
-            self.omega, mode_pol, self.T12, self.R12, self.T21, self.R21 = res
-            #TODO: throw out mode_pol[:3]?
-            self.mode_pol = mode_pol
+            self.omega = self.beta1
             bs.save_scat_mat(self.T12, 'T12', self.structure.label_nu, self.p, None)
             bs.save_scat_mat(self.R12, 'R12', self.structure.label_nu, self.p, None)
             bs.save_scat_mat(self.T21, 'T21', self.structure.label_nu, self.p, None)
             bs.save_scat_mat(self.R21, 'R21', self.structure.label_nu, self.p, None)
+
+
+        # # Run the fortran!
+        # res = pcpv.main(
+        #     self.p, norm_wl, self.nval, 
+        #     ordre_ls, d, self.other_para.debug, 
+        #     self.structure.mesh_file, self.structure.mesh_format, 
+        #     n_msh_pts, n_msh_el,
+        #     n_effs, self.structure.has_substrate, self.bloch_vec(), 
+        #     float(self.structure.height_1) / d, 
+        #     float(self.structure.height_2) / d, self.structure.num_h, 
+        #     self.structure.lx, self.structure.ly, self.other_para.tol, 
+        #     self.other_para.E_H_field, self.other_para.i_cond, 
+        #     self.other_para.itermax, self.light.pol, 
+        #     self.other_para.traLambda, self.other_para.PropModes, 
+        #     self.other_para.PrintSolution, self.other_para.PrintSupModes, 
+        #     self.other_para.PrintOmega, self.other_para.PrintAll, 
+        #     self.other_para.Checks, self.other_para.q_average, 
+        #     self.other_para.plot_real, self.other_para.plot_imag, 
+        #     self.other_para.plot_abs, self.other_para.incident, 
+        #     self.other_para.what4incident, self.other_para.out4incident, 
+        #     self.structure.loss, self.structure.label_nu,
+        #     neq_pw, zeroth_order
+        # )
+
+        # if 1 == self.other_para.PrintOmega:
+        #     self.omega, mode_pol, self.T12, self.R12, self.T21, self.R21 = res
+        #     #TODO: throw out mode_pol[:3]?
+        #     self.mode_pol = mode_pol
+        #     bs.save_scat_mat(self.T12, 'T12', self.structure.label_nu, self.p, None)
+        #     bs.save_scat_mat(self.R12, 'R12', self.structure.label_nu, self.p, None)
+        #     bs.save_scat_mat(self.T21, 'T21', self.structure.label_nu, self.p, None)
+        #     bs.save_scat_mat(self.R21, 'R21', self.structure.label_nu, self.p, None)
 
 
 

@@ -1,18 +1,19 @@
-      subroutine calc_scat(
+      subroutine calc_modes(
 c     Explicit inputs
-     *    parallel, lambda, nval, ordre_ls, d_in_nm,
+     *    lambda, nval, ordre_ls, d_in_nm,
      *    debug, mesh_file, mesh_format, npt, nel,
      *    n_eff,
-     *    substrate, bloch_vec, h_1, h_2, num_h, lx, ly, tol, 
-     *    E_H_field, i_cond, itermax, pol, traLambda, PropModes,
+     *    bloch_vec, lx, ly, tol, 
+     *    E_H_field, i_cond, itermax, PropModes,
      *    PrintSolution, PrintSupModes, PrintOmega, PrintAll,
      *    Checks, q_average, plot_real, plot_imag, plot_abs,
-     *    incident, what4incident, out4incident, Loss, title,
-     *    neq_PW, Zeroth_Order,
+     *    Loss,
+     *    neq_PW,
 c     "Optional" inputs (Python guesses these)
      *    nb_typ_el,
 c     Outputs
-     *    beta1, mode_pol, T12, R12, T21, R21)
+     *    beta1, sol1, sol2, mode_pol, 
+     *    type_el, table_nod, x_arr, pp, qq)
 C************************************************************************
 C
 C  Program:
@@ -54,11 +55,11 @@ C      integer*8 jp_matD2, jp_matL2, jp_matU2
       integer*8 jp_T, jp_R
 C  Plane wave parameters
       integer*8 neq_PW, nx_PW, ny_PW, ordre_ls
-      integer*8 index_pw_inv(neq_PW)
-      integer*8 Zeroth_Order, Zeroth_Order_inv, nb_typ_el
+C      integer*8 index_pw_inv(neq_PW)
+      integer*8 nb_typ_el
       complex*16 pp(nb_typ_el),  qq(nb_typ_el)
       complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el), test
-      double precision n_eff_0, n_eff_sub, eps_eff_sub
+      double precision n_eff_0
 c     i_cond = 0 => Dirichlet boundary condition
 c     i_cond = 1 => Neumann boundary condition
 c     i_cond = 2 => Periodic boundary condition
@@ -71,7 +72,7 @@ c     E_H_field = 1 => Electric field formulation (E-Field)
 c     E_H_field = 2 => Magnetic field formulation (H-Field)
       integer*8 E_H_field
       integer*8 neq, debug
-      integer*8 npt_p3, numberprop_S, numberprop_N, numberprop_S_b
+      integer*8 npt_p3, numberprop_N
 C  Variable used by valpr
       integer*8 nval, nvect, itermax, ltrav
       integer*8 n_conv, i_base
@@ -107,20 +108,11 @@ C  Names and Controls
       character gmsh_file_pos*100
       character overlap_file*100, dir_name*100, buf1*4, buf2*4
       character*100 tchar
-      integer*8 namelength, PrintAll, PrintOmega, Checks, traLambda
-      integer*8 PrintSolution, pol, PrintSupModes
-      integer*8 substrate, num_h
+      integer*8 namelength, PrintAll, PrintOmega, Checks
+      integer*8 PrintSolution, PrintSupModes
       integer*8 PropModes
-C     Thicknesses h_1 and h_2 are in normalised units of d_on_lambda
-      double precision h_1, h_2, hz
-      integer*8 d_in_nm, pair_warning, parallel, Loss
-      integer*8 incident, what4incident, out4incident
+      integer*8 d_in_nm, pair_warning, Loss
       integer*8 q_average, plot_real, plot_imag, plot_abs
-      integer*8 title
-C  SuperMode Plotting
-      complex*16 vec_coef(1000)
-      complex*16 vec_coef_down(1000)
-      complex*16 vec_coef_up(1000)
 
 c     Declare the pointers of the real super-vector
       integer*8 kp_rhs_re, kp_rhs_im, kp_lhs_re, kp_lhs_im
@@ -142,24 +134,15 @@ c     new breed of variables to prise out of a, b and c
       complex*16, pointer :: sol(:,:,:,:)
       complex*16 sol_avg(3, npt)
       complex*16 overlap_J(2*neq_PW, nval)
-      complex*16 overlap_J_dagger(nval, 2*neq_PW)
       complex*16 overlap_K(nval, 2*neq_PW)
-      complex*16 X_mat(2*neq_PW, 2*neq_PW)
-      complex*16 X_mat_b(2*neq_PW, 2*neq_PW)
 
       complex*16, target :: beta1(nval), beta2(nval)
       complex*16, pointer :: beta(:)
       complex*16 mode_pol(4,nval)
 c     Fresnel scattering matrices
-      complex*16 T12(nval,2*neq_PW)
-      complex*16 R12(2*neq_PW,2*neq_PW)
-      complex*16 T21(2*neq_PW,nval)
-      complex*16 R21(nval,nval)
-
-      complex*16 T_Lambda(2*neq_PW, 2*neq_PW)
-      complex*16 R_Lambda(2*neq_PW, 2*neq_PW)
  
-Cf2py intent(out) beta1, mode_pol, T12, R12, T21, R21
+Cf2py intent(out) beta1, sol1, sol2, mode_pol
+Cf2py intent(out) type_el, table_nod, x_arr, pp, qq
 
 
       n_64 = 2
@@ -537,26 +520,11 @@ C
 C#####################  End FEM PRE-PROCESSING  #########################
 C
 C
-
-      if (PropModes .eq. 1) then
-        if (Loss .eq. 0) then
-          open(unit=200, file="SuperModes"//buf2//".txt",
-     *           status="unknown")   
-        endif
-        open(unit=565, file="detAe"//buf2//".txt",
-     *         status="unknown")
-        open(unit=566, file="detAo"//buf2//".txt",
-     *         status="unknown")
-      endif
-C
-C
-C
-C#####################  Loop over Wavelengths  ##########################
 C
       write(ui,*) 
       write(ui,*) "--------------------------------------------",
      *     "-------"
-      write(ui,*) "MAIN: Wavelength Slice", parallel
+      write(ui,*) "MAIN: Wavelength ", lambda
 C
         n_eff_0 = DBLE(n_eff(1))
         freq = 1.0d0/lambda
@@ -571,14 +539,14 @@ C  Index number of the core materials (material with highest Re(eps_eff))
       n_core(2) = n_core(1)
       shift = 1.01d0*Dble(n_eff(n_core(1)))**2 * k_0**2
      *    - bloch_vec(1)**2 - bloch_vec(2)**2
-      If(debug .eq. 1) then
+      if(debug .eq. 1) then
         write(ui,*) "MAIN: n_core = ", n_core
         if(E_H_field .eq. 1) then
           write(ui,*) "MAIN: E-Field formulation"
         else
           write(ui,*) "MAIN: H-Field formulation"
         endif
-      EndIf
+      endIf
 C
 C
          if(E_H_field .eq. 1) then
@@ -808,180 +776,6 @@ C  Orthonormal integral
       endif
 C
 
-
-CCCCCC CUT HERE CCCCCC
-
-      write(buf1,'(I4.4)') title
-      write(buf2,'(I4.4)') parallel
-
-      if (traLambda .eq. 1) then
-        if (pol .eq. 0) then
-          open(643,file="st"//buf1//"_wl"//buf2//
-     *    "_T_Lambda.txt",status='unknown')
-          open(644,file="st"//buf1//"_wl"//buf2//
-     *    "_R_Lambda.txt",status='unknown')
-          open(645,file="st"//buf1//"_wl"//buf2//
-     *    "_A_Lambda.txt",status='unknown')
-          open(660,file="st"//buf1//"_wl"//buf2//
-     *    "_T_MAT_sp.txt",status='unknown')
-          open(661,file="st"//buf1//"_wl"//buf2//
-     *    "_R_MAT_sp.txt",status='unknown')
-        elseif (pol .eq. 5) then
-          open(643,file="st"//buf1//"_wl"//buf2//
-     *    "_T_Lambda_R.txt",status='unknown')
-          open(644,file="st"//buf1//"_wl"//buf2//
-     *    "_R_Lambda_R.txt",status='unknown')
-          open(645,file="st"//buf1//"_wl"//buf2//
-     *    "_A_Lambda_R.txt",status='unknown')
-          open(646,file="st"//buf1//"_wl"//buf2//
-     *    "_T_Lambda_L.txt",status='unknown')
-          open(647,file="st"//buf1//"_wl"//buf2//
-     *    "_R_Lambda_L.txt",status='unknown')
-          open(648,file="st"//buf1//"_wl"//buf2//
-     *    "_A_Lambda_L.txt",status='unknown')
-          open(649,file="st"//buf1//"_wl"//buf2//
-     *    "_T_Lambda_CD.txt",status='unknown')
-          open(650,file="st"//buf1//"_wl"//buf2//
-     *    "_R_Lambda_CD.txt",status='unknown')
-          open(651,file="st"//buf1//"_wl"//buf2//
-     *    "_A_Lambda_CD.txt",status='unknown')
-          open(660,file="st"//buf1//"_wl"//buf2//
-     *    "_T_MAT_lr.txt",status='unknown')
-          open(661,file="st"//buf1//"_wl"//buf2//
-     *    "_R_MAT_lr.txt",status='unknown')
-          open(662,file="st"//buf1//"_wl"//buf2//
-     *    "_T_phase_lr.txt",status='unknown')
-          open(663,file="st"//buf1//"_wl"//buf2//
-     *    "_R_phase_lr.txt",status='unknown')
-        else
-          open(643,file="st"//buf1//"_wl"//buf2//
-     *    "_T_Lambda.txt",status='unknown')
-          open(644,file="st"//buf1//"_wl"//buf2//
-     *    "_R_Lambda.txt",status='unknown')
-          open(645,file="st"//buf1//"_wl"//buf2//
-     *    "_A_Lambda.txt",status='unknown')
-        endif
-      endif
-
-C  Plane wave ordering
-      call pw_ordering (neq_PW, lat_vecs, bloch_vec, 
-     *  index_pw_inv, Zeroth_Order, Zeroth_Order_inv, 
-     *  debug, ordre_ls, k_0)
-C  J_overlap
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: J_overlap Integral"
-      endif
-      call cpu_time(time1_J)
-      call J_overlap (nval, nel, npt, nnodes, 
-     *  nb_typ_el, type_el, table_nod, x_arr, 
-     *  sol1, pp, qq, lat_vecs, lambda, freq, n_eff_0,
-     *  overlap_J, neq_PW, bloch_vec, X_mat, numberprop_S,
-     *  index_pw_inv, PrintAll, debug, ordre_ls, k_0)
-      call cpu_time(time2_J)
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: CPU time for J_overlap :",
-     *  (time2_J-time1_J)
-      endif
-C
-C  J_dagger_overlap
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: J_dagger_overlap Integral"
-      endif
-      call cpu_time(time1_J)
-      call J_dagger_overlap (nval, nel, npt, nnodes, 
-     *  nb_typ_el, type_el, table_nod, x_arr, 
-     *  sol2, pp, qq, lat_vecs, lambda, freq,
-     *  overlap_J_dagger, neq_PW, bloch_vec,
-     *  index_pw_inv, PrintAll, ordre_ls)
-      call cpu_time(time2_J)
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: CPU time for J_dagger_overlap :",
-     *  (time2_J-time1_J)
-      endif
-C
-C  Overlaps at bottom Substrate
-      if (substrate .eq. 1) then
-        n_eff_sub = DBLE(n_eff(2))
-        eps_eff_sub = DBLE(eps_eff(2))
-      call J_overlap_sub ( lat_vecs, lambda, freq, n_eff_sub,
-     *  eps_eff_sub, neq_PW, bloch_vec, X_mat_b, numberprop_S_b,
-     *  index_pw_inv, PrintAll, ordre_ls, k_0)
-C  Scattering Matrices
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: Scattering Matrices substrate"
-      endif
-
-
-
-      call ScatMat_sub ( overlap_J, overlap_J_dagger,  
-     *    X_mat, X_mat_b, neq_PW, nval, 
-     *    beta1, T12, R12, T21, R21,
-     *    PrintAll, PrintSolution, 
-     *    lx, h_1, h_2, num_h, Checks, T_Lambda, 
-     *    R_Lambda, traLambda, pol, PropModes, lambda, d_in_nm,
-     *    numberprop_S, numberprop_S_b, freq, Zeroth_Order_inv,
-     *    debug, incident, what4incident, out4incident,
-     *    title, parallel)
-C     !No Substrate
-      else
-C  Scattering Matrices
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: Scattering Matrices"
-      endif
-      call ScatMat( overlap_J, overlap_J_dagger,  
-     *    X_mat, neq_PW, nval, 
-     *    beta1, T12, R12, T21, R21,
-     *    PrintAll, PrintSolution, 
-     *    lx, h_1, h_2, num_h, Checks, T_Lambda, 
-     *    R_Lambda, traLambda, pol, PropModes, lambda, d_in_nm,
-     *    numberprop_S, freq, Zeroth_Order_inv,
-     *    debug, incident, what4incident, out4incident,
-     *    title, parallel)
-C     !End Substrate Options
-      endif
-C
-      if (traLambda .eq. 1) then
-        if (pol .eq. 0) then
-          close(643)
-          close(644)
-          close(645)
-          close(660)
-          close(661)
-          close(662)
-          close(663)
-        elseif (pol .eq. 5) then
-          close(643)
-          close(644)
-          close(645)
-          close(646)
-          close(647)
-          close(648)
-          close(649)
-          close(650)
-          close(651)
-          close(660)
-          close(661)
-          close(662)
-          close(663)
-        else
-          close(643)
-          close(644)
-          close(645)
-        endif
-      endif
-
-      if (debug .eq. 2) then
-        write(1111,*) 
-        write(1111,*) "neq_PW = ", neq_PW
-        write(1111,*) "numberprop_S = ", numberprop_S
-        if (substrate .eq. 1) then
-          write(1111,*) "numberprop_S_b = ", numberprop_S_b
-        endif
-        write(1111,*) "Zeroth_Order = ", Zeroth_Order
-        write(1111,*) "Zeroth_Order_inv = ", Zeroth_Order_inv
-      PrintAll = 0
-      Checks = 0
-      endif
 C     
 C  Search for number of propagating Bloch Modes
       if (PropModes .eq. 1 .and. Loss .eq. 0) then
@@ -995,67 +789,6 @@ C  Search for number of propagating Bloch Modes
       write(200,*) lambda*d_in_nm, numberprop_N
       endif
 C
-C  Plot superposition of fields
-      if (PrintSupModes .eq. 1) then
-C     Coefficent of the modes travelling downward 
-      do i=1,nval
-        vec_coef(i) = T12(1,i)
-      enddo
-C     Coefficent of the modes travelling upward 
-      do i=1,nval
-        vec_coef(i+nval) = 0.0d0
-      enddo
-      dir_name = "Output/Fields"
-C     ! hz=0 => top interface; hz=h => bottom interface
-      hz = 0.0d0
-C     ! reference number of the field
-      i = 1
-      call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
-     *     nnodes, table_nod, type_el, eps_eff, x_arr,  
-     *     beta1, sol1, sol_avg, 
-     *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
-     *       q_average, plot_real, plot_imag, plot_abs)
-C
-C     ! hz=0 => top interface; hz=h => bottom interface
-      hz = h_1
-C     ! reference number of the field
-      i = 2
-      call gmsh_plot_field (i, E_H_field, nval, nel, npt, 
-     *     nnodes, table_nod, type_el, eps_eff, x_arr,
-     *     beta1, sol1, sol_avg, 
-     *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
-     *       q_average, plot_real, plot_imag, plot_abs)
-
-      do i=1,2*neq_PW
-        vec_coef_down(i) = 0.0d0
-      enddo
-C     ! Incident field
-      vec_coef_down(1) = 1.0d0
-      do i=1,2*neq_PW
-C     ! Reflected field
-        vec_coef_up(i) = R12(1,i)
-      enddo
-
-C     ! Upper semi-inifinite medium: Plane wave expansion
-      hz = 0.0d0
-      i = 1
-      call gmsh_plot_PW (i, E_H_field, 
-     *     nel, npt, nnodes, neq_PW, bloch_vec, 
-     *  table_nod, x_arr, lat_vecs, lambda, eps_eff(1),
-     *  sol_avg, vec_coef_down, vec_coef_up, 
-     *  index_pw_inv, ordre_ls, h_1, hz, gmsh_file_pos,
-     *  dir_name, q_average, plot_real, plot_imag, plot_abs)
-
-C     ! Upper semi-inifinite medium: Plane wave expansion
-      hz = h_1
-      i = 2
-      call gmsh_plot_PW (i, E_H_field, 
-     *     nel, npt, nnodes, neq_PW, bloch_vec, 
-     *  table_nod, x_arr, lat_vecs, lambda, eps_eff(1),
-     *  sol_avg, vec_coef_down, vec_coef_up, 
-     *  index_pw_inv, ordre_ls, h_1, hz, gmsh_file_pos,
-     *  dir_name, q_average, plot_real, plot_imag, plot_abs)
-      endif
 C
 C
       if (PropModes .eq. 1) then
@@ -1073,19 +806,19 @@ C
 C
       call cpu_time(time2_postp)
 C
-CCCCCCCCCCCCCCCCCCCCC Calculation Checks CCCCCCCCCCCCCCCCCCCCC
-C
-C  Completeness Check
+CCCCCCCCCCCCCCCCCCCCCC Calculation Checks CCCCCCCCCCCCCCCCCCCCC
+CC
+CC  Completeness Check
       if (Checks .eq. 1) then
-        write(ui,*) "MAIN: K_overlap Integral"
-        call K_overlap(nval, nel, npt, nnodes, 
-     *    nb_typ_el, type_el, table_nod, x_arr,   
-     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
-     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
-     *    PrintAll, k_0, ordre_ls)
-        write(ui,*) "MAIN: Completeness Test"
-        call Completeness (nval, neq_PW, 
-     *    overlap_K, overlap_J)
+C        write(ui,*) "MAIN: K_overlap Integral"
+C        call K_overlap(nval, nel, npt, nnodes, 
+C     *    nb_typ_el, type_el, table_nod, x_arr,   
+C     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
+C     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
+C     *    PrintAll, k_0, ordre_ls)
+C        write(ui,*) "MAIN: Completeness Test"
+C        call Completeness (nval, neq_PW, 
+C     *    overlap_K, overlap_J)
 C  Search for number of propagating Bloch Modes
       numberprop_N = 0
       do i=1,nval
@@ -1095,10 +828,6 @@ C  Search for number of propagating Bloch Modes
         endif
       enddo
       write(ui,*) "numberprop_N = ", numberprop_N
-C  Energy Conservation Check
-        write(ui,*) "MAIN: Energy Check"
-        call Energy_Cons(R12, T12, R21, T21,
-     *    numberprop_S, numberprop_N, neq_PW, nval)
       endif 
 C
 C#########################  End Calculations  ###########################
@@ -1200,4 +929,4 @@ C
         write(ui,*) "  and   we're  done!"
       endif
 C
-      end subroutine calc_scat
+      end subroutine calc_modes

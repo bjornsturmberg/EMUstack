@@ -1,4 +1,4 @@
-      subroutine calc_modes(
+      subroutine plot_field(
 c     Explicit inputs
      *    parallel, lambda, nval, ordre_ls, d_in_nm,
      *    debug, mesh_file, mesh_format, npt, nel,
@@ -1200,4 +1200,4 @@ C
         write(ui,*) "  and   we're  done!"
       endif
 C
-      end subroutine calc_modes
+      end subroutine plot_field
