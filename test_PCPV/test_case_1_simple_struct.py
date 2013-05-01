@@ -97,11 +97,11 @@ def results_match_reference(filename):
     result    = np.loadtxt(filename)
     np.testing.assert_allclose(result, reference, 1e-7, 1e-6, filename)
 
-def test_results():
+def test_txt_results():
     result_files = (
         "Absorptance.txt",
-        "beta_st0000.txt",       "st0001_wl0001_beta.txt",
-        "beta_st0002.txt",       "st0001_wl0001_P.txt",
+        "beta_st0000.txt",
+        "beta_st0002.txt",
         "Lay_Absorb_0.txt",
         "Lay_Trans_0.txt",
         "omega_Ft_st0001.txt",
@@ -112,3 +112,21 @@ def test_results():
         )
     for f in result_files:
         yield results_match_reference, f
+
+def results_match_reference_npy(filename):
+    reference = np.load("ref/case_1/" + filename)
+    result    = np.load(filename)
+    np.testing.assert_allclose(result, reference, 1e-7, 1e-6, filename)
+
+def test_npy_results():
+    result_files = (
+        "st0000_wl0001_R12.npy",  "st0001_wl0001_T12.npy",
+        "st0000_wl0001_R21.npy",  "st0001_wl0001_T21.npy",
+        "st0000_wl0001_T12.npy",  "st0002_wl0001_R12.npy",
+        "st0000_wl0001_T21.npy",  "st0002_wl0001_R21.npy",
+        "st0001_wl0001_P.npy",    "st0002_wl0001_T12.npy",
+        "st0001_wl0001_R12.npy",  "st0002_wl0001_T21.npy",
+        "st0001_wl0001_R21.npy",
+    )
+    for f in result_files:
+        yield results_match_reference_npy, f

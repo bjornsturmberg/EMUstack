@@ -169,45 +169,6 @@ C  R21
      *  THETA_I, nval_max_32, TMP2, nval_max_32, ZERO, 
      *  R21, nval_32)
 C      
-CCCCCCCCCCCCCCC   Introduce Propagation in z
-C
-      do h_i = 1, num_h
-        if(h_i .eq. 1) then
-          h_int = 0
-        else
-          h_int = (h_2 - h_1)/(num_h-1)
-        endif
-        h = h_1 + (h_i-1)*h_int
-C
-C  P
-      do k = 1, nval
-        do i = 1,nval
-          P(i,k) = 0.0d0
-        enddo
-        P(k,k) = EXP(ii*Beta(k)*h)
-      enddo
-      enddo
-
-C      if (PrintAll .eq. 1) then
-      write(buf1,'(I4.4)') title
-      write(buf2,'(I4.4)') parallel_1 
-
-C     P matrix for propagation through finite thickness
-      open (unit=345, file="st"//buf1//"_wl"//buf2//"_P.txt",
-     *         status='unknown')
-      do k=1,nval
-        do i=1,nval
-          write(345,1000) i, k, P(i,k), abs(P(i,k))**2
-        enddo
-      enddo 
-      close(345)
-C     Beta as will be used in P matrix      
-      open (unit=345, file="st"//buf1//"_wl"//buf2//'_beta.txt',
-     *         status='unknown')
-      do k=1,nval
-        write(345,1001) Beta(k)
-      enddo 
-      close(345)
 
 C
 101   format(I4,I4,3(G25.17))

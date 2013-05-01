@@ -34,20 +34,6 @@ def load_scat_mat(name, st, p):
 
     return np.mat(np.load(file_name))
 
-def load_scat_mat_old(name, st, p):
-    # reshape matrices to be consistent with pcpv.exe output
-    format_title = '%04d' % st
-    format_p     = '%04d' % p
-
-    file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
-        'st' : format_title, 'wl' : format_p, 'mat_name' : name }
-    data   = np.loadtxt(file_name)
-    num_1  = max(data[:,0])
-    num_2  = max(data[:,1])
-    matrix = np.mat(data[:,2] + data[:,3]*(0+1j))
-    matrix = np.reshape(matrix, (num_2, num_1))
-    return matrix
-
 def save_k_perps(anallo_list, num_pw):
     data_out = np.zeros((len(anallo_list), 2 + 2*len(anallo_list[0].beta)))
 

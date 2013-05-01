@@ -168,20 +168,55 @@ def results_match_reference(filename):
     result    = np.loadtxt(filename)
     np.testing.assert_allclose(result, reference, 1e-7, 1e-8, filename)
 
-def test_results():
+def results_match_reference_npy(filename):
+    reference = np.load("ref/case_2/" + filename)
+    result    = np.load(filename)
+    np.testing.assert_allclose(result, reference, 1e-7, 1e-6, filename)
+
+def test_txt_results():
     result_files = (
-                    "Absorptance.txt",      "beta_st0002.txt",
-                    "Lay_Trans_0.txt",      "omega_st0003.txt",
-                    "Av_Absorb.txt",        "beta_st0004.txt",
-                    "Lay_Trans_1.txt",      "Reflectance.txt",
-                    "Av_Reflec.txt",        "Efficiency.txt",
-                    "Lay_Trans_2.txt",      "Transmittance.txt",
-                    "Av_Trans.txt",         "Lay_Absorb_0.txt",
-                    "omega_Ft_st0003.txt",  "Weighted_Absorb.txt",
-                    "beta_st0000.txt",      "Lay_Absorb_1.txt",
-                    "omega_Fz_st0003.txt",  "Weighted_Reflec.txt",
-                    "beta_st0001.txt",      "Lay_Absorb_2.txt",
-                    "omega_pol_st0003.txt", "Weighted_Trans.txt",
-                    )
+        "Absorptance.txt",      "beta_st0002.txt",
+        "Lay_Trans_0.txt",      "omega_st0003.txt",
+        "Av_Absorb.txt",        "beta_st0004.txt",
+        "Lay_Trans_1.txt",      "Reflectance.txt",
+        "Av_Reflec.txt",        "Efficiency.txt",
+        "Lay_Trans_2.txt",      "Transmittance.txt",
+        "Av_Trans.txt",         "Lay_Absorb_0.txt",
+        "omega_Ft_st0003.txt",  "Weighted_Absorb.txt",
+        "beta_st0000.txt",      "Lay_Absorb_1.txt",
+        "omega_Fz_st0003.txt",  "Weighted_Reflec.txt",
+        "beta_st0001.txt",      "Lay_Absorb_2.txt",
+        "omega_pol_st0003.txt", "Weighted_Trans.txt",
+    )
     for f in result_files:
         yield results_match_reference, f
+
+
+def test_npy_results():
+    result_files = (
+        "st0000_wl0001_R12.npy",  "st0002_wl0002_R21.npy",
+        "st0000_wl0001_R21.npy",  "st0002_wl0002_T12.npy",
+        "st0000_wl0001_T12.npy",  "st0002_wl0002_T21.npy",
+        "st0000_wl0001_T21.npy",  "st0003_wl0001_P.npy",
+        "st0000_wl0002_R12.npy",  "st0003_wl0001_R12.npy",
+        "st0000_wl0002_R21.npy",  "st0003_wl0001_R21.npy",
+        "st0000_wl0002_T12.npy",  "st0003_wl0001_T12.npy",
+        "st0000_wl0002_T21.npy",  "st0003_wl0001_T21.npy",
+        "st0001_wl0001_P.npy",    "st0003_wl0002_P.npy",
+        "st0001_wl0001_R12.npy",  "st0003_wl0002_R12.npy",
+        "st0001_wl0001_R21.npy",  "st0003_wl0002_R21.npy",
+        "st0001_wl0001_T12.npy",  "st0003_wl0002_T12.npy",
+        "st0001_wl0001_T21.npy",  "st0003_wl0002_T21.npy",
+        "st0001_wl0002_P.npy",    "st0004_wl0001_P.npy",
+        "st0001_wl0002_R12.npy",  "st0004_wl0001_R12.npy",
+        "st0001_wl0002_R21.npy",  "st0004_wl0001_R21.npy",
+        "st0001_wl0002_T12.npy",  "st0004_wl0001_T12.npy",
+        "st0001_wl0002_T21.npy",  "st0004_wl0001_T21.npy",
+        "st0002_wl0001_R12.npy",  "st0004_wl0002_P.npy",
+        "st0002_wl0001_R21.npy",  "st0004_wl0002_R12.npy",
+        "st0002_wl0001_T12.npy",  "st0004_wl0002_R21.npy",
+        "st0002_wl0001_T21.npy",  "st0004_wl0002_T12.npy",
+        "st0002_wl0002_R12.npy",  "st0004_wl0002_T21.npy",
+    )
+    for f in result_files:
+        yield results_match_reference_npy, f

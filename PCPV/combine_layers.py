@@ -87,7 +87,7 @@ def net_scat_mats(solar_cell, wavelengths, simo_para):
             tnet_list.append(tnet)
             rnet_list.append(rnet)
 # through TF layer
-            P              = bs.load_scat_mat_old('P', solar_cell[i].label_nu, p).T
+            P              = bs.load_scat_mat('P', solar_cell[i].label_nu, p).T
             I_TF           = np.matrix(np.eye(len(P)),dtype='D')
             to_invert      = (I_TF - r21_list[i]*P*rnet*P)
             inverted_t12   = np.linalg.solve(to_invert,t12_list[i])

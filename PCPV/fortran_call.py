@@ -189,6 +189,8 @@ class Simmo(Anallo):
             bs.save_scat_mat(self.R12, 'R12', self.structure.label_nu, self.p, None)
             bs.save_scat_mat(self.T21, 'T21', self.structure.label_nu, self.p, None)
             bs.save_scat_mat(self.R21, 'R21', self.structure.label_nu, self.p, None)
+            P = np.diag(np.exp(np.complex(0,1)*self.beta1*self.structure.height_1/d))
+            bs.save_scat_mat(P, 'P', self.structure.label_nu, self.p, None)
 
 
         # # Run the fortran!
