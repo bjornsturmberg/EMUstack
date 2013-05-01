@@ -4,20 +4,26 @@ import numpy as np
 import random
 import materials
 from calculate_ff     import calculate_ff
+from fortran_call import Simmo
+import temporary_bullshit as bs
 
 data_location = '../PCPV/Data/'
 
 class NanoStruct(object):
     """ Represents structured layer
     """
-    def __init__(self, geometry, period, radius1, radius2=0, radius3=0, radius4=0, radius5=0,
-        radius6=0, radius7=0, radius8=0, radius9=0, radius10=0, radius11=0, radius12=0, radius13=0,
-        radius14=0, radius15=0, radius16=0, ellipticity = 0.0, square = False, mesh_file = 'NEED_FILE.mail',
-        ff=0, set_ff = False, ff_rand = False, height_1 = 2330, height_2 = 2330, num_h = 1,
-        inclusion_a = materials.Si_c, inclusion_b = materials.Air, background = materials.Air,
+    def __init__(self, geometry, period, radius1, radius2=0, radius3=0, 
+        radius4=0, radius5=0, radius6=0, radius7=0, radius8=0, 
+        radius9=0, radius10=0, radius11=0, radius12=0, radius13=0,
+        radius14=0, radius15=0, radius16=0, ellipticity = 0.0, 
+        square = False, mesh_file = 'NEED_FILE.mail', ff=0, 
+        set_ff = False, ff_rand = False, height_1 = 2330, 
+        height_2 = 2330, num_h = 1, inclusion_a = materials.Si_c, 
+        inclusion_b = materials.Air, background = materials.Air,
         superstrate = materials.Air, substrate = materials.SiO2_a,
-        loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 5, make_mesh_now = False, force_mesh = False,
-        lc_bkg = 0.09, lc2= 1.7, lc3 = 1.9, lc4 = 1.9, lc5 = 1.9, lc6 = 1.9,
+        loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 5, 
+        make_mesh_now = False, force_mesh = False, lc_bkg = 0.09, 
+        lc2= 1.7, lc3 = 1.9, lc4 = 1.9, lc5 = 1.9, lc6 = 1.9,
         posx = 0, posy = 0, small_d = 0, max_num_BMs = 100, label_nu = 0):
         self.geometry    = geometry
         self.radius1     = radius1
@@ -38,9 +44,10 @@ class NanoStruct(object):
         self.radius16    = radius16
         self.period      = period
         if geometry == 'NW_array':
-            self.ff      = calculate_ff(square,period,radius1,radius2,radius3,radius4,radius5,radius6,
-                radius7,radius8,radius9,radius10,radius11,radius12,radius13,radius14,radius15,radius16,
-                ellipticity)
+            self.ff      = calculate_ff(square,period,radius1,radius2,
+                radius3,radius4,radius5,radius6,radius7,radius8,radius9,
+                radius10,radius11,radius12,radius13,radius14,radius15,
+                radius16,ellipticity)
         elif geometry == '1D_grating':
             self.ff      = (radius1 + radius2)/period
         self.ff_rand     = ff_rand
@@ -50,8 +57,8 @@ class NanoStruct(object):
         self.inclusion_a = inclusion_a
         self.inclusion_b = inclusion_b
         self.background  = background
-        self.superstrate = superstrate
-        self.substrate   = substrate
+        self.superstrate = superstrate #FIXME: remove this
+        self.substrate   = substrate #FIXME: remove this
         self.loss        = loss
         self.lx          = lx
         self.ly          = ly
@@ -59,10 +66,6 @@ class NanoStruct(object):
         self.set_ff      = set_ff
         self.max_num_BMs = max_num_BMs
         self.label_nu    = label_nu
-        if substrate == superstrate:
-            self.has_substrate = 0
-        else:
-            self.has_substrate = 1
         if make_mesh_now:
             self.lc  = lc_bkg
             self.lc2 = lc2
@@ -302,7 +305,32 @@ class NanoStruct(object):
                 # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
                 # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
                 # os.system(gmsh_cmd)
-         
+
+    def calc_modes(self, light_list, simo_para):
+        """ Run a simulation with parameters specified by `simo_para`."""
+        #TODO: make this work with individual light objects not a list
+        #TODO: turn "simo_para" into a dict and pass it through
+
+        # TODO: Get this the hell out of here!
+        # Interpolate refractive indices over wavelength array
+        wavelengths = np.array([l.Lambda for l in light_list], float)
+        materials.interp_needed(wavelengths, self.inclusion_a)
+        materials.interp_needed(wavelengths, self.inclusion_b)
+        materials.interp_needed(wavelengths, self.background)
+        materials.interp_needed(wavelengths, self.superstrate)
+        materials.interp_needed(wavelengths, self.substrate)
+
+        simmo_list = [Simmo(self, li, simo_para, li.bs_label) 
+            for li in light_list]
+        #TODO:
+        # if None == self.mesh:
+        #     self.make_mesh()
+        #     self.process_mesh()
+
+        [simmo.run_fortran() for simmo in simmo_list]
+        return simmo_list
+
+
 class ThinFilm(object):
     """ Represents homogeneous film """
     def __init__(self, period, height_1 = 2330, height_2 = 2330,
@@ -324,7 +352,9 @@ class ThinFilm(object):
         self.set_ord_out   = set_ord_out
         self.loss          = loss
         self.label_nu      = label_nu
-       
+    
+    def calc_modes(self, light_list, simo_para):
+        pass
 
 
 class Light(object):
@@ -336,7 +366,7 @@ class Light(object):
 
         - `phi`     : azimuthal angle of incidence
     """
-    def __init__(self, Lambda, pol = 'TM', theta = 0, phi = 0):
+    def __init__(self, Lambda, pol = 'TM', theta = 0, phi = 0, bs_label = 0):
         self.Lambda = Lambda
         if  pol == 'Unpol':
             self.pol = 0
@@ -354,6 +384,7 @@ class Light(object):
             raise TypeError, "Polarisation must be either 'Unpol','TE', 'TM', 'Left', 'Right', or 'CD'."
         self.theta = theta
         self.phi   = phi
+        self.bs_label = bs_label
 
     def bloch_vec(self, period, n_eff = 1.):
         """ Calculate k_x and k_y from self.theta, self.phi, and self.Lambda.

@@ -1,13 +1,9 @@
 C     Carry out matrix multiplication to calculate Scattering Matrices T, R 
 C
-      subroutine ScatMat (J, J_dagger, X, neq_PW, nval, Beta, 
-     *             T12, R12, T21, R21, PrintAll,
-     *             PrintSolution, lx, h_1, h_2, num_h, Checks,
-     *             TLambda, RLambda, traLambda, pol, PropModes, 
-     *             lambda, d_in_nm,
-     *    numberprop_S, freq, Zeroth_Order_inv,
-     *    debug, incident, what4incident, out4incident,
-     *    title, parallel_1)
+      subroutine ScatMat (J, J_dagger, X, neq_PW, nval,  
+     *             T12, R12, T21, R21, 
+     *             Checks,
+     *    debug)
 C
       implicit none
 C
@@ -39,7 +35,6 @@ C  Fresnel Scattering Coefficients
       complex*16 T21(2*neq_PW,nval)
 C   
       complex*16 P(nval_max_32,nval_max_32)
-      complex*16 UPSILON(nval_max_32,nval_max_32)
       complex*16 TMP3(nval_max_32,nval_max_32)
       complex*16 TMP3_I(nval_max_32,nval_max_32)
       complex*16 TMP4(2*PW_max_32,nval_max_32)
@@ -74,7 +69,7 @@ C
 C
       double precision total_t, total_r, total_a, tot_0
       integer*8 allincident, incident, what4incident
-      integer*8 out4incident, test, traLambda, PrintSolution
+      integer*8 out4incident, test, PrintSolution
       complex*16 detA, detAe, detAo 
       double precision lx
 

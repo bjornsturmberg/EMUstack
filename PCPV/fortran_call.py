@@ -55,8 +55,6 @@ class Simmo(Anallo):
         self.T21            = None
         self.R21            = None
 
-
-
     def inclusion_a_n(self):
         if isinstance(self.structure.inclusion_a, complex):
             return self.structure.inclusion_a
@@ -164,21 +162,14 @@ class Simmo(Anallo):
             ) = resm
 
         ress = pcpv.calc_scat(
-            self.p, norm_wl, 
-            ordre_ls, d, self.other_para.debug, 
+            norm_wl, 
+            ordre_ls, self.other_para.debug, 
             n_effs, self.bloch_vec(), 
-            float(self.structure.height_1) / d, 
-            float(self.structure.height_2) / d, self.structure.num_h, 
             self.structure.lx, self.structure.ly,
-            self.light.pol, 
-            self.other_para.traLambda, self.other_para.PropModes, 
-            self.other_para.PrintSolution, self.other_para.PrintAll, 
+            self.other_para.PrintAll, 
             self.other_para.Checks, 
-            self.other_para.incident, 
-            self.other_para.what4incident, self.other_para.out4incident, 
-            self.structure.label_nu,
             neq_pw, zeroth_order,
-            self.beta1, self.sol1, self.sol2, 
+            self.sol1, self.sol2, 
             type_el, table_nod, x_arr, pp, qq
         )
 
@@ -191,40 +182,6 @@ class Simmo(Anallo):
             bs.save_scat_mat(self.R21, 'R21', self.structure.label_nu, self.p, None)
             P = np.diag(np.exp(np.complex(0,1)*self.beta1*self.structure.height_1/d))
             bs.save_scat_mat(P, 'P', self.structure.label_nu, self.p, None)
-
-
-        # # Run the fortran!
-        # res = pcpv.main(
-        #     self.p, norm_wl, self.nval, 
-        #     ordre_ls, d, self.other_para.debug, 
-        #     self.structure.mesh_file, self.structure.mesh_format, 
-        #     n_msh_pts, n_msh_el,
-        #     n_effs, self.structure.has_substrate, self.bloch_vec(), 
-        #     float(self.structure.height_1) / d, 
-        #     float(self.structure.height_2) / d, self.structure.num_h, 
-        #     self.structure.lx, self.structure.ly, self.other_para.tol, 
-        #     self.other_para.E_H_field, self.other_para.i_cond, 
-        #     self.other_para.itermax, self.light.pol, 
-        #     self.other_para.traLambda, self.other_para.PropModes, 
-        #     self.other_para.PrintSolution, self.other_para.PrintSupModes, 
-        #     self.other_para.PrintOmega, self.other_para.PrintAll, 
-        #     self.other_para.Checks, self.other_para.q_average, 
-        #     self.other_para.plot_real, self.other_para.plot_imag, 
-        #     self.other_para.plot_abs, self.other_para.incident, 
-        #     self.other_para.what4incident, self.other_para.out4incident, 
-        #     self.structure.loss, self.structure.label_nu,
-        #     neq_pw, zeroth_order
-        # )
-
-        # if 1 == self.other_para.PrintOmega:
-        #     self.omega, mode_pol, self.T12, self.R12, self.T21, self.R21 = res
-        #     #TODO: throw out mode_pol[:3]?
-        #     self.mode_pol = mode_pol
-        #     bs.save_scat_mat(self.T12, 'T12', self.structure.label_nu, self.p, None)
-        #     bs.save_scat_mat(self.R12, 'R12', self.structure.label_nu, self.p, None)
-        #     bs.save_scat_mat(self.T21, 'T21', self.structure.label_nu, self.p, None)
-        #     bs.save_scat_mat(self.R21, 'R21', self.structure.label_nu, self.p, None)
-
 
 
 def calc_k_perp(layer, n, k_list, d, theta, phi, ordre_ls, 
@@ -298,28 +255,29 @@ def scat_mats(layer, light_list, simo_para):
 
     # For nanostructured layers run pcpv.exe to find scattering matrices
     if isinstance(layer,objects.NanoStruct):
-        # Interpolate refractive indices over wavelength array
-        # materials.interp_all(wavelengths)
-        materials.interp_needed(wavelengths, layer.inclusion_a)
-        materials.interp_needed(wavelengths, layer.inclusion_b)
-        materials.interp_needed(wavelengths, layer.background)
-        materials.interp_needed(wavelengths, layer.superstrate)
-        materials.interp_needed(wavelengths, layer.substrate)
+        raise NotImplementedError, "Use NanoStruct.calc_modes() instead."
+        # # Interpolate refractive indices over wavelength array
+        # # materials.interp_all(wavelengths)
+        # materials.interp_needed(wavelengths, layer.inclusion_a)
+        # materials.interp_needed(wavelengths, layer.inclusion_b)
+        # materials.interp_needed(wavelengths, layer.background)
+        # materials.interp_needed(wavelengths, layer.superstrate)
+        # materials.interp_needed(wavelengths, layer.substrate)
 
-        # List of simulations to calculate, with full arguments
-        simmo_list = [Simmo(layer, l, simo_para, p+1) 
-                        for p, l in enumerate(light_list)]
+        # # List of simulations to calculate, with full arguments
+        # simmo_list = [Simmo(layer, l, simo_para, p+1) 
+        #                 for p, l in enumerate(light_list)]
 
-        # # Launch simos using pool to limit simultaneous instances 
-        # command_list = [s.fortran_command_str() for s in simmo_list]
-        # pool = mp.Pool(simo_para.num_cores)
-        # pool.map(run_command_in_shell, command_list)
+        # # # Launch simos using pool to limit simultaneous instances 
+        # # command_list = [s.fortran_command_str() for s in simmo_list]
+        # # pool = mp.Pool(simo_para.num_cores)
+        # # pool.map(run_command_in_shell, command_list)
 
-        # Run simmos sequentially for now
-        for s in simmo_list:
-            s.run_fortran()
+        # # Run simmos sequentially for now
+        # for s in simmo_list:
+        #     s.run_fortran()
 
-        bs.save_omegas(simmo_list)
+        # bs.save_omegas(simmo_list)
 
 
     # For homogeneous layers calculate scattering matrices analytically
@@ -445,5 +403,4 @@ def scat_mats(layer, light_list, simo_para):
         # TODO: cleave this function into one for simmos and one for anallos
         simmo_list = anallo_list
 
-    label_nu = layer.label_nu + 1
     return simmo_list

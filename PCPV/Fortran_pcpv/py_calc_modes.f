@@ -50,9 +50,7 @@ C  Declare the pointers of the real super-vector
 C      integer*8 jp_matD, jp_matL, jp_matU
 C      integer*8 jp_matD2, jp_matL2, jp_matU2
       integer*8 jp_vect1, jp_vect2, jp_workd, jp_resid, jp_vschur
-      integer*8 jp_eigenval_tmp, jp_trav, jp_vp
-      integer*8 jp_overlap_L
-      integer*8 jp_T, jp_R
+      integer*8 jp_trav, jp_vp
 C  Plane wave parameters
       integer*8 neq_PW, nx_PW, ny_PW, ordre_ls
 C      integer*8 index_pw_inv(neq_PW)
@@ -135,6 +133,7 @@ c     new breed of variables to prise out of a, b and c
       complex*16 sol_avg(3, npt)
       complex*16 overlap_J(2*neq_PW, nval)
       complex*16 overlap_K(nval, 2*neq_PW)
+      complex*16 overlap_L(nval, nval)
 
       complex*16, target :: beta1(nval), beta2(nval)
       complex*16, pointer :: beta(:)
@@ -146,13 +145,8 @@ Cf2py intent(out) type_el, table_nod, x_arr, pp, qq
 
 
       n_64 = 2
-C     !n_64**28 on Vayu
-      cmplx_max=n_64**27
-C     Felix is subtracting off the size of matrices he's extracted.
-C     mode_pol
-      cmplx_max = cmplx_max - nval*4
-C     T12, R12, T21, R21
-      cmplx_max = cmplx_max - (2*neq_PW + nval)**2
+C     !n_64**28 on Vayu, **27 before
+      cmplx_max=n_64**25
       real_max=n_64**22
       int_max=n_64**22
 c      3*npt+nel+nnodes*nel 
@@ -192,7 +186,6 @@ c      3*npt+nel+nnodes*nel
       endif
 
 
-      
 
 CCCCCCCCCCCCCCCCC POST F2PY CCCCCCCCCCCCCCCCCCCCCCCCC
 
@@ -233,8 +226,6 @@ C
         write(ui,*) "MAIN: neq_PW = ", neq_PW
         write(ui,*)
       endif
-C
-      pair_warning = 0
 C
 C####################  Start FEM PRE-PROCESSING  ########################
 C
@@ -457,16 +448,12 @@ cC
 
 C     ! Eigenvectors
       jp_vschur = jp_resid + neq
-      jp_eigenval_tmp = jp_vschur + neq*nvect
-      jp_trav = jp_eigenval_tmp + nval + 1
+      jp_trav = jp_vschur + neq*nvect
 
       ltrav = 3*nvect*(nvect+2)
       jp_vp = jp_trav + ltrav
-      jp_overlap_L = jp_vp + neq*nval
-      jp_T = jp_overlap_L + nval*nval
-      jp_R = jp_T + 2*neq_PW*2*neq_PW
  
-      cmplx_used = jp_R + 2*neq_PW*2*neq_PW
+      cmplx_used = jp_vp + neq*nval
 
       write(ui,*) "cmplx_max  = ", cmplx_max
       write(ui,*) "cmplx_used = ", cmplx_used
@@ -568,20 +555,17 @@ C
 C
 CCCCCCCCCCCCCCCCCCCC  Loop over Adjoint and Prime  CCCCCCCCCCCCCCCCCCCCCC
 C
-         do n_k = 1,2
+      do n_k = 1,2
 C
-           if (n_k .eq. 1) then
-             dir_name = "Output"
-             sol => sol1
-             beta => beta1
-             bloch_vec_k = bloch_vec
-           else
-             dir_name = "Output-"
-             sol => sol2
-             beta => beta2
-             bloch_vec_k = -bloch_vec
-           endif  
-           namelength = len_trim(dir_name)
+      if (n_k .eq. 1) then
+        sol => sol1
+        beta => beta1
+        bloch_vec_k = bloch_vec
+      else
+        sol => sol2
+        beta => beta2
+        bloch_vec_k = -bloch_vec
+      endif  
 C
 C     Assemble the coefficient matrix A and the right-hand side F of the
 C     finite element equations
@@ -660,7 +644,7 @@ C                 using the permutation vector index
      *   n_core, bloch_vec_k, index, table_nod, 
      *   a(ip_table_N_E_F), type_el, a(ip_eq), a(ip_period_N), 
      *   a(ip_period_N_E_F), x_arr, b(jp_x_N_E_F), beta, 
-     *   b(jp_eigenval_tmp), mode_pol, b(jp_vp), sol)
+     *   mode_pol, b(jp_vp), sol)
 C
       if(debug .eq. 1) then
         write(ui,*) 'index = ', (index(i), i=1,nval)
@@ -711,6 +695,7 @@ CCCC Hardcore Debugging - Print all arrays + some variables CCCCC
 CCCC Hardcore Debugging - End                               CCCCC
 
 C  Orthogonal integral
+      pair_warning = 0
       if (debug .eq. 1) then 
         write(ui,*) "MAIN: Field product"
       endif
@@ -719,7 +704,7 @@ C  Orthogonal integral
       call orthogonal (nval, nel, npt, nnodes, 
      *  nb_typ_el, pp, qq, table_nod, 
      *  type_el, x_arr, beta1, beta2,
-     *  sol1, sol2, b(jp_overlap_L),
+     *  sol1, sol2, overlap_L,
      *  overlap_file, PrintAll, d_in_nm, pair_warning, k_0)
       call cpu_time(time2_J)
       if (debug .eq. 1) then
@@ -753,7 +738,7 @@ C  Normalisation
       endif 
       call cpu_time(time1_J)
       call normalisation (nval, nel, nnodes, table_nod,
-     *  sol1, sol2, b(jp_overlap_L))  
+     *  sol1, sol2, overlap_L)  
       call cpu_time(time2_J)
       if (debug .eq. 1) then
         write(ui,*) "MAIN: CPU time for normalisation :",
@@ -768,7 +753,7 @@ C  Orthonormal integral
         call orthogonal (nval, nel, npt, nnodes, 
      *    nb_typ_el, pp, qq, table_nod, 
      *    type_el, x_arr, beta1, beta2,
-     *    sol1, sol2, b(jp_overlap_L),
+     *    sol1, sol2, overlap_L,
      *    overlap_file, PrintAll, d_in_nm, pair_warning, k_0)
         call cpu_time(time2_J)
           write(ui,*) "MAIN: CPU time for orthogonal :",

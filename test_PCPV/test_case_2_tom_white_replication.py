@@ -24,6 +24,7 @@ from fortran_call      import scat_mats
 from combine_layers    import net_scat_mats
 import cat_n_clean
 import plotting
+import temporary_bullshit as bs
 
 start = time.time()
 label_nu = 0
@@ -35,6 +36,7 @@ simo_para  = objects.Controls(debug = 0,max_order_PWs = 5, num_cores = 7,
 clear_previous.clean('.txt')
 clear_previous.clean('.pdf')
 clear_previous.clean('.log')
+clear_previous.clean('.npy')
 
 ################ Light parameters #####################
 wl_1     = 900
@@ -42,7 +44,8 @@ wl_2     = 1200
 no_wl_1  = 2#8
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, pol = 'TM') for wl in wavelengths]
+light_list  = [objects.Light(wl, pol = 'TM', bs_label = i+1)
+        for i, wl in enumerate(wavelengths)]
 # Single wavelength run
 # wl_super = 1050
 # wavelengths = np.array([wl_super])
@@ -75,12 +78,14 @@ scat_mats(bottom, light_list, simo_para)
 
 
 max_num_BMs = 120
-# Problem: superstrate is SiO2_a by default but should be air
 grating_1 = objects.NanoStruct('1D_grating', period, 100, height_1 = 25, num_h = 1,
     inclusion_a = materials.Ag, background = (1.5 + 0.0j), loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 4.0,
     max_num_BMs = max_num_BMs, label_nu = 3)
-simmo_list = scat_mats(grating_1, light_list, simo_para)
+# simmo_list = scat_mats(grating_1, light_list, simo_para)
+#simmo_list = [grating_1.calc_modes(li, simo_para) for li in light_list]
+simmo_list = grating_1.calc_modes(light_list, simo_para)
+bs.save_omegas(simmo_list)
 
 
 mirror = objects.ThinFilm(period = period, height_1 = 100,

@@ -1,6 +1,7 @@
 COMPILER_VENDOR = g95
 
-SUBROUTINES_FOR_PYTHON = py_main_64.f py_calc_modes.f py_calc_scat.f
+SUBROUTINES_FOR_PYTHON = py_calc_modes.f py_calc_scat.f
+# py_plot_field.f
 
 
 pcpv.so: pcpv.pyf Lib/umf4_f77zwrapper64.o

@@ -7,7 +7,7 @@ class Stack(object):
 
         INPUTS:
 
-          - `layers` : a tuple of :ThinFilm:s and :NanoStruct:s ordered
+          - `s_layers` : a tuple of :ThinFilm:s and :NanoStruct:s ordered
             from top to bottom layer.
     """
     def __init__(self, s_layers):

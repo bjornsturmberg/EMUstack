@@ -44,7 +44,7 @@ class Material(object):
         if isinstance(interp_re_n, float): 
             self.interp_data = np.array([interp_re_n + 1j*interp_im_n])
         # print repr(self.interp_data)
-        self.stored_ns   = dict(zip(wavelengths, self.interp_data))
+        self.stored_ns.update(dict(zip(wavelengths, self.interp_data)))
         # print self.stored_ns
 
     def n_interp(self, wavelengths):
@@ -63,7 +63,7 @@ class Material(object):
         interp_im_n = np.interp(wavelengths, 
             self.data_wls, self.data_im_ns)
         self.interp_data = interp_re_n + 1j*interp_im_n
-        self.stored_ns   = dict(zip(wavelengths, self.interp_data))
+        self.stored_ns.update(dict(zip(wavelengths, self.interp_data)))
         # print self.stored_ns
 
 
@@ -74,7 +74,7 @@ class Material(object):
         denom = c*plasma_wl**2 - 1j*2*np.pi*gamma_wl*wavelengths*plasma_wl**2
         drude_n = 1 - numer/denom
         self.interp_data = np.sqrt(drude_n)
-        self.stored_ns   = dict(zip(wavelengths, self.interp_data))
+        self.stored_ns.update(dict(zip(wavelengths, self.interp_data)))
 
 
     def n(self, wl):

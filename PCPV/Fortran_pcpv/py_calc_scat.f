@@ -1,16 +1,14 @@
       subroutine calc_scat(
 c     Explicit inputs
-     *    parallel, lambda, ordre_ls, d_in_nm,
+     *    lambda, ordre_ls, 
      *    debug, 
      *    n_eff,
-     *    bloch_vec, h_1, h_2, num_h, lx, ly, 
-     *    pol, traLambda, PropModes,
-     *    PrintSolution, PrintAll,
+     *    bloch_vec, lx, ly, 
+     *    PrintAll,
      *    Checks,
-     *    incident, what4incident, out4incident, title,
      *    neq_PW, Zeroth_Order,
 C     New explicit inputs
-     *    beta1, sol1, sol2, type_el, table_nod, x_arr, pp, qq,
+     *    sol1, sol2, type_el, table_nod, x_arr, pp, qq,
 c     "Optional" inputs (Python guesses these)
      *    nval, npt, nel, nb_typ_el,
 c     Outputs
@@ -34,51 +32,28 @@ C  Plane wave parameters
       integer*8 index_pw_inv(neq_PW)
       integer*8 Zeroth_Order, Zeroth_Order_inv, nb_typ_el
       complex*16 pp(nb_typ_el),  qq(nb_typ_el)
-      complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el)
+      complex*16 n_eff(nb_typ_el)
       double precision n_eff_0
-c     i_cond = 0 => Dirichlet boundary condition
-c     i_cond = 1 => Neumann boundary condition
-c     i_cond = 2 => Periodic boundary condition
-      integer*8 nel, npt, nnodes, ui, i_cond
+      integer*8 nel, npt, nnodes, ui
 C     ! Number of nodes per element
       parameter(nnodes=6)
       integer*8 type_el(nel), table_nod(nnodes, nel)
 C, len_skyl, nsym
-      integer*8 neq, debug
-      integer*8 npt_p3, numberprop_S, numberprop_N, numberprop_S_b
-C  Variable used by valpr
-      integer*8 nval, nvect, itermax, ltrav
-      integer*8 n_conv, i_base
-      double precision ls_data(10)
-c      integer*8 pointer_int(20), pointer_cmplx(20)
-      integer*8 index(1000), n_core(2)
-      integer*8 n_edge, n_face, n_ddl, n_ddl_max, n_k
-      integer*8 i, j, mesh_format
+      integer*8 debug
+      integer*8 numberprop_S, numberprop_N
+      integer*8 nval
 c     Wavelength lambda is in normalised units of d_in_nm
       double precision lambda
       double precision freq, lat_vecs(2,2)
-      double precision k_0, pi, lx, ly, bloch_vec(2), bloch_vec_k(2)
+      double precision k_0, pi, lx, ly, bloch_vec(2)
 C  Timing variables
       double precision time1, time2
       double precision time1_J, time2_J
       character*(8) start_date, end_date
       character*(10) start_time, end_time
 C  Names and Controls
-      character mesh_file*100, gmsh_file*100, log_file*100
-      character gmsh_file_pos*100
-      character overlap_file*100, dir_name*100, buf1*4, buf2*4
-      integer*8 namelength, PrintAll, Checks, traLambda
-      integer*8 PrintSolution, pol
-      integer*8 num_h
-      integer*8 PropModes
-C     Thicknesses h_1 and h_2 are in normalised units of d_on_lambda
-      double precision h_1, h_2, hz
-      integer*8 d_in_nm, parallel, Loss
-      integer*8 incident, what4incident, out4incident
-      integer*8 title
-
-      integer*8 ip
-      integer i_32
+      character log_file*100
+      integer*8 PrintAll, Checks
 
 c     new breed of variables to prise out of a, b and c
       complex*16 x_arr(2,npt)
@@ -96,9 +71,6 @@ c     Fresnel scattering matrices
       complex*16 T21(2*neq_PW,nval)
       complex*16 R21(nval,nval)
 
-      complex*16 T_Lambda(2*neq_PW, 2*neq_PW)
-      complex*16 R_Lambda(2*neq_PW, 2*neq_PW)
- 
 Cf2py intent(out) T12, R12, T21, R21
 
       call cpu_time(time1)
@@ -108,9 +80,6 @@ C     !ui = Unite dImpression
 C     ! Number of nodes per element
       pi = 3.141592653589793d0
 
-
-      write(buf1,'(I4.4)') title
-      write(buf2,'(I4.4)') parallel
 
       n_eff_0 = DBLE(n_eff(1))
       freq = 1.0d0/lambda
@@ -160,13 +129,9 @@ C  Scattering Matrices
       endif
       call ScatMat( overlap_J, overlap_J_dagger,  
      *    X_mat, neq_PW, nval, 
-     *    beta1, T12, R12, T21, R21,
-     *    PrintAll, PrintSolution, 
-     *    lx, h_1, h_2, num_h, Checks, T_Lambda, 
-     *    R_Lambda, traLambda, pol, PropModes, lambda, d_in_nm,
-     *    numberprop_S, freq, Zeroth_Order_inv,
-     *    debug, incident, what4incident, out4incident,
-     *    title, parallel)
+     *    T12, R12, T21, R21,
+     *    Checks, 
+     *    debug)
 C
 C
 C

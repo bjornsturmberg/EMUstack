@@ -10,7 +10,7 @@ c
      *     nnodes, n_core, bloch_vec, index, table_nod, 
      *     table_N_E_F, type_el, ineq, 
      *     ip_period_N, ip_period_N_E_F, x, x_N_E_F, 
-     *     v_cmplx, v_tmp, mode_pol, sol_0, sol)
+     *     v_cmplx, mode_pol, sol_0, sol)
 
       implicit none
       integer*8 i_cond, nval, nel, npt, n_ddl, neq, nnodes

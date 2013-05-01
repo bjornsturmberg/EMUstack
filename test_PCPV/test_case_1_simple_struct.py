@@ -20,10 +20,11 @@ sys.path.append("../PCPV/")
 import clear_previous
 import objects
 import materials
-from fortran_call      import scat_mats
+from fortran_call      import scat_mats, Simmo
 from combine_layers    import net_scat_mats
 import cat_n_clean
 import plotting
+import temporary_bullshit as bs
 
 
 start = time.time()
@@ -47,7 +48,8 @@ clear_previous.clean('.npy')
 # Single wavelength run
 wl_super =  500.0
 wavelengths = np.array([wl_super])
-light_list  = [objects.Light(wl) for wl in wavelengths]
+light_list  = [objects.Light(wl, bs_label = i+1) 
+        for i, wl in enumerate(wavelengths)]
 
 
 ################ Scattering matrices (for distinct layers) ##############
@@ -73,8 +75,9 @@ grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
     make_mesh_now = True, force_mesh = True,
     lc_bkg = 0.15, lc2= 1.5, lc3= 1.5,
     max_num_BMs = max_num_BMs, label_nu = 1)
-sim_grat1 = scat_mats(grating_1, light_list, simo_para)
-
+#sim_grat1 = [grating_1.calc_modes(li, simo_para) for li in light_list]
+sim_grat1 = grating_1.calc_modes(light_list)
+bs.save_omegas(sim_grat1)
 
 # will only ever use top scattering matrices for the bottom layer
 bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
