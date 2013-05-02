@@ -31,7 +31,6 @@ class Stack(object):
         p = self.layers[0].light.bs_label
 
         nu_intfaces     = 2*(len(self.layers)-1)
-        nu_TFs          = len(self.layers)-2 # adujsted by 1 for python index start at 0
         neq_PW          = self.layers[0].structure.nu_tot_ords # assumes incident from homogeneous film
         PW_pols         = 2*neq_PW
         num_prop_air    = self.layers[-1].num_prop_air
@@ -57,11 +56,11 @@ class Stack(object):
         t21_list = []
         P_list   = []
         for st1 in self.layers:
-            r12_list.append(bs.load_scat_mat('R12', st1.structure.label_nu, p))
-            r21_list.append(bs.load_scat_mat('R21', st1.structure.label_nu, p))
+            r12_list.append(st1.R12)
+            r21_list.append(st1.R21)
             # potential to save on one transpose
-            t12_list.append(bs.load_scat_mat('T12', st1.structure.label_nu, p))
-            t21_list.append(bs.load_scat_mat('T21', st1.structure.label_nu, p))
+            t12_list.append(st1.T12)
+            t21_list.append(st1.T21)
             #t21_list.append(t12_list[-1].T)
 
     # initiate (r)tnet as substrate top interface
@@ -74,8 +73,8 @@ class Stack(object):
 
         inv_t21_list   = []
         inv_t12_list   = []
-        for i in range(nu_TFs):
-            i = i + 1 # start in bottom air layer not substrate
+        for i in range(1, len(self.layers) - 1):
+            lay = self.layers[i]
     # through air layer at bottom of TF
             to_invert      = (I_air - r12_list[i]*rnet)
             inverted_t21   = np.linalg.solve(to_invert,t21_list[i])
@@ -85,7 +84,7 @@ class Stack(object):
             tnet_list.append(tnet)
             rnet_list.append(rnet)
     # through TF layer
-            P              = bs.load_scat_mat('P', self.layers[i].structure.label_nu, p).T
+            P = np.mat(np.diag(np.exp(1j*lay.beta * float(lay.structure.height_1)/lay.structure.period)))
             I_TF           = np.matrix(np.eye(len(P)),dtype='D')
             to_invert      = (I_TF - r21_list[i]*P*rnet*P)
             inverted_t12   = np.linalg.solve(to_invert,t12_list[i])
@@ -169,7 +168,7 @@ class Stack(object):
     #   incoming from semi-inf into top air gap
         f1_minus = inv_t21_list[-1]*d_minus
 
-        for i in range(nu_TFs):
+        for i in range(len(self.layers) - 2):
             f1_plus = rnet_list[-2*i-2]*f1_minus
     # net downward flux in infintesimal air layer
             f_mat   = np.matrix(np.concatenate((f1_minus,f1_plus)))

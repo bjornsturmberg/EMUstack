@@ -24,28 +24,18 @@ def save_scat_mat(matrix, name, st, p, num_pw):
     #             data = np.reshape(data, (1,5))
     #             np.savetxt(outfile, data, fmt=['%4i','%4i','%25.17G','%25.17G','%25.17G'], delimiter='')
 
-def load_scat_mat(name, st, p):
-    # reshape matrices to be consistent with pcpv.exe output
-    format_title = '%04d' % st
-    format_p     = '%04d' % p
-
-    file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.npy" % {
-        'st' : format_title, 'wl' : format_p, 'mat_name' : name }
-
-    return np.mat(np.load(file_name))
-
 def save_k_perps(anallo_list, num_pw):
-    data_out = np.zeros((len(anallo_list), 2 + 2*len(anallo_list[0].beta)))
+    data_out = np.zeros((len(anallo_list), 2 + 2*num_pw))
 
     #TODO: check that beta is the same length for everything
     #TODO: check that everything is the same label_nu and num_pw
 
-    if num_pw != len(anallo_list[0].beta):
+    if num_pw != len(anallo_list[0].beta) /2.:
         raise ValueError, "Felix doesn't know what he's doing"
 
     for i, an in enumerate(anallo_list):
         data_out[i,:2] = (num_pw, an.light.Lambda)
-        re, im = an.beta.real, an.beta.imag
+        re, im = an.beta[:num_pw].real, an.beta[:num_pw].imag
         # beta = [beta[0].real, beta[0].imag, beta[1].real, ...]
         beta = np.vstack((re, im)).T.reshape(-1)
         data_out[i,2:] = beta

@@ -32,10 +32,10 @@ class Anallo(Modes):
         self.other_para = other_para
         self.p = p
         self.mode_pol       = None
-        self.T12            = None
-        self.R12            = None
-        self.T21            = None
-        self.R21            = None
+        # self.T12            = None
+        # self.R12            = None
+        # self.T21            = None
+        # self.R21            = None
 
     def calc_modes(self):
         self.structure.num_prop_air = []
@@ -67,7 +67,8 @@ class Anallo(Modes):
             self.other_para.x_order_in, self.other_para.x_order_out,
             self.other_para.y_order_in, self.other_para.y_order_out)
         k_film   = k_perp[1]
-        self.beta = k_film
+        #FIXME: is this really correct??
+        self.beta = np.append(k_film, k_film) # add 2nd polarisation
         # print 'k_perp[0]', k_perp[0]
         # print 'k_film', k_film
 
@@ -96,29 +97,19 @@ class Anallo(Modes):
 
 
         # saving matrices to file
-        if self.structure.substrate == self.structure.superstrate:
-            self.T12 = t12
-            self.R12 = r12
-            self.T21 = t23
-            self.R12 = r23
-            bs.save_scat_mat(r12, 'R12', self.structure.label_nu, self.p, matrix_size)
-            bs.save_scat_mat(t12, 'T12', self.structure.label_nu, self.p, matrix_size)
-            bs.save_scat_mat(r23, 'R21', self.structure.label_nu, self.p, matrix_size)
-            bs.save_scat_mat(t23, 'T21', self.structure.label_nu, self.p, matrix_size)
-        else:
-            #FIXME: convert this to storing in the object itself
-            bs.save_scat_mat(r12, 'R12', self.structure.label_nu, self.p, matrix_size)
-            bs.save_scat_mat(t12, 'T12', self.structure.label_nu, self.p, matrix_size)
-            bs.save_scat_mat(r23, 'R23', self.structure.label_nu, self.p, matrix_size)
-            bs.save_scat_mat(t23, 'T23', self.structure.label_nu, self.p, matrix_size)
-        # bs.save_scat_mat(np.mat(np.diag(Z_1)), 'Z1', self.structure.label_nu, p, matrix_size)
-        # bs.save_scat_mat(np.mat(np.diag(Z_2)), 'Z2', self.structure.label_nu, p, matrix_size)
-        # bs.save_scat_mat(np.mat(np.diag(Z_3)), 'Z3', self.structure.label_nu, p, matrix_size)
+        self.T12 = t12
+        self.R12 = r12
+        self.T21 = t23
+        self.R21 = r23
+        bs.save_scat_mat(r12, 'R12', self.structure.label_nu, self.p, matrix_size)
+        bs.save_scat_mat(t12, 'T12', self.structure.label_nu, self.p, matrix_size)
+        bs.save_scat_mat(r23, 'R21', self.structure.label_nu, self.p, matrix_size)
+        bs.save_scat_mat(t23, 'T21', self.structure.label_nu, self.p, matrix_size)
 
         if self.structure.height_1 != 'semi_inf':
             # layer thickness in units of period d in nanometers
             h_normed = float(self.structure.height_1)/d_in_nm
-            P_array  = np.exp(1j*np.array(k_film, complex)*h_normed)
+            P_array  = np.exp(1j*np.array(k_film, dtype='complex128')*h_normed)
             P_array  = np.append(P_array, P_array) # add 2nd polarisation
             P        = np.matrix(np.diag(P_array),dtype='D')
             bs.save_scat_mat(P, 'P', self.structure.label_nu, self.p, matrix_size)
@@ -256,6 +247,8 @@ class Simmo(Modes):
             type_el, table_nod, x_arr, pp, qq
             ) = resm
 
+        self.beta = self.prop_consts
+
         # TODO: the following should be calculated later
         ress = pcpv.calc_scat(
             norm_wl, 
@@ -269,12 +262,12 @@ class Simmo(Modes):
             type_el, table_nod, x_arr, pp, qq
         )
 
-        self.T12, self.R12, self.T21, self.R21 = ress
+        self.T12, self.R12, self.T21, self.R21 = [np.mat(x) for x in ress]
         if 1 == self.other_para.PrintOmega:
             bs.save_scat_mat(self.T12, 'T12', self.structure.label_nu, self.p, None)
             bs.save_scat_mat(self.R12, 'R12', self.structure.label_nu, self.p, None)
             bs.save_scat_mat(self.T21, 'T21', self.structure.label_nu, self.p, None)
             bs.save_scat_mat(self.R21, 'R21', self.structure.label_nu, self.p, None)
-            P = np.diag(np.exp(np.complex(0,1)*self.prop_consts*self.structure.height_1/d))
+            P = np.diag(np.exp(1j*self.prop_consts*self.structure.height_1/d))
             bs.save_scat_mat(P, 'P', self.structure.label_nu, self.p, None)
 

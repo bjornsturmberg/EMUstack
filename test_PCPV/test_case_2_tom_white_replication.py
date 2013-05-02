@@ -20,7 +20,6 @@ sys.path.append("../PCPV/")
 import clear_previous
 import objects
 import materials
-from combine_layers    import net_scat_mats
 import cat_n_clean
 import plotting
 import temporary_bullshit as bs
