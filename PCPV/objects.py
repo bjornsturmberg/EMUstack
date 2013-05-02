@@ -64,7 +64,6 @@ class NanoStruct(object):
         self.ly          = ly
         self.nb_typ_el   = nb_typ_el
         self.set_ff      = set_ff
-        self.max_num_BMs = max_num_BMs
         self.label_nu    = label_nu
         if make_mesh_now:
             self.lc  = lc_bkg
@@ -87,8 +86,6 @@ class NanoStruct(object):
         else:
             self.mesh_file   = mesh_file
             self.mesh_format = mesh_format
-
-
 
     def make_mesh(self):
         if self.geometry == 'NW_array':
@@ -131,7 +128,6 @@ class NanoStruct(object):
             else:
                 # except KeyError:
                 raise  NotImplementedError, "must have at least one cylinder of nonzero radius."
-     
 
             if self.ellipticity != 0:
                 msh_name = msh_name + '_e_%(e)i' % {'e' : self.ellipticity*100,}
@@ -306,29 +302,29 @@ class NanoStruct(object):
                 # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
                 # os.system(gmsh_cmd)
 
-    def calc_modes(self, light_list, simo_para):
-        """ Run a simulation with parameters specified by `simo_para`."""
+    def calc_modes(self, light, simo_para, **args):
+        """ Run a simulation to find the structure's modes.
+
+            INPUTS:
+
+            - `light`:  A :Light: instance representing incident light
+
+            - `simo_para`: TODO: delete this. Old-school parameters given
+                    by a :Controls: instance
+
+            - `args`: A dict of options to pass to :Simmo.run:.
+        """
         #TODO: make this work with individual light objects not a list
         #TODO: turn "simo_para" into a dict and pass it through
 
-        # TODO: Get this the hell out of here!
-        # Interpolate refractive indices over wavelength array
-        wavelengths = np.array([l.Lambda for l in light_list], float)
-        materials.interp_needed(wavelengths, self.inclusion_a)
-        materials.interp_needed(wavelengths, self.inclusion_b)
-        materials.interp_needed(wavelengths, self.background)
-        materials.interp_needed(wavelengths, self.superstrate)
-        materials.interp_needed(wavelengths, self.substrate)
-
-        simmo_list = [Simmo(self, li, simo_para, li.bs_label) 
-            for li in light_list]
+        simmo = Simmo(self, light, simo_para, light.bs_label) 
         #TODO:
         # if None == self.mesh:
         #     self.make_mesh()
         #     self.process_mesh()
 
-        [simmo.run_fortran() for simmo in simmo_list]
-        return simmo_list
+        simmo.run(**args)
+        return simmo
 
 
 class ThinFilm(object):
@@ -353,7 +349,7 @@ class ThinFilm(object):
         self.loss          = loss
         self.label_nu      = label_nu
     
-    def calc_modes(self, light_list, simo_para):
+    def calc_modes(self, light, simo_para):
         pass
 
 
@@ -368,23 +364,26 @@ class Light(object):
     """
     def __init__(self, Lambda, pol = 'TM', theta = 0, phi = 0, bs_label = 0):
         self.Lambda = Lambda
-        if  pol == 'Unpol':
-            self.pol = 0
-        elif  pol == 'TE':
-            self.pol = 1
-        elif pol == 'TM':
-            self.pol = 2
-        elif pol == 'Left':
-            self.pol = 3
-        elif pol == 'Right':
-            self.pol = 4
-        elif pol == 'CD':
-            self.pol = 5
-        else:
-            raise TypeError, "Polarisation must be either 'Unpol','TE', 'TM', 'Left', 'Right', or 'CD'."
         self.theta = theta
+        self.pol = pol
         self.phi   = phi
         self.bs_label = bs_label
+
+    def pol_for_fortran(self):
+        if self.pol == 'Unpol':
+            return 0
+        elif self.pol == 'TE':
+            return 1
+        elif self.pol == 'TM':
+            return 2
+        elif self.pol == 'Left':
+            return 3
+        elif self.pol == 'Right':
+            return 4
+        elif self.pol == 'CD':
+            return 5
+        else:
+            raise TypeError, "Polarisation must be either 'Unpol','TE', 'TM', 'Left', 'Right', or 'CD'."
 
     def bloch_vec(self, period, n_eff = 1.):
         """ Calculate k_x and k_y from self.theta, self.phi, and self.Lambda.
@@ -442,7 +441,7 @@ class Controls(object):
         i_cond = 2, itermax = 30, incident = 0, 
         x_order_in = 0, x_order_out = 0, y_order_in = 0, y_order_out = 0,
         what4incident = 2, out4incident = 0, Animate = False, plot_scat_mats = False,
-        var_BM_min = 370, max_order_PWs = 3, num_cores = 8, leave_cpus = False):
+        max_order_PWs = 3, num_cores = 8, leave_cpus = False):
         self.debug          = debug
         self.traLambda      = traLambda
         self.PrintOmega     = PrintOmega
@@ -468,7 +467,6 @@ class Controls(object):
         self.out4incident   = out4incident
         self.Animate        = Animate
         self.plot_scat_mats = plot_scat_mats
-        self.var_BM_min     = var_BM_min
         self.max_order_PWs  = max_order_PWs
         self.num_cores      = num_cores
         if leave_cpus == True:

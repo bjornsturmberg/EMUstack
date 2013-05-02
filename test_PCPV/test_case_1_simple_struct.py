@@ -67,16 +67,16 @@ cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
 sim_cover = scat_mats(cover, light_list, simo_para)
 
 radius1 = 60
-max_num_BMs = 30
+num_BM = 30
 grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
     set_ff = False, height_1 = 1000, height_2 = 1000, num_h = 1,
     inclusion_a = materials.Si_c, background = materials.Air,
     superstrate = materials.Air, substrate = materials.Air, loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True,
     lc_bkg = 0.15, lc2= 1.5, lc3= 1.5,
-    max_num_BMs = max_num_BMs, label_nu = 1)
-#sim_grat1 = [grating_1.calc_modes(li, simo_para) for li in light_list]
-sim_grat1 = grating_1.calc_modes(light_list)
+    label_nu = 1)
+sim_grat1 = [grating_1.calc_modes(li, simo_para, num_BM = num_BM) 
+    for li in light_list]
 bs.save_omegas(sim_grat1)
 
 # will only ever use top scattering matrices for the bottom layer

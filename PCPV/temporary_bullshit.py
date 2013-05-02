@@ -54,37 +54,34 @@ def save_k_perps(anallo_list, num_pw):
     np.savetxt(filename, data_out, fmt='%25.17G', delimiter='')
 
 def save_omegas(simmo_list):
-    max_nval = max([s.nval for s in simmo_list])
-    omega_out       = np.zeros((len(simmo_list), 5 + 2*max_nval))
-    omega_pol_out   = np.zeros((len(simmo_list), 5 + max_nval))
+    max_num_BM = max([s.num_BM for s in simmo_list])
+    omega_out       = np.zeros((len(simmo_list), 5 + 2*max_num_BM))
+    omega_pol_out   = np.zeros((len(simmo_list), 5 + max_num_BM))
     omega_fz_out    = np.zeros_like(omega_out)
     omega_ft_out    = np.zeros_like(omega_out)
 
-    #TODO: check that everything has the same label_nu
-    #TODO: rename goddamned omega to beta
-
     for i, s in enumerate(simmo_list):
-        omega_out[i,:3]     = (s.nval, s.nval, s.light.Lambda)
+        omega_out[i,:3]     = (s.num_BM, s.num_BM, s.light.Lambda)
         omega_out[i,3:5]    = s.bloch_vec() / (2*np.pi)
         omega_pol_out[i,:5] = omega_out[i,:5]
         omega_fz_out[i,:5]  = omega_out[i,:5]
         omega_ft_out[i,:5]  = omega_out[i,:5]
 
-        omega_out[i,5:5+2*s.nval:2] = s.omega.real
-        omega_out[i,6:6+2*s.nval:2] = s.omega.imag
+        omega_out[i,5:5+2*s.num_BM:2] = s.prop_consts.real
+        omega_out[i,6:6+2*s.num_BM:2] = s.prop_consts.imag
 
 
-        omega_pol_out[i,5:5+s.nval] = s.mode_pol[3].real
+        omega_pol_out[i,5:5+s.num_BM] = s.mode_pol[3].real
 
         # Collect the modes which have dominant z component (> 0.5)
         z_dom = abs(s.mode_pol[2]) > 0.5
-        omega_fz_out[i,5:5+2*s.nval:2] = np.where(z_dom, s.omega.real, 0.)
-        omega_fz_out[i,6:6+2*s.nval:2] = np.where(z_dom, s.omega.imag, 0.)
+        omega_fz_out[i,5:5+2*s.num_BM:2] = np.where(z_dom, s.prop_consts.real, 0.)
+        omega_fz_out[i,6:6+2*s.num_BM:2] = np.where(z_dom, s.prop_consts.imag, 0.)
 
         # Collect the modes which are transverse-dominated
         t_dom = abs(s.mode_pol[2]) < 0.1
-        omega_ft_out[i,5:5+2*s.nval:2] = np.where(t_dom, s.omega.real, 0.)
-        omega_ft_out[i,6:6+2*s.nval:2] = np.where(t_dom, s.omega.imag, 0.)
+        omega_ft_out[i,5:5+2*s.num_BM:2] = np.where(t_dom, s.prop_consts.real, 0.)
+        omega_ft_out[i,6:6+2*s.num_BM:2] = np.where(t_dom, s.prop_consts.imag, 0.)
 
 
     f_omega     = "omega_st%04d.txt"        % s.structure.label_nu

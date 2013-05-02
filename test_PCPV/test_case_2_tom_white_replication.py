@@ -62,12 +62,12 @@ structure which is defined later
 period = 120
 
 cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
-    film_material = (3.5 + 0.0j), superstrate = materials.Air, 
+    film_material = materials.Material(3.5 + 0.0j), superstrate = materials.Air, 
     substrate = materials.Air,loss = True, label_nu = 0)
 scat_mats(cover, light_list, simo_para)
 
 homo_film  = objects.ThinFilm(period = period, height_1 = 5, num_h = 1,
-    film_material = (3.6 + 0.27j), superstrate = materials.Air, 
+    film_material = materials.Material(3.6 + 0.27j), superstrate = materials.Air, 
     substrate = materials.Air,loss = True, label_nu = 1)
 scat_mats(homo_film, light_list, simo_para)
 
@@ -79,12 +79,17 @@ scat_mats(bottom, light_list, simo_para)
 
 max_num_BMs = 120
 grating_1 = objects.NanoStruct('1D_grating', period, 100, height_1 = 25, num_h = 1,
-    inclusion_a = materials.Ag, background = (1.5 + 0.0j), loss = True, nb_typ_el = 4, 
+    inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 4.0,
-    max_num_BMs = max_num_BMs, label_nu = 3)
-# simmo_list = scat_mats(grating_1, light_list, simo_para)
-#simmo_list = [grating_1.calc_modes(li, simo_para) for li in light_list]
-simmo_list = grating_1.calc_modes(light_list, simo_para)
+    label_nu = 3)
+# Find num_BM for each simulation in a somewhat arbitrary way
+# Maybe roll this out into a Bjorn-specific function
+max_n = max([grating_1.inclusion_a.n(wl).real for wl in wavelengths])
+num_BM_list = [round(max_num_BMs * grating_1.inclusion_a.n(wl).real/max_n)
+    for wl in wavelengths]
+
+simmo_list = [ grating_1.calc_modes(li, simo_para, num_BM = num_BM)
+    for num_BM, li in zip(num_BM_list, light_list)]
 bs.save_omegas(simmo_list)
 
 
@@ -122,14 +127,14 @@ Efficiency = plotting.irradiance('Av_Absorb', 'Weighted_Absorb', 'Av_Trans', 'We
 last_light_object = light_list.pop()
 spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
 plotting.tra_plot('Spectra', spec_list, lay_print_params, last_light_object,
-    lay_print_params.max_num_BMs, simo_para.max_order_PWs, Efficiency)
+    max_num_BMs, simo_para.max_order_PWs, Efficiency)
 # Plot weighted averaged sprectra
 spec_list = ['Weighted_Absorb', 'Weighted_Trans', 'Weighted_Reflec']
 plotting.tra_plot('Spectra_weighted', spec_list, lay_print_params, last_light_object, 
-    lay_print_params.max_num_BMs, simo_para.max_order_PWs, Efficiency)
+    max_num_BMs, simo_para.max_order_PWs, Efficiency)
 # Plot dispersion diagrams for each layer
 plotting.omega_plot(solar_cell, lay_print_params, last_light_object, 
-    lay_print_params.max_num_BMs, simo_para.max_order_PWs, Efficiency)
+    max_num_BMs, simo_para.max_order_PWs, Efficiency)
 
 
 #---------------OLD plotting routines--------------#
@@ -171,12 +176,12 @@ print '*******************************************'
 def results_match_reference(filename):
     reference = np.loadtxt("ref/case_2/" + filename)
     result    = np.loadtxt(filename)
-    np.testing.assert_allclose(result, reference, 1e-7, 1e-8, filename)
+    np.testing.assert_allclose(result, reference, 1e-6, 1e-6, filename)
 
 def results_match_reference_npy(filename):
     reference = np.load("ref/case_2/" + filename)
     result    = np.load(filename)
-    np.testing.assert_allclose(result, reference, 1e-7, 1e-6, filename)
+    np.testing.assert_allclose(result, reference, 1e-6, 1e-6, filename)
 
 def test_txt_results():
     result_files = (

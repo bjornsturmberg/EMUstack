@@ -13,109 +13,60 @@ import temporary_bullshit as bs
 
 from Fortran_pcpv import pcpv
 
-pcpv_location = '../PCPV/'
-
 pi = np.pi
 
-class Anallo(object):
+class Modes(object):
+    """ Super-class from which Simmo and Anallo inherit common functionality"""
+    def bloch_vec(self):
+        # FIXME: Felix believes the following line is wrong but it's 
+        # how it's always been done
+        n_eff = self.structure.superstrate.n(self.light.Lambda)
+        return self.light.bloch_vec(self.structure.period, n_eff)
+
+
+class Anallo(Modes):
     """ Like a :Simmo:, but for a thin film, and calculated analytically."""
     def __init__(self, thin_film, light, other_para, p):
         self.structure = thin_film
         self.light = light
         self.other_para = other_para
         self.p = p
-        self.omega = None
         self.mode_pol = None
         self.T12            = None
         self.R12            = None
         self.T21            = None
         self.R21            = None
 
-    def bloch_vec(self):
-        # FIXME: Felix believes the following line is wrong but it's 
-        # how it's always been done
-        n_eff = self.superstrate_n()
-        return self.light.bloch_vec(self.structure.period, n_eff)
 
-
-class Simmo(Anallo):
+class Simmo(Modes):
     """docstring for Simmo"""
     def __init__(self, structure, light, other_para, p):
         self.structure      = structure
         self.light          = light
         self.other_para     = other_para
-        self.max_num_BMs    = structure.max_num_BMs
-        self.var_BM_min     = other_para.var_BM_min
         self.max_order_PWs  = other_para.max_order_PWs
         self.p              = p
-        self.omega          = None
+        self.prop_consts    = None
         self.mode_pol       = None
         self.T12            = None
         self.R12            = None
         self.T21            = None
         self.R21            = None
 
-    def inclusion_a_n(self):
-        if isinstance(self.structure.inclusion_a, complex):
-            return self.structure.inclusion_a
-        elif isinstance(self.structure.inclusion_a,materials.Material):
-            return self.structure.inclusion_a.n(self.light.Lambda)
-        else:
-            raise  NotImplementedError, "inclusion_a must either be complex number or material instance from materials.py"
-
-    def inclusion_b_n(self):
-        if isinstance(self.structure.inclusion_b, complex):
-            return self.structure.inclusion_b
-        elif isinstance(self.structure.inclusion_b,materials.Material):
-            return self.structure.inclusion_b.n(self.light.Lambda)
-        else:
-            raise  NotImplementedError, "inclusion_b must either be complex number or material instance from materials.py"
-
-    def background_n(self):
-        if isinstance(self.structure.background, complex):
-            return self.structure.background
-        elif isinstance(self.structure.background,materials.Material):
-            return self.structure.background.n(self.light.Lambda)
-        else:
-            raise  NotImplementedError, "background must either be complex number or material instance from materials.py"
-
-    def superstrate_n(self):
-        if isinstance(self.structure.superstrate, complex):
-            return self.structure.superstrate
-        elif isinstance(self.structure.superstrate,materials.Material):
-            return self.structure.superstrate.n(self.light.Lambda)
-        else:
-            raise  NotImplementedError, "superstrate must either be complex number or material instance from materials.py"
-
-    def substrate_n(self):
-        if isinstance(self.structure.substrate, complex):
-            return self.structure.substrate
-        elif isinstance(self.structure.substrate,materials.Material):
-            return self.structure.substrate.n(self.light.Lambda)
-        else:
-            raise  NotImplementedError, "substrate must either be complex number or material instance from materials.py"
-        
-    def run_fortran(self):
+    def run(self, num_BM):
         """Return a string that runs the simmo, to execute in a shell"""
-        n_effs = np.array([self.superstrate_n(), self.substrate_n(), self.background_n(), 
-            self.inclusion_a_n(), self.inclusion_b_n()])
-        n_effs = n_effs[:self.structure.nb_typ_el]
+        struc = self.structure
+        wl = self.light.Lambda
+        n_effs = np.array([struc.superstrate.n(wl), struc.substrate.n(wl), 
+            struc.background.n(wl), struc.inclusion_a.n(wl), 
+            struc.inclusion_b.n(wl)])
+        n_effs = n_effs[:struc.nb_typ_el]
 
         if self.structure.loss == False:
             n_effs = n_effs.real
-        if self.light.Lambda > self.var_BM_min:
-            if isinstance(self.structure.inclusion_a, complex):
-                max_n = self.structure.inclusion_a.real
-            else:
-                max_n = self.structure.inclusion_a.max_n()
-            nval_tmp      = self.max_num_BMs*self.inclusion_a_n().real/max_n
-            self.nval     = round(nval_tmp)
-            ordre_ls      = self.max_order_PWs 
-            # # in single layer calc scale # PWs by # of BMs to be used, in multilayer need all equal
-            # ordre_ls      = round(self.max_order_PWs*nval/self.max_num_BMs)
-        else:
-            self.nval     = self.max_num_BMs
-            ordre_ls      = self.max_order_PWs
+
+        self.num_BM = num_BM
+        ordre_ls  = self.max_order_PWs
 
         #TODO: break this stuff off into subfunctions
         pw_ords_x_1d = np.arange(-ordre_ls, ordre_ls + 1)
@@ -139,14 +90,14 @@ class Simmo(Anallo):
             n_msh_pts, n_msh_el = [int(i) for i in f.readline().split()]
 
         resm = pcpv.calc_modes(
-            norm_wl, self.nval, 
+            norm_wl, self.num_BM, 
             ordre_ls, d, self.other_para.debug, 
             self.structure.mesh_file, self.structure.mesh_format, 
             n_msh_pts, n_msh_el,
             n_effs, self.bloch_vec(), 
             self.structure.lx, self.structure.ly, self.other_para.tol, 
             self.other_para.E_H_field, self.other_para.i_cond, 
-            self.other_para.itermax, #self.light.pol, 
+            self.other_para.itermax, #self.light.pol_for_fortran(), 
             self.other_para.PropModes, 
             self.other_para.PrintSolution, self.other_para.PrintSupModes, 
             self.other_para.PrintOmega, self.other_para.PrintAll, 
@@ -157,10 +108,11 @@ class Simmo(Anallo):
             neq_pw,
         )
 
-        (   self.beta1, self.sol1, self.sol2, self.mode_pol, 
+        (   self.prop_consts, self.sol1, self.sol2, self.mode_pol, 
             type_el, table_nod, x_arr, pp, qq
             ) = resm
 
+        # TODO: the following should be calculated later
         ress = pcpv.calc_scat(
             norm_wl, 
             ordre_ls, self.other_para.debug, 
@@ -175,12 +127,11 @@ class Simmo(Anallo):
 
         self.T12, self.R12, self.T21, self.R21 = ress
         if 1 == self.other_para.PrintOmega:
-            self.omega = self.beta1
             bs.save_scat_mat(self.T12, 'T12', self.structure.label_nu, self.p, None)
             bs.save_scat_mat(self.R12, 'R12', self.structure.label_nu, self.p, None)
             bs.save_scat_mat(self.T21, 'T21', self.structure.label_nu, self.p, None)
             bs.save_scat_mat(self.R21, 'R21', self.structure.label_nu, self.p, None)
-            P = np.diag(np.exp(np.complex(0,1)*self.beta1*self.structure.height_1/d))
+            P = np.diag(np.exp(np.complex(0,1)*self.prop_consts*self.structure.height_1/d))
             bs.save_scat_mat(P, 'P', self.structure.label_nu, self.p, None)
 
 
@@ -282,9 +233,9 @@ def scat_mats(layer, light_list, simo_para):
 
     # For homogeneous layers calculate scattering matrices analytically
     elif isinstance(layer,objects.ThinFilm):
-        materials.interp_needed(wavelengths, layer.film_material)
-        materials.interp_needed(wavelengths, layer.superstrate)
-        materials.interp_needed(wavelengths, layer.substrate)
+        # materials.interp_needed(wavelengths, layer.film_material)
+        # materials.interp_needed(wavelengths, layer.superstrate)
+        # materials.interp_needed(wavelengths, layer.substrate)
 
         layer.num_prop_air = []
         layer.num_prop_TF  = []
