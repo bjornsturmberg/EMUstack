@@ -20,11 +20,11 @@ sys.path.append("../PCPV/")
 import clear_previous
 import objects
 import materials
-from fortran_call      import scat_mats
 from combine_layers    import net_scat_mats
 import cat_n_clean
 import plotting
 import temporary_bullshit as bs
+from stack import *
 
 start = time.time()
 label_nu = 0
@@ -64,18 +64,23 @@ period = 120
 cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     film_material = materials.Material(3.5 + 0.0j), superstrate = materials.Air, 
     substrate = materials.Air,loss = True, label_nu = 0)
-scat_mats(cover, light_list, simo_para)
+# scat_mats(cover, light_list, simo_para)
+sim_cover = [cover.calc_modes(li, simo_para) for li in light_list]
+bs.save_k_perps(sim_cover, sim_cover[0].structure.nu_tot_ords)
 
 homo_film  = objects.ThinFilm(period = period, height_1 = 5, num_h = 1,
     film_material = materials.Material(3.6 + 0.27j), superstrate = materials.Air, 
     substrate = materials.Air,loss = True, label_nu = 1)
-scat_mats(homo_film, light_list, simo_para)
+# scat_mats(homo_film, light_list, simo_para)
+sim_homo_film = [homo_film.calc_modes(li, simo_para) for li in light_list]
+bs.save_k_perps(sim_homo_film, sim_homo_film[0].structure.nu_tot_ords)
 
 bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     film_material = materials.Air, superstrate = materials.Air, 
     loss = False, label_nu = 2)
-scat_mats(bottom, light_list, simo_para)
-
+# scat_mats(bottom, light_list, simo_para)
+sim_bot = [bottom.calc_modes(li, simo_para) for li in light_list]
+bs.save_k_perps(sim_bot, sim_bot[0].structure.nu_tot_ords)
 
 max_num_BMs = 120
 grating_1 = objects.NanoStruct('1D_grating', period, 100, height_1 = 25, num_h = 1,
@@ -88,21 +93,31 @@ max_n = max([grating_1.inclusion_a.n(wl).real for wl in wavelengths])
 num_BM_list = [round(max_num_BMs * grating_1.inclusion_a.n(wl).real/max_n)
     for wl in wavelengths]
 
-simmo_list = [ grating_1.calc_modes(li, simo_para, num_BM = num_BM)
+sim_grat1 = [ grating_1.calc_modes(li, simo_para, num_BM = num_BM)
     for num_BM, li in zip(num_BM_list, light_list)]
-bs.save_omegas(simmo_list)
+bs.save_omegas(sim_grat1)
 
 
 mirror = objects.ThinFilm(period = period, height_1 = 100,
     film_material = materials.Ag, superstrate = materials.Air, 
     loss = True, label_nu = 4)
-scat_mats(mirror, light_list, simo_para)
+# scat_mats(mirror, light_list, simo_para)
+sim_mirror = [mirror.calc_modes(li, simo_para) for li in light_list]
+bs.save_k_perps(sim_mirror, sim_mirror[0].structure.nu_tot_ords)
+
 
 ################ Construct & solve for full solar cell structure ##############
 """ Now when defining full structure order is critical and
 solar_cell list MUST be ordered from bottom to top!
 """
-solar_cell = [bottom, mirror, grating_1, homo_film, cover]
+stack_list = [Stack(st) for st in 
+    zip(sim_bot, sim_mirror, sim_grat1, sim_homo_film, sim_cover)]
+for stack in stack_list:
+    stack.calc_scat()
+t_r_a_plots(stack_list)
+
+
+# solar_cell = [bottom, mirror, grating_1, homo_film, cover]
 # specify which layer is the active one (where absorption generates charge carriers)
 active_layer = homo_film
 act_lay_nu   = active_layer.label_nu - 1
@@ -110,8 +125,7 @@ act_lay_nu   = active_layer.label_nu - 1
 lay_print_params = grating_1
 
 
-
-net_scat_mats(solar_cell, wavelengths, simo_para)
+# net_scat_mats(solar_cell, wavelengths, simo_para)
 
 ################# Efficiency & weighted spectra for active layer ################
 plotting.average_spec('Lay_Absorb_%d' % act_lay_nu, 'Av_Absorb',  
@@ -132,9 +146,9 @@ plotting.tra_plot('Spectra', spec_list, lay_print_params, last_light_object,
 spec_list = ['Weighted_Absorb', 'Weighted_Trans', 'Weighted_Reflec']
 plotting.tra_plot('Spectra_weighted', spec_list, lay_print_params, last_light_object, 
     max_num_BMs, simo_para.max_order_PWs, Efficiency)
-# Plot dispersion diagrams for each layer
-plotting.omega_plot(solar_cell, lay_print_params, last_light_object, 
-    max_num_BMs, simo_para.max_order_PWs, Efficiency)
+# # Plot dispersion diagrams for each layer
+# plotting.omega_plot(solar_cell, lay_print_params, last_light_object, 
+#     max_num_BMs, simo_para.max_order_PWs, Efficiency)
 
 
 #---------------OLD plotting routines--------------#

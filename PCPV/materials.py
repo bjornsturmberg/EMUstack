@@ -41,7 +41,7 @@ class Material(object):
             self._n = interp1d(self.data_wls, self.data_ns)
 
     def n(self, wl):
-        """ Return n at the specified wavelength."""
+        """ Return n for the specified wavelength."""
         return self._n(wl)
 
     def n_drude(self, wavelength, plasma_wl, gamma_wl):
@@ -53,6 +53,7 @@ class Material(object):
         return np.sqrt(drude_n)
 
     def n_spline(self, wavelengths):
+        """ TODO: remove me"""
         raise NotImplementedError, "This function is defunct"
         if wavelengths.min() < self.data_wls.min():
             raise ValueError, "Input wavelength: %(in)f smaller than \

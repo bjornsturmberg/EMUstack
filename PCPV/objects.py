@@ -4,7 +4,7 @@ import numpy as np
 import random
 import materials
 from calculate_ff     import calculate_ff
-from fortran_call import Simmo
+from fortran_call import Simmo, Anallo
 import temporary_bullshit as bs
 
 data_location = '../PCPV/Data/'
@@ -51,9 +51,9 @@ class NanoStruct(object):
         elif geometry == '1D_grating':
             self.ff      = (radius1 + radius2)/period
         self.ff_rand     = ff_rand
-        self.height_1    = height_1
-        self.height_2    = height_2
-        self.num_h       = num_h
+        self.height_1    = height_1 # FIXME: remove this
+        self.height_2    = height_2 # FIXME: remove this
+        self.num_h       = num_h    # FIXME: remove this
         self.inclusion_a = inclusion_a
         self.inclusion_b = inclusion_b
         self.background  = background
@@ -314,8 +314,7 @@ class NanoStruct(object):
 
             - `args`: A dict of options to pass to :Simmo.run:.
         """
-        #TODO: make this work with individual light objects not a list
-        #TODO: turn "simo_para" into a dict and pass it through
+        #TODO: eliminate simo_para?
 
         simmo = Simmo(self, light, simo_para, light.bs_label) 
         #TODO:
@@ -350,7 +349,10 @@ class ThinFilm(object):
         self.label_nu      = label_nu
     
     def calc_modes(self, light, simo_para):
-        pass
+        an = Anallo(self, light, simo_para, light.bs_label)
+
+        an.calc_modes()
+        return an
 
 
 class Light(object):
@@ -363,7 +365,7 @@ class Light(object):
         - `phi`     : azimuthal angle of incidence
     """
     def __init__(self, Lambda, pol = 'TM', theta = 0, phi = 0, bs_label = 0):
-        self.Lambda = Lambda
+        self.Lambda = float(Lambda)
         self.theta = theta
         self.pol = pol
         self.phi   = phi
@@ -394,7 +396,7 @@ class Light(object):
         rphi    = self.phi * np.pi/180.
 
         k = 2.*np.pi * n_eff.real * period / self.Lambda
-        # calculate bloch vectors - for derivation see Bjorns Theory Notes
+        # calculate bloch vectors - for derivation see Bjorn's Theory Notes
         bloch_vec = np.array(   (np.sin(rtheta * k) * np.cos(rphi),
                                  np.sin(rtheta * k) * np.sin(rphi) ))
         

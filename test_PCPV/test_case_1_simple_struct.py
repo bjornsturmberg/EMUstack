@@ -20,12 +20,11 @@ sys.path.append("../PCPV/")
 import clear_previous
 import objects
 import materials
-from fortran_call      import scat_mats, Simmo
 from combine_layers    import net_scat_mats
 import cat_n_clean
 import plotting
 import temporary_bullshit as bs
-
+from stack import *
 
 start = time.time()
 label_nu = 0
@@ -64,7 +63,9 @@ period  = 600
 cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     film_material = materials.Air, superstrate = materials.Air, 
     substrate = materials.Air,loss = False, label_nu = 0)
-sim_cover = scat_mats(cover, light_list, simo_para)
+sim_cover = [cover.calc_modes(li, simo_para) for li in light_list]
+bs.save_k_perps(sim_cover, sim_cover[0].structure.nu_tot_ords)
+#sim_cover = scat_mats(cover, light_list, simo_para)
 
 radius1 = 60
 num_BM = 30
@@ -83,7 +84,9 @@ bs.save_omegas(sim_grat1)
 bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     film_material = materials.SiO2_a, superstrate = materials.Air, 
     loss = False, label_nu = 2)
-sim_bot = scat_mats(bottom, light_list, simo_para)
+sim_bot = [bottom.calc_modes(li, simo_para) for li in light_list]
+bs.save_k_perps(sim_bot, sim_bot[0].structure.nu_tot_ords)
+#sim_bot = scat_mats(bottom, light_list, simo_para)
 
 
 
@@ -91,9 +94,12 @@ sim_bot = scat_mats(bottom, light_list, simo_para)
 """ Now when defining full structure order is critical and
 solar_cell list MUST be ordered from bottom to top!
 """
-solar_cell = [bottom, grating_1, cover]
-
-net_scat_mats(solar_cell, wavelengths, simo_para)
+# solar_cell = [bottom, grating_1, cover]
+stack_list = [Stack(st) for st in zip(sim_bot, sim_grat1, sim_cover)]
+for stack in stack_list:
+    stack.calc_scat()
+t_r_a_plots(stack_list)
+# net_scat_mats(solar_cell, wavelengths, simo_para)
 
 def results_match_reference(filename):
     reference = np.loadtxt("ref/case_1/" + filename)
