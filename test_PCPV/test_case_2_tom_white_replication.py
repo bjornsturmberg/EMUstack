@@ -21,7 +21,6 @@ import clear_previous
 import objects
 import materials
 import plotting
-import temporary_bullshit as bs
 from stack import *
 from numpy.testing import assert_allclose as assert_ac
 from numpy.testing import assert_equal
@@ -58,7 +57,7 @@ cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     material = materials.Material(3.5 + 0.0j), 
     loss = True, label_nu = 0)
 
-homo_film  = objects.ThinFilm(period = period, height_1 = 5, num_h = 1,
+homo_film  = objects.ThinFilm(period = period, height_1 = 5,
     material = materials.Material(3.6 + 0.27j),
     loss = True, label_nu = 1)
 
@@ -66,7 +65,7 @@ bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     material = materials.Air,
     loss = False, label_nu = 2)
 
-grating_1 = objects.NanoStruct('1D_grating', period, 100, height_1 = 25, num_h = 1,
+grating_1 = objects.NanoStruct('1D_grating', period, 100, height_1 = 25, 
     inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 4.0,
     label_nu = 3)
@@ -123,11 +122,11 @@ lay_print_params = grating_1
 
 ################# Efficiency & weighted spectra for active layer ################
 plotting.average_spec('Lay_Absorb_%d' % act_lay_nu, 'Av_Absorb',  
-    len(wavelengths), lay_print_params.num_h)
+    len(wavelengths), 1)
 plotting.average_spec('Lay_Trans_%d'  % act_lay_nu, 'Av_Trans',   
-    len(wavelengths), lay_print_params.num_h)
+    len(wavelengths), 1)
 plotting.average_spec('Reflectance', 'Av_Reflec',  
-    len(wavelengths), lay_print_params.num_h)
+    len(wavelengths), 1)
 # Interpolate solar spectrum and calculate efficiency
 Efficiency = plotting.irradiance('Av_Absorb', 'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans',
  'Av_Reflec', 'Weighted_Reflec', lay_print_params.radius1, period, ff = lay_print_params.ff)

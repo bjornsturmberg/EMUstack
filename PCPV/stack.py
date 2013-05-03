@@ -1,6 +1,5 @@
 import objects
 import numpy as np
-import temporary_bullshit as bs
 from plotting import layers_plot
 
 class Stack(object):
@@ -13,9 +12,9 @@ class Stack(object):
           - `s_layers` : a tuple of :ThinFilm:s and :NanoStruct:s ordered
             from top to bottom layer.
     """
-    def __init__(self, s_layers):
+    def __init__(self, s_layers, heights_override = ()):
         self.layers = tuple(s_layers)
-        #TODO: self.heights
+        self.heights_override = heights_override
 
     def calc_scat(self):
         """ Calculate the transmission and reflection matrices of the stack"""

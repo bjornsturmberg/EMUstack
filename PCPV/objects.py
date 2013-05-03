@@ -5,7 +5,6 @@ import random
 import materials
 from calculate_ff     import calculate_ff
 from fortran_call import Simmo, Anallo
-import temporary_bullshit as bs
 
 data_location = '../PCPV/Data/'
 
@@ -18,9 +17,8 @@ class NanoStruct(object):
         radius14=0, radius15=0, radius16=0, ellipticity = 0.0, 
         square = False, mesh_file = 'NEED_FILE.mail', ff=0, 
         set_ff = False, ff_rand = False, height_1 = 2330, 
-        height_2 = 2330, num_h = 1, inclusion_a = materials.Si_c, 
+        inclusion_a = materials.Si_c, 
         inclusion_b = materials.Air, background = materials.Air,
-        superstrate = materials.Air, substrate = materials.SiO2_a,
         loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 5, 
         make_mesh_now = False, force_mesh = False, lc_bkg = 0.09, 
         lc2= 1.7, lc3 = 1.9, lc4 = 1.9, lc5 = 1.9, lc6 = 1.9,
@@ -52,13 +50,11 @@ class NanoStruct(object):
             self.ff      = (radius1 + radius2)/period
         self.ff_rand     = ff_rand
         self.height_1    = height_1 # FIXME: remove this
-        self.height_2    = height_2 # FIXME: remove this
-        self.num_h       = num_h    # FIXME: remove this
         self.inclusion_a = inclusion_a
         self.inclusion_b = inclusion_b
         self.background  = background
-        self.superstrate = superstrate #FIXME: remove this
-        self.substrate   = substrate #FIXME: remove this
+        self.superstrate = materials.Air #FIXME: remove this
+        self.substrate   = materials.Air #FIXME: remove this
         self.loss        = loss
         self.lx          = lx
         self.ly          = ly
@@ -328,14 +324,11 @@ class NanoStruct(object):
 
 class ThinFilm(object):
     """ Represents homogeneous film """
-    def __init__(self, period, height_1 = 2330, height_2 = 2330,
-        num_h = 1, material = materials.Si_c, 
+    def __init__(self, period, height_1 = 2330, material = materials.Si_c, 
         nu_tot_ords = 0, num_prop_air = [], num_prop_TF = [], 
         set_ord_in = 0, set_ord_out = 0, loss = True, label_nu = 0):
         self.period         = period
         self.height_1       = height_1
-        self.height_2       = height_2
-        self.num_h          = num_h
         self.material       = material
         # TODO: remove superstrate and substrate
         self.superstrate    = materials.Air

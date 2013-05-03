@@ -9,7 +9,6 @@ sys.path.append("../PCPV/")
 
 import materials
 import objects
-import temporary_bullshit as bs
 
 from Fortran_pcpv import pcpv
 
@@ -51,7 +50,6 @@ class Anallo(Modes):
         n = np.array([n_1, n_2, n_3])
         if self.structure.loss == False:
             n = np.real(n)
-        # print n
 
         #set up equivalent plane waves to FEM calc
         # normalise to lattice constant equal 1 as in FEM
@@ -118,52 +116,55 @@ class Anallo(Modes):
         self.num_prop_TF  = 0
         for k in k_list:
             common_factor = np.sin(theta*pi/180.0)*k
-            bloch1 = common_factor*np.cos(phi*pi/180.0)
-            bloch2 = common_factor*np.sin(phi*pi/180.0)
+            #TODO: clean this up
+            blochx = bloch1 = common_factor*np.cos(phi*pi/180.0)
+            blochy = bloch2 = common_factor*np.sin(phi*pi/180.0)
             vec_kx = 2.0*pi/d
             vec_ky = 2.0*pi/d
 
-            raw_beta_z_pw = np.array([])
-            for px in np.linspace(-ordre_ls, ordre_ls, 2*ordre_ls +1):
-                for py in np.linspace(-ordre_ls, ordre_ls, 2*ordre_ls +1):
-                    if (px**2 + py**2) <= ordre_ls**2:
-                        alpha = bloch1 + vec_kx*px  # Bloch vector along x
-                        beta  = bloch2 + vec_ky*py  # Bloch vector along y
-                        z_tmp = k**2 - alpha**2 - beta**2
-                        sqtmp = sqrt(z_tmp)
-                        raw_beta_z_pw  = np.append(raw_beta_z_pw,sqtmp)
-                        # number of propagating plane waves in thin film layer
-                        if k_el == 0:
-                            if z_tmp > 0.0e-5:
-                                self.num_prop_air += 1
-                            # if px == py == 0:
-                            #     zero_ord = len(raw_beta_z_pw)-1
-                            if px == x_order_in and py == y_order_in:
-                                select_order_in  = len(raw_beta_z_pw)-1
-                            if px == x_order_out and py == y_order_out:
-                                select_order_out = len(raw_beta_z_pw)-1
-                        if k_el == 1 and z_tmp > 0.0e-5:
-                            self.num_prop_TF += 1
+            pxs = pys = np.arange(-ordre_ls, ordre_ls+1)
+            # Prepare for an inner loop over y, not x
+            pys_mesh, pxs_mesh = np.meshgrid(pys, pxs)
+            low_p2 = (pxs_mesh**2 + pys_mesh**2 <= ordre_ls**2)
 
+            # Calculate arrays of k_x and k_y components of scattered PWs
+            alphas = blochx + vec_kx * pxs + 0j
+            betas = blochy + vec_ky * pys + 0j
+
+            # Calculate all wave vector components k_z
+            alpha2_mesh, beta2_mesh = np.meshgrid(alphas**2, betas**2)
+            k_zs_unsrt = np.sqrt((k**2 - alpha2_mesh - beta2_mesh)[low_p2])
+            
+            if k_el == 0:
+                # Calculate number of propagating plane waves (k_z is real)
+                self.num_prop_air = (k_zs_unsrt.imag == 0.).sum()
+
+                # Find element of k_zs_unsrt that corresponds to 
+                # px = x_order_in*, py = y_order_*
+                select_order_in = np.nonzero((pxs_mesh[low_p2] == x_order_in) *
+                    (pys_mesh[low_p2] == y_order_in))[0][0]
+                select_order_out = np.nonzero((pxs_mesh[low_p2] == x_order_out) *
+                    (pys_mesh[low_p2] == y_order_out))[0][0]
+
+            elif k_el == 1:
+                # Calculate number of propagating plane waves (k_z is real)
+                self.num_prop_TF = (k_zs_unsrt.imag == 0.).sum()
 
             # sort plane waves as [propagating big -> small, evanescent small -> big]
             # which is consistent with FEM
             # to be consistent in impedances Z, sub/superstrate sorted to order of thin film
             if k_el == 0: # air superstrates as medium to consistently sort by
                 # if np.imag(n[0]) != 0.0:
-                #     rev_ind = np.argsort(1*np.imag(raw_beta_z_pw))
+                #     rev_ind = np.argsort(1*np.imag(k_zs_unsrt))
                 # else:
-                rev_ind = np.argsort(-1*np.real(raw_beta_z_pw) + np.imag(raw_beta_z_pw))
+                rev_ind = np.argsort(-1*np.real(k_zs_unsrt) + np.imag(k_zs_unsrt))
                 # layer.zero_ord    = int(np.where(rev_ind==zero_ord)[0])
-                self.structure.set_ord_in  = int(np.where(rev_ind==select_order_in)[0])
-                self.structure.set_ord_out = int(np.where(rev_ind==select_order_out)[0])
-            sorted_beta_z_pw = raw_beta_z_pw[rev_ind]
+                self.structure.set_ord_in  = np.nonzero(rev_ind==select_order_in)[0][0]
+                self.structure.set_ord_out = np.nonzero(rev_ind==select_order_out)[0][0]
+            sorted_beta_z_pw = k_zs_unsrt[rev_ind]
             k_perp.append(sorted_beta_z_pw)
             k_el += 1
 
-        # print 'k_perp[0]', k_perp[0]
-        # print 'k_perp[1]', k_perp[1]
-        # print 'k_perp[2]', k_perp[2]
         return k_perp
 
 

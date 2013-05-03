@@ -22,7 +22,6 @@ import objects
 import materials
 import cat_n_clean
 import plotting
-import temporary_bullshit as bs
 from stack import *
 import testing
 from numpy.testing import assert_allclose as assert_ac
@@ -68,9 +67,9 @@ sim_cover = cover.calc_modes(light, simo_para)
 radius1 = 60
 num_BM = 30
 grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
-    set_ff = False, height_1 = 1000, height_2 = 1000, num_h = 1,
+    set_ff = False, height_1 = 1000,
     inclusion_a = materials.Si_c, background = materials.Air,
-    superstrate = materials.Air, substrate = materials.Air, loss = True, nb_typ_el = 4, 
+    loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True,
     lc_bkg = 0.15, lc2= 1.5, lc3= 1.5,
     label_nu = 1)
