@@ -28,8 +28,6 @@ class Stack(object):
             else:
                 raise ValueError, "All layers in a multilayer stack must have the same period!"
 
-        p = self.layers[0].light.bs_label
-
         nu_intfaces     = 2*(len(self.layers)-1)
         neq_PW          = self.layers[0].structure.nu_tot_ords # assumes incident from homogeneous film
         PW_pols         = 2*neq_PW
@@ -221,7 +219,7 @@ class Stack(object):
             plt.xlabel('Incoming Orders')
             plt.ylabel('Outgoing Orders')
             plt.suptitle('Net Reflection Scattering Matrix')
-            plt.savefig('Rnet_wl%i' % p)
+            plt.savefig('Rnet_wl %f' % self.layers[0].light.Lambda)
             # for i in range(len(rnet_list)):
             #     im = np.real(rnet_list[i])
             #     plt.matshow(im,cmap=plt.cm.gray)

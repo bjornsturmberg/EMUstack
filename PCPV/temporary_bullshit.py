@@ -6,24 +6,6 @@
 
 import numpy as np
 
-def save_scat_mat(matrix, name, st, p, num_pw):
-    # reshape matrices to be consistent with pcpv.exe output
-    format_label_nu = '%04d' % st
-    format_p        = '%04d' % p
-
-    file_name = "st%(st)s_wl%(wl)s_%(mat_name)s" % {
-        'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
-    np.save(file_name, matrix)
-    # file_name = "st%(st)s_wl%(wl)s_%(mat_name)s.txt" % {
-    #     'st' : format_label_nu, 'wl' : format_p, 'mat_name' : name }
-    # with open(file_name, 'w') as outfile:
-    #     for k in range(num_pw):
-    #         for i in range(num_pw):
-    #             data = [i+1,  k+1, np.real(matrix[i,k]), np.imag(matrix[i,k]),
-    #                 np.abs(matrix[i,k])**2]
-    #             data = np.reshape(data, (1,5))
-    #             np.savetxt(outfile, data, fmt=['%4i','%4i','%25.17G','%25.17G','%25.17G'], delimiter='')
-
 def save_k_perps(anallo_list, num_pw):
     data_out = np.zeros((len(anallo_list), 2 + 2*num_pw))
 

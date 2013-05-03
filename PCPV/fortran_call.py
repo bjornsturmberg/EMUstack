@@ -26,11 +26,10 @@ class Modes(object):
 
 class Anallo(Modes):
     """ Like a :Simmo:, but for a thin film, and calculated analytically."""
-    def __init__(self, thin_film, light, other_para, p):
+    def __init__(self, thin_film, light, other_para):
         self.structure = thin_film
         self.light = light
         self.other_para = other_para
-        self.p = p
         self.mode_pol       = None
         # self.T12            = None
         # self.R12            = None
@@ -46,7 +45,7 @@ class Anallo(Modes):
         # that way can order plane waves in material as in infintesimal air layers,
         # which is ordered consistent with FEM.
         n_1 = self.structure.substrate.n(wl)
-        n_2 = self.structure.film_material.n(wl)
+        n_2 = self.structure.material.n(wl)
         n_3 = self.structure.superstrate.n(wl)
 
         n = np.array([n_1, n_2, n_3])
@@ -96,15 +95,11 @@ class Anallo(Modes):
         t23 = np.mat(np.diag((2.*sqrt(Z_3*Z_2))/(Z_3 + Z_2)))
 
 
-        # saving matrices to file
+        # Store the matrices
         self.T12 = t12
         self.R12 = r12
         self.T21 = t23
         self.R21 = r23
-        bs.save_scat_mat(r12, 'R12', self.structure.label_nu, self.p, matrix_size)
-        bs.save_scat_mat(t12, 'T12', self.structure.label_nu, self.p, matrix_size)
-        bs.save_scat_mat(r23, 'R21', self.structure.label_nu, self.p, matrix_size)
-        bs.save_scat_mat(t23, 'T21', self.structure.label_nu, self.p, matrix_size)
 
         if self.structure.height_1 != 'semi_inf':
             # layer thickness in units of period d in nanometers
@@ -112,7 +107,6 @@ class Anallo(Modes):
             P_array  = np.exp(1j*np.array(k_film, dtype='complex128')*h_normed)
             P_array  = np.append(P_array, P_array) # add 2nd polarisation
             P        = np.matrix(np.diag(P_array),dtype='D')
-            bs.save_scat_mat(P, 'P', self.structure.label_nu, self.p, matrix_size)
 
 
     def calc_k_perp(self, n, k_list, d, theta, phi, ordre_ls, 
@@ -175,12 +169,11 @@ class Anallo(Modes):
 
 class Simmo(Modes):
     """docstring for Simmo"""
-    def __init__(self, structure, light, other_para, p):
+    def __init__(self, structure, light, other_para):
         self.structure      = structure
         self.light          = light
         self.other_para     = other_para
         self.max_order_PWs  = other_para.max_order_PWs
-        self.p              = p
         self.prop_consts    = None
         self.mode_pol       = None
         self.T12            = None
@@ -264,10 +257,5 @@ class Simmo(Modes):
 
         self.T12, self.R12, self.T21, self.R21 = [np.mat(x) for x in ress]
         if 1 == self.other_para.PrintOmega:
-            bs.save_scat_mat(self.T12, 'T12', self.structure.label_nu, self.p, None)
-            bs.save_scat_mat(self.R12, 'R12', self.structure.label_nu, self.p, None)
-            bs.save_scat_mat(self.T21, 'T21', self.structure.label_nu, self.p, None)
-            bs.save_scat_mat(self.R21, 'R21', self.structure.label_nu, self.p, None)
             P = np.diag(np.exp(1j*self.prop_consts*self.structure.height_1/d))
-            bs.save_scat_mat(P, 'P', self.structure.label_nu, self.p, None)
 

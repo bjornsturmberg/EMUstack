@@ -316,7 +316,7 @@ class NanoStruct(object):
         """
         #TODO: eliminate simo_para?
 
-        simmo = Simmo(self, light, simo_para, light.bs_label) 
+        simmo = Simmo(self, light, simo_para) 
         #TODO:
         # if None == self.mesh:
         #     self.make_mesh()
@@ -329,27 +329,27 @@ class NanoStruct(object):
 class ThinFilm(object):
     """ Represents homogeneous film """
     def __init__(self, period, height_1 = 2330, height_2 = 2330,
-        num_h = 1, film_material = materials.Si_c, 
-        superstrate = materials.Air, substrate = materials.Air, 
+        num_h = 1, material = materials.Si_c, 
         nu_tot_ords = 0, num_prop_air = [], num_prop_TF = [], 
         set_ord_in = 0, set_ord_out = 0, loss = True, label_nu = 0):
-        self.period        = period
-        self.height_1      = height_1
-        self.height_2      = height_2
-        self.num_h         = num_h
-        self.film_material = film_material
-        self.superstrate   = superstrate
-        self.substrate     = substrate
-        self.nu_tot_ords   = nu_tot_ords
-        self.num_prop_air  = num_prop_air
-        self.num_prop_TF   = num_prop_TF
-        self.set_ord_in    = set_ord_in
-        self.set_ord_out   = set_ord_out
-        self.loss          = loss
-        self.label_nu      = label_nu
+        self.period         = period
+        self.height_1       = height_1
+        self.height_2       = height_2
+        self.num_h          = num_h
+        self.material       = material
+        # TODO: remove superstrate and substrate
+        self.superstrate    = materials.Air
+        self.substrate      = materials.Air
+        self.nu_tot_ords    = nu_tot_ords
+        self.num_prop_air   = num_prop_air
+        self.num_prop_TF    = num_prop_TF
+        self.set_ord_in     = set_ord_in
+        self.set_ord_out    = set_ord_out
+        self.loss           = loss
+        self.label_nu       = label_nu
     
     def calc_modes(self, light, simo_para):
-        an = Anallo(self, light, simo_para, light.bs_label)
+        an = Anallo(self, light, simo_para)
 
         an.calc_modes()
         return an
@@ -364,12 +364,11 @@ class Light(object):
 
         - `phi`     : azimuthal angle of incidence
     """
-    def __init__(self, Lambda, pol = 'TM', theta = 0, phi = 0, bs_label = 0):
+    def __init__(self, Lambda, pol = 'TM', theta = 0, phi = 0):
         self.Lambda = float(Lambda)
         self.theta = theta
         self.pol = pol
         self.phi   = phi
-        self.bs_label = bs_label
 
     def pol_for_fortran(self):
         if self.pol == 'Unpol':

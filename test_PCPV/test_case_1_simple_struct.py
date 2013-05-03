@@ -24,6 +24,9 @@ import cat_n_clean
 import plotting
 import temporary_bullshit as bs
 from stack import *
+import testing
+from numpy.testing import assert_allclose as assert_ac
+from numpy.testing import assert_equal
 
 start = time.time()
 label_nu = 0
@@ -36,7 +39,6 @@ simo_para  = objects.Controls(debug = 0, max_order_PWs = 0, num_cores = 1,
 clear_previous.clean('.txt')
 clear_previous.clean('.pdf')
 clear_previous.clean('.log')
-clear_previous.clean('.npy')
 
 ################ Light parameters #####################
 
@@ -46,8 +48,8 @@ clear_previous.clean('.npy')
 # Single wavelength run
 wl_super =  500.0
 wavelengths = np.array([wl_super])
-light_list  = [objects.Light(wl, bs_label = i+1) 
-        for i, wl in enumerate(wavelengths)]
+light_list  = [objects.Light(wl) for wl in wavelengths]
+light = light_list[0]
 
 
 ################ Scattering matrices (for distinct layers) ##############
@@ -60,11 +62,8 @@ structure which is defined later
 period  = 600
 
 cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
-    film_material = materials.Air, superstrate = materials.Air, 
-    substrate = materials.Air,loss = False, label_nu = 0)
-sim_cover = [cover.calc_modes(li, simo_para) for li in light_list]
-bs.save_k_perps(sim_cover, sim_cover[0].structure.nu_tot_ords)
-#sim_cover = scat_mats(cover, light_list, simo_para)
+    material = materials.Air, loss = False, label_nu = 0)
+sim_cover = cover.calc_modes(light, simo_para)
 
 radius1 = 60
 num_BM = 30
@@ -75,17 +74,13 @@ grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
     make_mesh_now = True, force_mesh = True,
     lc_bkg = 0.15, lc2= 1.5, lc3= 1.5,
     label_nu = 1)
-sim_grat1 = [grating_1.calc_modes(li, simo_para, num_BM = num_BM) 
-    for li in light_list]
-bs.save_omegas(sim_grat1)
+sim_grat1 = grating_1.calc_modes(light, simo_para, num_BM = num_BM)
 
 # will only ever use top scattering matrices for the bottom layer
 bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
-    film_material = materials.SiO2_a, superstrate = materials.Air, 
+    material = materials.SiO2_a, 
     loss = False, label_nu = 2)
-sim_bot = [bottom.calc_modes(li, simo_para) for li in light_list]
-bs.save_k_perps(sim_bot, sim_bot[0].structure.nu_tot_ords)
-#sim_bot = scat_mats(bottom, light_list, simo_para)
+sim_bot = bottom.calc_modes(light, simo_para)
 
 
 
@@ -93,12 +88,34 @@ bs.save_k_perps(sim_bot, sim_bot[0].structure.nu_tot_ords)
 """ Now when defining full structure order is critical and
 solar_cell list MUST be ordered from bottom to top!
 """
-# solar_cell = [bottom, grating_1, cover]
-stack_list = [Stack(st) for st in zip(sim_bot, sim_grat1, sim_cover)]
-for stack in stack_list:
-    stack.calc_scat()
+stack = Stack((sim_bot, sim_grat1, sim_cover))
+stack.calc_scat()
+stack_list = [stack]
 t_r_a_plots(stack_list)
-# net_scat_mats(solar_cell, wavelengths, simo_para)
+
+
+# # SAVE DATA AS REFERENCE
+# # Only run this after changing what is simulated - this
+# # generates a new set of reference answers to check against
+# # in the future
+# testing.save_reference_data("case_1", stack_list)
+
+def test_stack_list_matches_saved(casefile_name = 'case_1', stack_list = stack_list, rtol = 1e-6, atol = 1e-6):
+    ref = np.load("ref/%s.npz" % casefile_name)
+    yield assert_equal, len(stack_list), len(ref['stack_list'])
+    for stack, rstack in zip(stack_list, ref['stack_list']):
+        yield assert_equal, len(stack.layers), len(rstack['layers'])
+        lbl_s = "wl = %f, " % stack.layers[0].light.Lambda
+        for i, (lay, rlay) in enumerate(zip(stack.layers, rstack['layers'])):
+            lbl_l = lbl_s + "lay %i, " % i
+            yield assert_ac, lay.R12,  rlay['R12'],  rtol, atol, lbl_l + 'R12'
+            yield assert_ac, lay.T12,  rlay['T12'],  rtol, atol, lbl_l + 'T12'
+            yield assert_ac, lay.R21,  rlay['R21'],  rtol, atol, lbl_l + 'R21'
+            yield assert_ac, lay.T21,  rlay['T21'],  rtol, atol, lbl_l + 'T21'
+            yield assert_ac, lay.beta, rlay['beta'], rtol, atol, lbl_l + 'beta'
+            #TODO: assert_ac(lay.sol1, rlay['sol1'])
+        #TODO: assert_ac(stack.R_net, rstack['R_net'])
+        #TODO: assert_ac(stack.T_net, rstack['T_net'])
 
 def results_match_reference(filename):
     reference = np.loadtxt("ref/case_1/" + filename)
@@ -108,33 +125,9 @@ def results_match_reference(filename):
 def test_txt_results():
     result_files = (
         "Absorptance.txt",
-        "beta_st0000.txt",
-        "beta_st0002.txt",
         "Lay_Absorb_0.txt",
         "Lay_Trans_0.txt",
-        "omega_Ft_st0001.txt",
-        "omega_Fz_st0001.txt",
-        "omega_pol_st0001.txt",
-        "omega_st0001.txt",
         "Reflectance.txt",       "Transmittance.txt",
         )
     for f in result_files:
         yield results_match_reference, f
-
-def results_match_reference_npy(filename):
-    reference = np.load("ref/case_1/" + filename)
-    result    = np.load(filename)
-    np.testing.assert_allclose(result, reference, 1e-7, 1e-6, filename)
-
-def test_npy_results():
-    result_files = (
-        "st0000_wl0001_R12.npy",  "st0001_wl0001_T12.npy",
-        "st0000_wl0001_R21.npy",  "st0001_wl0001_T21.npy",
-        "st0000_wl0001_T12.npy",  "st0002_wl0001_R12.npy",
-        "st0000_wl0001_T21.npy",  "st0002_wl0001_R21.npy",
-        "st0001_wl0001_P.npy",    "st0002_wl0001_T12.npy",
-        "st0001_wl0001_R12.npy",  "st0002_wl0001_T21.npy",
-        "st0001_wl0001_R21.npy",
-    )
-    for f in result_files:
-        yield results_match_reference_npy, f
