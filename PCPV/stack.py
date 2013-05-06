@@ -9,12 +9,27 @@ class Stack(object):
 
         INPUTS:
 
-          - `s_layers` : a tuple of :ThinFilm:s and :NanoStruct:s ordered
-            from top to bottom layer.
+          - `layers` : a tuple of :ThinFilm:s and :NanoStruct:s 
+            ordered from top to bottom layer.
+
+          - `heights` : a tuple of the heights of the inside layers,
+            i.e., all layers except for the top and bottom. This 
+            overrides any heights specified in the :ThinFilm: or
+            :NanoStruct: objects.
+
     """
-    def __init__(self, s_layers, heights_override = ()):
-        self.layers = tuple(s_layers)
-        self.heights_override = heights_override
+    def __init__(self, layers, heights = None):
+        self.layers = tuple(layers)
+        self.heights = heights
+
+    def heights(self):
+        if None != self.heights:
+            return self.heights
+        else:
+            return (lay.structure.height for lay in self.layers[1:-1])
+
+    def structures(self):
+        return (lay.structure for lay in self.layers)
 
     def calc_scat(self):
         """ Calculate the transmission and reflection matrices of the stack"""
@@ -254,7 +269,7 @@ def god_function(raw_layers, lights, simmoargs = {}):
     stack_list = []
     for li in lights:
         # Find modes of the layer
-        s_layers = (lay.eval(li, simmoargs) for lay in layers)
-        stack = Stack(s_layers)
+        layers = (lay.eval(li, simmoargs) for lay in layers)
+        stack = Stack(layers)
         stack.calc_scat()
         stack.delete_working()

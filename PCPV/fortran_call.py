@@ -128,12 +128,12 @@ class Anallo(Modes):
             low_p2 = (pxs_mesh**2 + pys_mesh**2 <= ordre_ls**2)
 
             # Calculate arrays of k_x and k_y components of scattered PWs
-            alphas = blochx + vec_kx * pxs + 0j
-            betas = blochy + vec_ky * pys + 0j
+            alphas = blochx + vec_kx * pxs
+            betas = blochy + vec_ky * pys
 
             # Calculate all wave vector components k_z
             alpha2_mesh, beta2_mesh = np.meshgrid(alphas**2, betas**2)
-            k_zs_unsrt = np.sqrt((k**2 - alpha2_mesh - beta2_mesh)[low_p2])
+            k_zs_unsrt = np.sqrt((0j + k**2 - alpha2_mesh - beta2_mesh)[low_p2])
             
             if k_el == 0:
                 # Calculate number of propagating plane waves (k_z is real)
@@ -228,7 +228,7 @@ class Simmo(Modes):
             self.other_para.E_H_field, self.other_para.i_cond, 
             self.other_para.itermax, #self.light.pol_for_fortran(), 
             self.other_para.PropModes, 
-            self.other_para.PrintSolution, self.other_para.PrintSupModes, 
+            self.other_para.PrintSolution, 
             self.other_para.PrintOmega, self.other_para.PrintAll, 
             self.other_para.Checks, self.other_para.q_average, 
             self.other_para.plot_real, self.other_para.plot_imag, 
@@ -243,7 +243,7 @@ class Simmo(Modes):
 
         self.beta = self.prop_consts
 
-        # TODO: the following should be calculated later
+        # TODO: the following should be calculated later?
         ress = pcpv.calc_scat(
             norm_wl, 
             ordre_ls, self.other_para.debug, 
@@ -257,6 +257,4 @@ class Simmo(Modes):
         )
 
         self.T12, self.R12, self.T21, self.R21 = [np.mat(x) for x in ress]
-        if 1 == self.other_para.PrintOmega:
-            P = np.diag(np.exp(1j*self.prop_consts*self.structure.height_1/d))
 

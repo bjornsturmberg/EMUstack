@@ -5,7 +5,7 @@ c     Explicit inputs
      *    n_eff,
      *    bloch_vec, lx, ly, tol, 
      *    E_H_field, i_cond, itermax, PropModes,
-     *    PrintSolution, PrintSupModes, PrintOmega, PrintAll,
+     *    PrintSolution, PrintOmega, PrintAll,
      *    Checks, q_average, plot_real, plot_imag, plot_abs,
      *    Loss,
      *    neq_PW,
@@ -104,10 +104,10 @@ C  Timing variables
 C  Names and Controls
       character mesh_file*100, gmsh_file*100, log_file*100
       character gmsh_file_pos*100
-      character overlap_file*100, dir_name*100, buf1*4, buf2*4
+      character overlap_file*100, dir_name*100
       character*100 tchar
       integer*8 namelength, PrintAll, PrintOmega, Checks
-      integer*8 PrintSolution, PrintSupModes
+      integer*8 PrintSolution
       integer*8 PropModes
       integer*8 d_in_nm, pair_warning, Loss
       integer*8 q_average, plot_real, plot_imag, plot_abs
@@ -256,24 +256,7 @@ C
      *     lx, ly, type_nod, type_el, table_nod, 
      *     x_arr, mesh_file)
 C
-      if (PrintSupModes + PrintSolution .ge. 1) then
-C  Export the mesh to gmsh format
-        call mail_to_gmsh (nel, npt, nnodes, type_el, 
-     *    type_nod, table_nod, 
-     *    nb_typ_el, n_eff, x_arr, gmsh_file)
-C
-C        call gmsh_interface_cyl (nel, npt, nnodes, type_el, 
-C     *    type_nod, table_nod, 
-C     *    nb_typ_el, x_arr)
-      endif
-C
       call lattice_vec (npt, x_arr, lat_vecs)
-C
-C     if (PrintSupModes + PrintSolution .ge. 1) then
-C        call gmsh_interface_c4 (nel, npt, nnodes, type_el, 
-C     *    type_nod, table_nod, 
-C     *    nb_typ_el, x_arr, lat_vecs)
-C      endif
 C
 C      V = number of vertices
 C      E = number of edges
@@ -301,6 +284,8 @@ C
       call list_node_P3 (nel, npt, nnodes, n_edge, npt_p3, 
      *    table_nod, a(ip_table_N_E_F), a(ip_visite))
       n_ddl = n_edge + n_face + npt_p3
+      write(ui,*) "n_ddl_max = ", n_ddl_max
+      write(ui,*) "n_ddl = ", n_ddl
 C
       if (debug .eq. 1) then
         write(ui,*) "MAIN: npt, nel = ", npt, nel
@@ -310,7 +295,6 @@ C
         write(ui,*) "MAIN: 2D case of the Euler characteristic : ",
      *    "V-E+F=1-(number of holes)"
         write(ui,*) "MAIN: Euler characteristic: V - E + F = ", 
-C     !  - nel
      *    (npt - n_edge) - n_edge + n_face
       endif
 cC
