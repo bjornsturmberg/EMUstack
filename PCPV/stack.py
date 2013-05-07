@@ -45,9 +45,10 @@ class Stack(object):
         nu_intfaces     = 2*(len(self.layers)-1)
         neq_PW          = self.layers[0].structure.nu_tot_ords # assumes incident from homogeneous film
         PW_pols         = 2*neq_PW
-        num_prop_air    = self.layers[-1].num_prop_air
-        num_prop_in     = self.layers[-1].num_prop_TF
-        num_prop_out    = self.layers[0].num_prop_TF
+        # FIXME: how is this relevant?
+        num_prop_air    = self.layers[-1].air_ref().num_prop_pw
+        num_prop_in     = self.layers[-1].num_prop_pw
+        num_prop_out    = self.layers[0].num_prop_pw
         zero_vec        = np.matrix(np.zeros((PW_pols, 1),complex))
         I_air           = np.matrix(np.eye(PW_pols),dtype='D')
         inc             = self.layers[-1].structure.set_ord_in 

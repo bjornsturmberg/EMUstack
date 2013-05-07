@@ -61,7 +61,7 @@ structure which is defined later
 period  = 600
 
 cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
-    material = materials.Air, loss = False, label_nu = 0)
+    material = materials.Air, loss = False)
 sim_cover = cover.calc_modes(light, simo_para)
 
 radius1 = 60
@@ -71,14 +71,12 @@ grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
     inclusion_a = materials.Si_c, background = materials.Air,
     loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True,
-    lc_bkg = 0.15, lc2= 1.5, lc3= 1.5,
-    label_nu = 1)
+    lc_bkg = 0.15, lc2= 1.5, lc3= 1.5)
 sim_grat1 = grating_1.calc_modes(light, simo_para, num_BM = num_BM)
 
 # will only ever use top scattering matrices for the bottom layer
 bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
-    material = materials.SiO2_a, 
-    loss = False, label_nu = 2)
+    material = materials.SiO2_a, loss = False)
 sim_bot = bottom.calc_modes(light, simo_para)
 
 

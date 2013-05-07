@@ -22,7 +22,7 @@ class NanoStruct(object):
         loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 5, 
         make_mesh_now = False, force_mesh = False, lc_bkg = 0.09, 
         lc2= 1.7, lc3 = 1.9, lc4 = 1.9, lc5 = 1.9, lc6 = 1.9,
-        posx = 0, posy = 0, small_d = 0, max_num_BMs = 100, label_nu = 0):
+        posx = 0, posy = 0, small_d = 0, max_num_BMs = 100):
         self.geometry    = geometry
         self.radius1     = radius1
         self.radius2     = radius2
@@ -60,7 +60,6 @@ class NanoStruct(object):
         self.ly          = ly
         self.nb_typ_el   = nb_typ_el
         self.set_ff      = set_ff
-        self.label_nu    = label_nu
         if make_mesh_now:
             self.lc  = lc_bkg
             self.lc2 = lc2
@@ -325,8 +324,8 @@ class NanoStruct(object):
 class ThinFilm(object):
     """ Represents homogeneous film """
     def __init__(self, period, height_1 = 2330, material = materials.Si_c, 
-        nu_tot_ords = 0, num_prop_air = [], num_prop_TF = [], 
-        set_ord_in = 0, set_ord_out = 0, loss = True, label_nu = 0):
+        nu_tot_ords = 0, num_prop_TF = [], 
+        set_ord_in = 0, set_ord_out = 0, loss = True):
         self.period         = period
         self.height_1       = height_1
         self.material       = material
@@ -334,12 +333,10 @@ class ThinFilm(object):
         self.superstrate    = materials.Air
         self.substrate      = materials.Air
         self.nu_tot_ords    = nu_tot_ords
-        self.num_prop_air   = num_prop_air
-        self.num_prop_TF    = num_prop_TF
+        self.num_prop_pw    = num_prop_TF
         self.set_ord_in     = set_ord_in
         self.set_ord_out    = set_ord_out
         self.loss           = loss
-        self.label_nu       = label_nu
     
     def calc_modes(self, light, simo_para):
         an = Anallo(self, light, simo_para)
@@ -416,12 +413,12 @@ class Light(object):
         else:
             air = ThinFilm(period = period, material = materials.Air)
             an = Anallo(air, self, simo_para)
-            kz, sort_order = an.calc_kz(an.k(),
-                simo_para.x_order_in, simo_para.x_order_out,
-                simo_para.y_order_in, simo_para.y_order_out)
+
+            an.is_air_ref = True
+
+            kz = an.calc_kz()
 
             an.beta = np.append(kz, kz)
-            an.sort_order = sort_order
 
             # Save this for future reference (we'll be back)
             self._air_anallos[(simo_para, period)] = an

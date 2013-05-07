@@ -335,7 +335,7 @@ def omega_plot(complete_st, layer, light, max_num_BMs, max_order_PWs, Efficiency
     nu_layers = len(complete_st)
     for i in range(0, nu_layers):
         #reverse order so top layer gets plotted up top
-        st = complete_st[nu_layers-1-i].label_nu
+        st = nu_layers-1-i
         format_st     = '%04d' % st
         ax1 = fig.add_subplot(nu_layers,1,i+1)
         # ax2 = fig.add_subplot(nu_layers,1,i+1)

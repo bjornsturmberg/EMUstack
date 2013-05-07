@@ -55,24 +55,23 @@ period = 120
 
 cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     material = materials.Material(3.5 + 0.0j), 
-    loss = True, label_nu = 0)
+    loss = True)
 
 homo_film  = objects.ThinFilm(period = period, height_1 = 5,
     material = materials.Material(3.6 + 0.27j),
-    loss = True, label_nu = 1)
+    loss = True)
 
 bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
     material = materials.Air,
-    loss = False, label_nu = 2)
+    loss = False)
 
 grating_1 = objects.NanoStruct('1D_grating', period, 100, height_1 = 25, 
     inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True, nb_typ_el = 4, 
-    make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 4.0,
-    label_nu = 3)
+    make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 4.0)
 
 mirror = objects.ThinFilm(period = period, height_1 = 100,
     material = materials.Ag,
-    loss = True, label_nu = 4)
+    loss = True)
 
 
 stack_list = []
@@ -113,7 +112,7 @@ t_r_a_plots(stack_list)
 # solar_cell = [bottom, mirror, grating_1, homo_film, cover]
 # specify which layer is the active one (where absorption generates charge carriers)
 active_layer = homo_film
-act_lay_nu   = active_layer.label_nu - 1
+act_lay_nu   = 0
 # specify which layer for which the parameters should be printed on figures
 lay_print_params = grating_1
 
@@ -175,23 +174,6 @@ print '*******************************************'
 # testing.save_reference_data("case_2", stack_list)
 
 
-def test_stack_list_matches_saved(casefile_name = 'case_2', stack_list = stack_list, rtol = 1e-6, atol = 4e-6):
-    ref = np.load("ref/%s.npz" % casefile_name)
-    yield assert_equal, len(stack_list), len(ref['stack_list'])
-    for stack, rstack in zip(stack_list, ref['stack_list']):
-        yield assert_equal, len(stack.layers), len(rstack['layers'])
-        lbl_s = "wl = %f, " % stack.layers[0].light.Lambda
-        for i, (lay, rlay) in enumerate(zip(stack.layers, rstack['layers'])):
-            lbl_l = lbl_s + "lay %i, " % i
-            yield assert_ac, lay.R12,  rlay['R12'],  rtol, atol, lbl_l + 'R12'
-            yield assert_ac, lay.T12,  rlay['T12'],  rtol, atol, lbl_l + 'T12'
-            yield assert_ac, lay.R21,  rlay['R21'],  rtol, atol, lbl_l + 'R21'
-            yield assert_ac, lay.T21,  rlay['T21'],  rtol, atol, lbl_l + 'T21'
-            yield assert_ac, lay.beta, rlay['beta'], rtol, atol, lbl_l + 'beta'
-            #TODO: assert_ac(lay.sol1, rlay['sol1'])
-        #TODO: assert_ac(stack.R_net, rstack['R_net'])
-        #TODO: assert_ac(stack.T_net, rstack['T_net'])
-
 
 def results_match_reference(filename):
     reference = np.loadtxt("ref/case_2/" + filename)
@@ -215,3 +197,20 @@ def test_txt_results():
     )
     for f in result_files:
         yield results_match_reference, f
+
+def test_stack_list_matches_saved(casefile_name = 'case_2', stack_list = stack_list, rtol = 1e-6, atol = 4e-6):
+    ref = np.load("ref/%s.npz" % casefile_name)
+    yield assert_equal, len(stack_list), len(ref['stack_list'])
+    for stack, rstack in zip(stack_list, ref['stack_list']):
+        yield assert_equal, len(stack.layers), len(rstack['layers'])
+        lbl_s = "wl = %f, " % stack.layers[0].light.Lambda
+        for i, (lay, rlay) in enumerate(zip(stack.layers, rstack['layers'])):
+            lbl_l = lbl_s + "lay %i, " % i
+            yield assert_ac, lay.R12,  rlay['R12'],  rtol, atol, lbl_l + 'R12'
+            yield assert_ac, lay.T12,  rlay['T12'],  rtol, atol, lbl_l + 'T12'
+            yield assert_ac, lay.R21,  rlay['R21'],  rtol, atol, lbl_l + 'R21'
+            yield assert_ac, lay.T21,  rlay['T21'],  rtol, atol, lbl_l + 'T21'
+            yield assert_ac, lay.beta, rlay['beta'], rtol, atol, lbl_l + 'beta'
+            #TODO: assert_ac(lay.sol1, rlay['sol1'])
+        #TODO: assert_ac(stack.R_net, rstack['R_net'])
+        #TODO: assert_ac(stack.T_net, rstack['T_net'])

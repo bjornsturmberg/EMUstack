@@ -35,95 +35,80 @@ class Anallo(Modes):
         self.other_para = other_para
         self.mode_pol       = None
         self.ordre_ls = other_para.max_order_PWs
+        self.is_air_ref = False
 
     def calc_modes(self):
-        #TODO: remove this in favour of calc_kz()?
+        #TODO: switch to just using calc_kz()?
 
-        # set up equivalent plane waves to FEM calc        
-        ref_an = self.air_ref()
-        sort_order = ref_an.sort_order
+        kzs = self.calc_kz()
 
-        k0 = 2*pi / self.wl_norm()
+        self.beta = np.append(kzs, kzs) # add 2nd polarisation
+        self.structure.nu_tot_ords = len(kzs)
 
-        kzs_2 = self.calc_kz(self.k(), 
-            self.other_para.x_order_in, self.other_para.x_order_out,
-            self.other_para.y_order_in, self.other_para.y_order_out,
-            sort_order)
-
-        self.beta = np.append(kzs_2, kzs_2) # add 2nd polarisation
-        self.structure.nu_tot_ords = len(kzs_2)
-
-        # TODO: these can be de-separated
-        # Calculate number of propagating plane waves in air
-        kzs_0 = ref_an.beta[:len(ref_an.beta)/2]
-        self.num_prop_air = (kzs_0.imag == 0).sum()
-        # Calculate number of propagating plane waves in thin film
-        self.num_prop_TF = (kzs_2.imag == 0).sum()
-
-        # FIXME: Yes, this is ludicrous, but historically
-        # 2 refers to the layer we're in; 1 is ref_an!!
+        # FIXME: Yes, this is ludicrous, but historically 2 refers
+        # to the layer we're in; 1 is ref_an!!
         # calc_scat demands that R12 is from air to the thin-film
-        r21, t21, r12, t12 = r_t_mat_anallo(self, ref_an)
+        r21, t21, r12, t12 = r_t_mat_anallo(self, self.air_ref())
         self.R12, self.T12, self.R21, self.T21 = r12, t12, r21, t21
 
 
-    def calc_kz(self, bs_k,
-            x_order_in, x_order_out, y_order_in, y_order_out,
-            sort_order = None):
-        """ Return a 1D array of grating orders' kz, ordered by 
-            `sort_order`.
-        """
-        n = self.n()
-        #TODO: get k from self.k() once calc_modes and calc_scat are fixed
-        #k = self.k()
-        k = bs_k
+    def calc_kz(self):
+        """ Return a sorted 1D array of grating orders' kz."""
         d = 1 #TODO: lx, ly??
-
         ordre_ls = self.ordre_ls
-
-        blochx, blochy = self.k_pll_norm()
 
         pxs = pys = np.arange(-ordre_ls, ordre_ls+1)
         # Prepare for an inner loop over y, not x
         pys_mesh, pxs_mesh = np.meshgrid(pys, pxs)
-        low_p2 = (pxs_mesh**2 + pys_mesh**2 <= ordre_ls**2)
+        low_ord = (pxs_mesh**2 + pys_mesh**2 <= ordre_ls**2)
 
         # Calculate k_x and k_y components of scattered PWs
         # (using the grating equation)
-        alphas = blochx + pxs * 2 * pi / d
-        betas  = blochy + pys * 2 * pi / d
+        alpha0, beta0 = self.k_pll_norm()
+        alphas = alpha0 + pxs * 2 * pi / d
+        betas  = beta0 + pys * 2 * pi / d
 
         # Calculate all wave vector components k_z
         alpha2_mesh, beta2_mesh = np.meshgrid(alphas**2, betas**2)
-        k_zs_unsrt = sqrt((k**2 - alpha2_mesh - beta2_mesh)[low_p2])
+        k_zs_unsrt = sqrt((self.k()**2 - alpha2_mesh - beta2_mesh)[low_ord])
         
-        #TODO: move this into the reference anallo
-        if None == sort_order:
+        if self.is_air_ref:
+            assert not hasattr(self, 'sort_order'), \
+                "Are you sure you want to reset the sort_order?"
             # Sort the modes from propagating to fastest decaying
             # k_z is real for propagating waves
             # This is consistent with FEM because TODO: we use it there too
-            sort_order = np.argsort(-1*np.real(k_zs_unsrt) + np.imag(k_zs_unsrt))
+            s = np.argsort(-1*k_zs_unsrt.real + k_zs_unsrt.imag)
+            self.sort_order = s
 
-            # TODO: And now for some stuff that should be (re)moved
-            # Find element of k_zs_unsrt that corresponds to 
-            # px = x_order_in*, py = y_order_*
-            select_order_in = np.nonzero((pxs_mesh[low_p2] == x_order_in) *
-                (pys_mesh[low_p2] == y_order_in))[0][0]
-            select_order_out = np.nonzero((pxs_mesh[low_p2] == x_order_out) *
-                (pys_mesh[low_p2] == y_order_out))[0][0]
-            self.structure.set_ord_in  = np.nonzero(sort_order==select_order_in)[0][0]
-            self.structure.set_ord_out = np.nonzero(sort_order==select_order_out)[0][0]
+            #TODO: make the following redundant?
+            # Find element of k_zs_unsrt corresponding to designated pws
+            bs = self.other_para
+            px_in, px_out = bs.x_order_in, bs.x_order_out
+            py_in, py_out = bs.y_order_in, bs.y_order_out
 
-            return k_zs_unsrt[sort_order], sort_order
+            pxm, pym = pxs_mesh[low_ord][s], pys_mesh[low_ord][s]
+            self.structure.set_ord_in  = np.nonzero((pxm == px_in) *
+                (pym == py_in))[0][0]
+            self.structure.set_ord_out = np.nonzero((pxm == px_out) *
+                (pym == py_out))[0][0]
+
         else:
-            return k_zs_unsrt[sort_order]
+            s = self.air_ref().sort_order
+            assert s.shape == k_zs_unsrt.shape, (s.shape, 
+                k_zs_unsrt.shape)
+
+        # Calculate number of propagating plane waves in thin film
+        # FIXME: surely this should include both pols
+        self.num_prop_pw = (k_zs_unsrt.imag == 0).sum()
+
+        return k_zs_unsrt[s]
 
     def n(self):
         if self.structure.loss:
             return self.structure.material.n(self.light.Lambda)
         else:
             return self.structure.material.n(self.light.Lambda).real
-
 
     def k(self):
         """ Return the normalised wavenumber in the background material"""
@@ -145,7 +130,6 @@ class Anallo(Modes):
         # TM (H in interface plane): Z = Zcr / (k/k_z)
         k_on_kz = self.k() / self.beta
         return np.concatenate((Zcr * k_on_kz[:num_pw2], Zcr / k_on_kz[num_pw2:]))
-
 
 
 class Simmo(Modes):
@@ -181,7 +165,7 @@ class Simmo(Modes):
         pw_ords_x_1d = np.arange(-ordre_ls, ordre_ls + 1)
         pw_ords_y_1d = np.arange(-ordre_ls, ordre_ls + 1)
         # Y is inner loop in fortran
-        #FIXME: make X the inner loop?
+        #TODO: make X the inner loop?
         pw_ords_y, pw_ords_x = np.meshgrid(pw_ords_y_1d, pw_ords_x_1d)
         sum_sq_ords = pw_ords_x**2 + pw_ords_y**2
         neq_pw = (sum_sq_ords <= ordre_ls**2).sum()
@@ -255,20 +239,13 @@ def r_t_mat_anallo(an1, an2):
     Z2 = an2.Z()
 
     R12 = np.mat(np.diag((Z2 - Z1)/(Z2 + Z1)))
-    # Alas, we have a branch choice problem.
-    # This stems from the desire for unit flux normalisation.
-    # If we do not normalise field amplitudes by
-    # $chi^\pm 1 = sqrt(k_z/k)$, then the numerator of T12 is
-    # instead 2*Z_2, as per most expressions for impedance mismatch
-
-    sqrt_Z2_Z1 = sqrt(Z2*Z1)
-    # The correct branch is the one of the same sign as Z2 and Z1
-    # (if they are the same sign)
-    # scipy.sqrt is supposed to pick it, but sometimes doesn't.
-
-    # Here we choose so that the real parts of T12 are positive
-    sqrt_Z2_Z1 *= np.sign(sqrt_Z2_Z1) * np.sign(Z2+Z1)
-    T12 = np.mat(np.diag(2.*sqrt_Z2_Z1/(Z2 + Z1)))
+    # N.B. there is potentially a branch choice problem here, stemming
+    # from the normalisation to unit flux.
+    # We normalise each field amplitude by
+    # $chi^{\pm 1/2} = sqrt(k_z/k)^{\pm 1} = sqrt(Z/Zc)^{\pm 1}$
+    # The choice of branch in those square roots must be the same as the
+    # choice in the related square roots that we are about to take:
+    T12 = np.mat(np.diag(2.*sqrt(Z2)*sqrt(Z1)/(Z2+Z1)))
     R21 = -R12
     T21 = T12
 
