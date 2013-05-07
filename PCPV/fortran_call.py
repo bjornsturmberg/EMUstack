@@ -16,11 +16,15 @@ pi = np.pi
 
 class Modes(object):
     """ Super-class from which Simmo and Anallo inherit common functionality"""
-    def bloch_vec(self):
-        # FIXME: Felix believes the following line is wrong but it's 
-        # how it's always been done
-        n_eff = self.structure.superstrate.n(self.light.Lambda)
-        return self.light.bloch_vec(self.structure.period, n_eff)
+    def k_pll_norm(self):
+        return self.light.k_pll * self.structure.period
+
+    def wl_norm(self):
+        return float(self.light.Lambda) / self.structure.period
+
+    def air_ref(self):
+        """ Return an :Anallo: for air for the same :Light: as this."""
+        return self.light._air_ref(self.structure.period, self.other_para)
 
 
 class Anallo(Modes):
@@ -30,142 +34,118 @@ class Anallo(Modes):
         self.light = light
         self.other_para = other_para
         self.mode_pol       = None
-        # self.T12            = None
-        # self.R12            = None
-        # self.T21            = None
-        # self.R21            = None
+        self.ordre_ls = other_para.max_order_PWs
 
     def calc_modes(self):
-        self.structure.num_prop_air = []
-        self.structure.num_prop_TF  = []
+        #TODO: remove this in favour of calc_kz()?
 
-        wl = self.light.Lambda
-        # refractive indeces listed so that thin film is 2nd,
-        # that way can order plane waves in material as in infintesimal air layers,
-        # which is ordered consistent with FEM.
-        n_1 = self.structure.substrate.n(wl)
-        n_2 = self.structure.material.n(wl)
-        n_3 = self.structure.superstrate.n(wl)
+        # set up equivalent plane waves to FEM calc        
+        ref_an = self.air_ref()
+        sort_order = ref_an.sort_order
 
-        n = np.array([n_1, n_2, n_3])
-        if self.structure.loss == False:
-            n = np.real(n)
+        k0 = 2*pi / self.wl_norm()
 
-        #set up equivalent plane waves to FEM calc
-        # normalise to lattice constant equal 1 as in FEM
-        d_in_nm  = self.structure.period
-        d_norm   = 1
-        wl_in_nm = wl
-        wl_norm  = float(wl_in_nm/d_in_nm)
-        light_angles = self.light
-        k_list   = 2*pi*n/wl_norm
-        k_perp   = self.calc_k_perp(n, k_list, d_norm,
-            light_angles.theta, light_angles.phi, self.other_para.max_order_PWs,
+        kzs_2 = self.calc_kz(self.k(), 
             self.other_para.x_order_in, self.other_para.x_order_out,
-            self.other_para.y_order_in, self.other_para.y_order_out)
-        k_film   = k_perp[1]
-        #FIXME: is this really correct??
-        self.beta = np.append(k_film, k_film) # add 2nd polarisation
-        # print 'k_perp[0]', k_perp[0]
-        # print 'k_film', k_film
+            self.other_para.y_order_in, self.other_para.y_order_out,
+            sort_order)
 
-        # Impedance method only holds when pereability = 1 (good approx for Ag Al etc)
-        num_ks, num_pw  = np.shape(k_perp)
-        self.structure.nu_tot_ords = num_pw
-        matrix_size  = 2*num_pw
-        wave_imp_mat = np.zeros((num_ks,matrix_size),complex)
-        for i in range(num_ks):
-            impedance = np.ones(num_pw)/n[i]
-            k         = np.ones(num_pw)*k_list[i]
-            wave_imp  = np.zeros(matrix_size, complex)
-            # for TE and TM polarisations NEED TO SORT OUT WHICH IS WHICH
-            wave_imp[:num_pw] = impedance*k/k_perp[i]
-            wave_imp[num_pw:] = impedance*k_perp[i]/k 
-            wave_imp_mat[i,:] = wave_imp #numpy array rather than matrix!
+        self.beta = np.append(kzs_2, kzs_2) # add 2nd polarisation
+        self.structure.nu_tot_ords = len(kzs_2)
 
-        # Scattering matrices from wave impedances
-        Z_1 = wave_imp_mat[0,:] # for substrate
-        Z_2 = wave_imp_mat[1,:] # for thin film
-        Z_3 = wave_imp_mat[2,:] # for superstrate
-        r12 = np.mat(np.diag((Z_2-Z_1)/(Z_2 + Z_1)))
-        r23 = np.mat(np.diag((Z_3-Z_2)/(Z_3 + Z_2)))
-        t12 = np.mat(np.diag((2.*sqrt(Z_2*Z_1))/(Z_2 + Z_1)))
-        t23 = np.mat(np.diag((2.*sqrt(Z_3*Z_2))/(Z_3 + Z_2)))
+        # TODO: these can be de-separated
+        # Calculate number of propagating plane waves in air
+        kzs_0 = ref_an.beta[:len(ref_an.beta)/2]
+        self.num_prop_air = (kzs_0.imag == 0).sum()
+        # Calculate number of propagating plane waves in thin film
+        self.num_prop_TF = (kzs_2.imag == 0).sum()
+
+        # FIXME: Yes, this is ludicrous, but historically
+        # 2 refers to the layer we're in; 1 is ref_an!!
+        # calc_scat demands that R12 is from air to the thin-film
+        r21, t21, r12, t12 = r_t_mat_anallo(self, ref_an)
+        self.R12, self.T12, self.R21, self.T21 = r12, t12, r21, t21
 
 
-        # Store the matrices
-        self.T12 = t12
-        self.R12 = r12
-        self.T21 = t23
-        self.R21 = r23
+    def calc_kz(self, bs_k,
+            x_order_in, x_order_out, y_order_in, y_order_out,
+            sort_order = None):
+        """ Return a 1D array of grating orders' kz, ordered by 
+            `sort_order`.
+        """
+        n = self.n()
+        #TODO: get k from self.k() once calc_modes and calc_scat are fixed
+        #k = self.k()
+        k = bs_k
+        d = 1 #TODO: lx, ly??
 
-        if self.structure.height_1 != 'semi_inf':
-            # layer thickness in units of period d in nanometers
-            h_normed = float(self.structure.height_1)/d_in_nm
-            P_array  = np.exp(1j*np.array(k_film, dtype='complex128')*h_normed)
-            P_array  = np.append(P_array, P_array) # add 2nd polarisation
-            P        = np.matrix(np.diag(P_array),dtype='D')
+        ordre_ls = self.ordre_ls
+
+        blochx, blochy = self.k_pll_norm()
+
+        pxs = pys = np.arange(-ordre_ls, ordre_ls+1)
+        # Prepare for an inner loop over y, not x
+        pys_mesh, pxs_mesh = np.meshgrid(pys, pxs)
+        low_p2 = (pxs_mesh**2 + pys_mesh**2 <= ordre_ls**2)
+
+        # Calculate k_x and k_y components of scattered PWs
+        # (using the grating equation)
+        alphas = blochx + pxs * 2 * pi / d
+        betas  = blochy + pys * 2 * pi / d
+
+        # Calculate all wave vector components k_z
+        alpha2_mesh, beta2_mesh = np.meshgrid(alphas**2, betas**2)
+        k_zs_unsrt = sqrt((k**2 - alpha2_mesh - beta2_mesh)[low_p2])
+        
+        #TODO: move this into the reference anallo
+        if None == sort_order:
+            # Sort the modes from propagating to fastest decaying
+            # k_z is real for propagating waves
+            # This is consistent with FEM because TODO: we use it there too
+            sort_order = np.argsort(-1*np.real(k_zs_unsrt) + np.imag(k_zs_unsrt))
+
+            # TODO: And now for some stuff that should be (re)moved
+            # Find element of k_zs_unsrt that corresponds to 
+            # px = x_order_in*, py = y_order_*
+            select_order_in = np.nonzero((pxs_mesh[low_p2] == x_order_in) *
+                (pys_mesh[low_p2] == y_order_in))[0][0]
+            select_order_out = np.nonzero((pxs_mesh[low_p2] == x_order_out) *
+                (pys_mesh[low_p2] == y_order_out))[0][0]
+            self.structure.set_ord_in  = np.nonzero(sort_order==select_order_in)[0][0]
+            self.structure.set_ord_out = np.nonzero(sort_order==select_order_out)[0][0]
+
+            return k_zs_unsrt[sort_order], sort_order
+        else:
+            return k_zs_unsrt[sort_order]
+
+    def n(self):
+        if self.structure.loss:
+            return self.structure.material.n(self.light.Lambda)
+        else:
+            return self.structure.material.n(self.light.Lambda).real
 
 
-    def calc_k_perp(self, n, k_list, d, theta, phi, ordre_ls, 
-            x_order_in, x_order_out, y_order_in, y_order_out):
-        k_perp = []
-        # zero_ord = 0
-        k_el = 0
-        self.num_prop_air = 0
-        self.num_prop_TF  = 0
-        for k in k_list:
-            common_factor = np.sin(theta*pi/180.0)*k
-            #TODO: clean this up
-            blochx = bloch1 = common_factor*np.cos(phi*pi/180.0)
-            blochy = bloch2 = common_factor*np.sin(phi*pi/180.0)
-            vec_kx = 2.0*pi/d
-            vec_ky = 2.0*pi/d
+    def k(self):
+        """ Return the normalised wavenumber in the background material"""
+        return 2 * pi * self.n() / self.wl_norm()
 
-            pxs = pys = np.arange(-ordre_ls, ordre_ls+1)
-            # Prepare for an inner loop over y, not x
-            pys_mesh, pxs_mesh = np.meshgrid(pys, pxs)
-            low_p2 = (pxs_mesh**2 + pys_mesh**2 <= ordre_ls**2)
+    def Z(self):
+        """ Return the wave impedance as a 1D array."""
+        # Zcr is relative characteristic impedance Zc / Z0
+        # Zcr = 1/n assumes that relative permeability is 1
+        # Otherwise, use Zcr = \sqrt(epsilon_r / mu_r)
+        Zcr = 1./self.n()
 
-            # Calculate arrays of k_x and k_y components of scattered PWs
-            alphas = blochx + vec_kx * pxs
-            betas = blochy + vec_ky * pys
+        # self.beta repeats itself halfway through
+        # First half is for TE pol, second is for TM
+        num_pw2 = len(self.beta) / 2
 
-            # Calculate all wave vector components k_z
-            alpha2_mesh, beta2_mesh = np.meshgrid(alphas**2, betas**2)
-            k_zs_unsrt = np.sqrt((0j + k**2 - alpha2_mesh - beta2_mesh)[low_p2])
-            
-            if k_el == 0:
-                # Calculate number of propagating plane waves (k_z is real)
-                self.num_prop_air = (k_zs_unsrt.imag == 0.).sum()
+        # Calculate the (relative) wave impedances Z
+        # TE (E in interface plane): Z = Zcr * k/k_z
+        # TM (H in interface plane): Z = Zcr / (k/k_z)
+        k_on_kz = self.k() / self.beta
+        return np.concatenate((Zcr * k_on_kz[:num_pw2], Zcr / k_on_kz[num_pw2:]))
 
-                # Find element of k_zs_unsrt that corresponds to 
-                # px = x_order_in*, py = y_order_*
-                select_order_in = np.nonzero((pxs_mesh[low_p2] == x_order_in) *
-                    (pys_mesh[low_p2] == y_order_in))[0][0]
-                select_order_out = np.nonzero((pxs_mesh[low_p2] == x_order_out) *
-                    (pys_mesh[low_p2] == y_order_out))[0][0]
-
-            elif k_el == 1:
-                # Calculate number of propagating plane waves (k_z is real)
-                self.num_prop_TF = (k_zs_unsrt.imag == 0.).sum()
-
-            # sort plane waves as [propagating big -> small, evanescent small -> big]
-            # which is consistent with FEM
-            # to be consistent in impedances Z, sub/superstrate sorted to order of thin film
-            if k_el == 0: # air superstrates as medium to consistently sort by
-                # if np.imag(n[0]) != 0.0:
-                #     rev_ind = np.argsort(1*np.imag(k_zs_unsrt))
-                # else:
-                rev_ind = np.argsort(-1*np.real(k_zs_unsrt) + np.imag(k_zs_unsrt))
-                # layer.zero_ord    = int(np.where(rev_ind==zero_ord)[0])
-                self.structure.set_ord_in  = np.nonzero(rev_ind==select_order_in)[0][0]
-                self.structure.set_ord_out = np.nonzero(rev_ind==select_order_out)[0][0]
-            sorted_beta_z_pw = k_zs_unsrt[rev_ind]
-            k_perp.append(sorted_beta_z_pw)
-            k_el += 1
-
-        return k_perp
 
 
 class Simmo(Modes):
@@ -223,7 +203,7 @@ class Simmo(Modes):
             ordre_ls, d, self.other_para.debug, 
             self.structure.mesh_file, self.structure.mesh_format, 
             n_msh_pts, n_msh_el,
-            n_effs, self.bloch_vec(), 
+            n_effs, self.light.k_pll, 
             self.structure.lx, self.structure.ly, self.other_para.tol, 
             self.other_para.E_H_field, self.other_para.i_cond, 
             self.other_para.itermax, #self.light.pol_for_fortran(), 
@@ -247,7 +227,7 @@ class Simmo(Modes):
         ress = pcpv.calc_scat(
             norm_wl, 
             ordre_ls, self.other_para.debug, 
-            n_effs, self.bloch_vec(), 
+            n_effs, self.light.k_pll, 
             self.structure.lx, self.structure.ly,
             self.other_para.PrintAll, 
             self.other_para.Checks, 
@@ -258,3 +238,38 @@ class Simmo(Modes):
 
         self.T12, self.R12, self.T21, self.R21 = [np.mat(x) for x in ress]
 
+
+def r_t_mat_anallo(an1, an2):
+    """ Return reflection and trans matrices at an1-an2 interface.
+
+        Returns R12, T12, R21, T21.
+
+        The sign of elements in T12 and T21 is fixed to be positive,
+        in the eyes of `numpy.sign`
+    """
+    if len(an1.beta) != len(an2.beta):
+        raise ValueError, "Need the same number of plane waves in \
+        Anallos %(an1)s and %(an2)s" % {'an1' : an1, 'an2' : an2}
+
+    Z1 = an1.Z()
+    Z2 = an2.Z()
+
+    R12 = np.mat(np.diag((Z2 - Z1)/(Z2 + Z1)))
+    # Alas, we have a branch choice problem.
+    # This stems from the desire for unit flux normalisation.
+    # If we do not normalise field amplitudes by
+    # $chi^\pm 1 = sqrt(k_z/k)$, then the numerator of T12 is
+    # instead 2*Z_2, as per most expressions for impedance mismatch
+
+    sqrt_Z2_Z1 = sqrt(Z2*Z1)
+    # The correct branch is the one of the same sign as Z2 and Z1
+    # (if they are the same sign)
+    # scipy.sqrt is supposed to pick it, but sometimes doesn't.
+
+    # Here we choose so that the real parts of T12 are positive
+    sqrt_Z2_Z1 *= np.sign(sqrt_Z2_Z1) * np.sign(Z2+Z1)
+    T12 = np.mat(np.diag(2.*sqrt_Z2_Z1/(Z2 + Z1)))
+    R21 = -R12
+    T21 = T12
+
+    return R12, T12, R21, T21

@@ -284,8 +284,6 @@ C
       call list_node_P3 (nel, npt, nnodes, n_edge, npt_p3, 
      *    table_nod, a(ip_table_N_E_F), a(ip_visite))
       n_ddl = n_edge + n_face + npt_p3
-      write(ui,*) "n_ddl_max = ", n_ddl_max
-      write(ui,*) "n_ddl = ", n_ddl
 C
       if (debug .eq. 1) then
         write(ui,*) "MAIN: npt, nel = ", npt, nel

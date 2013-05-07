@@ -349,19 +349,45 @@ class ThinFilm(object):
 
 
 class Light(object):
-    """ Represents the light incident on structure 
+    """ Represents the light incident on structure.
+
+        Incident angles may either be specified by `k_parallel` or by
+        incident angles `theta` and `phi`, together with the refractive
+        index `n_inc` of the incident medium.
+
+        `Lambda` and `k_pll` are both in unnormalised units.
 
         INPUTS:
 
-        - `theta`   : polar angle of incidence
+        - `k_parallel` : The wave vector components (k_x, k_y)
+            parallel to the interface planes.
 
-        - `phi`     : azimuthal angle of incidence
+        - `theta`   : polar angle of incidence in degrees
+
+        - `phi`     : azimuthal angle of incidence in degrees
     """
-    def __init__(self, Lambda, pol = 'TM', theta = 0, phi = 0):
+    def __init__(self, Lambda, pol = 'TM', k_parallel = [0.,0.], 
+        theta = None, phi = None, n_inc = 1.):
         self.Lambda = float(Lambda)
-        self.theta = theta
-        self.pol = pol
-        self.phi   = phi
+        self._air_anallos = {}
+
+        if None == theta:
+            self.k_pll = np.array(k_parallel, dtype='float64')
+        else:
+            # Check for inconsistent input
+            if [0,0] != k_parallel or phi == None:
+                raise ValueError, "Specify incident angle either by \
+                k_parallel or by theta, phi and n_inc."
+            # Calculate k_parallel from incident angles
+            k = 2 * np.pi * np.real(n_inc) / self.Lambda
+            theta *= np.pi / 180
+            phi *= np.pi / 180
+            self.k_pll = k*np.sin(theta) * np.array(
+                        [np.cos(phi), np.sin(phi)], dtype='float64')
+
+        # FEM allegedly dislikes normal incidence and associated degeneracy
+        if abs(self.k_pll).sum() < 1e-9:
+            self.k_pll[0] += 1e-9
 
     def pol_for_fortran(self):
         if self.pol == 'Unpol':
@@ -379,25 +405,28 @@ class Light(object):
         else:
             raise TypeError, "Polarisation must be either 'Unpol','TE', 'TM', 'Left', 'Right', or 'CD'."
 
-    def bloch_vec(self, period, n_eff = 1.):
-        """ Calculate k_x and k_y from self.theta, self.phi, and self.Lambda.
+    def _air_ref(self, period, simo_para):
+        """ Return a :Anallo: corresponding to this :Light: in free space.
 
-            k_x and k_y are both the values in a medium with ref index n_eff.
+            The :Anallo: will have `len(anallo.beta) == 2 * num_pw`
         """
-        rtheta  = self.theta * np.pi/180.
-        rphi    = self.phi * np.pi/180.
+        #TODO: replace `simo_para` by `num_pw`
+        if (simo_para, period) in self._air_anallos:
+            return self._air_anallos[(simo_para, period)]
+        else:
+            air = ThinFilm(period = period, material = materials.Air)
+            an = Anallo(air, self, simo_para)
+            kz, sort_order = an.calc_kz(an.k(),
+                simo_para.x_order_in, simo_para.x_order_out,
+                simo_para.y_order_in, simo_para.y_order_out)
 
-        k = 2.*np.pi * n_eff.real * period / self.Lambda
-        # calculate bloch vectors - for derivation see Bjorn's Theory Notes
-        bloch_vec = np.array(   (np.sin(rtheta * k) * np.cos(rphi),
-                                 np.sin(rtheta * k) * np.sin(rphi) ))
-        
-        # FEM allegedly dislikes normal incidence and associated degeneracy
-        if abs(bloch_vec).sum() < 1e-9:
-            bloch_vec[0] += 1e-9
-        return bloch_vec
+            an.beta = np.append(kz, kz)
+            an.sort_order = sort_order
 
-        
+            # Save this for future reference (we'll be back)
+            self._air_anallos[(simo_para, period)] = an
+            return an
+
 
 class Controls(object):
     """

@@ -175,7 +175,7 @@ print '*******************************************'
 # testing.save_reference_data("case_2", stack_list)
 
 
-def test_stack_list_matches_saved(casefile_name = 'case_2', stack_list = stack_list, rtol = 1e-6, atol = 1e-6):
+def test_stack_list_matches_saved(casefile_name = 'case_2', stack_list = stack_list, rtol = 1e-6, atol = 4e-6):
     ref = np.load("ref/%s.npz" % casefile_name)
     yield assert_equal, len(stack_list), len(ref['stack_list'])
     for stack, rstack in zip(stack_list, ref['stack_list']):

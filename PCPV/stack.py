@@ -1,6 +1,6 @@
-import objects
 import numpy as np
 from plotting import layers_plot
+from objects import Anallo, Simmo
 
 class Stack(object):
     """ Represents a stack of layers evaluated at one frequency.
@@ -35,7 +35,7 @@ class Stack(object):
         """ Calculate the transmission and reflection matrices of the stack"""
         #TODO: rewrite this using R and T for interfaces not layers
 
-        # test that all structures have the same period
+        # Check that all structures have the same period
         for cell in self.layers:
             if cell.structure.period == self.layers[0].structure.period:
                 pass
@@ -241,6 +241,33 @@ class Stack(object):
 
     def total_height(self):
         return sum([l.structure.height_1 for l in self.layers[1:-1]])
+
+
+def r_t_mat(lay1, lay2):
+    """ Return R12, T12, R21, T21 at an interface between lay1
+        and lay2.
+    """
+    if isinstance(lay1, Anallo) and isinstance(lay2, Anallo):
+        return r_t_mat_anallo(lay1, lay2)
+    elif isinstance(lay1, Anallo) and isinstance(lay2, Simmo):
+        pass
+    elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
+        pass
+    elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
+        raise NotImplementedError
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def t_r_a_plots(stack_list):
