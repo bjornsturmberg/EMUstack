@@ -248,14 +248,31 @@ def r_t_mat(lay1, lay2):
     """ Return R12, T12, R21, T21 at an interface between lay1
         and lay2.
     """
+    # We memoise to avoid extra calculations
+    # Have we seen this interface before?
+    try:
+        return self._interfaces_i_have_known[lay1, lay2]
+    except KeyError: pass
+    # Or perhaps its reverse?
+    try:
+        R21, T21, R12, T12 = self._interfaces_i_have_known[lay2, lay1]
+        return R12, T12, R21, T21
+    except KeyError: pass
+
+    # No? Then we'll have to calculate its properties.
     if isinstance(lay1, Anallo) and isinstance(lay2, Anallo):
+        ref_trans = r_t_mat_anallo(lay1, lay2)
+        # Store its R and T matrices for later use
+        self._interfaces_i_have_known[lay1, lay2] = ref_trans
         return r_t_mat_anallo(lay1, lay2)
     elif isinstance(lay1, Anallo) and isinstance(lay2, Simmo):
         pass
     elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
         pass
     elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
-        raise NotImplementedError
+        raise NotImplementedError, \
+            "Sorry! For, now you can put an extremely thin film between your \
+            NanoStructs"
 
 
 
@@ -287,17 +304,3 @@ def t_r_a_plots(stack_list):
     layers_plot('Lay_Absorb', a_list, wavelengths, total_h)
     layers_plot('Lay_Trans',  t_list, wavelengths, total_h)
     layers_plot('Lay_Reflec', r_list, wavelengths, total_h)
-    
-
-def god_function(raw_layers, lights, simmoargs = {}):
-    for lay in layers:
-        # Make the mesh (if appropriate)
-        lay.make_mesh()
-
-    stack_list = []
-    for li in lights:
-        # Find modes of the layer
-        layers = (lay.eval(li, simmoargs) for lay in layers)
-        stack = Stack(layers)
-        stack.calc_scat()
-        stack.delete_working()

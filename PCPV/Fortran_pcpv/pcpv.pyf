@@ -43,7 +43,7 @@ python module pcpv ! in
             complex*16 dimension(nb_typ_el),intent(out),depend(nb_typ_el) :: pp
             complex*16 dimension(nb_typ_el),intent(out),depend(nb_typ_el) :: qq
         end subroutine calc_modes
-        subroutine calc_scat(lambda,ordre_ls,debug,n_eff,bloch_vec,lx,ly,printall,checks,neq_pw,zeroth_order,sol1,sol2,type_el,table_nod,x_arr,pp,qq,nval,npt,nel,nb_typ_el,t12,r12,t21,r21) ! in :pcpv:py_calc_scat.f
+        subroutine calc_scat(lambda,ordre_ls,debug,n_eff,bloch_vec,lx,ly,printall,checks,neq_pw,zeroth_order,sol1,sol2,type_el,table_nod,x_arr,pp,qq,nval,npt,nel,nb_typ_el,overlap_j,overlap_j_dagger,t12,r12,t21,r21) ! in :pcpv:py_calc_scat.f
             double precision :: lambda
             integer*8 :: ordre_ls
             integer*8 :: debug
@@ -66,6 +66,8 @@ python module pcpv ! in
             integer*8, optional,check(shape(x_arr,1)==npt),depend(x_arr) :: npt=shape(x_arr,1)
             integer*8, optional,check(shape(sol1,3)==nel),depend(sol1) :: nel=shape(sol1,3)
             integer*8, optional,check(len(n_eff)>=nb_typ_el),depend(n_eff) :: nb_typ_el=len(n_eff)
+            complex*16 dimension(2 * neq_pw,nval),intent(out),depend(neq_pw,nval) :: overlap_j
+            complex*16 dimension(nval,2 * neq_pw),intent(out),depend(nval,neq_pw) :: overlap_j_dagger
             complex*16 dimension(nval,2 * neq_pw),intent(out),depend(nval,neq_pw) :: t12
             complex*16 dimension(2 * neq_pw,2 * neq_pw),intent(out),depend(neq_pw,neq_pw) :: r12
             complex*16 dimension(2 * neq_pw,nval),intent(out),depend(neq_pw,nval) :: t21

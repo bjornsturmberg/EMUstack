@@ -12,8 +12,7 @@ C     New explicit inputs
 c     "Optional" inputs (Python guesses these)
      *    nval, npt, nel, nb_typ_el,
 c     Outputs
-     *    
-C     *    J_overlap, J_dagger_overlap,
+     *    overlap_J, overlap_J_dagger,
      *    T12, R12, T21, R21)
 C************************************************************************
 C
@@ -71,6 +70,7 @@ c     Fresnel scattering matrices
       complex*16 T21(2*neq_PW,nval)
       complex*16 R21(nval,nval)
 
+Cf2py intent(out) overlap_J, overlap_J_dagger
 Cf2py intent(out) T12, R12, T21, R21
 
       call cpu_time(time1)

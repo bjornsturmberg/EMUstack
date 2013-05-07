@@ -54,12 +54,15 @@ class Anallo(Modes):
 
     def calc_kz(self):
         """ Return a sorted 1D array of grating orders' kz."""
-        d = 1 #TODO: lx, ly??
+        d = 1 #TODO: are lx, ly relevant here??
         ordre_ls = self.ordre_ls
-
+        # Create arrays of grating order indexes p
         pxs = pys = np.arange(-ordre_ls, ordre_ls+1)
-        # Prepare for an inner loop over y, not x
+        # The inner loop in the fortran is over y, not x
+        # So we call meshgrid with y first
         pys_mesh, pxs_mesh = np.meshgrid(pys, pxs)
+        # Which elements of pys_mesh and pxs_mesh correspond to
+        # orders low enough that we're interested in?
         low_ord = (pxs_mesh**2 + pys_mesh**2 <= ordre_ls**2)
 
         # Calculate k_x and k_y components of scattered PWs
@@ -99,7 +102,7 @@ class Anallo(Modes):
                 k_zs_unsrt.shape)
 
         # Calculate number of propagating plane waves in thin film
-        # FIXME: surely this should include both pols
+        # FIXME: surely this should include both pols?
         self.num_prop_pw = (k_zs_unsrt.imag == 0).sum()
 
         return k_zs_unsrt[s]
@@ -220,13 +223,14 @@ class Simmo(Modes):
             type_el, table_nod, x_arr, pp, qq
         )
 
-        self.T12, self.R12, self.T21, self.R21 = [np.mat(x) for x in ress]
+        self.J, self.J_dag, self.T12, self.R12, self.T21, self.R21 = [
+                        np.mat(x) for x in ress]
 
 
 def r_t_mat_anallo(an1, an2):
-    """ Return reflection and trans matrices at an1-an2 interface.
+    """ Returns R12, T12, R21, T21 at an interface between thin films.
 
-        Returns R12, T12, R21, T21.
+        R12 is the reflection matrix from Anallo 1 off Anallo 2
 
         The sign of elements in T12 and T21 is fixed to be positive,
         in the eyes of `numpy.sign`
@@ -250,3 +254,7 @@ def r_t_mat_anallo(an1, an2):
     T21 = T12
 
     return R12, T12, R21, T21
+
+def r_t_mat_tf_ns(an1, sim2):
+    """ Returns R12, T12, R21, T21 at an1-sim2 interface"""
+    pass

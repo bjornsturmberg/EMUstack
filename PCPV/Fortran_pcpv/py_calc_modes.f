@@ -495,9 +495,15 @@ C
      *     "-------"
       write(ui,*) "MAIN: Wavelength ", lambda
 C
-        n_eff_0 = DBLE(n_eff(1))
-        freq = 1.0d0/lambda
-        k_0 = 2.0d0*pi*n_eff_0*freq
+      if (n_eff(1) .ne. 1) then
+        write(ui,*) "The code seems to assume that n_eff(1) = 1,"
+        write(ui,*) "but today, n_eff(1) = ", n_eff(1)
+        write(ui,*) "Aborting..."
+        stop
+      endif
+      n_eff_0 = DBLE(n_eff(1))
+      freq = 1.0d0/lambda
+      k_0 = 2.0d0*pi*n_eff_0*freq
 C
 C  Index number of the core materials (material with highest Re(eps_eff))
       if(dble(eps_eff(3)) .gt. dble(eps_eff(4))) then
@@ -515,7 +521,7 @@ C  Index number of the core materials (material with highest Re(eps_eff))
         else
           write(ui,*) "MAIN: H-Field formulation"
         endif
-      endIf
+      endif
 C
 C
          if(E_H_field .eq. 1) then
