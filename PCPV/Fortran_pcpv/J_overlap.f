@@ -49,7 +49,7 @@ C
       complex*16 overlap_J(2*neq_PW,nval)
       complex*16 X_mat(2*neq_PW,2*neq_PW)  
       complex*16 beta_z_pw(PW_max), test
-      complex*16 ii, z_tmp, X_tmp, val_exp, coeff_1
+      complex*16 ii, z_tmp, gamma_s, val_exp, coeff_1
       double precision r_tmp, vec_kx, vec_ky, lambda, freq
       double precision bloch1, bloch2, pi, alpha, beta, norm
       double precision k_1
@@ -88,7 +88,7 @@ C	set up final solution matrix
       enddo 
 C
       ii = dcmplx(0.0d0, 1.0d0)
-      d = lat_vecs(1,1)  
+      d = lat_vecs(1,1)
       pi = 3.141592653589793d0
       bloch1 = bloch_vec(1)
       bloch2 = bloch_vec(2)
@@ -100,7 +100,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 C
 C  Search for number of propagating plane wave orders
-
       s = 1
       do px = -ordre_ls, ordre_ls
         do py = -ordre_ls, ordre_ls
@@ -137,10 +136,10 @@ C     Set up X_mat
             alpha = bloch1 + vec_kx*px  ! Bloch vector along x
             beta  = bloch2 + vec_ky*py  ! Bloch vector along y
             s2 = index_pw_inv(s)
-            X_tmp = (k_1**2 - alpha**2 - beta**2)
-            X_tmp = SQRT(X_tmp)
-            X_mat(s2,s2) = X_tmp/k_0
-            X_mat(neq_PW+s2,neq_PW+s2) = n_eff_0**2 * k_0/X_tmp
+            gamma_s = k_1**2 - alpha**2 - beta**2 ! actually gamma_s**2
+            gamma_s = SQRT(gamma_s)
+            X_mat(s2,s2) = gamma_s/k_0
+            X_mat(neq_PW+s2,neq_PW+s2) = n_eff_0**2 * k_0/gamma_s
             s = s + 1
           endif
         enddo

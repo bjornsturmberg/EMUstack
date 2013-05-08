@@ -1,6 +1,7 @@
 import numpy as np
 from plotting import layers_plot
 from objects import Anallo, Simmo
+from scipy import sqrt
 
 class Stack(object):
     """ Represents a stack of layers evaluated at one frequency.
@@ -21,6 +22,7 @@ class Stack(object):
     def __init__(self, layers, heights = None):
         self.layers = tuple(layers)
         self.heights = heights
+        self._interfaces_i_have_known = {}
 
     def heights(self):
         if None != self.heights:
@@ -31,7 +33,7 @@ class Stack(object):
     def structures(self):
         return (lay.structure for lay in self.layers)
 
-    def calc_scat(self):
+    def calc_scat(self, pol = 'TE'):
         """ Calculate the transmission and reflection matrices of the stack"""
         #TODO: rewrite this using R and T for interfaces not layers
 
@@ -43,20 +45,9 @@ class Stack(object):
                 raise ValueError, "All layers in a multilayer stack must have the same period!"
 
         nu_intfaces     = 2*(len(self.layers)-1)
-        neq_PW          = self.layers[0].structure.nu_tot_ords # assumes incident from homogeneous film
+        neq_PW          = self.layers[0].structure.num_pw_per_pol # assumes incident from homogeneous film
         PW_pols         = 2*neq_PW
-        # FIXME: how is this relevant?
-        num_prop_air    = self.layers[-1].air_ref().num_prop_pw
-        num_prop_in     = self.layers[-1].num_prop_pw
-        num_prop_out    = self.layers[0].num_prop_pw
-        zero_vec        = np.matrix(np.zeros((PW_pols, 1),complex))
         I_air           = np.matrix(np.eye(PW_pols),dtype='D')
-        inc             = self.layers[-1].structure.set_ord_in 
-        out             = self.layers[0].structure.set_ord_out
-
-        self.t_list = []
-        self.r_list = []
-        self.a_list = []
 
         """ Calculate net scattering matrices starting at the bottom
             1 is infintesimal air layer
@@ -69,11 +60,13 @@ class Stack(object):
         t21_list = []
         P_list   = []
         for st1 in self.layers:
-            r12_list.append(st1.R12)
-            r21_list.append(st1.R21)
+            R12, T12, R21, T21 = st1.R12, st1.T12, st1.R21, st1.T21
+            #R12, T12, R21, T21 = self.r_t_mat(st1.air_ref(), st1)
+            r12_list.append(R12)
+            r21_list.append(R21)
             # potential to save on one transpose
-            t12_list.append(st1.T12)
-            t21_list.append(st1.T21)
+            t12_list.append(T12)
+            t21_list.append(T21)
             #t21_list.append(t12_list[-1].T)
 
     # initiate (r)tnet as substrate top interface
@@ -97,7 +90,7 @@ class Stack(object):
             tnet_list.append(tnet)
             rnet_list.append(rnet)
     # through TF layer
-            P = np.mat(np.diag(np.exp(1j*lay.beta * float(lay.structure.height_1)/lay.structure.period)))
+            P = np.mat(np.diag(np.exp(1j*lay.beta * lay.structure.height_1/lay.structure.period)))
             I_TF           = np.matrix(np.eye(len(P)),dtype='D')
             to_invert      = (I_TF - r21_list[i]*P*rnet*P)
             inverted_t12   = np.linalg.solve(to_invert,t12_list[i])
@@ -123,14 +116,23 @@ class Stack(object):
         tnet_list.append(tnet)
         rnet_list.append(rnet)
 
-    # print (r)tnet matrices
-        # np.savetxt('blah.txt', rnet)
+        self.rnet, self.tnet = rnet, tnet
+
 
         """ Calculate field expansions for all layers (including air) starting at top
             Ordering is now top to bottom (inverse of above)! ie f1 is superstrate (top)
             Calculate net downward energy flux in each infintesimal air layer & super/substrates
             (see appendix C in Dossou et al. JOSA 2012)
         """
+
+        self.t_list = []
+        self.r_list = []
+        self.a_list = []
+        num_prop_air    = self.layers[-1].air_ref().num_prop_pw_per_pol
+        num_prop_in     = self.layers[-1].num_prop_pw_per_pol
+        num_prop_out    = self.layers[0].num_prop_pw_per_pol
+        inc             = self.layers[-1].specular_order
+        out             = self.layers[0].specular_order
 
         down_fluxes = []
         up_flux     = []
@@ -151,10 +153,25 @@ class Stack(object):
             U_mat[PW_pols+neq_PW+i,neq_PW+i]         = -1.0j
 
 
-    #   incoming from semi-inf
-        d_minus        = zero_vec
-        # for TE polarisation
-        d_minus[inc,0] = 1.0
+        # Set the incident field to be a 0th order plane wave
+        # in a given polarisation.
+        # TODO: accept arbitrary d_minus
+        #   incoming from semi-inf
+        d_minus = np.mat(np.zeros(PW_pols, dtype='complex128')).T
+        if   'TE' == pol:
+            d_minus[inc] = 1
+        elif 'TM' == pol:
+            d_minus[neq_PW+inc] = 1
+        elif 'R Circ' == pol:
+            raise NotImplementedError
+            dminus[inc] = 1
+            dminus[neq_PW + inc] = +1j # Or is it -1j?
+        elif 'L Circ' == pol:
+            raise NotImplementedError
+            dminus[inc] = 1
+            dminus[neq_PW + inc] = -1j # Or is it +1j?
+        else:
+            raise NotImplementedError
         # for TM polarisation
         # f1_minus[neq_PW+inc,0] = float(1.0)
         # for Right circular polarisation
@@ -244,35 +261,35 @@ class Stack(object):
         return sum([l.structure.height_1 for l in self.layers[1:-1]])
 
 
-def r_t_mat(lay1, lay2):
-    """ Return R12, T12, R21, T21 at an interface between lay1
-        and lay2.
-    """
-    # We memoise to avoid extra calculations
-    # Have we seen this interface before?
-    try:
-        return self._interfaces_i_have_known[lay1, lay2]
-    except KeyError: pass
-    # Or perhaps its reverse?
-    try:
-        R21, T21, R12, T12 = self._interfaces_i_have_known[lay2, lay1]
-        return R12, T12, R21, T21
-    except KeyError: pass
+    def r_t_mat(self, lay1, lay2):
+        """ Return R12, T12, R21, T21 at an interface between lay1
+            and lay2.
+        """
+        # We memoise to avoid extra calculations
+        # Have we seen this interface before?
+        try:
+            return self._interfaces_i_have_known[lay1, lay2]
+        except KeyError: pass
+        # Or perhaps its reverse?
+        try:
+            R21, T21, R12, T12 = self._interfaces_i_have_known[lay2, lay1]
+            return R12, T12, R21, T21
+        except KeyError: pass
 
-    # No? Then we'll have to calculate its properties.
-    if isinstance(lay1, Anallo) and isinstance(lay2, Anallo):
-        ref_trans = r_t_mat_anallo(lay1, lay2)
-        # Store its R and T matrices for later use
-        self._interfaces_i_have_known[lay1, lay2] = ref_trans
-        return r_t_mat_anallo(lay1, lay2)
-    elif isinstance(lay1, Anallo) and isinstance(lay2, Simmo):
-        pass
-    elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
-        pass
-    elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
-        raise NotImplementedError, \
-            "Sorry! For, now you can put an extremely thin film between your \
-            NanoStructs"
+        # No? Then we'll have to calculate its properties.
+        if isinstance(lay1, Anallo) and isinstance(lay2, Anallo):
+            ref_trans = r_t_mat_anallo(lay1, lay2)
+            # Store its R and T matrices for later use
+            self._interfaces_i_have_known[lay1, lay2] = ref_trans
+            return r_t_mat_anallo(lay1, lay2)
+        elif isinstance(lay1, Anallo) and isinstance(lay2, Simmo):
+            return r_t_mat_tf_ns(lay1, lay2)
+        elif isinstance(lay1, Simmo) and isinstance(lay2, Anallo):
+            R21, T21, R12, T12 = r_t_mat_tf_ns(lay2, lay1)
+        elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
+            raise NotImplementedError, \
+                "Sorry! For, now you can put an extremely thin film between your \
+                NanoStructs"
 
 
 

@@ -43,7 +43,7 @@ wl_2     = 1200
 no_wl_1  = 2#8
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, pol = 'TM') for wl in wavelengths]
+light_list  = [objects.Light(wl) for wl in wavelengths]
 # Single wavelength run
 # wl_super = 1050
 # wavelengths = np.array([wl_super])
@@ -54,24 +54,20 @@ light_list  = [objects.Light(wl, pol = 'TM') for wl in wavelengths]
 period = 120
 
 cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
-    material = materials.Material(3.5 + 0.0j), 
-    loss = True)
+    material = materials.Material(3.5 + 0.0j), loss = True)
 
 homo_film  = objects.ThinFilm(period = period, height_1 = 5,
-    material = materials.Material(3.6 + 0.27j),
-    loss = True)
+    material = materials.Material(3.6 + 0.27j), loss = True)
 
 bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
-    material = materials.Air,
-    loss = False)
+    material = materials.Air, loss = False)
 
 grating_1 = objects.NanoStruct('1D_grating', period, 100, height_1 = 25, 
     inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 4.0)
 
 mirror = objects.ThinFilm(period = period, height_1 = 100,
-    material = materials.Ag,
-    loss = True)
+    material = materials.Ag, loss = True)
 
 
 stack_list = []
@@ -103,7 +99,7 @@ for light in light_list:
     solar_cell list MUST be ordered from bottom to top!
     """
     stack = Stack((sim_bot, sim_mirror, sim_grat1, sim_homo_film, sim_cover))
-    stack.calc_scat()
+    stack.calc_scat(pol = 'TM')
     stack_list.append(stack)
 
 t_r_a_plots(stack_list)

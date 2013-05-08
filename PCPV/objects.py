@@ -324,23 +324,15 @@ class NanoStruct(object):
 class ThinFilm(object):
     """ Represents homogeneous film """
     def __init__(self, period, height_1 = 2330, material = materials.Si_c, 
-        nu_tot_ords = 0, num_prop_TF = [], 
-        set_ord_in = 0, set_ord_out = 0, loss = True):
+        num_pw_per_pol = 0, loss = True):
         self.period         = period
         self.height_1       = height_1
         self.material       = material
-        # TODO: remove superstrate and substrate
-        self.superstrate    = materials.Air
-        self.substrate      = materials.Air
-        self.nu_tot_ords    = nu_tot_ords
-        self.num_prop_pw    = num_prop_TF
-        self.set_ord_in     = set_ord_in
-        self.set_ord_out    = set_ord_out
+        self.num_pw_per_pol = num_pw_per_pol
         self.loss           = loss
     
     def calc_modes(self, light, simo_para):
         an = Anallo(self, light, simo_para)
-
         an.calc_modes()
         return an
 
@@ -357,13 +349,13 @@ class Light(object):
         INPUTS:
 
         - `k_parallel` : The wave vector components (k_x, k_y)
-            parallel to the interface planes.
+            parallel to the interface planes. Units of nm^-1
 
         - `theta`   : polar angle of incidence in degrees
 
         - `phi`     : azimuthal angle of incidence in degrees
     """
-    def __init__(self, Lambda, pol = 'TM', k_parallel = [0.,0.], 
+    def __init__(self, Lambda, k_parallel = [0.,0.], 
         theta = None, phi = None, n_inc = 1.):
         self.Lambda = float(Lambda)
         self._air_anallos = {}
@@ -383,24 +375,8 @@ class Light(object):
                         [np.cos(phi), np.sin(phi)], dtype='float64')
 
         # FEM allegedly dislikes normal incidence and associated degeneracy
-        if abs(self.k_pll).sum() < 1e-9:
-            self.k_pll[0] += 1e-9
-
-    def pol_for_fortran(self):
-        if self.pol == 'Unpol':
-            return 0
-        elif self.pol == 'TE':
-            return 1
-        elif self.pol == 'TM':
-            return 2
-        elif self.pol == 'Left':
-            return 3
-        elif self.pol == 'Right':
-            return 4
-        elif self.pol == 'CD':
-            return 5
-        else:
-            raise TypeError, "Polarisation must be either 'Unpol','TE', 'TM', 'Left', 'Right', or 'CD'."
+        if abs(self.k_pll).sum() < 1e-15:
+            self.k_pll[0] += 1e-15
 
     def _air_ref(self, period, simo_para):
         """ Return a :Anallo: corresponding to this :Light: in free space.

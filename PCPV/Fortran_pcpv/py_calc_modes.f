@@ -8,7 +8,7 @@ c     Explicit inputs
      *    PrintSolution, PrintOmega, PrintAll,
      *    Checks, q_average, plot_real, plot_imag, plot_abs,
      *    Loss,
-     *    neq_PW,
+     *    neq_PW, cmplx_max, 
 c     "Optional" inputs (Python guesses these)
      *    nb_typ_el,
 c     Outputs
@@ -146,7 +146,7 @@ Cf2py intent(out) type_el, table_nod, x_arr, pp, qq
 
       n_64 = 2
 C     !n_64**28 on Vayu, **27 before
-      cmplx_max=n_64**25
+C      cmplx_max=n_64**25
       real_max=n_64**22
       int_max=n_64**22
 c      3*npt+nel+nnodes*nel 
@@ -436,9 +436,6 @@ C     ! Eigenvectors
       jp_vp = jp_trav + ltrav
  
       cmplx_used = jp_vp + neq*nval
-
-      write(ui,*) "cmplx_max  = ", cmplx_max
-      write(ui,*) "cmplx_used = ", cmplx_used
 C
       if (cmplx_max .lt. cmplx_used)  then
          write(ui,*) 'The size of the real supervector is too small'

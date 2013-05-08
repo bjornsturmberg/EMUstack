@@ -43,13 +43,15 @@ class Anallo(Modes):
         kzs = self.calc_kz()
 
         self.beta = np.append(kzs, kzs) # add 2nd polarisation
-        self.structure.nu_tot_ords = len(kzs)
+        self.structure.num_pw_per_pol = len(kzs)
 
         # FIXME: Yes, this is ludicrous, but historically 2 refers
         # to the layer we're in; 1 is ref_an!!
         # calc_scat demands that R12 is from air to the thin-film
-        r21, t21, r12, t12 = r_t_mat_anallo(self, self.air_ref())
-        self.R12, self.T12, self.R21, self.T21 = r12, t12, r21, t21
+        self.R12, self.T12, self.R21, self.T21 = \
+            r_t_mat_anallo(self.air_ref(), self)
+        # SHOULD BE:
+        #    r_t_mat_anallo(self, self.air_ref())
 
 
     def calc_kz(self):
@@ -83,27 +85,17 @@ class Anallo(Modes):
             # This is consistent with FEM because TODO: we use it there too
             s = np.argsort(-1*k_zs_unsrt.real + k_zs_unsrt.imag)
             self.sort_order = s
-
-            #TODO: make the following redundant?
-            # Find element of k_zs_unsrt corresponding to designated pws
-            bs = self.other_para
-            px_in, px_out = bs.x_order_in, bs.x_order_out
-            py_in, py_out = bs.y_order_in, bs.y_order_out
-
-            pxm, pym = pxs_mesh[low_ord][s], pys_mesh[low_ord][s]
-            self.structure.set_ord_in  = np.nonzero((pxm == px_in) *
-                (pym == py_in))[0][0]
-            self.structure.set_ord_out = np.nonzero((pxm == px_out) *
-                (pym == py_out))[0][0]
-
         else:
             s = self.air_ref().sort_order
             assert s.shape == k_zs_unsrt.shape, (s.shape, 
                 k_zs_unsrt.shape)
 
+        # Find element of k_zs_unsrt corresponding to zeroth order
+        pxm, pym = pxs_mesh[low_ord][s], pys_mesh[low_ord][s]
+        self.specular_order = np.nonzero((pxm == 0) * (pym == 0))[0][0]
+
         # Calculate number of propagating plane waves in thin film
-        # FIXME: surely this should include both pols?
-        self.num_prop_pw = (k_zs_unsrt.imag == 0).sum()
+        self.num_prop_pw_per_pol = (k_zs_unsrt.imag == 0).sum()
 
         return k_zs_unsrt[s]
 
@@ -127,12 +119,16 @@ class Anallo(Modes):
         # self.beta repeats itself halfway through
         # First half is for TE pol, second is for TM
         num_pw2 = len(self.beta) / 2
+        k_z = self.beta[:num_pw2]
+        assert (k_z == self.beta[num_pw2:]).all()
 
         # Calculate the (relative) wave impedances Z
-        # TE (E in interface plane): Z = Zcr * k/k_z
-        # TM (H in interface plane): Z = Zcr / (k/k_z)
-        k_on_kz = self.k() / self.beta
-        return np.concatenate((Zcr * k_on_kz[:num_pw2], Zcr / k_on_kz[num_pw2:]))
+        # TE (E in interface plane): Z = Zcr * k_z/k
+        # TM (H in interface plane): Z = Zcr / (k_z/k)
+        kz_on_k = k_z / self.k()
+
+        # TE is always represented first
+        return np.concatenate((Zcr * kz_on_k, Zcr / kz_on_k))
 
 
 class Simmo(Modes):
@@ -150,7 +146,7 @@ class Simmo(Modes):
         self.R21            = None
 
     def run(self, num_BM):
-        """Return a string that runs the simmo, to execute in a shell"""
+        """ Run the FEM in Fortran"""
         struc = self.structure
         wl = self.light.Lambda
         n_effs = np.array([struc.superstrate.n(wl), struc.substrate.n(wl), 
@@ -168,10 +164,9 @@ class Simmo(Modes):
         pw_ords_x_1d = np.arange(-ordre_ls, ordre_ls + 1)
         pw_ords_y_1d = np.arange(-ordre_ls, ordre_ls + 1)
         # Y is inner loop in fortran
-        #TODO: make X the inner loop?
         pw_ords_y, pw_ords_x = np.meshgrid(pw_ords_y_1d, pw_ords_x_1d)
         sum_sq_ords = pw_ords_x**2 + pw_ords_y**2
-        neq_pw = (sum_sq_ords <= ordre_ls**2).sum()
+        num_pw_per_pol = (sum_sq_ords <= ordre_ls**2).sum()
         # Fortran counter starts at 1
         zeroth_order = sum_sq_ords.reshape(-1).argmin() + 1
 
@@ -185,15 +180,18 @@ class Simmo(Modes):
         with open("../PCPV/Data/"+self.structure.mesh_file) as f:
             n_msh_pts, n_msh_el = [int(i) for i in f.readline().split()]
 
+        # Size of Fortran's complex superarray
+        cmplx_max = 2**25
+
         resm = pcpv.calc_modes(
             norm_wl, self.num_BM, 
             ordre_ls, d, self.other_para.debug, 
             self.structure.mesh_file, self.structure.mesh_format, 
             n_msh_pts, n_msh_el,
-            n_effs, self.light.k_pll, 
+            n_effs, self.k_pll_norm(), 
             self.structure.lx, self.structure.ly, self.other_para.tol, 
             self.other_para.E_H_field, self.other_para.i_cond, 
-            self.other_para.itermax, #self.light.pol_for_fortran(), 
+            self.other_para.itermax, 
             self.other_para.PropModes, 
             self.other_para.PrintSolution, 
             self.other_para.PrintOmega, self.other_para.PrintAll, 
@@ -201,7 +199,7 @@ class Simmo(Modes):
             self.other_para.plot_real, self.other_para.plot_imag, 
             self.other_para.plot_abs, 
             self.structure.loss,
-            neq_pw,
+            num_pw_per_pol, cmplx_max
         )
 
         (   self.prop_consts, self.sol1, self.sol2, self.mode_pol, 
@@ -210,21 +208,23 @@ class Simmo(Modes):
 
         self.beta = self.prop_consts
 
-        # TODO: the following should be calculated later?
         ress = pcpv.calc_scat(
             norm_wl, 
             ordre_ls, self.other_para.debug, 
-            n_effs, self.light.k_pll, 
+            n_effs, self.k_pll_norm(), 
             self.structure.lx, self.structure.ly,
             self.other_para.PrintAll, 
             self.other_para.Checks, 
-            neq_pw, zeroth_order,
+            num_pw_per_pol, zeroth_order,
             self.sol1, self.sol2, 
             type_el, table_nod, x_arr, pp, qq
         )
 
-        self.J, self.J_dag, self.T12, self.R12, self.T21, self.R21 = [
+        self.J, self.J_dag, T12, R12, T21, R21 = [
                         np.mat(x) for x in ress]
+        # self.R12, self.T12, self.R21, self.T21 = R12, T12, R21, T21
+        # TODO: the following should be calculated later?
+        self.R12, self.T12, self.R21, self.T21 = r_t_mat_tf_ns(self.air_ref(), self)
 
 
 def r_t_mat_anallo(an1, an2):
@@ -256,5 +256,33 @@ def r_t_mat_anallo(an1, an2):
     return R12, T12, R21, T21
 
 def r_t_mat_tf_ns(an1, sim2):
-    """ Returns R12, T12, R21, T21 at an1-sim2 interface"""
-    pass
+    """ Returns R12, T12, R21, T21 at an1-sim2 interface.
+
+        Based on:
+        Dossou et al., JOSA A, Vol. 29, Issue 5, pp. 817-831 (2012)
+        http://dx.doi.org/10.1364/JOSAA.29.000817
+
+        But we use Zw = Zcr X instead of X, so that an1 does not have
+        to be free space.
+    """
+    Z1_sqrt = sqrt(an1.Z()).reshape((1,-1))
+
+    # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
+    # Same difference.
+    A = np.mat(Z1_sqrt.T * sim2.J.A)
+    B = np.mat(sim2.J_dag.A * Z1_sqrt)
+
+    denominator = np.eye(len(B)) + B.dot(A)
+
+    # R12 = -I + 2 A (I + BA)^-1 B
+    # T12 = 2 (I + BA)^-1 B
+    den_inv_times_B = np.linalg.solve(denominator, B)
+    R12 = -np.eye(len(A)) + 2 * A * den_inv_times_B
+    T12 = 2 * den_inv_times_B
+
+    # R21 = (I - BA)(I + BA)^-1
+    # T21 = 2 A (I + BA)^-1
+    R21 = (np.eye(len(B)) - B*A) * denominator.I
+    T21 = 2 * A * denominator.I
+
+    return np.mat(R12), np.mat(T12), np.mat(R21), np.mat(T21)

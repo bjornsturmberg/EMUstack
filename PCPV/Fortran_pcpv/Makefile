@@ -4,7 +4,7 @@ SUBROUTINES_FOR_PYTHON = py_calc_modes.f py_calc_scat.f
 # py_plot_field.f
 
 
-pcpv.so: pcpv.pyf Lib/umf4_f77zwrapper64.o
+pcpv.so: pcpv.pyf Lib/umf4_f77zwrapper64.o *.f
 	f2py -c pcpv.pyf *.f Lib/umf4_f77zwrapper64.o --link-lapack_opt \
 		--link-umfpack --link-blas_opt
 

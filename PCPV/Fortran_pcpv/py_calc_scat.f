@@ -80,7 +80,12 @@ C     !ui = Unite dImpression
 C     ! Number of nodes per element
       pi = 3.141592653589793d0
 
-
+      if (n_eff(1) .ne. 1) then
+        write(ui,*) "The code seems to assume that n_eff(1) = 1,"
+        write(ui,*) "but today, n_eff(1) = ", n_eff(1)
+        write(ui,*) "Aborting..."
+        stop
+      endif
       n_eff_0 = DBLE(n_eff(1))
       freq = 1.0d0/lambda
       k_0 = 2.0d0*pi*n_eff_0*freq

@@ -97,7 +97,22 @@ t_r_a_plots(stack_list)
 # # in the future
 # testing.save_reference_data("case_3", stack_list)
 
-def test_stack_list_matches_saved(casefile_name = 'case_3', stack_list = stack_list, rtol = 1e-6, atol = 1e-6):
+def results_match_reference(filename):
+    reference = np.loadtxt("ref/case_3/" + filename)
+    result    = np.loadtxt(filename)
+    np.testing.assert_allclose(result, reference, 1e-7, 1e-6, filename)
+
+def test_txt_results():
+    result_files = (
+        "Absorptance.txt",
+        "Lay_Absorb_0.txt",
+        "Lay_Trans_0.txt",
+        "Reflectance.txt",       "Transmittance.txt",
+        )
+    for f in result_files:
+        yield results_match_reference, f
+
+def test_stack_list_matches_saved(casefile_name = 'case_3', stack_list = stack_list, rtol = 1e-6, atol = 4e-6):
     ref = np.load("ref/%s.npz" % casefile_name)
     yield assert_equal, len(stack_list), len(ref['stack_list'])
     for stack, rstack in zip(stack_list, ref['stack_list']):
@@ -113,18 +128,3 @@ def test_stack_list_matches_saved(casefile_name = 'case_3', stack_list = stack_l
             #TODO: assert_ac(lay.sol1, rlay['sol1'])
         #TODO: assert_ac(stack.R_net, rstack['R_net'])
         #TODO: assert_ac(stack.T_net, rstack['T_net'])
-
-def results_match_reference(filename):
-    reference = np.loadtxt("ref/case_3/" + filename)
-    result    = np.loadtxt(filename)
-    np.testing.assert_allclose(result, reference, 1e-7, 1e-6, filename)
-
-def test_txt_results():
-    result_files = (
-        "Absorptance.txt",
-        "Lay_Absorb_0.txt",
-        "Lay_Trans_0.txt",
-        "Reflectance.txt",       "Transmittance.txt",
-        )
-    for f in result_files:
-        yield results_match_reference, f
