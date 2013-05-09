@@ -183,7 +183,6 @@ class Simmo(Modes):
         # Size of Fortran's complex superarray
         cmplx_max = 2**25
 
-        print 'hello'
         resm = pcpv.calc_modes(
             norm_wl, self.num_BM, 
             ordre_ls, d, self.other_para.debug, 
@@ -202,7 +201,7 @@ class Simmo(Modes):
             self.structure.loss,
             num_pw_per_pol, cmplx_max
         )
-        print 'in the middle'
+
         (   self.prop_consts, self.sol1, self.sol2, self.mode_pol, 
             type_el, table_nod, x_arr, pp, qq
             ) = resm
@@ -220,13 +219,12 @@ class Simmo(Modes):
             self.sol1, self.sol2, 
             type_el, table_nod, x_arr, pp, qq
         )
-        print 'done mofo'
 
         self.J, self.J_dag, T12, R12, T21, R21 = [
                         np.mat(x) for x in ress]
-        self.R12, self.T12, self.R21, self.T21 = R12, T12, R21, T21
+
         # TODO: the following should be calculated later?
-        #self.R12, self.T12, self.R21, self.T21 = r_t_mat_tf_ns(self.air_ref(), self)
+        self.R12, self.T12, self.R21, self.T21 = r_t_mat_tf_ns(self.air_ref(), self)
 
 
 def r_t_mat_anallo(an1, an2):

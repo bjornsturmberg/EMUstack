@@ -57,7 +57,6 @@ C      integer*8 index_pw_inv(neq_PW)
       integer*8 nb_typ_el
       complex*16 pp(nb_typ_el),  qq(nb_typ_el)
       complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el), test
-      double precision n_eff_0
 c     i_cond = 0 => Dirichlet boundary condition
 c     i_cond = 1 => Neumann boundary condition
 c     i_cond = 2 => Periodic boundary condition
@@ -492,15 +491,8 @@ C
      *     "-------"
       write(ui,*) "MAIN: Wavelength ", lambda
 C
-      if (n_eff(1) .ne. 1) then
-        write(ui,*) "The code seems to assume that n_eff(1) = 1,"
-        write(ui,*) "but today, n_eff(1) = ", n_eff(1)
-        write(ui,*) "Aborting..."
-        stop
-      endif
-      n_eff_0 = DBLE(n_eff(1))
       freq = 1.0d0/lambda
-      k_0 = 2.0d0*pi*n_eff_0*freq
+      k_0 = 2.0d0*pi*freq
 C
 C  Index number of the core materials (material with highest Re(eps_eff))
       if(dble(eps_eff(3)) .gt. dble(eps_eff(4))) then

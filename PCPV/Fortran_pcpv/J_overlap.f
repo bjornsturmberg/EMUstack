@@ -2,7 +2,7 @@ C  Calculate the Projection integral of the conjugate Plane Waves & Bloch Modes
 C
       subroutine J_overlap(nval, nel, npt, nnodes, 
      *  nb_typ_el, type_el, table_nod, x, sol, pp, qq, 
-     *  lat_vecs, lambda, freq, n_eff_0, overlap_J, neq_PW,
+     *  lat_vecs, lambda, freq, overlap_J, neq_PW,
      *  bloch_vec, X_mat, numberprop_S, index_pw_inv, PrintAll,
      *  debug, ordre_ls, k_0)
 C
@@ -37,7 +37,7 @@ C  variables for quadrature interpolation
       double precision wq(nquad_max)
       double precision xq(nquad_max), yq(nquad_max)
       double precision xx(2), xx_g(2), ww, det
-      double precision mat_B(2,2), mat_T(2,2), d, n_eff_0
+      double precision mat_B(2,2), mat_T(2,2), d
 C
       integer*8 nval_max, PW_max
       parameter (nval_max = 1000)
@@ -94,7 +94,7 @@ C
       bloch2 = bloch_vec(2)
       vec_kx = 2.0d0*pi/d
       vec_ky = 2.0d0*pi/d
-      k_1 = 2.0d0*pi*n_eff_0*freq
+      k_1 = 2.0d0*pi*freq
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
@@ -139,7 +139,7 @@ C     Set up X_mat
             gamma_s = k_1**2 - alpha**2 - beta**2 ! actually gamma_s**2
             gamma_s = SQRT(gamma_s)
             X_mat(s2,s2) = gamma_s/k_0
-            X_mat(neq_PW+s2,neq_PW+s2) = n_eff_0**2 * k_0/gamma_s
+            X_mat(neq_PW+s2,neq_PW+s2) = k_0/gamma_s
             s = s + 1
           endif
         enddo

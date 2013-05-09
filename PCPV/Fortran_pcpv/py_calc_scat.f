@@ -32,7 +32,6 @@ C  Plane wave parameters
       integer*8 Zeroth_Order, Zeroth_Order_inv, nb_typ_el
       complex*16 pp(nb_typ_el),  qq(nb_typ_el)
       complex*16 n_eff(nb_typ_el)
-      double precision n_eff_0
       integer*8 nel, npt, nnodes, ui
 C     ! Number of nodes per element
       parameter(nnodes=6)
@@ -80,15 +79,8 @@ C     !ui = Unite dImpression
 C     ! Number of nodes per element
       pi = 3.141592653589793d0
 
-      if (n_eff(1) .ne. 1) then
-        write(ui,*) "The code seems to assume that n_eff(1) = 1,"
-        write(ui,*) "but today, n_eff(1) = ", n_eff(1)
-        write(ui,*) "Aborting..."
-        stop
-      endif
-      n_eff_0 = DBLE(n_eff(1))
       freq = 1.0d0/lambda
-      k_0 = 2.0d0*pi*n_eff_0*freq
+      k_0 = 2.0d0*pi*freq
 
       call lattice_vec (npt, x_arr, lat_vecs)
 
@@ -103,7 +95,7 @@ C  J_overlap
       call cpu_time(time1_J)
       call J_overlap (nval, nel, npt, nnodes, 
      *  nb_typ_el, type_el, table_nod, x_arr, 
-     *  sol1, pp, qq, lat_vecs, lambda, freq, n_eff_0,
+     *  sol1, pp, qq, lat_vecs, lambda, freq,
      *  overlap_J, neq_PW, bloch_vec, X_mat, numberprop_S,
      *  index_pw_inv, PrintAll, debug, ordre_ls, k_0)
       call cpu_time(time2_J)

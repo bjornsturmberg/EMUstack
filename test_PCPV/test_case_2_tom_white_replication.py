@@ -178,7 +178,6 @@ def results_match_reference(filename):
 
 def test_txt_results():
     result_files = (
-        "Absorptance.txt",
         "Lay_Trans_0.txt",
         "Av_Absorb.txt",
         "Lay_Trans_1.txt",      "Reflectance.txt",
@@ -210,3 +209,6 @@ def test_stack_list_matches_saved(casefile_name = 'case_2', stack_list = stack_l
             #TODO: assert_ac(lay.sol1, rlay['sol1'])
         #TODO: assert_ac(stack.R_net, rstack['R_net'])
         #TODO: assert_ac(stack.T_net, rstack['T_net'])
+
+def test_final_absorptance_for_bjorn():
+    results_match_reference("Absorptance.txt")
