@@ -765,7 +765,10 @@ c
 *     ..
 *     .. External Functions ..
       REAL               ETIME
+C     gfortran likes the following
       INTRINSIC          ETIME
+C     ifort likes the following
+C      EXTERNAL           ETIME
 *     ..
 *     .. Executable Statements ..
 *

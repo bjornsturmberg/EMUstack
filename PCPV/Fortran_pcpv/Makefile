@@ -6,7 +6,7 @@ SUBROUTINES_FOR_PYTHON = py_calc_modes.f py_calc_scat.f
 
 pcpv.so: pcpv.pyf Lib/umf4_f77zwrapper64.o *.f
 	f2py -c pcpv.pyf *.f Lib/umf4_f77zwrapper64.o --link-lapack_opt \
-		--link-umfpack --link-blas_opt
+		--link-umfpack --link-blas_opt --fcompiler=gnu95
 
 pcpv.pyf: $(SUBROUTINES_FOR_PYTHON)
 	f2py -m pcpv -h pcpv.pyf $(SUBROUTINES_FOR_PYTHON) --overwrite-signature

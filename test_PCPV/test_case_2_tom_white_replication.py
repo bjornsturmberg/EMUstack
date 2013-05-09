@@ -44,8 +44,8 @@ no_wl_1  = 2#8
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 light_list  = [objects.Light(wl) for wl in wavelengths]
-# Single wavelength run
-# wl_super = 1050
+# # Single wavelength run
+# wl_super = 1000
 # wavelengths = np.array([wl_super])
 # light_list  = [objects.Light(wl) for wl in wavelengths]
 
@@ -99,7 +99,7 @@ for light in light_list:
     solar_cell list MUST be ordered from bottom to top!
     """
     stack = Stack((sim_bot, sim_mirror, sim_grat1, sim_homo_film, sim_cover))
-    stack.calc_scat(pol = 'TM')
+    stack.calc_scat(pol = 'TE')
     stack_list.append(stack)
 
 t_r_a_plots(stack_list)

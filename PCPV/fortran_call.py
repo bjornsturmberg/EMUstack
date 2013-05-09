@@ -123,12 +123,12 @@ class Anallo(Modes):
         assert (k_z == self.beta[num_pw2:]).all()
 
         # Calculate the (relative) wave impedances Z
-        # TE (E in interface plane): Z = Zcr * k_z/k
-        # TM (H in interface plane): Z = Zcr / (k_z/k)
-        kz_on_k = k_z / self.k()
+        # TE (E in interface plane): Z = Zcr * k/k_z
+        # TM (H in interface plane): Z = Zcr / (k/k_z)
+        k_on_kz = self.k() / k_z
 
         # TE is always represented first
-        return np.concatenate((Zcr * kz_on_k, Zcr / kz_on_k))
+        return np.concatenate((Zcr * k_on_kz, Zcr / k_on_kz))
 
 
 class Simmo(Modes):
@@ -183,6 +183,7 @@ class Simmo(Modes):
         # Size of Fortran's complex superarray
         cmplx_max = 2**25
 
+        print 'hello'
         resm = pcpv.calc_modes(
             norm_wl, self.num_BM, 
             ordre_ls, d, self.other_para.debug, 
@@ -201,7 +202,7 @@ class Simmo(Modes):
             self.structure.loss,
             num_pw_per_pol, cmplx_max
         )
-
+        print 'in the middle'
         (   self.prop_consts, self.sol1, self.sol2, self.mode_pol, 
             type_el, table_nod, x_arr, pp, qq
             ) = resm
@@ -219,12 +220,13 @@ class Simmo(Modes):
             self.sol1, self.sol2, 
             type_el, table_nod, x_arr, pp, qq
         )
+        print 'done mofo'
 
         self.J, self.J_dag, T12, R12, T21, R21 = [
                         np.mat(x) for x in ress]
-        # self.R12, self.T12, self.R21, self.T21 = R12, T12, R21, T21
+        self.R12, self.T12, self.R21, self.T21 = R12, T12, R21, T21
         # TODO: the following should be calculated later?
-        self.R12, self.T12, self.R21, self.T21 = r_t_mat_tf_ns(self.air_ref(), self)
+        #self.R12, self.T12, self.R21, self.T21 = r_t_mat_tf_ns(self.air_ref(), self)
 
 
 def r_t_mat_anallo(an1, an2):
@@ -265,12 +267,12 @@ def r_t_mat_tf_ns(an1, sim2):
         But we use Zw = Zcr X instead of X, so that an1 does not have
         to be free space.
     """
-    Z1_sqrt = sqrt(an1.Z()).reshape((1,-1))
+    Z1_sqrt_inv = sqrt(1/an1.Z()).reshape((1,-1))
 
     # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
     # Same difference.
-    A = np.mat(Z1_sqrt.T * sim2.J.A)
-    B = np.mat(sim2.J_dag.A * Z1_sqrt)
+    A = np.mat(Z1_sqrt_inv.T * sim2.J.A)
+    B = np.mat(sim2.J_dag.A * Z1_sqrt_inv)
 
     denominator = np.eye(len(B)) + B.dot(A)
 
