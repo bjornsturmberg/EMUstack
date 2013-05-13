@@ -190,27 +190,12 @@ class Simmo(Modes):
             self.other_para.plot_real, self.other_para.plot_imag, 
             self.other_para.plot_abs, 
             self.structure.loss,
-            num_pw_per_pol, cmplx_max
+            num_pw_per_pol, zeroth_order, cmplx_max
         )
 
-        (   self.k_z, self.sol1, self.sol2, self.mode_pol, 
-            type_el, table_nod, x_arr, pp, qq
-            ) = resm
+        self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol = resm
 
-        ress = pcpv.calc_scat(
-            norm_wl, 
-            ordre_ls, self.other_para.debug, 
-            n_effs, self.k_pll_norm(), 
-            self.structure.lx, self.structure.ly,
-            self.other_para.PrintAll, 
-            self.other_para.Checks, 
-            num_pw_per_pol, zeroth_order,
-            self.sol1, self.sol2, 
-            type_el, table_nod, x_arr, pp, qq
-        )
-
-        self.J, self.J_dag, T12, R12, T21, R21 = [
-                        np.mat(x) for x in ress]
+        self.J, self.J_dag = np.mat(J), np.mat(J_dag)
 
 
 def r_t_mat_anallo(an1, an2):

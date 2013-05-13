@@ -1,34 +1,30 @@
 C  Calculate the Projection integral of the conjugate Plane Waves & Bloch Modes
 C
       subroutine J_overlap(nval, nel, npt, nnodes, 
-     *  nb_typ_el, type_el, table_nod, x, sol, pp, qq, 
+     *  type_el, table_nod, x, sol,
      *  lat_vecs, lambda, freq, overlap_J, neq_PW,
-     *  bloch_vec, X_mat, numberprop_S, index_pw_inv, PrintAll,
-     *  debug, ordre_ls, k_0)
+     *  bloch_vec, index_pw_inv, PrintAll,
+     *  ordre_ls)
 C
       implicit none 
 C  input output parameters
-      integer*8 nval, nel, npt, nnodes, nb_typ_el
+      integer*8 nval, nel, npt, nnodes
       integer*8 type_el(nel)
       integer*8 table_nod(nnodes,nel)
       complex*16 x(2,npt), sol(3,nnodes+7,nval,nel)
-      complex*16 pp(nb_typ_el), qq(nb_typ_el)
       double precision lat_vecs(2,2)
-      integer*8 neq_PW, PrintAll, ordre_ls, debug
-      double precision bloch_vec(2), k_0
-      integer*8 numberprop_S
+      integer*8 neq_PW, PrintAll, ordre_ls
+      double precision bloch_vec(2)
 ! index_pw(neq_PW), 
       integer*8 index_pw_inv(neq_PW)
 C  local parameters - purely internal
       integer*8 iel, inode, n, i, j, global
-      integer*8 l, ltest, typ_e, s, s2, twos, trans
-      integer*8 ui, jval, ival, px, py, nnodes_0
+      integer*8 ltest, typ_e, s, s2, twos, trans
+      integer*8 ui, px, py, nnodes_0
       parameter (nnodes_0 = 6)
       integer*8 nod_el_p(nnodes_0)
       double precision xel(2,nnodes_0)
-      double precision phi1_list(3)
       double precision phi2_list(6)
-      double precision phi3_list(10)
       complex*16 vec_phi(2), K_tmp(2), E_tmp(2)
       complex*16 tmp1, tmp2
 C  variables for quadrature interpolation
@@ -47,12 +43,9 @@ C
       complex*16 overlap_K(PW_max,nval_max)
       complex*16 overlap_E(PW_max,nval_max)
       complex*16 overlap_J(2*neq_PW,nval)
-      complex*16 X_mat(2*neq_PW,2*neq_PW)  
-      complex*16 beta_z_pw(PW_max), test
-      complex*16 ii, z_tmp, gamma_s, val_exp, coeff_1
+      complex*16 ii, val_exp, coeff_1
       double precision r_tmp, vec_kx, vec_ky, lambda, freq
       double precision bloch1, bloch2, pi, alpha, beta, norm
-      double precision k_1
 C
 CCCCCCCCCCC Start Program CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -78,8 +71,8 @@ C
       endif
 C
       call quad_triangle(nquad,nquad_max,wq,xq,yq);
-C       
-C	set up final solution matrix
+C
+C set up final solution matrix
       do j=1,nval
         do i=1,neq_PW
           overlap_K(i,j) = 0.0D0
@@ -94,56 +87,10 @@ C
       bloch2 = bloch_vec(2)
       vec_kx = 2.0d0*pi/d
       vec_ky = 2.0d0*pi/d
-      k_1 = 2.0d0*pi*freq
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 C
-C  Search for number of propagating plane wave orders
-      s = 1
-      do px = -ordre_ls, ordre_ls
-        do py = -ordre_ls, ordre_ls
-          if (px**2 + py**2 .le. ordre_ls**2) then
-            alpha = bloch1 + vec_kx*px  ! Bloch vector along x
-            beta  = bloch2 + vec_ky*py  ! Bloch vector along y
-            z_tmp = k_1**2 - alpha**2 - beta**2
-            beta_z_pw(s) = sqrt(z_tmp)
-            s = s + 1
-          endif
-        enddo
-      enddo
-
-      numberprop_S = 0
-      do i=1,neq_PW
-        test = (beta_z_pw(i)**2)
-        if (REAL(test) .gt. 0.0d-5) then
-          numberprop_S = numberprop_S + 1
-        endif
-      enddo
-C
-C     set up empty X_mat
-      do j=1,2*neq_PW        
-        do i=1,2*neq_PW
-          X_mat(i,j) = 0.0D0
-        enddo 
-      enddo 
-
-C     Set up X_mat
-      s = 1
-      do px = -ordre_ls, ordre_ls
-        do py = -ordre_ls, ordre_ls
-          if (px**2 + py**2 .le. ordre_ls**2) then
-            alpha = bloch1 + vec_kx*px  ! Bloch vector along x
-            beta  = bloch2 + vec_ky*py  ! Bloch vector along y
-            s2 = index_pw_inv(s)
-            gamma_s = k_1**2 - alpha**2 - beta**2 ! actually gamma_s**2
-            gamma_s = SQRT(gamma_s)
-            X_mat(s2,s2) = gamma_s/k_0
-            X_mat(neq_PW+s2,neq_PW+s2) = k_0/gamma_s
-            s = s + 1
-          endif
-        enddo
-      enddo
 C
 CCCCCCCCCCCCCCCCC	loop over all elements	CCCCCCCCCCCCCCCC
 C
@@ -177,11 +124,11 @@ C     prefactors of plane waves order s(px,py)
                 s2 = index_pw_inv(s)
 C
 C     Plane waves order s
-C  	RK	  x component
+C   RK    x component
                 PlaneW_RK(s2,1) = alpha*val_exp
 C             y component
                 PlaneW_RK(s2,2) = beta*val_exp
-C  	RE	  x component
+C   RE    x component
                 PlaneW_RE(s2,1) = beta*val_exp
 C             y component
                 PlaneW_RE(s2,2) = -alpha*val_exp
@@ -206,7 +153,7 @@ C
      *                  sol(trans,ltest,n,iel) * phi2_list(ltest)
                   enddo
                 enddo
-C	take dot product of Bloch Lp and PW for each quad pt.
+C take dot product of Bloch Lp and PW for each quad pt.
                    tmp1 = vec_phi(1)*K_tmp(1) + vec_phi(2)*K_tmp(2)
                    overlap_K(s,n) = overlap_K(s,n) + coeff_1 * tmp1
 C
@@ -234,7 +181,6 @@ C
       if (PrintAll .eq. 1) then
 C
       open (unit=35, file="Matrices/J_mat.txt", status='unknown')
-      open (unit=34, file="Matrices/X_mat.txt", status='unknown')
       open (unit=33, file="Matrices/J_K.txt", status='unknown')
       open (unit=32, file="Matrices/J_E.txt", status='unknown')
 C      write(34,131) lambda, freq      
@@ -247,9 +193,6 @@ C
           write(35,132) twos,n,overlap_J(twos,n),
      *         abs(overlap_J(twos,n))
         enddo    
-      enddo
-      do twos = 1, 2*neq_PW
-        write(34,13) X_mat(twos,twos), abs(X_mat(twos,twos))     
       enddo
       do n=1,nval
         do s=1,neq_PW
@@ -265,7 +208,6 @@ C
 C
 131   format(2(f12.4))
 132   format(2(I4),2(g25.17),g18.10)
-13    format(2(g25.17),g18.10)
       endif
 C
 C

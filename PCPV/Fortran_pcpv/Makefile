@@ -1,6 +1,6 @@
 COMPILER_VENDOR = g95
 
-SUBROUTINES_FOR_PYTHON = py_calc_modes.f py_calc_scat.f
+SUBROUTINES_FOR_PYTHON = py_calc_modes.f
 # py_plot_field.f
 
 

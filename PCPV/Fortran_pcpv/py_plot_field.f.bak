@@ -932,15 +932,17 @@ C  Scattering Matrices
       if (debug .eq. 1) then
         write(ui,*) "MAIN: Scattering Matrices"
       endif
-      call ScatMat( overlap_J, overlap_J_dagger,  
-     *    X_mat, neq_PW, nval, 
-     *    beta1, T12, R12, T21, R21,
-     *    PrintAll, PrintSolution, 
-     *    lx, h_1, h_2, num_h, Checks, T_Lambda, 
-     *    R_Lambda, traLambda, pol, PropModes, lambda, d_in_nm,
-     *    numberprop_S, freq, Zeroth_Order_inv,
-     *    debug, incident, what4incident, out4incident,
-     *    title, parallel)
+      write(ui,*) "Scatmat has been removed..."
+      stop
+C      call ScatMat( overlap_J, overlap_J_dagger,  
+C     *    X_mat, neq_PW, nval, 
+C     *    beta1, T12, R12, T21, R21,
+C     *    PrintAll, PrintSolution, 
+C     *    lx, h_1, h_2, num_h, Checks, T_Lambda, 
+C     *    R_Lambda, traLambda, pol, PropModes, lambda, d_in_nm,
+C     *    numberprop_S, freq, Zeroth_Order_inv,
+C     *    debug, incident, what4incident, out4incident,
+C     *    title, parallel)
 C     !End Substrate Options
       endif
 C
@@ -1099,10 +1101,10 @@ C  Search for number of propagating Bloch Modes
         endif
       enddo
       write(ui,*) "numberprop_N = ", numberprop_N
-C  Energy Conservation Check
-        write(ui,*) "MAIN: Energy Check"
-        call Energy_Cons(R12, T12, R21, T21,
-     *    numberprop_S, numberprop_N, neq_PW, nval)
+CC  Energy Conservation Check
+C        write(ui,*) "MAIN: Energy Check"
+C        call Energy_Cons(R12, T12, R21, T21,
+C     *    numberprop_S, numberprop_N, neq_PW, nval)
       endif 
 C
 C#########################  End Calculations  ###########################

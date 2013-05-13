@@ -1,31 +1,28 @@
 C  Calculate the Projection integral of the Plane Waves & adjoint Bloch modes
 C
       subroutine J_dagger_overlap(nval, nel, npt, nnodes, 
-     *  nb_typ_el, type_el, table_nod, x, sol, pp, qq, 
+     *  type_el, table_nod, x, sol, 
      *  lat_vecs, lambda, freq, overlap_J_dagger, neq_PW,
      *  bloch_vec, index_pw_inv, PrintAll, ordre_ls)
 C 
       implicit none 
 C  input output parameters
-      integer*8 nval, nel, npt, nnodes, nb_typ_el
+      integer*8 nval, nel, npt, nnodes
       integer*8 type_el(nel)
       integer*8 table_nod(nnodes,nel)
       complex*16 x(2,npt), sol(3,nnodes+7,nval,nel)
-      complex*16 pp(nb_typ_el), qq(nb_typ_el)
       double precision lat_vecs(2,2)
       integer*8 neq_PW, PrintAll
       double precision bloch_vec(2)
 C  local parameters - purely internal
       integer*8 iel, inode, n, i, j, global
-      integer*8 l, ltest, typ_e, s, s2, twos, trans
-      integer*8 ui, jval, ival, px, py, ordre_ls
+      integer*8 ltest, typ_e, s, s2, twos, trans
+      integer*8 ui, px, py, ordre_ls
       integer*8 nnodes_0, debug
       parameter (nnodes_0 = 6)
       integer*8 nod_el_p(nnodes_0)
       double precision xel(2,nnodes_0)
-      double precision phi1_list(3)
       double precision phi2_list(6)
-      double precision phi3_list(10)
       complex*16 vec_phi(2), K_tmp(2), E_tmp(2)
       complex*16 tmp1, tmp2
 C  variables for quadrature interpolation
@@ -41,7 +38,6 @@ C
       parameter (PW_max = 200)
       complex*16 PlaneW_RK(PW_max,2)
       complex*16 PlaneW_RE(PW_max,2)
-      complex*16 PlaneW_tmp(PW_max,2)
       complex*16 overlap_K(PW_max,nval_max)
       complex*16 overlap_E(PW_max,nval_max)
       complex*16 overlap_J_dagger(nval,2*neq_PW)
@@ -77,7 +73,7 @@ C
 C
       call quad_triangle(nquad,nquad_max,wq,xq,yq);
 C        
-C	set up final solution matrix
+C set up final solution matrix
         do i=1,neq_PW
           do j=1,nval
             overlap_K(i,j) = 0.0D0
@@ -93,7 +89,7 @@ C
       vec_kx = 2.0d0*pi/d
       vec_ky = 2.0d0*pi/d
 C
-CCCCCCCCCCCCCCCCC	loop over all elements	CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCC loop over all elements CCCCCCCCCCCCCCCC
 C
       do iel=1,nel
         typ_e = type_el(iel)
@@ -124,13 +120,13 @@ C     prefactors of plane waves order s(px,py)
                 s2 = index_pw_inv(s)
                 val_exp = EXP(ii*r_tmp)*norm
 C
-C     Plane waves order s (1-neq_PW) not conjugated (-ii) -> ii	
-C  	RK	  x component
+C     Plane waves order s (1-neq_PW) not conjugated (-ii) -> ii 
+C   RK   x component
                 PlaneW_RK(s2,1) = alpha*val_exp
 C             y component
                 PlaneW_RK(s2,2) = beta*val_exp
-C		
-C  	RE	  x component
+C  
+C   RE   x component
                 PlaneW_RE(s2,1) = beta*val_exp
 C             y component
                 PlaneW_RE(s2,2) = -alpha*val_exp        
@@ -156,7 +152,7 @@ C
      *                 sol(trans,ltest,n,iel) * phi2_list(ltest)
                   enddo
                 enddo
-C	take dot product of Bloch Lp and PW for each quad pt.
+C take dot product of Bloch Lp and PW for each quad pt.
                    tmp1 = vec_phi(1)*K_tmp(1) + vec_phi(2)*K_tmp(2)
                    overlap_K(s,n) = overlap_K(s,n) + coeff_1 * tmp1
 C
@@ -181,7 +177,7 @@ C
         enddo
       enddo
 C
-CCCCCCCCCCCCCCCCC	  save results   CCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCC   save results   CCCCCCCCCCCCCCCC
 C
       if (PrintAll .eq. 1) then
 C

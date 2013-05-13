@@ -201,10 +201,10 @@ def test_stack_list_matches_saved(casefile_name = 'case_2', stack_list = stack_l
         lbl_s = "wl = %f, " % stack.layers[0].light.wl_nm
         for i, (lay, rlay) in enumerate(zip(stack.layers, rstack['layers'])):
             lbl_l = lbl_s + "lay %i, " % i
-            yield assert_ac, lay.R12,  rlay['R12'],  rtol, atol, lbl_l + 'R12'
-            yield assert_ac, lay.T12,  rlay['T12'],  rtol, atol, lbl_l + 'T12'
-            yield assert_ac, lay.R21,  rlay['R21'],  rtol, atol, lbl_l + 'R21'
-            yield assert_ac, lay.T21,  rlay['T21'],  rtol, atol, lbl_l + 'T21'
+            yield assert_ac, lay.R12, rlay['R12'], rtol, atol, lbl_l + 'R12'
+            yield assert_ac, lay.T12, rlay['T12'], rtol, atol, lbl_l + 'T12'
+            yield assert_ac, lay.R21, rlay['R21'], rtol, atol, lbl_l + 'R21'
+            yield assert_ac, lay.T21, rlay['T21'], rtol, atol, lbl_l + 'T21'
             yield assert_ac, lay.k_z, rlay['k_z'], rtol, atol, lbl_l + 'k_z'
             # TODO: yield assert_ac, lay.sol1, rlay['sol1'], rtol, atol, lbl_l + 'k_z'
         yield assert_ac, stack.R_net, rstack['R_net'], rtol, atol, lbl_s + 'R_net'

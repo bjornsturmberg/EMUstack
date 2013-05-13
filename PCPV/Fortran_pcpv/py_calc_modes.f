@@ -2,18 +2,15 @@
 c     Explicit inputs
      *    lambda, nval, ordre_ls, d_in_nm,
      *    debug, mesh_file, mesh_format, npt, nel,
-     *    n_eff,
-     *    bloch_vec, lx, ly, tol, 
+     *    n_eff, bloch_vec, lx, ly, tol, 
      *    E_H_field, i_cond, itermax, PropModes,
      *    PrintSolution, PrintOmega, PrintAll,
      *    Checks, q_average, plot_real, plot_imag, plot_abs,
-     *    Loss,
-     *    neq_PW, cmplx_max, 
+     *    Loss, neq_PW, Zeroth_Order, cmplx_max, 
 c     "Optional" inputs (Python guesses these)
      *    nb_typ_el,
 c     Outputs
-     *    beta1, sol1, sol2, mode_pol, 
-     *    type_el, table_nod, x_arr, pp, qq)
+     *    beta1, overlap_J, overlap_J_dagger, sol1, sol2, mode_pol)
 C************************************************************************
 C
 C  Program:
@@ -53,9 +50,9 @@ C      integer*8 jp_matD2, jp_matL2, jp_matU2
       integer*8 jp_trav, jp_vp
 C  Plane wave parameters
       integer*8 neq_PW, nx_PW, ny_PW, ordre_ls
-C      integer*8 index_pw_inv(neq_PW)
-      integer*8 nb_typ_el
-      complex*16 pp(nb_typ_el),  qq(nb_typ_el)
+      integer*8 index_pw_inv(neq_PW)
+      integer*8 Zeroth_Order, Zeroth_Order_inv, nb_typ_el
+      complex*16 pp(nb_typ_el), qq(nb_typ_el)
       complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el), test
 c     i_cond = 0 => Dirichlet boundary condition
 c     i_cond = 1 => Neumann boundary condition
@@ -131,6 +128,7 @@ c     new breed of variables to prise out of a, b and c
       complex*16, pointer :: sol(:,:,:,:)
       complex*16 sol_avg(3, npt)
       complex*16 overlap_J(2*neq_PW, nval)
+      complex*16 overlap_J_dagger(nval, 2*neq_PW)
       complex*16 overlap_K(nval, 2*neq_PW)
       complex*16 overlap_L(nval, nval)
 
@@ -139,8 +137,8 @@ c     new breed of variables to prise out of a, b and c
       complex*16 mode_pol(4,nval)
 c     Fresnel scattering matrices
  
-Cf2py intent(out) beta1, sol1, sol2, mode_pol
-Cf2py intent(out) type_el, table_nod, x_arr, pp, qq
+Cf2py intent(out) beta1, overlap_J, overlap_J_dagger
+Cf2py intent(out) sol1, sol2, mode_pol
 
 
       n_64 = 2
@@ -683,6 +681,12 @@ C  Orthogonal integral
      *  type_el, x_arr, beta1, beta2,
      *  sol1, sol2, overlap_L,
      *  overlap_file, PrintAll, d_in_nm, pair_warning, k_0)
+
+      if (pair_warning .ne. 0) then
+        write(ui,*) "conjugate pair problem", pair_warning,
+     *      "times, for d = ", d_in_nm
+      endif
+
       call cpu_time(time2_J)
       if (debug .eq. 1) then
         write(ui,*) "MAIN: CPU time for orthogonal :",
@@ -732,11 +736,76 @@ C  Orthonormal integral
      *    type_el, x_arr, beta1, beta2,
      *    sol1, sol2, overlap_L,
      *    overlap_file, PrintAll, d_in_nm, pair_warning, k_0)
+        if (pair_warning .ne. 0) then
+          write(ui,*) "conjugate pair problem", pair_warning,
+     *      "times, for d = ", d_in_nm
+        endif
         call cpu_time(time2_J)
           write(ui,*) "MAIN: CPU time for orthogonal :",
      *    (time2_J-time1_J)
       endif
+
+
+C  Plane wave ordering
+      call pw_ordering (neq_PW, lat_vecs, bloch_vec, 
+     *  index_pw_inv, Zeroth_Order, Zeroth_Order_inv, 
+     *  debug, ordre_ls, k_0)
+C  J_overlap
+      if (debug .eq. 1) then
+        write(ui,*) "MAIN: J_overlap Integral"
+      endif
+      call cpu_time(time1_J)
+      call J_overlap (nval, nel, npt, nnodes, 
+     *  type_el, table_nod, x_arr, 
+     *  sol1, lat_vecs, lambda, freq,
+     *  overlap_J, neq_PW, bloch_vec,
+     *  index_pw_inv, PrintAll, ordre_ls)
+      call cpu_time(time2_J)
+      if (debug .eq. 1) then
+        write(ui,*) "MAIN: CPU time for J_overlap :",
+     *  (time2_J-time1_J)
+      endif
 C
+C  J_dagger_overlap
+      if (debug .eq. 1) then
+        write(ui,*) "MAIN: J_dagger_overlap Integral"
+      endif
+      call cpu_time(time1_J)
+      call J_dagger_overlap (nval, nel, npt, nnodes, 
+     *  type_el, table_nod, x_arr, 
+     *  sol2, lat_vecs, lambda, freq,
+     *  overlap_J_dagger, neq_PW, bloch_vec,
+     *  index_pw_inv, PrintAll, ordre_ls)
+      call cpu_time(time2_J)
+      if (debug .eq. 1) then
+        write(ui,*) "MAIN: CPU time for J_dagger_overlap :",
+     *  (time2_J-time1_J)
+      endif
+C
+C  Scattering Matrices
+      if (debug .eq. 1) then
+        write(ui,*) "MAIN: Scattering Matrices"
+      endif
+C
+C
+C
+CCCCCCCCCCCCCCCCCCCCC Calculation Checks CCCCCCCCCCCCCCCCCCCCC
+C
+C  Completeness Check
+      if (Checks .eq. 1) then
+        write(ui,*) "MAIN: K_overlap Integral"
+        call K_overlap(nval, nel, npt, nnodes, 
+     *    nb_typ_el, type_el, table_nod, x_arr,   
+     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
+     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
+     *    PrintAll, k_0, ordre_ls)
+        write(ui,*) "MAIN: Completeness Test"
+        call Completeness (nval, neq_PW, 
+     *    overlap_K, overlap_J)
+      write(ui,*) "numberprop_N = ", numberprop_N
+      endif 
+C
+
 
 C     
 C  Search for number of propagating Bloch Modes
@@ -761,26 +830,21 @@ C
         close(566)
       endif
 C
-      if (pair_warning .ne. 0) then
-        write(ui,*) "conjugate pair problem", pair_warning,
-     *      "times, for d = ", d_in_nm
-      endif
-C
       call cpu_time(time2_postp)
 C
 CCCCCCCCCCCCCCCCCCCCCC Calculation Checks CCCCCCCCCCCCCCCCCCCCC
 CC
 CC  Completeness Check
       if (Checks .eq. 1) then
-C        write(ui,*) "MAIN: K_overlap Integral"
-C        call K_overlap(nval, nel, npt, nnodes, 
-C     *    nb_typ_el, type_el, table_nod, x_arr,   
-C     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
-C     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
-C     *    PrintAll, k_0, ordre_ls)
-C        write(ui,*) "MAIN: Completeness Test"
-C        call Completeness (nval, neq_PW, 
-C     *    overlap_K, overlap_J)
+        write(ui,*) "MAIN: K_overlap Integral"
+        call K_overlap(nval, nel, npt, nnodes, 
+     *    nb_typ_el, type_el, table_nod, x_arr,   
+     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
+     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
+     *    PrintAll, k_0, ordre_ls)
+        write(ui,*) "MAIN: Completeness Test"
+        call Completeness (nval, neq_PW, 
+     *    overlap_K, overlap_J)
 C  Search for number of propagating Bloch Modes
       numberprop_N = 0
       do i=1,nval
