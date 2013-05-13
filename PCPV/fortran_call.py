@@ -48,8 +48,8 @@ class Anallo(Modes):
         # FIXME: Yes, this is ludicrous, but historically 2 refers
         # to the layer we're in; 1 is ref_an!!
         # calc_scat demands that R12 is from air to the thin-film
-        self.R12, self.T12, self.R21, self.T21 = \
-            r_t_mat_anallo(self.air_ref(), self)
+        #self.R12, self.T12, self.R21, self.T21 = \
+        #    r_t_mat_anallo(self.air_ref(), self)
         # SHOULD BE:
         #    r_t_mat_anallo(self, self.air_ref())
 
@@ -224,7 +224,7 @@ class Simmo(Modes):
                         np.mat(x) for x in ress]
 
         # TODO: the following should be calculated later?
-        self.R12, self.T12, self.R21, self.T21 = r_t_mat_tf_ns(self.air_ref(), self)
+        #self.R12, self.T12, self.R21, self.T21 = r_t_mat_tf_ns(self.air_ref(), self)
 
 
 def r_t_mat_anallo(an1, an2):
@@ -262,8 +262,8 @@ def r_t_mat_tf_ns(an1, sim2):
         Dossou et al., JOSA A, Vol. 29, Issue 5, pp. 817-831 (2012)
         http://dx.doi.org/10.1364/JOSAA.29.000817
 
-        But we use Zw = Zcr X instead of X, so that an1 does not have
-        to be free space.
+        But we use Zw = 1/(Zcr X) instead of X, so that an1 does not 
+        have to be free space.
     """
     Z1_sqrt_inv = sqrt(1/an1.Z()).reshape((1,-1))
 

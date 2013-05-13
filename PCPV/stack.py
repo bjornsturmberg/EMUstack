@@ -60,14 +60,15 @@ class Stack(object):
         t21_list = []
         P_list   = []
         for st1 in self.layers:
-            R12, T12, R21, T21 = st1.R12, st1.T12, st1.R21, st1.T21
-            #R12, T12, R21, T21 = self.r_t_mat(st1.air_ref(), st1)
+            R12, T12, R21, T21 = self.r_t_mat(st1.air_ref(), st1)
             r12_list.append(R12)
             r21_list.append(R21)
-            # potential to save on one transpose
             t12_list.append(T12)
             t21_list.append(T21)
-            #t21_list.append(t12_list[-1].T)
+
+            # Save the reflection matrices to the layers
+            # (for easier introspection/testing)
+            st1.R12, st1.T12, st1.R21, st1.T21 = R12, T12, R21, T21
 
     # initiate (r)tnet as substrate top interface
         tnet_list = []
@@ -292,17 +293,66 @@ class Stack(object):
                 NanoStructs"
 
 
+def r_t_mat_anallo(an1, an2):
+    """ Returns R12, T12, R21, T21 at an interface between thin films.
 
+        R12 is the reflection matrix from Anallo 1 off Anallo 2
 
+        The sign of elements in T12 and T21 is fixed to be positive,
+        in the eyes of `numpy.sign`
+    """
+    if len(an1.beta) != len(an2.beta):
+        raise ValueError, "Need the same number of plane waves in \
+        Anallos %(an1)s and %(an2)s" % {'an1' : an1, 'an2' : an2}
 
+    Z1 = an1.Z()
+    Z2 = an2.Z()
 
+    R12 = np.mat(np.diag((Z2 - Z1)/(Z2 + Z1)))
+    # N.B. there is potentially a branch choice problem here, stemming
+    # from the normalisation to unit flux.
+    # We normalise each field amplitude by
+    # $chi^{\pm 1/2} = sqrt(k_z/k)^{\pm 1} = sqrt(Z/Zc)^{\pm 1}$
+    # The choice of branch in those square roots must be the same as the
+    # choice in the related square roots that we are about to take:
+    T12 = np.mat(np.diag(2.*sqrt(Z2)*sqrt(Z1)/(Z2+Z1)))
+    R21 = -R12
+    T21 = T12
 
+    return R12, T12, R21, T21
 
+def r_t_mat_tf_ns(an1, sim2):
+    """ Returns R12, T12, R21, T21 at an1-sim2 interface.
 
+        Based on:
+        Dossou et al., JOSA A, Vol. 29, Issue 5, pp. 817-831 (2012)
+        http://dx.doi.org/10.1364/JOSAA.29.000817
 
+        But we use Zw = 1/(Zcr X) instead of X, so that an1 does not 
+        have to be free space.
+    """
+    Z1_sqrt_inv = sqrt(1/an1.Z()).reshape((1,-1))
 
+    # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
+    # Same difference.
+    A = np.mat(Z1_sqrt_inv.T * sim2.J.A)
+    B = np.mat(sim2.J_dag.A * Z1_sqrt_inv)
 
+    denominator = np.eye(len(B)) + B.dot(A)
 
+    # R12 = -I + 2 A (I + BA)^-1 B
+    # T12 = 2 (I + BA)^-1 B
+    den_inv_times_B = np.linalg.solve(denominator, B)
+    R12 = -np.eye(len(A)) + 2 * A * den_inv_times_B
+    T12 = 2 * den_inv_times_B
+
+    # R21 = (I - BA)(I + BA)^-1 = (I + BA)^-1 (I - BA)
+    # T21 = 2 A (I + BA)^-1 = T12^T
+    R21 = np.linalg.solve(denominator, (np.eye(len(B)) - B*A))
+    T21 = 2 * A * denominator.I
+    #T21 = T12.T
+
+    return np.mat(R12), np.mat(T12), np.mat(R21), np.mat(T21)
 
 
 def t_r_a_plots(stack_list):
