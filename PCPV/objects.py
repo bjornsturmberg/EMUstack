@@ -344,9 +344,11 @@ class Light(object):
         incident angles `theta` and `phi`, together with the refractive
         index `n_inc` of the incident medium.
 
-        `Lambda` and `k_pll` are both in unnormalised units.
+        `wl_nm` and `k_pll` are both in unnormalised units.
 
         INPUTS:
+
+        - `wl_nm`   : Wavelength, in nanometres
 
         - `k_parallel` : The wave vector components (k_x, k_y)
             parallel to the interface planes. Units of nm^-1
@@ -355,9 +357,9 @@ class Light(object):
 
         - `phi`     : azimuthal angle of incidence in degrees
     """
-    def __init__(self, Lambda, k_parallel = [0.,0.], 
+    def __init__(self, wl_nm, k_parallel = [0.,0.], 
         theta = None, phi = None, n_inc = 1.):
-        self.Lambda = float(Lambda)
+        self.wl_nm = float(wl_nm)
         self._air_anallos = {}
 
         if None == theta:
@@ -368,7 +370,7 @@ class Light(object):
                 raise ValueError, "Specify incident angle either by \
                 k_parallel or by theta, phi and n_inc."
             # Calculate k_parallel from incident angles
-            k = 2 * np.pi * np.real(n_inc) / self.Lambda
+            k = 2 * np.pi * np.real(n_inc) / self.wl_nm
             theta *= np.pi / 180
             phi *= np.pi / 180
             self.k_pll = k*np.sin(theta) * np.array(
@@ -381,7 +383,7 @@ class Light(object):
     def _air_ref(self, period, simo_para):
         """ Return a :Anallo: corresponding to this :Light: in free space.
 
-            The :Anallo: will have `len(anallo.beta) == 2 * num_pw`
+            The :Anallo: will have `len(anallo.k_z) == 2 * num_pw`
         """
         #TODO: replace `simo_para` by `num_pw`
         if (simo_para, period) in self._air_anallos:
@@ -394,7 +396,7 @@ class Light(object):
 
             kz = an.calc_kz()
 
-            an.beta = np.append(kz, kz)
+            an.k_z = np.append(kz, kz)
 
             # Save this for future reference (we'll be back)
             self._air_anallos[(simo_para, period)] = an

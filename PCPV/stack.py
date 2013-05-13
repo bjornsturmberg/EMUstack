@@ -91,7 +91,7 @@ class Stack(object):
             tnet_list.append(tnet)
             rnet_list.append(rnet)
     # through TF layer
-            P = np.mat(np.diag(np.exp(1j*lay.beta * lay.structure.height_1/lay.structure.period)))
+            P = np.mat(np.diag(np.exp(1j*lay.k_z * lay.structure.height_1/lay.structure.period)))
             I_TF           = np.matrix(np.eye(len(P)),dtype='D')
             to_invert      = (I_TF - r21_list[i]*P*rnet*P)
             inverted_t12   = np.linalg.solve(to_invert,t12_list[i])
@@ -117,7 +117,7 @@ class Stack(object):
         tnet_list.append(tnet)
         rnet_list.append(rnet)
 
-        self.rnet, self.tnet = rnet, tnet
+        self.R_net, self.T_net = rnet, tnet
 
 
         """ Calculate field expansions for all layers (including air) starting at top
@@ -252,7 +252,7 @@ class Stack(object):
             plt.xlabel('Incoming Orders')
             plt.ylabel('Outgoing Orders')
             plt.suptitle('Net Reflection Scattering Matrix')
-            plt.savefig('Rnet_wl %f' % self.layers[0].light.Lambda)
+            plt.savefig('Rnet_wl %f' % self.layers[0].light.wl_nm)
             # for i in range(len(rnet_list)):
             #     im = np.real(rnet_list[i])
             #     plt.matshow(im,cmap=plt.cm.gray)
@@ -301,7 +301,7 @@ def r_t_mat_anallo(an1, an2):
         The sign of elements in T12 and T21 is fixed to be positive,
         in the eyes of `numpy.sign`
     """
-    if len(an1.beta) != len(an2.beta):
+    if len(an1.k_z) != len(an2.k_z):
         raise ValueError, "Need the same number of plane waves in \
         Anallos %(an1)s and %(an2)s" % {'an1' : an1, 'an2' : an2}
 
@@ -358,7 +358,7 @@ def r_t_mat_tf_ns(an1, sim2):
 def t_r_a_plots(stack_list):
     # plot t,r,a plots each containing results for each layer and total. 
     #Also save text t,r,a to files
-    wavelengths = np.array([s.layers[0].light.Lambda for s in stack_list])
+    wavelengths = np.array([s.layers[0].light.wl_nm for s in stack_list])
     a_list = []
     t_list = []
     r_list = []

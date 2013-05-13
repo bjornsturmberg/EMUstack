@@ -20,7 +20,7 @@ class Modes(object):
         return self.light.k_pll * self.structure.period
 
     def wl_norm(self):
-        return float(self.light.Lambda) / self.structure.period
+        return float(self.light.wl_nm) / self.structure.period
 
     def air_ref(self):
         """ Return an :Anallo: for air for the same :Light: as this."""
@@ -42,17 +42,8 @@ class Anallo(Modes):
 
         kzs = self.calc_kz()
 
-        self.beta = np.append(kzs, kzs) # add 2nd polarisation
+        self.k_z = np.append(kzs, kzs) # add 2nd polarisation
         self.structure.num_pw_per_pol = len(kzs)
-
-        # FIXME: Yes, this is ludicrous, but historically 2 refers
-        # to the layer we're in; 1 is ref_an!!
-        # calc_scat demands that R12 is from air to the thin-film
-        #self.R12, self.T12, self.R21, self.T21 = \
-        #    r_t_mat_anallo(self.air_ref(), self)
-        # SHOULD BE:
-        #    r_t_mat_anallo(self, self.air_ref())
-
 
     def calc_kz(self):
         """ Return a sorted 1D array of grating orders' kz."""
@@ -101,9 +92,9 @@ class Anallo(Modes):
 
     def n(self):
         if self.structure.loss:
-            return self.structure.material.n(self.light.Lambda)
+            return self.structure.material.n(self.light.wl_nm)
         else:
-            return self.structure.material.n(self.light.Lambda).real
+            return self.structure.material.n(self.light.wl_nm).real
 
     def k(self):
         """ Return the normalised wavenumber in the background material"""
@@ -116,11 +107,11 @@ class Anallo(Modes):
         # Otherwise, use Zcr = \sqrt(epsilon_r / mu_r)
         Zcr = 1./self.n()
 
-        # self.beta repeats itself halfway through
+        # self.k_z repeats itself halfway through
         # First half is for TE pol, second is for TM
-        num_pw2 = len(self.beta) / 2
-        k_z = self.beta[:num_pw2]
-        assert (k_z == self.beta[num_pw2:]).all()
+        num_pw2 = len(self.k_z) / 2
+        k_z = self.k_z[:num_pw2]
+        assert (k_z == self.k_z[num_pw2:]).all()
 
         # Calculate the (relative) wave impedances Z
         # TE (E in interface plane): Z = Zcr * k/k_z
@@ -148,7 +139,7 @@ class Simmo(Modes):
     def run(self, num_BM):
         """ Run the FEM in Fortran"""
         struc = self.structure
-        wl = self.light.Lambda
+        wl = self.light.wl_nm
         n_effs = np.array([struc.superstrate.n(wl), struc.substrate.n(wl), 
             struc.background.n(wl), struc.inclusion_a.n(wl), 
             struc.inclusion_b.n(wl)])
@@ -172,8 +163,8 @@ class Simmo(Modes):
 
         # Avoid hitting Wood anomalies
         d = self.structure.period
-        norm_wl = self.light.Lambda / d
-        if self.light.Lambda % d == 0:
+        norm_wl = self.light.wl_nm / d
+        if self.light.wl_nm % d == 0:
             norm_wl += 1e-15
 
         # Prepare for the mesh
@@ -202,11 +193,9 @@ class Simmo(Modes):
             num_pw_per_pol, cmplx_max
         )
 
-        (   self.prop_consts, self.sol1, self.sol2, self.mode_pol, 
+        (   self.k_z, self.sol1, self.sol2, self.mode_pol, 
             type_el, table_nod, x_arr, pp, qq
             ) = resm
-
-        self.beta = self.prop_consts
 
         ress = pcpv.calc_scat(
             norm_wl, 
@@ -223,9 +212,6 @@ class Simmo(Modes):
         self.J, self.J_dag, T12, R12, T21, R21 = [
                         np.mat(x) for x in ress]
 
-        # TODO: the following should be calculated later?
-        #self.R12, self.T12, self.R21, self.T21 = r_t_mat_tf_ns(self.air_ref(), self)
-
 
 def r_t_mat_anallo(an1, an2):
     """ Returns R12, T12, R21, T21 at an interface between thin films.
@@ -235,7 +221,7 @@ def r_t_mat_anallo(an1, an2):
         The sign of elements in T12 and T21 is fixed to be positive,
         in the eyes of `numpy.sign`
     """
-    if len(an1.beta) != len(an2.beta):
+    if len(an1.k_z) != len(an2.k_z):
         raise ValueError, "Need the same number of plane waves in \
         Anallos %(an1)s and %(an2)s" % {'an1' : an1, 'an2' : an2}
 

@@ -1,6 +1,8 @@
 import numpy as np
 from numpy.testing import assert_allclose as assert_ac
 
+from objects import Simmo
+
 
 def save_reference_data(casefile_name, stack_list):
     ref_stack_list = []
@@ -12,11 +14,14 @@ def save_reference_data(casefile_name, stack_list):
             rlay['T12']  = lay.T12
             rlay['R21']  = lay.R21
             rlay['T21']  = lay.T21
-            rlay['beta'] = lay.beta
+            rlay['k_z']  = lay.k_z
+            if isinstance(rlay, Simmo):
+                rlay['sol1'] = lay.sol1
             rstack['layers'].append(rlay)
-        #TODO: rstack['R_net'] = stack.R_net
+        rstack['R_net'] = stack.R_net
+        rstack['T_net'] = stack.T_net
         ref_stack_list.append(rstack)
     np.savez_compressed("ref/%s.npz" % casefile_name, 
         stack_list = ref_stack_list)
-    raise ValueError, "Reference results saved successfully, \
-    but tests will now pass trivially so let's not run them now."
+    assert False, "Reference results saved successfully, \
+but tests will now pass trivially so let's not run them now."
