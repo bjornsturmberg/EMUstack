@@ -1,7 +1,7 @@
 C
       subroutine pw_ordering (neq_PW, lat_vecs,
      *  bloch_vec, index_pw_inv,
-     *  Zeroth_Order, Zeroth_Order_inv, debug, ordre_ls, k_0)
+     *  debug, ordre_ls, k_0)
 C 
       implicit none 
 C  input output parameters
@@ -59,8 +59,6 @@ C       Inverse of index_pw
         s2 = index_pw(s)
         index_pw_inv(s2) = s
       enddo
-C
-      Zeroth_Order_inv = index_pw_inv(Zeroth_Order)
 C
       if (debug .eq. 1) then
         do s=1,neq_PW

@@ -20,21 +20,36 @@ class Modes(object):
         return self.light.k_pll * self.structure.period
 
     def wl_norm(self):
-        return float(self.light.wl_nm) / self.structure.period
+        wl = float(self.light.wl_nm) / self.structure.period
+        if self.light.wl_nm % self.structure.period == 0:
+            wl += 1e-15
+        return wl
 
     def air_ref(self):
         """ Return an :Anallo: for air for the same :Light: as this."""
         return self.light._air_ref(self.structure.period, self.other_para)
 
+    def calc_grating_orders(self, max_order):
+        """ Return the grating order indices px and py, unsorted."""
+        # Create arrays of grating order indexes (-p, ..., p)
+        pxs = pys = np.arange(-max_order, max_order + 1)
+        # The inner loop in the fortran is over y, not x
+        # So we call meshgrid with y first
+        pys_mesh, pxs_mesh = np.meshgrid(pys, pxs)
+        # Which elements of pys_mesh and pxs_mesh correspond to
+        # orders low enough that we're interested in?
+        low_ord = (pxs_mesh**2 + pys_mesh**2 <= max_order**2)
+
+        return pxs_mesh[low_ord], pys_mesh[low_ord]
+
 
 class Anallo(Modes):
     """ Like a :Simmo:, but for a thin film, and calculated analytically."""
     def __init__(self, thin_film, light, other_para):
-        self.structure = thin_film
-        self.light = light
+        self.structure  = thin_film
+        self.light      = light
         self.other_para = other_para
-        self.mode_pol       = None
-        self.ordre_ls = other_para.max_order_PWs
+        self.max_order_PWs   = other_para.max_order_PWs
         self.is_air_ref = False
 
     def calc_modes(self):
@@ -48,15 +63,10 @@ class Anallo(Modes):
     def calc_kz(self):
         """ Return a sorted 1D array of grating orders' kz."""
         d = 1 #TODO: are lx, ly relevant here??
-        ordre_ls = self.ordre_ls
-        # Create arrays of grating order indexes p
-        pxs = pys = np.arange(-ordre_ls, ordre_ls+1)
-        # The inner loop in the fortran is over y, not x
-        # So we call meshgrid with y first
-        pys_mesh, pxs_mesh = np.meshgrid(pys, pxs)
-        # Which elements of pys_mesh and pxs_mesh correspond to
-        # orders low enough that we're interested in?
-        low_ord = (pxs_mesh**2 + pys_mesh**2 <= ordre_ls**2)
+
+        # Calculate vectors of pxs and pys of all orders
+        # with px^2 + py^2 <= self.max_order_PWs
+        pxs, pys = self.calc_grating_orders(self.max_order_PWs)
 
         # Calculate k_x and k_y components of scattered PWs
         # (using the grating equation)
@@ -64,31 +74,28 @@ class Anallo(Modes):
         alphas = alpha0 + pxs * 2 * pi / d
         betas  = beta0 + pys * 2 * pi / d
 
-        # Calculate all wave vector components k_z
-        alpha2_mesh, beta2_mesh = np.meshgrid(alphas**2, betas**2)
-        k_zs_unsrt = sqrt((self.k()**2 - alpha2_mesh - beta2_mesh)[low_ord])
-        
+        k_z_unsrt = sqrt(self.k()**2 - alphas**2 - betas**2)
+
         if self.is_air_ref:
             assert not hasattr(self, 'sort_order'), \
                 "Are you sure you want to reset the sort_order?"
             # Sort the modes from propagating to fastest decaying
             # k_z is real for propagating waves
-            # This is consistent with FEM because TODO: we use it there too
-            s = np.argsort(-1*k_zs_unsrt.real + k_zs_unsrt.imag)
+            # This must be done consistently
+            s = np.argsort(-1*k_z_unsrt.real + k_z_unsrt.imag)
             self.sort_order = s
         else:
             s = self.air_ref().sort_order
-            assert s.shape == k_zs_unsrt.shape, (s.shape, 
-                k_zs_unsrt.shape)
+            assert s.shape == k_z_unsrt.shape, (s.shape, 
+                k_z_unsrt.shape)
 
-        # Find element of k_zs_unsrt corresponding to zeroth order
-        pxm, pym = pxs_mesh[low_ord][s], pys_mesh[low_ord][s]
-        self.specular_order = np.nonzero((pxm == 0) * (pym == 0))[0][0]
+        # Find element of k_z_unsrt corresponding to zeroth order
+        self.specular_order = np.nonzero((pxs[s] == 0) * (pys[s] == 0))[0][0]
 
         # Calculate number of propagating plane waves in thin film
-        self.num_prop_pw_per_pol = (k_zs_unsrt.imag == 0).sum()
+        self.num_prop_pw_per_pol = (k_z_unsrt.imag == 0).sum()
 
-        return k_zs_unsrt[s]
+        return k_z_unsrt[s]
 
     def n(self):
         if self.structure.loss:
@@ -131,52 +138,40 @@ class Simmo(Modes):
         self.max_order_PWs  = other_para.max_order_PWs
         self.prop_consts    = None
         self.mode_pol       = None
-        self.T12            = None
-        self.R12            = None
-        self.T21            = None
-        self.R21            = None
 
     def run(self, num_BM):
         """ Run the FEM in Fortran"""
-        struc = self.structure
+        st = self.structure
         wl = self.light.wl_nm
-        n_effs = np.array([struc.superstrate.n(wl), struc.substrate.n(wl), 
-            struc.background.n(wl), struc.inclusion_a.n(wl), 
-            struc.inclusion_b.n(wl)])
-        n_effs = n_effs[:struc.nb_typ_el]
+        # 1st and 2nd elements of n_eff are deprecated
+        # and _hopefully_ do nothing now (no guarantees)
+        # previously, 1st element was superstrate index,
+        # 2nd was substrate.
+        n_effs = np.array([1., 1., st.background.n(wl), st.inclusion_a.n(wl), 
+            st.inclusion_b.n(wl)])
+        n_effs = n_effs[:st.nb_typ_el]
 
         if self.structure.loss == False:
             n_effs = n_effs.real
 
+        pxs, pys = self.calc_grating_orders(self.max_order_PWs)
+        num_pw_per_pol = pxs.size
         self.num_BM = num_BM
-        ordre_ls  = self.max_order_PWs
 
-        #TODO: break this stuff off into subfunctions
-        pw_ords_x_1d = np.arange(-ordre_ls, ordre_ls + 1)
-        pw_ords_y_1d = np.arange(-ordre_ls, ordre_ls + 1)
-        # Y is inner loop in fortran
-        pw_ords_y, pw_ords_x = np.meshgrid(pw_ords_y_1d, pw_ords_x_1d)
-        sum_sq_ords = pw_ords_x**2 + pw_ords_y**2
-        num_pw_per_pol = (sum_sq_ords <= ordre_ls**2).sum()
-        # Fortran counter starts at 1
-        zeroth_order = sum_sq_ords.reshape(-1).argmin() + 1
-
-        # Avoid hitting Wood anomalies
         d = self.structure.period
-        norm_wl = self.light.wl_nm / d
-        if self.light.wl_nm % d == 0:
-            norm_wl += 1e-15
 
         # Prepare for the mesh
         with open("../PCPV/Data/"+self.structure.mesh_file) as f:
             n_msh_pts, n_msh_el = [int(i) for i in f.readline().split()]
 
-        # Size of Fortran's complex superarray
+        # Size of Fortran's complex superarray (scales with mesh)
+        # In theory could do some python-based preprocessing
+        # on the mesh file to work out RAM requirements
         cmplx_max = 2**25
 
         resm = pcpv.calc_modes(
-            norm_wl, self.num_BM, 
-            ordre_ls, d, self.other_para.debug, 
+            self.wl_norm(), self.num_BM, self.max_order_PWs, 
+            self.structure.period, self.other_para.debug, 
             self.structure.mesh_file, self.structure.mesh_format, 
             n_msh_pts, n_msh_el,
             n_effs, self.k_pll_norm(), 
@@ -190,7 +185,7 @@ class Simmo(Modes):
             self.other_para.plot_real, self.other_para.plot_imag, 
             self.other_para.plot_abs, 
             self.structure.loss,
-            num_pw_per_pol, zeroth_order, cmplx_max
+            num_pw_per_pol, cmplx_max
         )
 
         self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol = resm

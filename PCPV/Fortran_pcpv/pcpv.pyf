@@ -3,7 +3,7 @@
 
 python module pcpv ! in 
     interface  ! in :pcpv
-        subroutine calc_modes(lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,npt,nel,n_eff,bloch_vec,lx,ly,tol,e_h_field,i_cond,itermax,propmodes,printsolution,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,loss,neq_pw,zeroth_order,cmplx_max,nb_typ_el,beta1,overlap_j,overlap_j_dagger,sol1,sol2,mode_pol) ! in :pcpv:py_calc_modes.f
+        subroutine calc_modes(lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,npt,nel,n_eff,bloch_vec,lx,ly,tol,e_h_field,i_cond,itermax,propmodes,printsolution,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,loss,neq_pw,cmplx_max,nb_typ_el,beta1,overlap_j,overlap_j_dagger,sol1,sol2,mode_pol) ! in :pcpv:py_calc_modes.f
             double precision :: lambda
             integer*8 :: nval
             integer*8 :: ordre_ls
@@ -32,7 +32,6 @@ python module pcpv ! in
             integer*8 :: plot_abs
             integer*8 :: loss
             integer*8 :: neq_pw
-            integer*8 :: zeroth_order
             integer*8 :: cmplx_max
             integer*8, optional,check(len(n_eff)>=nb_typ_el),depend(n_eff) :: nb_typ_el=len(n_eff)
             complex*16, target,dimension(nval),intent(out),depend(nval) :: beta1

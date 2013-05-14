@@ -6,7 +6,7 @@ c     Explicit inputs
      *    E_H_field, i_cond, itermax, PropModes,
      *    PrintSolution, PrintOmega, PrintAll,
      *    Checks, q_average, plot_real, plot_imag, plot_abs,
-     *    Loss, neq_PW, Zeroth_Order, cmplx_max, 
+     *    Loss, neq_PW, cmplx_max, 
 c     "Optional" inputs (Python guesses these)
      *    nb_typ_el,
 c     Outputs
@@ -51,7 +51,7 @@ C      integer*8 jp_matD2, jp_matL2, jp_matU2
 C  Plane wave parameters
       integer*8 neq_PW, nx_PW, ny_PW, ordre_ls
       integer*8 index_pw_inv(neq_PW)
-      integer*8 Zeroth_Order, Zeroth_Order_inv, nb_typ_el
+      integer*8 nb_typ_el
       complex*16 pp(nb_typ_el), qq(nb_typ_el)
       complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el), test
 c     i_cond = 0 => Dirichlet boundary condition
@@ -511,22 +511,22 @@ C  Index number of the core materials (material with highest Re(eps_eff))
       endif
 C
 C
-         if(E_H_field .eq. 1) then
-           do i=1,nb_typ_el
-             qq(i) = eps_eff(i)*k_0**2
-             pp(i) = 1.0d0
-           enddo
-         elseif(E_H_field .eq. 2) then
-           do i=1,nb_typ_el
-             qq(i) = k_0**2
-             pp(i) = 1.0d0/eps_eff(i)
-           enddo
-         else
-           write(ui,*) "MAIN: action indef. avec E_H_field = ", 
+      if(E_H_field .eq. 1) then
+        do i=1,nb_typ_el
+          qq(i) = eps_eff(i)*k_0**2
+          pp(i) = 1.0d0
+        enddo
+      elseif(E_H_field .eq. 2) then
+        do i=1,nb_typ_el
+          qq(i) = k_0**2
+          pp(i) = 1.0d0/eps_eff(i)
+        enddo
+      else
+        write(ui,*) "MAIN: action indef. avec E_H_field = ", 
      *                  E_H_field
-           write(ui,*) "Aborting..."
-           stop
-         endif
+        write(ui,*) "Aborting..."
+        stop
+      endif
 C
 CCCCCCCCCCCCCCCCCCCC  Loop over Adjoint and Prime  CCCCCCCCCCCCCCCCCCCCCC
 C
@@ -748,8 +748,7 @@ C  Orthonormal integral
 
 C  Plane wave ordering
       call pw_ordering (neq_PW, lat_vecs, bloch_vec, 
-     *  index_pw_inv, Zeroth_Order, Zeroth_Order_inv, 
-     *  debug, ordre_ls, k_0)
+     *  index_pw_inv, debug, ordre_ls, k_0)
 C  J_overlap
       if (debug .eq. 1) then
         write(ui,*) "MAIN: J_overlap Integral"

@@ -53,8 +53,6 @@ class NanoStruct(object):
         self.inclusion_a = inclusion_a
         self.inclusion_b = inclusion_b
         self.background  = background
-        self.superstrate = materials.Air #FIXME: remove this
-        self.substrate   = materials.Air #FIXME: remove this
         self.loss        = loss
         self.lx          = lx
         self.ly          = ly
