@@ -137,7 +137,7 @@ def tra_plot(spectra_name, spec_list, layer, light, max_num_BMs, max_order_PWs, 
     'period'        : layer.period, 'radius' : layer.radius1,}
     tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, '% {
     'ff'            : layer.ff, 
-    'h_one'         : layer.height_1, }
+    'h_one'         : layer.height_nm, }
     tmp2 = r'$k_\parallel d$ = '
     k_pll = light.k_pll * layer.period
     tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}
@@ -186,7 +186,7 @@ def overlay_plot(spectra_name, spec_list, layer, light, max_num_BMs, max_order_P
     'period'        : layer.period, 'radius' : layer.radius1,}
     tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, '% {
     'ff'            : layer.ff, 
-    'h_one'         : layer.height_1, }
+    'h_one'         : layer.height_nm, }
     tmp2 = r'$k_\parallel d$ = '
     k_pll = light.k_pll * layer.period
     tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}
@@ -259,7 +259,7 @@ def height_plot(name_out, name_in, layer, light, max_num_BMs, max_order_PWs, Eff
     'period'        : layer.period, 'radius' : layer.radius1,}
     tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, '% {
     'ff'            : layer.ff, 
-    'h_one'         : layer.height_1, }
+    'h_one'         : layer.height_nm, }
     tmp2 = r'$k_\parallel d$ = '
     k_pll = light.k_pll * layer.period
     tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}
@@ -383,7 +383,7 @@ def omega_plot(complete_st, layer, light, max_num_BMs, max_order_PWs, Efficiency
     'period'        : layer.period, 'radius' : layer.radius1,}
     tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d,  '% {
     'ff'            : layer.ff, 
-    'h_one'         : layer.height_1, }
+    'h_one'         : layer.height_nm, }
     tmp2 = r'$k_\parallel d$ = '
     k_pll = light.k_pll * layer.period
     tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}

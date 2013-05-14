@@ -640,8 +640,6 @@ C  Dispersion Diagram
         call mode_energy (nval, nel, npt, n_ddl, nnodes, 
      *     n_core, table_nod, type_el, nb_typ_el, eps_eff, 
      *     x_arr, sol, beta, mode_pol)
-C        call DispersionDiagram(lambda, bloch_vec_k, shift,
-C     *     nval, n_conv, beta, mode_pol, d_in_nm)
       endif
 C
       enddo

@@ -16,7 +16,7 @@ class NanoStruct(object):
         radius9=0, radius10=0, radius11=0, radius12=0, radius13=0,
         radius14=0, radius15=0, radius16=0, ellipticity = 0.0, 
         square = False, mesh_file = 'NEED_FILE.mail', ff=0, 
-        set_ff = False, ff_rand = False, height_1 = 2330, 
+        set_ff = False, ff_rand = False, height_nm = 2330, 
         inclusion_a = materials.Si_c, 
         inclusion_b = materials.Air, background = materials.Air,
         loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 5, 
@@ -49,7 +49,7 @@ class NanoStruct(object):
         elif geometry == '1D_grating':
             self.ff      = (radius1 + radius2)/period
         self.ff_rand     = ff_rand
-        self.height_1    = height_1 # FIXME: remove this
+        self.height_nm    = height_nm # FIXME: remove this
         self.inclusion_a = inclusion_a
         self.inclusion_b = inclusion_b
         self.background  = background
@@ -321,10 +321,10 @@ class NanoStruct(object):
 
 class ThinFilm(object):
     """ Represents homogeneous film """
-    def __init__(self, period, height_1 = 2330, material = materials.Si_c, 
+    def __init__(self, period, height_nm = 2330, material = materials.Si_c, 
         num_pw_per_pol = 0, loss = True):
         self.period         = period
-        self.height_1       = height_1
+        self.height_nm       = height_nm
         self.material       = material
         self.num_pw_per_pol = num_pw_per_pol
         self.loss           = loss

@@ -12,7 +12,6 @@ python_log.txt
 import time
 import datetime
 import numpy as np
-import subprocess
 import sys
 from multiprocessing import Pool
 # import multiprocessing   as mp
@@ -57,20 +56,20 @@ light_list  = [objects.Light(wl) for wl in wavelengths]
 # period must be consistent throughout simulation!!!
 period = 120
 
-cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
+cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Material(3.5 + 0.0j), loss = True)
 
-homo_film  = objects.ThinFilm(period = period, height_1 = 5,
+homo_film  = objects.ThinFilm(period = period, height_nm = 5,
     material = materials.Material(3.6 + 0.27j), loss = True)
 
-bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
+bottom = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
-grating_1 = objects.NanoStruct('1D_grating', period, 100, height_1 = 25, 
+grating_1 = objects.NanoStruct('1D_grating', period, 100, height_nm = 25, 
     inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 4.0)
 
-mirror = objects.ThinFilm(period = period, height_1 = 100,
+mirror = objects.ThinFilm(period = period, height_nm = 100,
     material = materials.Ag, loss = True)
 
 
@@ -82,7 +81,6 @@ max_num_BMs = 120
 
 def simulate_stack(light):
     num_BM = round(max_num_BMs * grating_1.inclusion_a.n(light.wl_nm).real/max_n)
-
     
     ################ Evaluate each layer individually ##############
     sim_cover = cover.calc_modes(light, simo_para)
@@ -109,13 +107,9 @@ def setup_module(module):
     module.stack_list = pool.map(simulate_stack, light_list)
     # # Run one at a time
     # stack_list = map(simulate_stack, light_list)
-
-    # stack_list = [simulate_stack(light) for light in light_list]
-
         
 
     t_r_a_plots(stack_list)
-
 
     # solar_cell = [bottom, mirror, grating_1, homo_film, cover]
     # specify which layer is the active one (where absorption generates charge carriers)

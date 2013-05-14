@@ -12,7 +12,6 @@ python_log.txt
 import time
 import datetime
 import numpy as np
-import subprocess
 import sys
 # import multiprocessing   as mp
 sys.path.append("../PCPV/")
@@ -20,7 +19,6 @@ sys.path.append("../PCPV/")
 import clear_previous
 import objects
 import materials
-import cat_n_clean
 import plotting
 from stack import *
 import testing
@@ -60,14 +58,14 @@ structure which is defined later
 # period must be consistent throughout simulation!!!
 period  = 600
 
-cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
+cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 sim_cover = cover.calc_modes(light, simo_para)
 
 radius1 = 60
 num_BM = 30
 grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
-    set_ff = False, height_1 = 1000,
+    set_ff = False, height_nm = 1000,
     inclusion_a = materials.Si_c, background = materials.Air,
     loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True,
@@ -75,7 +73,7 @@ grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
 sim_grat1 = grating_1.calc_modes(light, simo_para, num_BM = num_BM)
 
 # will only ever use top scattering matrices for the bottom layer
-bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
+bottom = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.SiO2_a, loss = False)
 sim_bot = bottom.calc_modes(light, simo_para)
 

@@ -13,22 +13,25 @@ class Stack(object):
           - `layers` : a tuple of :ThinFilm:s and :NanoStruct:s 
             ordered from top to bottom layer.
 
-          - `heights` : a tuple of the heights of the inside layers,
+          - `heights_nm` : a tuple of the heights of the inside layers,
             i.e., all layers except for the top and bottom. This 
             overrides any heights specified in the :ThinFilm: or
             :NanoStruct: objects.
 
     """
-    def __init__(self, layers, heights = None):
+    def __init__(self, layers, heights_nm = None):
         self.layers = tuple(layers)
-        self.heights = heights
+        self._heights_nm = heights_nm
         self._interfaces_i_have_known = {}
 
-    def heights(self):
-        if None != self.heights:
-            return self.heights
+    def heights_nm(self):
+        if None != self._heights_nm:
+            return self._heights_nm
         else:
-            return [lay.structure.height for lay in self.layers[1:-1]]
+            return [lay.structure.height_nm for lay in self.layers[1:-1]]
+
+    def total_height(self):
+        return sum(self.heights())
 
     def structures(self):
         return (lay.structure for lay in self.layers)
@@ -91,7 +94,8 @@ class Stack(object):
             tnet_list.append(tnet)
             rnet_list.append(rnet)
     # through TF layer
-            P = np.mat(np.diag(np.exp(1j*lay.k_z * lay.structure.height_1/lay.structure.period)))
+            z_nm = self.heights_nm()[i-1]
+            P = np.mat(np.diag(np.exp(1j*lay.k_z * z_nm/lay.structure.period)))
             I_TF           = np.matrix(np.eye(len(P)),dtype='D')
             to_invert      = (I_TF - r21_list[i]*P*rnet*P)
             inverted_t12   = np.linalg.solve(to_invert,t12_list[i])
@@ -258,9 +262,6 @@ class Stack(object):
             #     plt.matshow(im,cmap=plt.cm.gray)
             #     plt.savefig('0testmat%i' % i)
 
-    def total_height(self):
-        return sum([l.structure.height_1 for l in self.layers[1:-1]])
-
 
     def r_t_mat(self, lay1, lay2):
         """ Return R12, T12, R21, T21 at an interface between lay1
@@ -367,7 +368,7 @@ def t_r_a_plots(stack_list):
         t_list.extend(stack.t_list)
         r_list.extend(stack.r_list)
 
-    total_h = stack_list[0].total_height()
+    total_h = sum(stack_list[0].heights_nm())
     layers_plot('Lay_Absorb', a_list, wavelengths, total_h)
     layers_plot('Lay_Trans',  t_list, wavelengths, total_h)
     layers_plot('Lay_Reflec', r_list, wavelengths, total_h)

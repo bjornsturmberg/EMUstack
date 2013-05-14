@@ -191,26 +191,3 @@ class Simmo(Modes):
         self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol = resm
 
         self.J, self.J_dag = np.mat(J), np.mat(J_dag)
-
-def simulate_and_stack_and_calc(light, layers, pol, options = None):
-    """ Simulate each layer, create a stack and run calc_scat.
-
-        INPUTS:
-
-        - `light`   : :Light: object for the stack.
-
-        - `layers`  : A list of the stack's layer objects 
-                        (:ThinFilm: or :NanoStruct:), ordered from
-                        bottom to top.
-
-        - `pol`     : Polarisation, to pass to :Stack.calc_scat:
-
-        - `options` : A list of dictionaries of options to hand to
-                        :Layer.calc_modes:, e.g.:
-                        `[{}, {num_BM = 30}, {}]`
-    """
-    if None == options:
-        slayers = [lay.calc_modes(light, simo_para) for lay in layers]
-    else:
-        slayers = [lay.calc_modes(light, simo_para, **opt) 
-                        for lay, opt in zip(layers, options)]
