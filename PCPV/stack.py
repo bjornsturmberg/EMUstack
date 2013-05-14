@@ -28,7 +28,7 @@ class Stack(object):
         if None != self.heights:
             return self.heights
         else:
-            return (lay.structure.height for lay in self.layers[1:-1])
+            return [lay.structure.height for lay in self.layers[1:-1]]
 
     def structures(self):
         return (lay.structure for lay in self.layers)

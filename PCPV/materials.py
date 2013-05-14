@@ -23,7 +23,7 @@ class Material(object):
             # n is a scalar, the medium is non-dispersive.
             self._n = lambda x: n
             self.data_wls = None
-            self.data_ns = None
+            self.data_ns = n
         else:
             self.data_wls = n[:,0]
             if len(n[0]) == 2:
@@ -79,6 +79,20 @@ class Material(object):
         # print repr(self.interp_data)
         self.stored_ns.update(dict(zip(wavelengths, self.interp_data)))
         # print self.stored_ns
+
+    def __getstate__(self):
+        """ Can't pickle self._n, so remove it from what is pickled."""
+        d = self.__dict__.copy()
+        d.pop('_n')
+        return d
+
+    def __setstate__(self, d):
+        """ Recreate self._n when unpickling."""
+        self.__dict__ = d
+        if None == self.data_wls:
+            self._n = lambda x: self.data_ns
+        else:
+            self._n = interp1d(self.data_wls, self.data_ns)
 
 
 Air    = Material(np.loadtxt('%sAir.txt'% data_location))

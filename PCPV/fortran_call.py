@@ -192,63 +192,25 @@ class Simmo(Modes):
 
         self.J, self.J_dag = np.mat(J), np.mat(J_dag)
 
+def simulate_and_stack_and_calc(light, layers, pol, options = None):
+    """ Simulate each layer, create a stack and run calc_scat.
 
-def r_t_mat_anallo(an1, an2):
-    """ Returns R12, T12, R21, T21 at an interface between thin films.
+        INPUTS:
 
-        R12 is the reflection matrix from Anallo 1 off Anallo 2
+        - `light`   : :Light: object for the stack.
 
-        The sign of elements in T12 and T21 is fixed to be positive,
-        in the eyes of `numpy.sign`
+        - `layers`  : A list of the stack's layer objects 
+                        (:ThinFilm: or :NanoStruct:), ordered from
+                        bottom to top.
+
+        - `pol`     : Polarisation, to pass to :Stack.calc_scat:
+
+        - `options` : A list of dictionaries of options to hand to
+                        :Layer.calc_modes:, e.g.:
+                        `[{}, {num_BM = 30}, {}]`
     """
-    if len(an1.k_z) != len(an2.k_z):
-        raise ValueError, "Need the same number of plane waves in \
-        Anallos %(an1)s and %(an2)s" % {'an1' : an1, 'an2' : an2}
-
-    Z1 = an1.Z()
-    Z2 = an2.Z()
-
-    R12 = np.mat(np.diag((Z2 - Z1)/(Z2 + Z1)))
-    # N.B. there is potentially a branch choice problem here, stemming
-    # from the normalisation to unit flux.
-    # We normalise each field amplitude by
-    # $chi^{\pm 1/2} = sqrt(k_z/k)^{\pm 1} = sqrt(Z/Zc)^{\pm 1}$
-    # The choice of branch in those square roots must be the same as the
-    # choice in the related square roots that we are about to take:
-    T12 = np.mat(np.diag(2.*sqrt(Z2)*sqrt(Z1)/(Z2+Z1)))
-    R21 = -R12
-    T21 = T12
-
-    return R12, T12, R21, T21
-
-def r_t_mat_tf_ns(an1, sim2):
-    """ Returns R12, T12, R21, T21 at an1-sim2 interface.
-
-        Based on:
-        Dossou et al., JOSA A, Vol. 29, Issue 5, pp. 817-831 (2012)
-        http://dx.doi.org/10.1364/JOSAA.29.000817
-
-        But we use Zw = 1/(Zcr X) instead of X, so that an1 does not 
-        have to be free space.
-    """
-    Z1_sqrt_inv = sqrt(1/an1.Z()).reshape((1,-1))
-
-    # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
-    # Same difference.
-    A = np.mat(Z1_sqrt_inv.T * sim2.J.A)
-    B = np.mat(sim2.J_dag.A * Z1_sqrt_inv)
-
-    denominator = np.eye(len(B)) + B.dot(A)
-
-    # R12 = -I + 2 A (I + BA)^-1 B
-    # T12 = 2 (I + BA)^-1 B
-    den_inv_times_B = np.linalg.solve(denominator, B)
-    R12 = -np.eye(len(A)) + 2 * A * den_inv_times_B
-    T12 = 2 * den_inv_times_B
-
-    # R21 = (I - BA)(I + BA)^-1
-    # T21 = 2 A (I + BA)^-1
-    R21 = (np.eye(len(B)) - B*A) * denominator.I
-    T21 = 2 * A * denominator.I
-
-    return np.mat(R12), np.mat(T12), np.mat(R21), np.mat(T21)
+    if None == options:
+        slayers = [lay.calc_modes(light, simo_para) for lay in layers]
+    else:
+        slayers = [lay.calc_modes(light, simo_para, **opt) 
+                        for lay, opt in zip(layers, options)]

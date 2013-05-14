@@ -14,6 +14,7 @@ import datetime
 import numpy as np
 import subprocess
 import sys
+from multiprocessing import Pool
 # import multiprocessing   as mp
 sys.path.append("../PCPV/")
 
@@ -26,8 +27,11 @@ from numpy.testing import assert_allclose as assert_ac
 from numpy.testing import assert_equal
 import testing
 
-start = time.time()
-label_nu = 0
+
+# The following should be in the function "setup_module()",
+# but unfortunately simulate_stack is defined in a lazy-but-easy
+# way: the structures are inherited rather than passed in.
+
 ################ Simulation parameters ################
 
 simo_para  = objects.Controls(debug = 0,max_order_PWs = 5, num_cores = 7,
@@ -76,98 +80,104 @@ stack_list = []
 max_n = max([grating_1.inclusion_a.n(wl).real for wl in wavelengths])
 max_num_BMs = 120
 
-for light in light_list:
-
+def simulate_stack(light):
     num_BM = round(max_num_BMs * grating_1.inclusion_a.n(light.wl_nm).real/max_n)
 
-    ################ Scattering matrices (for distinct layers) ##############
-    """ Calculate scattering matrices for each distinct layer.
-    Calculated in the order listed below, however this does not influence final 
-    structure which is defined later
-    """
-
-
+    
+    ################ Evaluate each layer individually ##############
     sim_cover = cover.calc_modes(light, simo_para)
     sim_homo_film = homo_film.calc_modes(light, simo_para)
     sim_bot = bottom.calc_modes(light, simo_para)
     sim_grat1 = grating_1.calc_modes(light, simo_para, num_BM = num_BM)
     sim_mirror = mirror.calc_modes(light, simo_para)
 
-
-    ################ Construct & solve for full solar cell structure ##############
+    ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
     solar_cell list MUST be ordered from bottom to top!
     """
     stack = Stack((sim_bot, sim_mirror, sim_grat1, sim_homo_film, sim_cover))
     stack.calc_scat(pol = 'TE')
-    stack_list.append(stack)
 
-t_r_a_plots(stack_list)
+    return stack
 
+def setup_module(module):
+    start = time.time()
 
-# solar_cell = [bottom, mirror, grating_1, homo_film, cover]
-# specify which layer is the active one (where absorption generates charge carriers)
-active_layer = homo_film
-act_lay_nu   = 0
-# specify which layer for which the parameters should be printed on figures
-lay_print_params = grating_1
+    # Run in parallel across wavelengths.
+    # This has to be in a setup_module otherwise nosetests will crash :(
+    pool = Pool(2)
+    module.stack_list = pool.map(simulate_stack, light_list)
+    # # Run one at a time
+    # stack_list = map(simulate_stack, light_list)
 
+    # stack_list = [simulate_stack(light) for light in light_list]
 
-# net_scat_mats(solar_cell, wavelengths, simo_para)
+        
 
-################# Efficiency & weighted spectra for active layer ################
-plotting.average_spec('Lay_Absorb_%d' % act_lay_nu, 'Av_Absorb',  
-    len(wavelengths), 1)
-plotting.average_spec('Lay_Trans_%d'  % act_lay_nu, 'Av_Trans',   
-    len(wavelengths), 1)
-plotting.average_spec('Reflectance', 'Av_Reflec',  
-    len(wavelengths), 1)
-# Interpolate solar spectrum and calculate efficiency
-Efficiency = plotting.irradiance('Av_Absorb', 'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans',
- 'Av_Reflec', 'Weighted_Reflec', lay_print_params.radius1, period, ff = lay_print_params.ff)
-# Plot averaged sprectra
-last_light_object = light_list.pop()
-spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
-plotting.tra_plot('Spectra', spec_list, lay_print_params, last_light_object,
-    max_num_BMs, simo_para.max_order_PWs, Efficiency)
-# Plot weighted averaged sprectra
-spec_list = ['Weighted_Absorb', 'Weighted_Trans', 'Weighted_Reflec']
-plotting.tra_plot('Spectra_weighted', spec_list, lay_print_params, last_light_object, 
-    max_num_BMs, simo_para.max_order_PWs, Efficiency)
-# # Plot dispersion diagrams for each layer
-# plotting.omega_plot(solar_cell, lay_print_params, last_light_object, 
-#     max_num_BMs, simo_para.max_order_PWs, Efficiency)
+    t_r_a_plots(stack_list)
 
 
+    # solar_cell = [bottom, mirror, grating_1, homo_film, cover]
+    # specify which layer is the active one (where absorption generates charge carriers)
+    active_layer = homo_film
+    act_lay_nu   = 0
+    # specify which layer for which the parameters should be printed on figures
+    lay_print_params = grating_1
 
 
-# Wrapping up simulation by printing to screen and log file
-print '\n*******************************************'
-print 'The ultimate efficiency is %12.8f' % Efficiency
-print '-------------------------------------------'
+    # net_scat_mats(solar_cell, wavelengths, simo_para)
 
-# Calculate and record the (real) time taken for simulation
-elapsed = (time.time() - start)
-hms     = str(datetime.timedelta(seconds=elapsed))
-hms_string = 'Total time for simulation was \n \
-    %(hms)s (%(elapsed)12.3f seconds)'% {
-            'hms'       : hms,
-            'elapsed'   : elapsed, }
+    ################# Efficiency & weighted spectra for active layer ################
+    plotting.average_spec('Lay_Absorb_%d' % act_lay_nu, 'Av_Absorb',  
+        len(wavelengths), 1)
+    plotting.average_spec('Lay_Trans_%d'  % act_lay_nu, 'Av_Trans',   
+        len(wavelengths), 1)
+    plotting.average_spec('Reflectance', 'Av_Reflec',  
+        len(wavelengths), 1)
+    # Interpolate solar spectrum and calculate efficiency
+    Efficiency = plotting.irradiance('Av_Absorb', 'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans',
+     'Av_Reflec', 'Weighted_Reflec', lay_print_params.radius1, period, ff = lay_print_params.ff)
+    # Plot averaged sprectra
+    last_light_object = light_list.pop()
+    spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
+    plotting.tra_plot('Spectra', spec_list, lay_print_params, last_light_object,
+        max_num_BMs, simo_para.max_order_PWs, Efficiency)
+    # Plot weighted averaged sprectra
+    spec_list = ['Weighted_Absorb', 'Weighted_Trans', 'Weighted_Reflec']
+    plotting.tra_plot('Spectra_weighted', spec_list, lay_print_params, last_light_object, 
+        max_num_BMs, simo_para.max_order_PWs, Efficiency)
+    # # Plot dispersion diagrams for each layer
+    # plotting.omega_plot(solar_cell, lay_print_params, last_light_object, 
+    #     max_num_BMs, simo_para.max_order_PWs, Efficiency)
 
-python_log = open("python_log.log", "w")
-python_log.write(hms_string)
-python_log.close()
 
-print hms_string
-print '*******************************************'
+    # Wrapping up simulation by printing to screen and log file
+    print '\n*******************************************'
+    print 'The ultimate efficiency is %12.8f' % Efficiency
+    print '-------------------------------------------'
+
+    # Calculate and record the (real) time taken for simulation
+    elapsed = (time.time() - start)
+    hms     = str(datetime.timedelta(seconds=elapsed))
+    hms_string = 'Total time for simulation was \n \
+        %(hms)s (%(elapsed)12.3f seconds)'% {
+                'hms'       : hms,
+                'elapsed'   : elapsed, }
+
+    python_log = open("python_log.log", "w")
+    python_log.write(hms_string)
+    python_log.close()
+
+    print hms_string
+    print '*******************************************'
 
 
 
-# # SAVE DATA AS REFERENCE
-# # Only run this after changing what is simulated - this
-# # generates a new set of reference answers to check against
-# # in the future
-# testing.save_reference_data("case_2", stack_list)
+    # # SAVE DATA AS REFERENCE
+    # # Only run this after changing what is simulated - this
+    # # generates a new set of reference answers to check against
+    # # in the future
+    # testing.save_reference_data("case_2", stack_list)
 
 
 
@@ -193,7 +203,7 @@ def test_txt_results():
     for f in result_files:
         yield results_match_reference, f
 
-def test_stack_list_matches_saved(casefile_name = 'case_2', stack_list = stack_list, rtol = 1e-6, atol = 4e-6):
+def test_stack_list_matches_saved(casefile_name = 'case_2', rtol = 1e-6, atol = 4e-6):
     ref = np.load("ref/%s.npz" % casefile_name)
     yield assert_equal, len(stack_list), len(ref['stack_list'])
     for stack, rstack in zip(stack_list, ref['stack_list']):

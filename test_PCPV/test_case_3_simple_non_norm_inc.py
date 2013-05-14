@@ -1,14 +1,3 @@
-"""
-The Ueber python script, the only one that needs to be edited to set up all 
-simulation parameters.
-Uses other python scripts to prime the simulation (interpolate raw data over chosen 
-wavelengths etc.), then calls the fortran routine pcpv.exe for each wavelength giving 
-it all the required details. It does this by spanning a new process for each wavelength,
-keeping the total running instances to a maximum number (num_cores_to_use). Finally all 
-results are collected in text files and the spectra are plotted. A log file is found in
-python_log.txt
-"""
-
 import time
 import datetime
 import numpy as np
@@ -27,75 +16,74 @@ import testing
 from numpy.testing import assert_allclose as assert_ac
 from numpy.testing import assert_equal
 
-start = time.time()
-label_nu = 0
-################ Simulation parameters ################
+def setup_module(module):
+    ################ Simulation parameters ################
 
-simo_para  = objects.Controls(debug = 0, max_order_PWs = 1, num_cores = 1,
-        Checks = 0)
+    simo_para  = objects.Controls(debug = 0, max_order_PWs = 1, num_cores = 1,
+            Checks = 0)
 
-# Remove results of previous simulations
-clear_previous.clean('.txt')
-clear_previous.clean('.pdf')
-clear_previous.clean('.log')
+    # Remove results of previous simulations
+    clear_previous.clean('.txt')
+    clear_previous.clean('.pdf')
+    clear_previous.clean('.log')
 
-################ Light parameters #####################
+    ################ Light parameters #####################
 
-# # Set up light objects
-# wavelengths = [310, 410, 531.2007, 707.495,  881.786, 987.9632]
-# light_list  = [objects.Light(wl) for wl in wavelengths]
-# Single wavelength run
-wl_super =  500.0
-wavelengths = np.array([wl_super])
-light_list  = [objects.Light(wl, theta = 20, phi = 40) for wl in wavelengths]
-light = light_list[0]
-
-
-################ Scattering matrices (for distinct layers) ##############
-""" Calculate scattering matrices for each distinct layer.
-Calculated in the order listed below, however this does not influence final 
-structure which is defined later
-"""
-
-# period must be consistent throughout simulation!!!
-period  = 600
-
-cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
-    material = materials.Air, loss = False)
-sim_cover = cover.calc_modes(light, simo_para)
-
-radius1 = 60
-num_BM = 30
-grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
-    set_ff = False, height_1 = 1000,
-    inclusion_a = materials.Si_c, background = materials.Air,
-    loss = True, nb_typ_el = 4, 
-    make_mesh_now = True, force_mesh = True,
-    lc_bkg = 0.15, lc2= 1.5, lc3= 1.5)
-sim_grat1 = grating_1.calc_modes(light, simo_para, num_BM = num_BM)
-
-# will only ever use top scattering matrices for the bottom layer
-bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
-    material = materials.SiO2_a, loss = False)
-sim_bot = bottom.calc_modes(light, simo_para)
+    # # Set up light objects
+    # wavelengths = [310, 410, 531.2007, 707.495,  881.786, 987.9632]
+    # light_list  = [objects.Light(wl) for wl in wavelengths]
+    # Single wavelength run
+    wl_super =  500.0
+    wavelengths = np.array([wl_super])
+    light_list  = [objects.Light(wl, theta = 20, phi = 40) for wl in wavelengths]
+    light = light_list[0]
 
 
+    ################ Scattering matrices (for distinct layers) ##############
+    """ Calculate scattering matrices for each distinct layer.
+    Calculated in the order listed below, however this does not influence final 
+    structure which is defined later
+    """
 
-################ Construct & solve for full solar cell structure ##############
-""" Now when defining full structure order is critical and
-solar_cell list MUST be ordered from bottom to top!
-"""
-stack = Stack((sim_bot, sim_grat1, sim_cover))
-stack.calc_scat()
-stack_list = [stack]
-t_r_a_plots(stack_list)
+    # period must be consistent throughout simulation!!!
+    period  = 600
+
+    cover  = objects.ThinFilm(period = period, height_1 = 'semi_inf',
+        material = materials.Air, loss = False)
+    sim_cover = cover.calc_modes(light, simo_para)
+
+    radius1 = 60
+    num_BM = 30
+    grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
+        set_ff = False, height_1 = 1000,
+        inclusion_a = materials.Si_c, background = materials.Air,
+        loss = True, nb_typ_el = 4, 
+        make_mesh_now = True, force_mesh = True,
+        lc_bkg = 0.15, lc2= 1.5, lc3= 1.5)
+    sim_grat1 = grating_1.calc_modes(light, simo_para, num_BM = num_BM)
+
+    # will only ever use top scattering matrices for the bottom layer
+    bottom = objects.ThinFilm(period = period, height_1 = 'semi_inf',
+        material = materials.SiO2_a, loss = False)
+    sim_bot = bottom.calc_modes(light, simo_para)
 
 
-# # SAVE DATA AS REFERENCE
-# # Only run this after changing what is simulated - this
-# # generates a new set of reference answers to check against
-# # in the future
-# testing.save_reference_data("case_3", stack_list)
+
+    ################ Construct & solve for full solar cell structure ##############
+    """ Now when defining full structure order is critical and
+    solar_cell list MUST be ordered from bottom to top!
+    """
+    stack = Stack((sim_bot, sim_grat1, sim_cover))
+    stack.calc_scat()
+    module.stack_list = [stack]
+    t_r_a_plots(stack_list)
+
+
+    # # SAVE DATA AS REFERENCE
+    # # Only run this after changing what is simulated - this
+    # # generates a new set of reference answers to check against
+    # # in the future
+    # testing.save_reference_data("case_3", stack_list)
 
 def results_match_reference(filename):
     reference = np.loadtxt("ref/case_3/" + filename)
@@ -112,7 +100,7 @@ def test_txt_results():
     for f in result_files:
         yield results_match_reference, f
 
-def test_stack_list_matches_saved(casefile_name = 'case_3', stack_list = stack_list, rtol = 1e-6, atol = 4e-6):
+def test_stack_list_matches_saved(casefile_name = 'case_3', rtol = 1e-6, atol = 4e-6):
     ref = np.load("ref/%s.npz" % casefile_name)
     yield assert_equal, len(stack_list), len(ref['stack_list'])
     for stack, rstack in zip(stack_list, ref['stack_list']):
