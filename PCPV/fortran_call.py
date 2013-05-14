@@ -1,15 +1,10 @@
-# Description
-
 import numpy as np
-import subprocess
 import sys
-import multiprocessing   as mp
 from scipy import sqrt
 sys.path.append("../PCPV/")
 
 import materials
 import objects
-
 from Fortran_pcpv import pcpv
 
 pi = np.pi
@@ -139,7 +134,7 @@ class Simmo(Modes):
         self.prop_consts    = None
         self.mode_pol       = None
 
-    def run(self, num_BM):
+    def calc_modes(self, num_BM):
         """ Run the FEM in Fortran"""
         st = self.structure
         wl = self.light.wl_nm

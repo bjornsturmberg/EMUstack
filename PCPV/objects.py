@@ -1,9 +1,8 @@
-# doc
 import os
 import numpy as np
 import random
 import materials
-from calculate_ff     import calculate_ff
+from calculate_ff import calculate_ff
 from fortran_call import Simmo, Anallo
 
 data_location = '../PCPV/Data/'
@@ -49,7 +48,7 @@ class NanoStruct(object):
         elif geometry == '1D_grating':
             self.ff      = (radius1 + radius2)/period
         self.ff_rand     = ff_rand
-        self.height_nm    = height_nm # FIXME: remove this
+        self.height_nm    = height_nm
         self.inclusion_a = inclusion_a
         self.inclusion_b = inclusion_b
         self.background  = background
@@ -305,17 +304,11 @@ class NanoStruct(object):
             - `simo_para`: TODO: delete this. Old-school parameters given
                     by a :Controls: instance
 
-            - `args`: A dict of options to pass to :Simmo.run:.
+            - `args`: A dict of options to pass to :Simmo.calc_modes:.
         """
-        #TODO: eliminate simo_para?
-
         simmo = Simmo(self, light, simo_para) 
-        #TODO:
-        # if None == self.mesh:
-        #     self.make_mesh()
-        #     self.process_mesh()
 
-        simmo.run(**args)
+        simmo.calc_modes(**args)
         return simmo
 
 

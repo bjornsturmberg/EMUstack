@@ -52,34 +52,6 @@ class Material(object):
         drude_n = 1 - numer/denom
         return np.sqrt(drude_n)
 
-    def n_spline(self, wavelengths):
-        """ TODO: remove me"""
-        raise NotImplementedError, "This function is defunct"
-        if wavelengths.min() < self.data_wls.min():
-            raise ValueError, "Input wavelength: %(in)f smaller than \
-             data min of %(d)f" % {
-         'in' : wavelengths.min(), 'd' : self.data_wls.min()
-            }
-        if wavelengths.max() > self.data_wls.max():
-            raise ValueError, "Input wavelength: %(in)f larger than \
-             data max of %(d)f" % {
-         'in' : wavelengths.max(), 'd' : self.data_wls.max()
-            }
-        # for i in range(len(self.data_wls)-1):
-        #     if self.data_wls[i] == self.data_wls[i+1]:
-        #         print self.data_wls[i]
-        spline_fit  = UnivariateSpline(self.data_wls, self.data_re_ns, s = 1)
-        interp_re_n = spline_fit(wavelengths)
-        spline_fit  = UnivariateSpline(self.data_wls, self.data_im_ns, s = 1)
-        interp_im_n = spline_fit(wavelengths)
-        self.interp_data = interp_re_n + 1j*interp_im_n
-        # for single wavelength simo turn self.interp_data into array for zipping
-        if isinstance(interp_re_n, float): 
-            self.interp_data = np.array([interp_re_n + 1j*interp_im_n])
-        # print repr(self.interp_data)
-        self.stored_ns.update(dict(zip(wavelengths, self.interp_data)))
-        # print self.stored_ns
-
     def __getstate__(self):
         """ Can't pickle self._n, so remove it from what is pickled."""
         d = self.__dict__.copy()
