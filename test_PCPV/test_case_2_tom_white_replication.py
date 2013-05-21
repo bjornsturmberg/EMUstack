@@ -109,7 +109,7 @@ def setup_module(module):
     # stack_list = map(simulate_stack, light_list)
         
 
-    t_r_a_plots(stack_list)
+    t_r_a_plots(module.stack_list)
 
     # solar_cell = [bottom, mirror, grating_1, homo_film, cover]
     # specify which layer is the active one (where absorption generates charge carriers)
@@ -214,5 +214,5 @@ def test_stack_list_matches_saved(casefile_name = 'case_2', rtol = 1e-6, atol = 
         yield assert_ac, stack.R_net, rstack['R_net'], rtol, atol, lbl_s + 'R_net'
         yield assert_ac, stack.T_net, rstack['T_net'], rtol, atol, lbl_s + 'T_net'
 
-def test_final_absorptance_for_bjorn():
+def test_final_absorptance_last():
     results_match_reference("Absorptance.txt")

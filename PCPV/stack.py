@@ -1,7 +1,9 @@
 import numpy as np
 from plotting import layers_plot
 from objects import Anallo, Simmo
+from fortran_call import r_t_mat
 from scipy import sqrt
+
 
 class Stack(object):
     """ Represents a stack of layers evaluated at one frequency.
@@ -22,13 +24,17 @@ class Stack(object):
     def __init__(self, layers, heights_nm = None):
         self.layers = tuple(layers)
         self._heights_nm = heights_nm
-        self._interfaces_i_have_known = {}
+        self.period = float(layers[0].structure.period)
+        self._check_periods_are_consistent()
 
     def heights_nm(self):
         if None != self._heights_nm:
             return self._heights_nm
         else:
-            return [lay.structure.height_nm for lay in self.layers[1:-1]]
+            return [float(lay.structure.height_nm) for lay in self.layers[1:-1]]
+
+    def heights_norm(self):
+        return [h / self.period for h in self.heights_nm()]
 
     def total_height(self):
         return sum(self.heights())
@@ -36,16 +42,91 @@ class Stack(object):
     def structures(self):
         return (lay.structure for lay in self.layers)
 
-    def calc_scat(self, pol = 'TE'):
-        """ Calculate the transmission and reflection matrices of the stack"""
-        #TODO: rewrite this using R and T for interfaces not layers
+    def calc_R_T_net(self, save_working = True):
+        """ Calculate the scattering matrices for the stack as a whole.
 
-        # Check that all structures have the same period
-        for cell in self.layers:
-            if cell.structure.period == self.layers[0].structure.period:
-                pass
-            else:
-                raise ValueError, "All layers in a multilayer stack must have the same period!"
+            INPUTS:
+
+            - `save_working` : If `True`, then store net reflection
+                and transmission matrices at each part of the stack, in
+                `self.R_net_list` and `self.T_net_list`, ordered with 
+                the reflection and tranmsission of the first/topmost
+                finitely thick layer first.
+
+            OUTPUTS:
+
+            - `R_net` : Net reflection matrix
+
+            - `T_net` : Net transmission matrix.
+        """
+        self._check_periods_are_consistent()
+
+        if save_working:
+            self.R_net_list, self.T_net_list = [], []
+
+        #TODO: swap order of layers
+        # Reflection and transmission at bottom of structure
+        R_net, T_net = r_t_mat(self.layers[1], self.layers[0])[:2]
+
+        lays = self.layers
+        for lay, lay_t, h in zip(lays[1:-1], lays[2:], self.heights_norm()):
+            if save_working:
+                self.R_net_list.insert(0, R_net)
+                self.T_net_list.insert(0, T_net)
+
+            # lay (2) is the layer we're in right now
+            # lay_t (1) is the layer above it
+            # tf = T in forwards direction (down into lay)
+            R12, T12, R21, T21 = r_t_mat(lay_t, lay)
+            P = lay.prop_fwd(h)
+            idm = np.eye(len(P))
+
+            # Matrix that maps vector of forward modes in medium 1
+            # at 1-2 interface, to fwd modes in medium 2 at 2-3 interface
+            # P * (I - R21 * P * R2net * P)^-1 * T12
+            f12 = P * np.linalg.solve(idm - R21 * P * R_net * P, T12)
+            T_net = T_net * f12
+            R_net = R12 + T21 * P * R_net * f12
+
+        self.R_net, self.T_net = R_net, T_net
+        return self.R_net, self.T_net
+
+    def calc_lay_amplitudes(self, incoming_amplitudes):
+        """ Return the mode amplitudes at the bottom of each layer.
+
+            OUTPUTS:
+
+            - `f_down_list` : List of vectors of amplitudes of 
+                downwards/forward modes
+
+            - `f_up_list` : Amplitudes of upwards/backward modes
+
+            Both lists start with the amplitudes in the first finitely-
+            thick layer.
+
+            N.B. this is numerically unstable when T_net is nearly singular.
+            This could be overcome by looping through the interfaces once more
+            iteratively to find f_down_list and f_up_list.
+        """
+        # Calculate the amplitudes of transmitted modes using T_net
+        f_out = self.T_net * incoming_amplitudes
+
+        # Now work backwards to find what incident field at each interface
+        # leads to this superposition of transmitted modes.
+        f_down_list = [np.linalg.solve(T_net_l, out) for T_net_l in self.T_net_list]
+        
+        # And from these, we can use each R_net to find the upward amplitudes
+        f_up_list  = [R * f_d for R, f_d in zip(self.R_net_list, f_down_list)]
+        
+        return f_down_list, f_up_list
+
+    def calc_scat(self, pol = 'TE', incoming_amplitudes = None):
+        """ Calculate the transmission and reflection matrices of the stack"""
+        # TODO: Switch to calc_R_T_net, which does not use infinitesimal air 
+        # layers. This will require rewriting the parts that calculate fluxes
+        # through each layer.
+
+        self._check_periods_are_consistent()
 
         nu_intfaces     = 2*(len(self.layers)-1)
         neq_PW          = self.layers[0].structure.num_pw_per_pol # assumes incident from homogeneous film
@@ -63,7 +144,7 @@ class Stack(object):
         t21_list = []
         P_list   = []
         for st1 in self.layers:
-            R12, T12, R21, T21 = self.r_t_mat(st1.air_ref(), st1)
+            R12, T12, R21, T21 = r_t_mat(st1.air_ref(), st1)
             r12_list.append(R12)
             r21_list.append(R21)
             t12_list.append(T12)
@@ -94,8 +175,7 @@ class Stack(object):
             tnet_list.append(tnet)
             rnet_list.append(rnet)
     # through TF layer
-            z_nm = self.heights_nm()[i-1]
-            P = np.mat(np.diag(np.exp(1j*lay.k_z * z_nm/lay.structure.period)))
+            P = lay.prop_fwd(self.heights_nm()[i-1]/self.period)
             I_TF           = np.matrix(np.eye(len(P)),dtype='D')
             to_invert      = (I_TF - r21_list[i]*P*rnet*P)
             inverted_t12   = np.linalg.solve(to_invert,t12_list[i])
@@ -136,7 +216,6 @@ class Stack(object):
         num_prop_air    = self.layers[-1].air_ref().num_prop_pw_per_pol
         num_prop_in     = self.layers[-1].num_prop_pw_per_pol
         num_prop_out    = self.layers[0].num_prop_pw_per_pol
-        inc             = self.layers[-1].specular_order
         out             = self.layers[0].specular_order
 
         down_fluxes = []
@@ -157,36 +236,12 @@ class Stack(object):
             U_mat[PW_pols+i,i]                       = 1.0j
             U_mat[PW_pols+neq_PW+i,neq_PW+i]         = -1.0j
 
-
-        # Set the incident field to be a 0th order plane wave
-        # in a given polarisation.
-        # TODO: accept arbitrary d_minus
-        #   incoming from semi-inf
-        d_minus = np.mat(np.zeros(PW_pols, dtype='complex128')).T
-        if   'TE' == pol:
-            d_minus[inc] = 1
-        elif 'TM' == pol:
-            d_minus[neq_PW+inc] = 1
-        elif 'R Circ' == pol:
-            raise NotImplementedError
-            dminus[inc] = 1
-            dminus[neq_PW + inc] = +1j # Or is it -1j?
-        elif 'L Circ' == pol:
-            raise NotImplementedError
-            dminus[inc] = 1
-            dminus[neq_PW + inc] = -1j # Or is it +1j?
+        if incoming_amplitudes is None:
+            # Set the incident field to be a 0th order plane wave
+            # in a given polarisation, from the semi-inf top layer
+            d_minus = self.layers[-1].specular_incidence(pol)
         else:
-            raise NotImplementedError
-        # for TM polarisation
-        # f1_minus[neq_PW+inc,0] = float(1.0)
-        # for Right circular polarisation
-        # calc_tra_layers(rnet_list, inverted_t21_list, P_list,
-        #     f3_minus, t21s, nu_intfaces, wavelengths[p-1], p, '_R')
-        # for Left circular polarisation
-        # calc_tra_layers(rnet_list, inverted_t21_list, P_list,
-        #     f3_minus, t21s, nu_intfaces, wavelengths[p-1], p, '_L')
-        # for Circular Dichroism
-
+            d_minus = incoming_amplitudes
 
     # total incoming flux
         flux_TE = np.linalg.norm(d_minus[0:num_prop_in])**2
@@ -207,8 +262,7 @@ class Stack(object):
             f1_plus = rnet_list[-2*i-2]*f1_minus
     # net downward flux in infintesimal air layer
             f_mat   = np.matrix(np.concatenate((f1_minus,f1_plus)))
-            f_mat_H = f_mat.conj().transpose()
-            flux    = f_mat_H*U_mat*f_mat
+            flux    = f_mat.H*U_mat*f_mat
             down_fluxes.append(flux)
 
             f2_minus = inv_t12_list[-i-1]*f1_minus
@@ -262,98 +316,11 @@ class Stack(object):
             #     plt.matshow(im,cmap=plt.cm.gray)
             #     plt.savefig('0testmat%i' % i)
 
-
-    def r_t_mat(self, lay1, lay2):
-        """ Return R12, T12, R21, T21 at an interface between lay1
-            and lay2.
-        """
-        # We memoise to avoid extra calculations
-        # Have we seen this interface before?
-        try:
-            return self._interfaces_i_have_known[lay1, lay2]
-        except KeyError: pass
-        # Or perhaps its reverse?
-        try:
-            R21, T21, R12, T12 = self._interfaces_i_have_known[lay2, lay1]
-            return R12, T12, R21, T21
-        except KeyError: pass
-
-        # No? Then we'll have to calculate its properties.
-        if isinstance(lay1, Anallo) and isinstance(lay2, Anallo):
-            ref_trans = r_t_mat_anallo(lay1, lay2)
-            # Store its R and T matrices for later use
-            self._interfaces_i_have_known[lay1, lay2] = ref_trans
-            return r_t_mat_anallo(lay1, lay2)
-        elif isinstance(lay1, Anallo) and isinstance(lay2, Simmo):
-            return r_t_mat_tf_ns(lay1, lay2)
-        elif isinstance(lay1, Simmo) and isinstance(lay2, Anallo):
-            R21, T21, R12, T12 = r_t_mat_tf_ns(lay2, lay1)
-        elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
-            raise NotImplementedError, \
-                "Sorry! For, now you can put an extremely thin film between your \
-                NanoStructs"
-
-
-def r_t_mat_anallo(an1, an2):
-    """ Returns R12, T12, R21, T21 at an interface between thin films.
-
-        R12 is the reflection matrix from Anallo 1 off Anallo 2
-
-        The sign of elements in T12 and T21 is fixed to be positive,
-        in the eyes of `numpy.sign`
-    """
-    if len(an1.k_z) != len(an2.k_z):
-        raise ValueError, "Need the same number of plane waves in \
-        Anallos %(an1)s and %(an2)s" % {'an1' : an1, 'an2' : an2}
-
-    Z1 = an1.Z()
-    Z2 = an2.Z()
-
-    R12 = np.mat(np.diag((Z2 - Z1)/(Z2 + Z1)))
-    # N.B. there is potentially a branch choice problem here, stemming
-    # from the normalisation to unit flux.
-    # We normalise each field amplitude by
-    # $chi^{\pm 1/2} = sqrt(k_z/k)^{\pm 1} = sqrt(Z/Zc)^{\pm 1}$
-    # The choice of branch in those square roots must be the same as the
-    # choice in the related square roots that we are about to take:
-    T12 = np.mat(np.diag(2.*sqrt(Z2)*sqrt(Z1)/(Z2+Z1)))
-    R21 = -R12
-    T21 = T12
-
-    return R12, T12, R21, T21
-
-def r_t_mat_tf_ns(an1, sim2):
-    """ Returns R12, T12, R21, T21 at an1-sim2 interface.
-
-        Based on:
-        Dossou et al., JOSA A, Vol. 29, Issue 5, pp. 817-831 (2012)
-        http://dx.doi.org/10.1364/JOSAA.29.000817
-
-        But we use Zw = 1/(Zcr X) instead of X, so that an1 does not 
-        have to be free space.
-    """
-    Z1_sqrt_inv = sqrt(1/an1.Z()).reshape((1,-1))
-
-    # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
-    # Same difference.
-    A = np.mat(Z1_sqrt_inv.T * sim2.J.A)
-    B = np.mat(sim2.J_dag.A * Z1_sqrt_inv)
-
-    denominator = np.eye(len(B)) + B.dot(A)
-
-    # R12 = -I + 2 A (I + BA)^-1 B
-    # T12 = 2 (I + BA)^-1 B
-    den_inv_times_B = np.linalg.solve(denominator, B)
-    R12 = -np.eye(len(A)) + 2 * A * den_inv_times_B
-    T12 = 2 * den_inv_times_B
-
-    # R21 = (I - BA)(I + BA)^-1 = (I + BA)^-1 (I - BA)
-    # T21 = 2 A (I + BA)^-1 = T12^T
-    R21 = np.linalg.solve(denominator, (np.eye(len(B)) - B*A))
-    T21 = 2 * A * denominator.I
-    #T21 = T12.T
-
-    return np.mat(R12), np.mat(T12), np.mat(R21), np.mat(T21)
+    def _check_periods_are_consistent(self):
+        """ Raise an error if layers have different periods."""
+        for lay in self.layers:
+            assert lay.structure.period == self.period, \
+                "All layers in a multilayer stack must have the same period."
 
 
 def t_r_a_plots(stack_list):

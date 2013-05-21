@@ -7,6 +7,7 @@ import materials
 import objects
 from Fortran_pcpv import pcpv
 
+_interfaces_i_have_known = {}
 pi = np.pi
 
 class Modes(object):
@@ -36,6 +37,17 @@ class Modes(object):
         low_ord = (pxs_mesh**2 + pys_mesh**2 <= max_order**2)
 
         return pxs_mesh[low_ord], pys_mesh[low_ord]
+
+    def prop_fwd(self, height_norm):
+        """ Return the matrix P corresponding to forward propagation/decay"""
+        return np.mat(np.diag(np.exp(1j * self.k_z * height_norm)))
+
+    def __del__(self):
+        # Clean up _interfaces_i_have_known to avoid memory leak
+        if _interfaces_i_have_known != None:
+            for key in _interfaces_i_have_known.keys():
+                if self in key:
+                    _interfaces_i_have_known.pop(key)
 
 
 class Anallo(Modes):
@@ -123,6 +135,36 @@ class Anallo(Modes):
         # TE is always represented first
         return np.concatenate((Zcr * k_on_kz, Zcr / k_on_kz))
 
+    def specular_incidence(self, pol = 'TE'):
+        """ Return a vector of plane wave amplitudes corresponding
+            to specular incidence in the specified polarisation.
+
+            i.e. all elements are 0 except the zeroth order.
+        """
+        # Element corresponding to 0th order, TE
+        spec_TE = self.specular_order
+        # Element corresponding to 0th order, TM
+        spec_TM = self.specular_order + self.structure.num_pw_per_pol
+        tot_num_pw = self.structure.num_pw_per_pol * 2
+
+        inc_amp = np.mat(np.zeros(tot_num_pw, dtype='complex128')).T
+        if   'TE' == pol:
+            inc_amp[spec_TE] = 1
+        elif 'TM' == pol:
+            inc_amp[spec_TM] = 1
+        elif 'R Circ' == pol:
+            raise NotImplementedError
+            inc_amp[spec_TE] = 1/sqrt(2.)
+            inc_amp[spec_TM] = +1j/sqrt(2.) # Or is it -?
+        elif 'L Circ' == pol:
+            raise NotImplementedError
+            inc_amp[spec_TE] = 1/sqrt(2.)
+            inc_amp[spec_TM] = -1j/sqrt(2.) # Or is it +?
+        else:
+            raise NotImplementedError
+
+        return inc_amp
+
 
 class Simmo(Modes):
     """docstring for Simmo"""
@@ -134,7 +176,7 @@ class Simmo(Modes):
         self.prop_consts    = None
         self.mode_pol       = None
 
-    def calc_modes(self, num_BM):
+    def calc_modes(self, num_BM, delete_working = True):
         """ Run the FEM in Fortran"""
         st = self.structure
         wl = self.light.wl_nm
@@ -186,3 +228,104 @@ class Simmo(Modes):
         self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol = resm
 
         self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+
+        if delete_working:
+            self.sol1 = None
+            self.sol2 = None
+            self.mode_pol = None
+
+def r_t_mat(lay1, lay2):
+    """ Return R12, T12, R21, T21 at an interface between lay1
+        and lay2.
+    """
+    assert lay1.structure.period == lay2.structure.period
+
+    # We memoise to avoid extra calculations
+    global _interfaces_i_have_known
+    # Have we seen this interface before?
+    try:
+        return _interfaces_i_have_known[lay1, lay2]
+    except KeyError: pass
+    # Or perhaps its reverse?
+    try:
+        R21, T21, R12, T12 = _interfaces_i_have_known[lay2, lay1]
+        return R12, T12, R21, T21
+    except KeyError: pass
+
+    # No? Then we'll have to calculate its properties.
+    if isinstance(lay1, Anallo) and isinstance(lay2, Anallo):
+        ref_trans = r_t_mat_anallo(lay1, lay2)
+    elif isinstance(lay1, Anallo) and isinstance(lay2, Simmo):
+        ref_trans = r_t_mat_tf_ns(lay1, lay2)
+    elif isinstance(lay1, Simmo) and isinstance(lay2, Anallo):
+        R21, T21, R12, T12 = r_t_mat_tf_ns(lay2, lay1)
+        ref_trans = R12, T12, R21, T21 
+    elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
+        raise NotImplementedError, \
+            "Sorry! For, now you can put an extremely thin film between your \
+            NanoStructs"
+    
+    # Store its R and T matrices for later use
+    _interfaces_i_have_known[lay1, lay2] = ref_trans
+    return ref_trans
+
+def r_t_mat_anallo(an1, an2):
+    """ Returns R12, T12, R21, T21 at an interface between thin films.
+
+        R12 is the reflection matrix from Anallo 1 off Anallo 2
+
+        The sign of elements in T12 and T21 is fixed to be positive,
+        in the eyes of `numpy.sign`
+    """
+    if len(an1.k_z) != len(an2.k_z):
+        raise ValueError, "Need the same number of plane waves in \
+        Anallos %(an1)s and %(an2)s" % {'an1' : an1, 'an2' : an2}
+
+    Z1 = an1.Z()
+    Z2 = an2.Z()
+
+    R12 = np.mat(np.diag((Z2 - Z1)/(Z2 + Z1)))
+    # N.B. there is potentially a branch choice problem here, stemming
+    # from the normalisation to unit flux.
+    # We normalise each field amplitude by
+    # $chi^{\pm 1/2} = sqrt(k_z/k)^{\pm 1} = sqrt(Z/Zc)^{\pm 1}$
+    # The choice of branch in those square roots must be the same as the
+    # choice in the related square roots that we are about to take:
+    T12 = np.mat(np.diag(2.*sqrt(Z2)*sqrt(Z1)/(Z2+Z1)))
+    R21 = -R12
+    T21 = T12
+
+    return R12, T12, R21, T21
+
+def r_t_mat_tf_ns(an1, sim2):
+    """ Returns R12, T12, R21, T21 at an1-sim2 interface.
+
+        Based on:
+        Dossou et al., JOSA A, Vol. 29, Issue 5, pp. 817-831 (2012)
+        http://dx.doi.org/10.1364/JOSAA.29.000817
+
+        But we use Zw = 1/(Zcr X) instead of X, so that an1 does not 
+        have to be free space.
+    """
+    Z1_sqrt_inv = sqrt(1/an1.Z()).reshape((1,-1))
+
+    # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
+    # Same difference.
+    A = np.mat(Z1_sqrt_inv.T * sim2.J.A)
+    B = np.mat(sim2.J_dag.A * Z1_sqrt_inv)
+
+    denominator = np.eye(len(B)) + B.dot(A)
+
+    # R12 = -I + 2 A (I + BA)^-1 B
+    # T12 = 2 (I + BA)^-1 B
+    den_inv_times_B = np.linalg.solve(denominator, B)
+    R12 = -np.eye(len(A)) + 2 * A * den_inv_times_B
+    T12 = 2 * den_inv_times_B
+
+    # R21 = (I - BA)(I + BA)^-1 = (I + BA)^-1 (I - BA)
+    # T21 = 2 A (I + BA)^-1 = T12^T
+    R21 = np.linalg.solve(denominator, (np.eye(len(B)) - B*A))
+    T21 = 2 * A * denominator.I
+    #T21 = T12.T
+
+    return np.mat(R12), np.mat(T12), np.mat(R21), np.mat(T21)
