@@ -77,10 +77,10 @@ stack_list = []
 # Find num_BM for each simulation in a somewhat arbitrary way
 # Maybe roll this out into a Bjorn-specific function
 max_n = max([grating_1.inclusion_a.n(wl).real for wl in wavelengths])
-max_num_BMs = 120
+max_num_BMs = 163
 
 def simulate_stack(light):
-    num_BM = round(max_num_BMs * grating_1.inclusion_a.n(light.wl_nm).real/max_n)
+    num_BM = max_num_BMs#round(max_num_BMs * grating_1.inclusion_a.n(light.wl_nm).real/max_n)
     
     ################ Evaluate each layer individually ##############
     sim_cover = cover.calc_modes(light, simo_para)
@@ -106,7 +106,7 @@ def setup_module(module):
     pool = Pool(2)
     module.stack_list = pool.map(simulate_stack, light_list)
     # # Run one at a time
-    # stack_list = map(simulate_stack, light_list)
+    # module.stack_list = map(simulate_stack, light_list)
         
 
     t_r_a_plots(module.stack_list)

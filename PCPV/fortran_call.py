@@ -46,7 +46,7 @@ class Modes(object):
         # Clean up _interfaces_i_have_known to avoid memory leak
         if _interfaces_i_have_known != None:
             for key in _interfaces_i_have_known.keys():
-                if self in key:
+                if id(self) in key:
                     _interfaces_i_have_known.pop(key)
 
 
@@ -194,7 +194,8 @@ class Simmo(Modes):
         pxs, pys = self.calc_grating_orders(self.max_order_PWs)
         num_pw_per_pol = pxs.size
         self.num_BM = num_BM
-        assert num_BM > num_pw_per_pol * 2
+        assert num_BM > num_pw_per_pol * 2, "%(bm)i, %(np)i" % {
+            'bm': num_BM, 'np': num_pw_per_pol * 2}
 
         d = self.structure.period
 
@@ -245,11 +246,11 @@ def r_t_mat(lay1, lay2):
     global _interfaces_i_have_known
     # Have we seen this interface before?
     try:
-        return _interfaces_i_have_known[lay1, lay2]
+        return _interfaces_i_have_known[id(lay1), id(lay2)]
     except KeyError: pass
     # Or perhaps its reverse?
     try:
-        R21, T21, R12, T12 = _interfaces_i_have_known[lay2, lay1]
+        R21, T21, R12, T12 = _interfaces_i_have_known[id(lay2), id(lay1)]
         return R12, T12, R21, T21
     except KeyError: pass
 
@@ -267,7 +268,7 @@ def r_t_mat(lay1, lay2):
             NanoStructs"
     
     # Store its R and T matrices for later use
-    _interfaces_i_have_known[lay1, lay2] = ref_trans
+    _interfaces_i_have_known[id(lay1), id(lay2)] = ref_trans
     return ref_trans
 
 def r_t_mat_anallo(an1, an2):
