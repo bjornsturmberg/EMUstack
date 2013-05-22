@@ -40,9 +40,9 @@ class Material(object):
             # else:
             self._n = interp1d(self.data_wls, self.data_ns)
 
-    def n(self, wl):
+    def n(self, wl_nm):
         """ Return n for the specified wavelength."""
-        return self._n(wl)
+        return self._n(wl_nm)
 
     def n_drude(self, wavelength, plasma_wl, gamma_wl):
         # http://www.wave-scattering.com/drudefit.html
