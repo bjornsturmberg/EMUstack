@@ -2,7 +2,7 @@ d = 1; // grating period
 d_in_nm = 120;
 w1 = 100;
 h_width1 = (w1/d_in_nm)*d*0.5;
-lc = 0.100000; // 0.501 0.201 0.0701;
+lc = 0.050000; // 0.501 0.201 0.0701;
 lc2 = lc/4.000000; // on grating surfaces
 
 hy = d; // Thickness: Squre profile => hy=d

@@ -206,7 +206,7 @@ class Simmo(Modes):
         # Size of Fortran's complex superarray (scales with mesh)
         # In theory could do some python-based preprocessing
         # on the mesh file to work out RAM requirements
-        cmplx_max = 2**25
+        cmplx_max = 2**27
 
         resm = pcpv.calc_modes(
             self.wl_norm(), self.num_BM, self.max_order_PWs, 

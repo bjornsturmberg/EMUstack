@@ -67,7 +67,7 @@ bottom = objects.ThinFilm(period = period, height_nm = 'semi_inf',
 
 grating_1 = objects.NanoStruct('1D_grating', period, 100, height_nm = 25, 
     inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True, nb_typ_el = 4, 
-    make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 4.0)
+    make_mesh_now = True, force_mesh = True, lc_bkg = 0.05, lc2= 4.0)
 
 mirror = objects.ThinFilm(period = period, height_nm = 100,
     material = materials.Ag, loss = True)
