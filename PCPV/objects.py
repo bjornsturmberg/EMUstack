@@ -3,7 +3,7 @@ import numpy as np
 import random
 import materials
 from calculate_ff import calculate_ff
-from fortran_call import Simmo, Anallo
+from mode_calcs import Simmo, Anallo
 
 data_location = '../PCPV/Data/'
 

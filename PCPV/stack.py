@@ -1,7 +1,7 @@
 import numpy as np
 from plotting import layers_plot
 from objects import Anallo, Simmo
-from fortran_call import r_t_mat
+from mode_calcs import r_t_mat
 from scipy import sqrt
 
 
