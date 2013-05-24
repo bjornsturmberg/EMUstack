@@ -77,11 +77,11 @@ def setup_module(module):
     t_r_a_plots(stack_list)
 
 
-    # SAVE DATA AS REFERENCE
-    # Only run this after changing what is simulated - this
-    # generates a new set of reference answers to check against
-    # in the future
-    testing.save_reference_data("case_2", stack_list)
+    # # SAVE DATA AS REFERENCE
+    # # Only run this after changing what is simulated - this
+    # # generates a new set of reference answers to check against
+    # # in the future
+    # testing.save_reference_data("case_2", stack_list)
 
 def results_match_reference(filename):
     reference = np.loadtxt("ref/case_3/" + filename)
