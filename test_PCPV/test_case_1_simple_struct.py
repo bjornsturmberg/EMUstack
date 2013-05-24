@@ -35,7 +35,7 @@ simo_para  = objects.Controls(debug = 0, max_order_PWs = 0, num_cores = 1,
 # Remove results of previous simulations
 clear_previous.clean('.txt')
 clear_previous.clean('.pdf')
-clear_previous.clean('.log')
+# clear_previous.clean('.log')
 
 ################ Light parameters #####################
 

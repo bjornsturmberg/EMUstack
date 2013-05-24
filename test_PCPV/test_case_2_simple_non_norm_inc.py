@@ -23,7 +23,7 @@ def setup_module(module):
     # Remove results of previous simulations
     clear_previous.clean('.txt')
     clear_previous.clean('.pdf')
-    clear_previous.clean('.log')
+    # clear_previous.clean('.log')
 
     ################ Light parameters #####################
 
@@ -84,7 +84,7 @@ def setup_module(module):
     # testing.save_reference_data("case_2", stack_list)
 
 def results_match_reference(filename):
-    reference = np.loadtxt("ref/case_3/" + filename)
+    reference = np.loadtxt("ref/case_2/" + filename)
     result    = np.loadtxt(filename)
     np.testing.assert_allclose(result, reference, 1e-7, 1e-6, filename)
 
@@ -98,7 +98,7 @@ def test_txt_results():
     for f in result_files:
         yield results_match_reference, f
 
-def test_stack_list_matches_saved(casefile_name = 'case_3', rtol = 1e-6, atol = 4e-6):
+def test_stack_list_matches_saved(casefile_name = 'case_2', rtol = 1e-6, atol = 4e-6):
     ref = np.load("ref/%s.npz" % casefile_name)
     yield assert_equal, len(stack_list), len(ref['stack_list'])
     for stack, rstack in zip(stack_list, ref['stack_list']):

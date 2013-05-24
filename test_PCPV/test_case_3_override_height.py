@@ -23,7 +23,7 @@ def setup_module(module):
     # Remove results of previous simulations
     clear_previous.clean('.txt')
     clear_previous.clean('.pdf')
-    clear_previous.clean('.log')
+    # clear_previous.clean('.log')
 
     ################ Light parameters #####################
 
