@@ -1,3 +1,4 @@
+# Makefile as used on Bjorn's Machine at SoP USyd
 # COMPILER_VENDOR = gnu95
 COMPILER_VENDOR = intelem
 

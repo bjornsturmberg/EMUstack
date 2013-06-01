@@ -1,3 +1,4 @@
+# Makefile as used on USyd School of Physics Network
 # COMPILER_VENDOR = gnu95
 COMPILER_VENDOR = intelem
 
