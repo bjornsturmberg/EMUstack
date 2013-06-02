@@ -2,16 +2,16 @@
 
 1) take the day off, go to the beach, enjoy yourself.
 
-2) get your favorite work bevarage, or 30...
+2) get your favourite work beverage, or 30...
 
 3) bzr checkout ...
 
-4) Download SuiteSparse SuiteSparse https://www.cise.ufl.edu/research/sparse/SuiteSparse/
-Unpack SuiteSparse into PCPV/Fortran_pcpv/, it should create a directory there SuiteSparse/
-mkdir where you want installed SuiteSparse in my case PCPV/Fortran_pcpv/SS_installed
-mkdirs  SS_installed/lib SS_installed/include
+4) Download SuiteSparse https://www.cise.ufl.edu/research/sparse/SuiteSparse/
+Unpack SuiteSparse into PCPV/Fortran_pcpv/, it should create a directory there, SuiteSparse/
+mkdir where you want SuiteSparse installed, in my case PCPV/Fortran_pcpv/SS_installed
+mkdir  SS_installed/lib SS_installed/include
 edit SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk
-for consistence across whole build use intel fortran compiler
+for consistence across the whole build, use intel fortran compiler
 line 75 F77 = gfortran --> ifort
 set path to install folder
 line 85 INSTALL_LIB = /suphys/bjorn/Usyd_Running/f2pytest/PCPV/Fortran_pcpv/SS_install/lib
@@ -47,6 +47,15 @@ line 115 MAKE    = /bin/make --> /usr/bin/make
 make lib
 
 
+zarpack_util.f 
+line 768-771
+C     gfortran likes the following
+C      INTRINSIC          ETIME
+C     ifort likes the following
+      EXTERNAL           ETIME
+
+
+
 8) Edit Fortran_pcpv/Makefile update paths and names to yours
 SS_LIB_LOCATION = /suphys/bjorn/Usyd_Running/f2pytest/PCPV/Fortran_pcpv/SSparse_install/lib
 ARPACK_LIB_LOCATION = /suphys/bjorn/Usyd_Running/f2pytest/PCPV/Fortran_pcpv/ARPACK
@@ -59,7 +68,7 @@ UMFPACK_NAME = umf4_f77zwrapper.o
 9) make (paying close care to cross all your digits)
 
 10) cd all the way back to base of pcpv package in this case f2pytest/
-the cd test_PCPV
+then cd test_PCPV
 (find more digits to cross, steal from others by amputation if necissary)
 python nosetests
 . = pass
@@ -69,7 +78,7 @@ F = FAIL
 If tests all complete but with fails you will need to update the test references for your compilation.
 
 Open test_PCPV/test_case_* and make adjustments near the bottom as described there.
-Rune tests once with loose constraints, if these all pass copy your results into ref/ and reset hard constraints for your future comparisions.
+Run tests once with loose constraints, if these all pass copy your results into ref/ and reset hard constraints for your future comparisons.
 
 12) That's all there is, there isn't any more.
 
