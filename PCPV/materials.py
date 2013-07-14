@@ -83,6 +83,9 @@ GaAs   = Material(np.loadtxt('%sGaAs.txt'% data_location))
 Si3N4  = Material(np.loadtxt('%sSi3N4.txt'% data_location))
 TiO2   = Material(np.loadtxt('%sTiO2.txt'% data_location))
 InP    = Material(np.loadtxt('%sInP.txt'% data_location))
+ITO    = Material(np.loadtxt('%sITO.txt'% data_location))           #Filmetrics.com
+InAs   = Material(np.loadtxt('%sInAs.txt'% data_location))          #Filmetrics.com
+GaP    = Material(np.loadtxt('%sGaP.txt'% data_location))           #Filmetrics.com
 
 
 # import matplotlib

@@ -194,8 +194,9 @@ class Simmo(Modes):
         pxs, pys = self.calc_grating_orders(self.max_order_PWs)
         num_pw_per_pol = pxs.size
         self.num_BM = num_BM
-        assert num_BM > num_pw_per_pol * 2, "%(bm)i, %(np)i" % {
-            'bm': num_BM, 'np': num_pw_per_pol * 2}
+        assert num_BM > num_pw_per_pol * 2, "You must include at least as many BMs as PWs. \n" + \
+        "Currently you have %(bm)i BMs < %(np)i PWs." % {
+            'bm': num_BM, 'np': num_pw_per_pol * 2} 
 
         d = self.structure.period
 

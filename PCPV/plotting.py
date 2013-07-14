@@ -501,6 +501,19 @@ if __name__ == "__main__":
 
 
 
+
+
+def k_plot(t_func_k,nu_PW_pols):
+    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(1,1,1)
+    ks = range(nu_PW_pols)
+    np.savetxt('%(s)s.txt'% {'s' : 't_func_k',}, t_func_k, fmt = '%18.12f')
+    ax1.plot(ks,t_func_k)
+    ax1.set_xlabel('k vector')
+    ax1.set_ylabel(r'$|E|_{trans}$')
+    plt.savefig('t_func_k')
+
+
 # ================    ===============================
 # character           description
 # ================    ===============================
