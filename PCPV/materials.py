@@ -68,6 +68,10 @@ class Material(object):
 
 
 Air    = Material(np.loadtxt('%sAir.txt'% data_location))
+# Transparent oxides
+TiO2   = Material(np.loadtxt('%sTiO2.txt'% data_location))
+ITO    = Material(np.loadtxt('%sITO.txt'% data_location))           #Filmetrics.com
+# Semiconductors
 Si_c   = Material(np.loadtxt('%sSi_c.txt'% data_location))
 Si_a   = Material(np.loadtxt('%sSi_a.txt'% data_location))
 SiO2_a = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
@@ -75,17 +79,16 @@ CuO    = Material(np.loadtxt('%sCuO.txt'% data_location))
 CdTe   = Material(np.loadtxt('%sCdTe.txt'% data_location))
 FeS2   = Material(np.loadtxt('%sFeS2.txt'% data_location))
 Zn3P2  = Material(np.loadtxt('%sZn3P2.txt'% data_location))
-Au     = Material(np.loadtxt('%sAu.txt'% data_location))
-Ag     = Material(np.loadtxt('%sAg.txt'% data_location))
 Sb2S3  = Material(np.loadtxt('%sSb2S3.txt'% data_location))
 AlGaAs = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
 GaAs   = Material(np.loadtxt('%sGaAs.txt'% data_location))
 Si3N4  = Material(np.loadtxt('%sSi3N4.txt'% data_location))
-TiO2   = Material(np.loadtxt('%sTiO2.txt'% data_location))
 InP    = Material(np.loadtxt('%sInP.txt'% data_location))
-ITO    = Material(np.loadtxt('%sITO.txt'% data_location))           #Filmetrics.com
 InAs   = Material(np.loadtxt('%sInAs.txt'% data_location))          #Filmetrics.com
 GaP    = Material(np.loadtxt('%sGaP.txt'% data_location))           #Filmetrics.com
+# Metals
+Au     = Material(np.loadtxt('%sAu.txt'% data_location))
+Ag     = Material(np.loadtxt('%sAg.txt'% data_location))
 
 
 # import matplotlib

@@ -440,7 +440,6 @@ c      -------------------------------------
      *                workev, bmat, neq_32, which, nval_32, tol, 
      *                resid, nvect_32, v, neq_32, iparam_32, ipntr_32, 
      *                workd, trav, ltrav_32, rwork, ierr_32)        
-
 c      ------------------------------------------------------------
 c     | La partie reelle d'une valeur propre se trouve dans la     |
 c     | premiere colonne du tableau D, la partie imaginaire est    |

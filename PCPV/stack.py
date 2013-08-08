@@ -328,32 +328,3 @@ class Stack(object):
             assert lay.structure.period == self.period, \
                 "All layers in a multilayer stack must have the same period."
 
-
-def t_r_a_plots(stack_list):
-    # plot t,r,a plots each containing results for each layer and total. 
-    # Also save text t,r,a to files
-    wavelengths = np.array([s.layers[0].light.wl_nm for s in stack_list])
-    a_list = []
-    t_list = []
-    r_list = []
-    for stack in stack_list:
-        a_list.extend(stack.a_list)
-        t_list.extend(stack.t_list)
-        r_list.extend(stack.r_list)
-
-    total_h = sum(stack_list[0].heights_nm())
-    layers_plot('Lay_Absorb', a_list, wavelengths, total_h)
-    layers_plot('Lay_Trans',  t_list, wavelengths, total_h)
-    layers_plot('Lay_Reflec', r_list, wavelengths, total_h)
-
-
-def t_func_k_plot(stack_list):
-    for stack in stack_list:
-        # print stack.T_net[0,:]
-        nu_PW_pols = 2*stack.layers[0].structure.num_pw_per_pol
-        trans_k = np.abs(stack.trans_vector)
-        trans_k_array = np.array(trans_k).reshape(-1,)
-        tot_trans_k_array = trans_k_array#**2
-        # print repr(trans_k)
-        # print repr(tot_trans_k_array)
-        k_plot(tot_trans_k_array,nu_PW_pols)

@@ -5,11 +5,10 @@ SUBROUTINES_FOR_PYTHON = py_calc_modes.f
 # py_plot_field.f
 
 pcpv.so: pcpv.pyf Lib/umf4_f77zwrapper64.o *.f
-	f2py -c pcpv.pyf *.f Lib/umf4_f77zwrapper64.o --link-lapack_opt \
+	f2py -c pcpv.pyf *.f Lib/umf4_f77zwrapper64.o -larpack --link-lapack_opt \
 		--link-umfpack --link-blas_opt --fcompiler=$(COMPILER_VENDOR)
-
 # pcpv.so: pcpv.pyf Lib/umf4_f77zwrapper64.o *.f
-# 	f2py -c pcpv.pyf *.f Lib/umf4_f77zwrapper64.o -larpack --link-lapack_opt \
+# 	f2py -c pcpv.pyf *.f Lib/umf4_f77zwrapper64.o --link-lapack_opt \
 # 		--link-umfpack --link-blas_opt --fcompiler=$(COMPILER_VENDOR)
 
 pcpv.pyf: $(SUBROUTINES_FOR_PYTHON)
@@ -32,8 +31,3 @@ purge:
 
 clean:
 	-rm pcpv.so
-
-# vayu
-# Lib/umf4_f77zwrapper64.o: Lib/umf4_f77zwrapper_SS_4.2.0.c
-# 	gcc -DZLONG -I./Lib -lamd -lcholmod -lumfpack....... -c Lib/umf4_f77zwrapper_SS_4.2.0.c \
-# 		-fPIC -o umf4_f77zwrapper64.o
