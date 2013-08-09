@@ -3,7 +3,7 @@
 
 python module pcpv ! in 
     interface  ! in :pcpv
-        subroutine calc_modes(lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,npt,nel,n_eff,bloch_vec,lx,ly,tol,e_h_field,i_cond,itermax,propmodes,printsolution,printomega,printall,checks,q_average,plot_real,plot_imag,plot_abs,loss,neq_pw,cmplx_max,nb_typ_el,beta1,overlap_j,overlap_j_dagger,sol1,sol2,mode_pol) ! in :pcpv:py_calc_modes.f
+        subroutine calc_modes(lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,npt,nel,n_eff,bloch_vec,lx,ly,tol,e_h_field,i_cond,itermax,propmodes,printsolution,printall,checks,q_average,plot_real,plot_imag,plot_abs,loss,neq_pw,cmplx_max,nb_typ_el,beta1,overlap_j,overlap_j_dagger,sol1,sol2,mode_pol) ! in :pcpv:py_calc_modes.f
             double precision :: lambda
             integer*8 :: nval
             integer*8 :: ordre_ls
@@ -23,7 +23,6 @@ python module pcpv ! in
             integer*8 :: itermax
             integer*8 :: propmodes
             integer*8 :: printsolution
-            integer*8 :: printomega
             integer*8 :: printall
             integer*8 :: checks
             integer*8 :: q_average

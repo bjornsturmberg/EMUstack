@@ -1,5 +1,6 @@
 #
 import objects
+import mode_calcs
 
 import numpy as np
 from matplotlib.mlab import griddata
@@ -72,16 +73,16 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=1, s
         t_list.extend(stack.t_list)
         r_list.extend(stack.r_list)
 
-    num_layers = len(stack_wl_list[0].layers) - 1
+    layers_steps = len(stack_wl_list[0].layers) - 1
     active_abs = []
     a_tot      = []
     t_tot      = []
     r_tot      = []
     for i in range(len(wavelengths)): 
-        active_abs.append(float(a_list[active_layer_nu + i*num_layers]))
-        a_tot.append(float(a_list[num_layers-1+(i*num_layers)]))
-        t_tot.append(float(a_list[num_layers-1+(i*num_layers)]))
-        r_tot.append(float(a_list[num_layers-1+(i*num_layers)]))
+        active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
+        a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
+        t_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
+        r_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
     Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths)
     params_2_print += '\n' r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
     params_2_print += ' %'
@@ -200,90 +201,72 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
 
 
 #######################################################################################
-def omega_plot(stack_wl_list, wavelengths, params_string, stack_label=1):
-    print repr(stack_wl_list[0].layers[0].k_z)
+def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
+    num_layers = len(stack_wl_list[0].layers)
+    fig1 = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    fig2 = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    for l in range(num_layers):
+        ax1 = fig1.add_subplot(num_layers,1,l+1)
+        ax2 = fig2.add_subplot(num_layers,1,l+1)
+        for i in range(len(wavelengths)):
+            k_zs = stack_wl_list[i].layers[l].k_z
+            real_k_zs = []
+            imag_k_zs = []
+            for k in k_zs:
+                if np.real(k) > np.imag(k): #alternatively np.imag(k)< small
+                    real_k_zs.append(np.real(k))
+                    imag_k_zs.append(np.imag(k))
+            wl = np.ones(len(real_k_zs))*wavelengths[i]
+            ax1.plot(wl,real_k_zs,'bo')
+            ax1.set_xlabel('Wavelength (nm)')
+            ax1.set_ylabel(r'Real $k_z$')
+            wl = np.ones(len(imag_k_zs))*wavelengths[i]
+            ax2.plot(wl,imag_k_zs,'ro')
+            ax2.set_xlabel('Wavelength (nm)')
+            ax2.set_ylabel(r'Imaginary $k_z$')
+        if l == 0: ax1.set_ylabel('Top Layer'), ax2.set_ylabel('Top Layer')
+        if l == num_layers-1: ax1.set_ylabel('Bottom Layer'), ax2.set_ylabel('Bottom Layer')
+        plt.xlim((wavelengths[0], wavelengths[-1]))
+    fig1.suptitle(r'Real $k_z$'+params_2_print+'\n')
+    fig2.suptitle(r'Imaginary $k_z$'+params_2_print+'\n')
+
+    fig1.savefig('Disp_Diagram_Re_stack%(bon)i'% {'bon' : stack_label})
+    fig2.savefig('Disp_Diagram_Im_stack%(bon)i'% {'bon' : stack_label})
+    # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
+
+def E_conc_plot(stack_wl_list, which_layer, which_mode, wavelengths, params_2_print, stack_label=1):
+    if isinstance(stack_wl_list[0].layers[which_layer], mode_calcs.Simmo):
+        num_layers = len(stack_wl_list[0].layers)
+        fig1 = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
+        ax1 = fig1.add_subplot(1,1,1)
+        for i in range(len(wavelengths)):
+            E_conc = stack_wl_list[i].layers[which_layer].mode_pol
+            print E_conc
+            print "\n ERROR: plotting.E_conc_plot; \n NOT YET IMPLEMENTED"
+        #     real_k_zs = []
+        #     imag_k_zs = []
+        #     for k in k_zs:
+        #         if np.real(k) > np.imag(k): #alternatively np.imag(k)< small
+        #             real_k_zs.append(np.real(k))
+        #             imag_k_zs.append(np.imag(k))
+        #     wl = np.ones(len(real_k_zs))*wavelengths[i]
+        #     ax1.plot(wl,real_k_zs,'bo')
+        #     ax1.set_xlabel('Wavelength (nm)')
+        #     ax1.set_ylabel(r'Real $k_z$')
+        # plt.xlim((wavelengths[0], wavelengths[-1]))
+        # fig1.suptitle(r'Real $k_z$'+params_2_print+'\n')
+
+        # fig1.savefig('Disp_Diagram_Re_stack%(bon)i'% {'bon' : stack_label})
+    else:
+        print "\n ERROR: plotting.E_conc_plot; \n Can only calculate energy concentration in NanoStruct layers."
+        print repr(stack_wl_list[0].layers[which_layer])
+
+    # #         ax1.set_xlabel('Wavelength (nm)')
+    # #         ax1.set_ylabel(r'$E_{cyl} / E_{cell}$')
 
 
-# def omega_plot(complete_st, layer, light, max_num_BMs, max_order_PWs, Efficiency):
-#     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-#     nu_layers = len(complete_st)
-#     for i in range(0, nu_layers):
-#         #reverse order so top layer gets plotted up top
-#         st = nu_layers-1-i
-#         format_st     = '%04d' % st
-#         ax1 = fig.add_subplot(nu_layers,1,i+1)
-#         # ax2 = fig.add_subplot(nu_layers,1,i+1)
-#         if isinstance(complete_st[nu_layers-1-i],objects.ThinFilm):
-#             file_name   = 'beta_st%s.txt' % format_st
-#             wavelengths = np.genfromtxt(file_name, usecols=(1))
-#             num_BMs     = np.genfromtxt(file_name, usecols=(0))
-#             start_col   = 2
-#         else:
-#             file_name   = 'omega_st%s.txt' % format_st
-#             wavelengths = np.genfromtxt(file_name, usecols=(2))
-#             num_BMs     = np.genfromtxt(file_name, usecols=(1))
-#             start_col   = 5
-
-#         count = 1
-#         for i in range(len(num_BMs)):
-#             prop = []
-#             prop_im = []
-#             re = np.genfromtxt(file_name, usecols=(start_col+2*i),   invalid_raise=False)
-#             im = np.genfromtxt(file_name, usecols=(start_col+2*i+1), invalid_raise=False)
-#             nu_real_modes = len(re)
-#             for j in range(nu_real_modes):
-#                 if re[j] > im[j]:
-#                     prop.append(re[j])
-#                     prop_im.append(im[j])
-#             count +=1
-#             if len(prop) == 0:
-#                 for j in range(nu_real_modes):
-#                     prop.append(re[j])
-#                     prop_im.append(im[j])
-#                 count +=1
-
-#             trim_wls = wavelengths[0:len(prop)]
-#             ax1.plot(trim_wls, prop, 'ro')
-#             ax1.set_xlabel('Wavelength (nm)')
-#             ax1.set_ylabel(r'Re(k$_z$)')
-#             # plt.xlim((wavelengths[0], wavelengths[-1]))
-#             # ax2.plot(trim_wls, prop_im, 'bo')
-#             # ax2.set_xlabel('Wavelength (nm)')
-#             # ax2.set_ylabel(r'Im(k$_z$)')
-#         ax1.set_xlim((wavelengths[0], wavelengths[-1]))
-#         # ax2.set_xlim((wavelengths[0], wavelengths[-1]))
-
-
-#     plt.savefig('Disp_Diagram')
-
-
-# def omega_plot_concentration(st, BM_min,BM_max):
-#     fig = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
-#     ax1 = fig.add_subplot(1,1,1)
-#     format_st     = '%04d' % st
-
-#     file_name   = '../000-simo_template/omega_pol.txt'#_st%s.txt' % format_st
-#     # file_name   = '../000-simo_template/omega_pol_st%s.txt' % format_st
-#     wavelengths = np.genfromtxt(file_name, usecols=(2))
+# np.genfromtxt can deal with incomplete data!
 #     num_BMs     = np.genfromtxt(file_name, usecols=(1))
-#     start_col   = 5
-
-#     for i in range(BM_min,BM_max+1):
-#         e_conc = np.genfromtxt(file_name, usecols=(start_col+i),   invalid_raise=False)
-#         # print e_conc
-
-#         trim_wls = wavelengths[0:len(e_conc)]
-#         ax1.plot(trim_wls, e_conc, 'ro')
-#         ax1.set_xlabel('Wavelength (nm)')
-#         ax1.set_ylabel(r'$E_{cyl} / E_{cell}$')
-#         ax1.set_xlim((wavelengths[0], wavelengths[-1]))
-#         # ax1.set_xlim((400, 700))
-
-#     plt.savefig('../000-simo_template/Energy_c')
-
-# if __name__ == "__main__":
-#     import sys
-#     omega_plot_concentration(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
 #######################################################################################
 
 

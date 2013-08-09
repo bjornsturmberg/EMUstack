@@ -4,7 +4,7 @@ c     Explicit inputs
      *    debug, mesh_file, mesh_format, npt, nel,
      *    n_eff, bloch_vec, lx, ly, tol, 
      *    E_H_field, i_cond, itermax, PropModes,
-     *    PrintSolution, PrintOmega, PrintAll,
+     *    PrintSolution, PrintAll,
      *    Checks, q_average, plot_real, plot_imag, plot_abs,
      *    Loss, neq_PW, cmplx_max, 
 c     "Optional" inputs (Python guesses these)
