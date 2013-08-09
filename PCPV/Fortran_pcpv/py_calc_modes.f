@@ -102,7 +102,8 @@ C  Names and Controls
       character gmsh_file_pos*100
       character overlap_file*100, dir_name*100
       character*100 tchar
-      integer*8 namelength, PrintAll, PrintOmega, Checks
+      integer*8 namelength, PrintAll, Checks
+C      integer*8 PrintOmega
       integer*8 PrintSolution
       integer*8 PropModes
       integer*8 d_in_nm, pair_warning, Loss
@@ -636,7 +637,7 @@ C
       endif
 C
 C  Dispersion Diagram
-      if (PrintOmega .eq. 1 .and. n_k .eq. 2) then
+      if (n_k .eq. 2) then
         call mode_energy (nval, nel, npt, n_ddl, nnodes, 
      *     n_core, table_nod, type_el, nb_typ_el, eps_eff, 
      *     x_arr, sol, beta, mode_pol)
