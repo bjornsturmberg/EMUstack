@@ -7,13 +7,12 @@ from matplotlib.mlab import griddata
 import matplotlib
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
-import os
 
 
 
 
 #######################################################################################
-def gen_params_string(param_layer, light, max_order_PWs, max_num_BMs=0, add_info=''):
+def gen_params_string(param_layer, light, max_order_PWs, max_num_BMs=0):
     # Plot t,r,a for each layer & total, then save each to text files
     if isinstance(param_layer,objects.NanoStruct):
         params_2_print = 'ff = %5.3f, '% param_layer.ff
@@ -39,11 +38,11 @@ def gen_params_string(param_layer, light, max_order_PWs, max_num_BMs=0, add_info
             if param_layer.ellipticity == True: params_2_print += '\nEllipticity = %(rad)5.3f '% {'rad' : param_layer.ellipticity,}
         elif param_layer.geometry == '1D_grating':
             params_2_print += ''
-        params_2_print += '\nmax_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d, '% {
+        params_2_print += 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d, '% {
         'max_num_BMs'   : max_num_BMs,'max_order_PWs' : max_order_PWs, }
     else:
-        params_2_print = 'Homogeneous Film\n'
-        params_2_print += 'max_PW_order = %(max_order_PWs)d, '% {'max_order_PWs' : max_order_PWs, }
+        # params_2_print = 'Homogeneous Film'
+        params_2_print = 'max_PW_order = %(max_order_PWs)d, '% {'max_order_PWs' : max_order_PWs, }
 
 
     # k_pll = light.k_pll * param_layer.period
@@ -57,7 +56,7 @@ def gen_params_string(param_layer, light, max_order_PWs, max_num_BMs=0, add_info
 
 
 #######################################################################################
-def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=1, stack_label=1):
+def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=1, stack_label=1, add_name=''):
     # Plot t,r,a for each layer & total, then save each to text files
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
@@ -84,23 +83,23 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=1, s
         t_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
     Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths)
-    params_2_print += '\n' r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
+    params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
     params_2_print += ' %'
 
     total_h = sum(stack_wl_list[0].heights_nm()) #look at first wl result to find h.
-    layers_plot('Lay_Absorb', a_list, wavelengths, total_h, params_2_print, stack_label)
-    layers_plot('Lay_Trans',  t_list, wavelengths, total_h, params_2_print, stack_label)
-    layers_plot('Lay_Reflec', r_list, wavelengths, total_h, params_2_print, stack_label)
+    layers_plot('Lay_Absorb', a_list, wavelengths, total_h, params_2_print, stack_label, add_name)
+    layers_plot('Lay_Trans',  t_list, wavelengths, total_h, params_2_print, stack_label, add_name)
+    layers_plot('Lay_Reflec', r_list, wavelengths, total_h, params_2_print, stack_label, add_name)
     # Also plot total t,r,a on a single plot
     plot_name = 'Total_Spectra'
-    total_tra_plot(plot_name, a_tot, t_tot, r_tot, wavelengths, params_2_print, stack_label)
+    total_tra_plot(plot_name, a_tot, t_tot, r_tot, wavelengths, params_2_print, stack_label, add_name)
     # Also plot totals weighted by solar irradiance
     weighting = Irradiance/Irradiance.max()
     a_weighted = a_tot*weighting
     t_weighted = t_tot*weighting
     r_weighted = r_tot*weighting
     plot_name = 'Weighted_Total_Spectra'
-    total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, wavelengths, params_2_print, stack_label)
+    total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, wavelengths, params_2_print, stack_label, add_name)
     return Efficiency
 
 
@@ -120,26 +119,32 @@ def ult_efficiency(active_abs, wavelengths):
     return Efficiency, i_spec
 
 
-def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, stack_label):
+def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, stack_label, add_name):
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     nu_layers = len(spec_list)/len(wavelengths)
     h_array = np.ones(len(wavelengths))*total_h
+    h  = 6.626068e-34;
+    c  = 299792458;
+    eV = 1.60217646e-19;
+    energies  = (h*c/(wavelengths*1e-9))/eV
     for i in range(nu_layers):
-        layer_data = []
+        layer_spec = []
         for wl in range(len(wavelengths)):
-            layer_data = np.append(layer_data,spec_list[wl*nu_layers + i])
-
+            layer_spec = np.append(layer_spec,spec_list[wl*nu_layers + i])
         ax1 = fig.add_subplot(nu_layers,1,i+1)
-        ax1.plot(wavelengths, layer_data)
+        ax1.plot(wavelengths, layer_spec)
+        ax2 = ax1.twiny()
+        ax2.plot(energies, layer_spec, alpha=0)
         if i == nu_layers-1:
             ax1.set_xlabel('Wavelength (nm)')
+            ax2.set_xlabel('Energy (eV)')
             ax1.set_ylabel('Total')
         else:
             ax1.set_xticklabels( () )
         if spectra_name == 'Lay_Absorb':
             if i == 0: ax1.set_ylabel('Top Layer')
             if i == nu_layers-2: ax1.set_ylabel('Bottom Layer')
-            suptitle_w_params = 'Absorptance in each layer\n'+params_2_print
+            suptitle_w_params = 'Absorptance in each layer'+add_name+'\n'+params_2_print
             plt.suptitle(suptitle_w_params)
             lay_spec_name = 'Lay_Absorb'
             if i == nu_layers-1: 
@@ -148,7 +153,7 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
         elif spectra_name == 'Lay_Trans':
             if i == 0: ax1.set_ylabel('Top Layer')
             if i == nu_layers-2: ax1.set_ylabel('Bottom Layer')
-            suptitle_w_params = 'Transmittance in each layer\n'+params_2_print
+            suptitle_w_params = 'Transmittance in each layer'+add_name+'\n'+params_2_print
             plt.suptitle(suptitle_w_params)
             lay_spec_name = 'Lay_Trans'
             if i == nu_layers-1: 
@@ -158,44 +163,68 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
             if i == 0: ax1.set_ylabel('Top Layer')
             if i == nu_layers-3: ax1.set_ylabel('Bottom Layer')
             if i == nu_layers-2: ax1.set_ylabel('Substrate')
-            suptitle_w_params = 'Reflectance in each layer\n'+params_2_print
+            suptitle_w_params = 'Reflectance in each layer'+add_name+'\n'+params_2_print
             plt.suptitle(suptitle_w_params)
             lay_spec_name = 'Lay_Reflec'
             if i == nu_layers-1: 
                 ax1.set_ylabel('Total')
                 lay_spec_name = 'Reflectance'
-        av_array = zip(wavelengths, layer_data, h_array)
-        plt.xlim((wavelengths[0], wavelengths[-1]))
+        av_array = zip(wavelengths, layer_spec, h_array)
+        ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+        ax2.set_xlim((energies[0], energies[-1]))
         plt.ylim((0, 1))
+
         if i != nu_layers-1: 
-            np.savetxt('%(s)s_%(i)i_stack%(bon)i.txt'% {'s' : lay_spec_name, 'i' : i, 'bon' : stack_label}, av_array, fmt = '%18.11f')
+            np.savetxt('%(s)s_%(i)i_stack%(bon)i%(add)s.txt'% {'s' : lay_spec_name, 'i' : i, 
+                'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
         else:
-            np.savetxt('%(s)s_stack%(bon)i.txt'% {'s' : lay_spec_name, 'bon' : stack_label}, av_array, fmt = '%18.11f')
+            np.savetxt('%(s)s_stack%(bon)i%(add)s.txt'% {'s' : lay_spec_name, 
+                'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
 
-        plt.savefig('%(s)s_stack%(bon)i'% {'s' : spectra_name, 'bon' : stack_label})
+        plt.savefig('%(s)s_stack%(bon)i%(add)s'% {'s' : spectra_name, 'bon' : stack_label,'add' : add_name})
 
-def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label):
+def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label, add_name):
+    h  = 6.626068e-34;
+    c  = 299792458;
+    eV = 1.60217646e-19;
+    energies  = (h*c/(wavelengths*1e-9))/eV
+    # num_e_ticks = 4
+    # e_ticks_tmp = np.linspace(energies.min(), energies.max(), num_e_ticks)
+    # e_ticks = [ round(elem, 2) for elem in e_ticks_tmp ]
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(3,1,1)
     ax1.plot(wavelengths, a_spec)
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Absorptance')
-    plt.xlim((wavelengths[0], wavelengths[-1]))
+    ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+    ax2 = ax1.twiny()
+    ax2.plot(energies, a_spec, alpha=0)
+    # ax2.set_xticks(e_ticks)
+    ax2.set_xlabel('Energy (eV)')
+    ax2.set_xlim((energies[0], energies[-1]))
     plt.ylim((0, 1))
     ax1 = fig.add_subplot(3,1,2)
     ax1.plot(wavelengths, t_spec)
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Transmittance')
-    plt.xlim((wavelengths[0], wavelengths[-1]))
+    ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+    ax2 = ax1.twiny()
+    ax2.plot(energies, t_spec, alpha=0)
+    ax2.set_xticklabels( () )
+    ax2.set_xlim((energies[0], energies[-1]))
     plt.ylim((0, 1))
     ax1 = fig.add_subplot(3,1,3)
     ax1.plot(wavelengths, r_spec)
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Reflectance')
-    plt.xlim((wavelengths[0], wavelengths[-1]))
+    ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+    ax2 = ax1.twiny()
+    ax2.plot(energies, r_spec, alpha=0)
+    ax2.set_xticklabels( () )
+    ax2.set_xlim((energies[0], energies[-1]))
     plt.ylim((0, 1))
-    plt.suptitle(plot_name+'\n'+params_2_print)
-    plt.savefig('%(s)s_stack%(bon)i'% {'s' : plot_name, 'bon' : stack_label})
+    plt.suptitle(plot_name+add_name+'\n'+params_2_print)
+    plt.savefig('%(s)s_stack%(bon)i%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 #######################################################################################
 
 
@@ -229,41 +258,33 @@ def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
         plt.xlim((wavelengths[0], wavelengths[-1]))
     fig1.suptitle(r'Real $k_z$'+params_2_print+'\n')
     fig2.suptitle(r'Imaginary $k_z$'+params_2_print+'\n')
-
     fig1.savefig('Disp_Diagram_Re_stack%(bon)i'% {'bon' : stack_label})
     fig2.savefig('Disp_Diagram_Im_stack%(bon)i'% {'bon' : stack_label})
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
-def E_conc_plot(stack_wl_list, which_layer, which_mode, wavelengths, params_2_print, stack_label=1):
+def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_print, stack_label=1):
     if isinstance(stack_wl_list[0].layers[which_layer], mode_calcs.Simmo):
         num_layers = len(stack_wl_list[0].layers)
         fig1 = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
         ax1 = fig1.add_subplot(1,1,1)
+        # ax2 = fig1.add_subplot(2,1,2)
+        # E_conc = []
         for i in range(len(wavelengths)):
-            E_conc = stack_wl_list[i].layers[which_layer].mode_pol
-            print E_conc
-            print "\n ERROR: plotting.E_conc_plot; \n NOT YET IMPLEMENTED"
-        #     real_k_zs = []
-        #     imag_k_zs = []
-        #     for k in k_zs:
-        #         if np.real(k) > np.imag(k): #alternatively np.imag(k)< small
-        #             real_k_zs.append(np.real(k))
-        #             imag_k_zs.append(np.imag(k))
-        #     wl = np.ones(len(real_k_zs))*wavelengths[i]
-        #     ax1.plot(wl,real_k_zs,'bo')
-        #     ax1.set_xlabel('Wavelength (nm)')
-        #     ax1.set_ylabel(r'Real $k_z$')
-        # plt.xlim((wavelengths[0], wavelengths[-1]))
-        # fig1.suptitle(r'Real $k_z$'+params_2_print+'\n')
-
-        # fig1.savefig('Disp_Diagram_Re_stack%(bon)i'% {'bon' : stack_label})
+            for mode in which_modes:
+                E_conc_tmp = np.real(stack_wl_list[i].layers[which_layer].mode_pol[3,mode])
+                # E_conc.append(E_conc_tmp)
+                ax1.plot(wavelengths[i],E_conc_tmp,'bo')
+        plt.xlim((wavelengths[0], wavelengths[-1]))
+        ax1.set_xlabel('Wavelength (nm)')
+        ax1.set_ylabel(r'$E_{cyl} / E_{cell}$')
+        # ax2.plot(wavelengths,E_conc,'k')
+        # ax2.set_xlabel('Wavelength (nm)')
+        # ax2.set_ylabel(r'$E_{cyl} / E_{cell}$')
+        fig1.suptitle('Energy Concentration = '+r'$E_{cyl} / E_{cell}$'+'\n'+params_2_print)
+        fig1.savefig('Energy_Concentration_stack%(bon)i'% {'bon' : stack_label})
     else:
         print "\n ERROR: plotting.E_conc_plot; \n Can only calculate energy concentration in NanoStruct layers."
         print repr(stack_wl_list[0].layers[which_layer])
-
-    # #         ax1.set_xlabel('Wavelength (nm)')
-    # #         ax1.set_ylabel(r'$E_{cyl} / E_{cell}$')
-
 
 # np.genfromtxt can deal with incomplete data!
 #     num_BMs     = np.genfromtxt(file_name, usecols=(1))
@@ -309,22 +330,6 @@ def t_func_k_plot(stack_list):
 
 
 
-# def average_spec(spec_name,av_spec_name,num_wl,num_h):
-#     data      = np.loadtxt('%s.txt' % spec_name)
-#     av_wl     = []
-#     av_spec   = []
-#     av_h      = []
-#     for i in np.linspace(0,num_wl-1,num_wl):
-#         av_wl   = np.append(av_wl,data[i*num_h,0])
-#         av_tmp  = np.mean(data[i*num_h:(i+1)*num_h,1])
-#         av_spec = np.append(av_spec,av_tmp)
-#         av_tmp  = np.mean(data[i*num_h:(i+1)*num_h,2])
-#         av_h    = np.append(av_h,av_tmp)
-#     # Save averages to file
-#     av_array = zip(av_wl, av_spec, av_h)
-#     np.savetxt('%s.txt' % av_spec_name, av_array, fmt = '%18.12f')
-
-
 # def efficiency_h(spec_name,h_spec_name,wavelengths,num_wl,num_h, Animate):
 #     data   = np.loadtxt('%s.txt' % spec_name)
 #     spec   = data[:,1]
@@ -348,32 +353,6 @@ def t_func_k_plot(stack_list):
 #     if Animate == True:
 #         ps = os.system("convert -delay 3 +dither -layers Optimize -colors 16 Animated/*.pdf Animated/Abs_Spectra.gif")
 #         p  = os.system("gifsicle -O2 Animated/Abs_Spectra.gif -o Animated/Abs_Spectra-opt.gif")
-
-
-# def spectra_h(wavelengths,h_wl, h, eta_calc,i):
-#     fig = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
-#     ax1 = fig.add_subplot(1,1,1)
-#     ax1.plot(wavelengths, h_wl)
-#     ax1.set_xlabel('Wavelength (nm)')
-#     ax1.set_ylabel('Absorptance')
-#     plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
-#     tmp1 = 'h = %(h)d (nm), '% {
-#     'h'         : h, }
-#     tmp7 = r'$\eta$ = %(eta_calc)6.2f'% {
-#     'eta_calc'  : eta_calc*100, }
-#     tmp8 = ' %'
-
-#     imp_facts = tmp1 + tmp7 + tmp8
-#     plt.suptitle(imp_facts)
-#     if i < 10:
-#         plt.savefig('Animated/000%d' % i)
-#     elif i < 100:
-#         plt.savefig('Animated/00%d' % i)
-#     elif i < 1000:
-#         plt.savefig('Animated/0%d' % i)
-#     else:
-#         plt.savefig('Animated/%d' % i)
-
 
 
 # def height_plot(name_out, name_in, layer, light, max_num_BMs, max_order_PWs, Efficiency_h,
@@ -414,35 +393,6 @@ def t_func_k_plot(stack_list):
 #     cbar.ax.set_ylabel('Absorptance')
 
 
-
-#     plt.suptitle(imp_facts)
-#     plt.savefig(name_out)
-
-# # Plot vs Energy
-#     fig  = plt.figure(num=None, figsize=(12, 9), dpi=80, facecolor='w', edgecolor='k')
-#     ax1  = fig.add_subplot(111)
-#     h  = 6.626068e-34;
-#     c  = 299792458;
-#     eV = 1.60217646e-19;
-#     e_data  = (h*c/(wl_data*1e-9))/eV
-#     e_1    = e_data[0]
-#     e_2    = e_data[-1]
-#     d_e    = (e_2-e_1)/(500-1)
-
-#     # Interpolate the data
-#     int_e,int_h = np.mgrid[e_1:e_2+d_e:d_e, h_1:h_2+h_int:h_int]
-#     int_Eff_e   = griddata(e_data, h_data, s_data, int_e, int_h)
-#     int_Eff_e_t = np.fliplr(int_Eff_e.T)
-
-#     CS = plt.imshow(int_Eff_e_t, cmap=plt.cm.hot, norm=None, aspect='auto', interpolation=None,
-#       alpha=None, vmin=0, vmax=s_data.max(), origin='lower', extent=(e_2, e_1, h_1, h_2))
-#     ax1.set_xlabel('Energy (eV)')
-#     ax1.set_ylabel('Height (nm)')
-#     cbar = plt.colorbar(extend='neither',ticks=tick_array)
-#     cbar.set_ticklabels(tick_array)
-#     cbar.ax.set_ylabel('Absorptance')
-#     plt.suptitle(imp_facts)
-#     plt.savefig('%s_energy' % name_out)
 
 # # Plot efficiency vs height
 #     fig2= plt.figure(num=None, figsize=(12, 9), dpi=80, facecolor='w', edgecolor='k')

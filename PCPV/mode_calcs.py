@@ -234,7 +234,7 @@ class Simmo(Modes):
         if delete_working:
             self.sol1 = None
             self.sol2 = None
-            self.mode_pol = None
+            # self.mode_pol = None
 
 def r_t_mat(lay1, lay2):
     """ Return R12, T12, R21, T21 at an interface between lay1
