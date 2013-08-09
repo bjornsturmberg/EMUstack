@@ -48,7 +48,7 @@ class NanoStruct(object):
         elif geometry == '1D_grating':
             self.ff      = (radius1 + radius2)/period
         self.ff_rand     = ff_rand
-        self.height_nm    = height_nm
+        self.height_nm   = height_nm
         self.inclusion_a = inclusion_a
         self.inclusion_b = inclusion_b
         self.background  = background

@@ -12,14 +12,14 @@ import os
 
 
 #######################################################################################
-def t_r_a_plots(stack_wl_list, param_layer, light, max_order_PWs, max_num_BMs=0,
-    active_layer_nu=1, stack_label=1, additional_info=''):
+def gen_params_string(param_layer, light, max_order_PWs, max_num_BMs=0, add_info=''):
     # Plot t,r,a for each layer & total, then save each to text files
     if isinstance(param_layer,objects.NanoStruct):
+        params_2_print = 'ff = %5.3f, '% param_layer.ff
+        params_2_print += 'd = %(period)d, a1 = %(radius)d, '% {
+        'period'        : param_layer.period, 'radius' : param_layer.radius1,}
+        if param_layer.radius2 != 0: params_2_print += 'a2 = %(rad)d '% {'rad' : param_layer.radius2,}
         if param_layer.geometry == 'NW_array':
-            params_2_print = 'd = %(period)d, a1 = %(radius)d, '% {
-            'period'        : param_layer.period, 'radius' : param_layer.radius1,}
-            if param_layer.radius2 != 0: params_2_print += 'a2 = %(rad)d '% {'rad' : param_layer.radius2,}
             if param_layer.radius3 != 0: params_2_print += 'a3 = %(rad)d '% {'rad' : param_layer.radius3,}
             if param_layer.radius4 != 0: params_2_print += 'a4 = %(rad)d '% {'rad' : param_layer.radius4,}
             if param_layer.radius5 != 0: params_2_print += '\na5 = %(rad)d '% {'rad' : param_layer.radius5,}
@@ -34,31 +34,36 @@ def t_r_a_plots(stack_wl_list, param_layer, light, max_order_PWs, max_num_BMs=0,
             if param_layer.radius14 != 0: params_2_print += 'a14 = %(rad)d '% {'rad' : param_layer.radius14,}
             if param_layer.radius15 != 0: params_2_print += 'a15 = %(rad)d '% {'rad' : param_layer.radius15,}
             if param_layer.radius16 != 0: params_2_print += 'a16 = %(rad)d \n'% {'rad' : param_layer.radius16,}
-            params_2_print += 'ff = %5.3f, '% param_layer.ff
             if param_layer.square == True: params_2_print += '\nSquare NWs '
             if param_layer.ellipticity == True: params_2_print += '\nEllipticity = %(rad)5.3f '% {'rad' : param_layer.ellipticity,}
-            # k_pll = light.k_pll * param_layer.period
-            # params_2_print += r'$k_\parallel d$ = '
-            # tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}
-            # params_2_print += r'$\theta$ = %(theta)6.2f, $\phi$ = %(phi)6.2f, '% {
-            # 'theta' : light.theta,'phi' : light.phi, } 
-            params_2_print += '\nmax_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d, '% {
-            'max_num_BMs'   : max_num_BMs,'max_order_PWs' : max_order_PWs, }
-
-
         elif param_layer.geometry == '1D_grating':
-            params_2_print = ''
+            params_2_print += ''
+        params_2_print += '\nmax_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d, '% {
+        'max_num_BMs'   : max_num_BMs,'max_order_PWs' : max_order_PWs, }
     else:
         params_2_print = 'Homogeneous Film\n'
-        params_2_print += 'h = %10.2f, '% param_layer.height_nm
         params_2_print += 'max_PW_order = %(max_order_PWs)d, '% {'max_order_PWs' : max_order_PWs, }
 
-    params_2_print += '\nh = %10.2f, '% param_layer.height_nm
+
+    # k_pll = light.k_pll * param_layer.period
+    # params_2_print += r'$k_\parallel d$ = '
+    # tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}
+    # params_2_print += r'$\theta$ = %(theta)6.2f, $\phi$ = %(phi)6.2f, '% {
+    # 'theta' : light.theta,'phi' : light.phi, } 
+
+    return params_2_print
+#######################################################################################
 
 
+#######################################################################################
+def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=1, stack_label=1):
+    # Plot t,r,a for each layer & total, then save each to text files
 
+    height_list = stack_wl_list[0].heights_nm()[::-1]
+    params_2_print += '\n'r'$h_t,...,h_b$ = '
+    params_2_print += ''.join('%4d, ' % num for num in height_list)
 
-    wavelengths = np.array([s.layers[0].light.wl_nm for s in stack_wl_list]) #look at first layer to find wls.
+    # wavelengths = np.array([s.layers[0].light.wl_nm for s in stack_wl_list]) #look at first layer to find wls.
     a_list = []
     t_list = []
     r_list = []
@@ -69,18 +74,32 @@ def t_r_a_plots(stack_wl_list, param_layer, light, max_order_PWs, max_num_BMs=0,
 
     num_layers = len(stack_wl_list[0].layers) - 1
     active_abs = []
+    a_tot      = []
+    t_tot      = []
+    r_tot      = []
     for i in range(len(wavelengths)): 
         active_abs.append(float(a_list[active_layer_nu + i*num_layers]))
-    Efficiency = ult_efficiency(active_abs, wavelengths)
+        a_tot.append(float(a_list[num_layers-1+(i*num_layers)]))
+        t_tot.append(float(a_list[num_layers-1+(i*num_layers)]))
+        r_tot.append(float(a_list[num_layers-1+(i*num_layers)]))
+    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths)
     params_2_print += '\n' r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
     params_2_print += ' %'
-    print params_2_print
 
     total_h = sum(stack_wl_list[0].heights_nm()) #look at first wl result to find h.
     layers_plot('Lay_Absorb', a_list, wavelengths, total_h, params_2_print, stack_label)
     layers_plot('Lay_Trans',  t_list, wavelengths, total_h, params_2_print, stack_label)
     layers_plot('Lay_Reflec', r_list, wavelengths, total_h, params_2_print, stack_label)
-
+    # Also plot total t,r,a on a single plot
+    plot_name = 'Total_Spectra'
+    total_tra_plot(plot_name, a_tot, t_tot, r_tot, wavelengths, params_2_print, stack_label)
+    # Also plot totals weighted by solar irradiance
+    weighting = Irradiance/Irradiance.max()
+    a_weighted = a_tot*weighting
+    t_weighted = t_tot*weighting
+    r_weighted = r_tot*weighting
+    plot_name = 'Weighted_Total_Spectra'
+    total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, wavelengths, params_2_print, stack_label)
     return Efficiency
 
 
@@ -97,8 +116,7 @@ def ult_efficiency(active_abs, wavelengths):
     Efficiency   = integral_tmp/(bandgap_wl*tot_irradiance)   
     # np.savetxt('Efficiency.txt', [Efficiency, radius1, radius2,
     # period, ff], fmt = '%12.8f')
-    return Efficiency
-
+    return Efficiency, i_spec
 
 
 def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, stack_label):
@@ -155,46 +173,88 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
 
         plt.savefig('%(s)s_stack%(bon)i'% {'s' : spectra_name, 'bon' : stack_label})
 
+def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label):
+    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(3,1,1)
+    ax1.plot(wavelengths, a_spec)
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Absorptance')
+    plt.xlim((wavelengths[0], wavelengths[-1]))
+    plt.ylim((0, 1))
+    ax1 = fig.add_subplot(3,1,2)
+    ax1.plot(wavelengths, t_spec)
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Transmittance')
+    plt.xlim((wavelengths[0], wavelengths[-1]))
+    plt.ylim((0, 1))
+    ax1 = fig.add_subplot(3,1,3)
+    ax1.plot(wavelengths, r_spec)
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Reflectance')
+    plt.xlim((wavelengths[0], wavelengths[-1]))
+    plt.ylim((0, 1))
+    plt.suptitle(plot_name+'\n'+params_2_print)
+    plt.savefig('%(s)s_stack%(bon)i'% {'s' : plot_name, 'bon' : stack_label})
 #######################################################################################
 
 
 
+#######################################################################################
+def omega_plot(stack_wl_list, wavelengths, params_string, stack_label=1):
+    print repr(stack_wl_list[0].layers[0].k_z)
 
 
+# def omega_plot(complete_st, layer, light, max_num_BMs, max_order_PWs, Efficiency):
+#     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+#     nu_layers = len(complete_st)
+#     for i in range(0, nu_layers):
+#         #reverse order so top layer gets plotted up top
+#         st = nu_layers-1-i
+#         format_st     = '%04d' % st
+#         ax1 = fig.add_subplot(nu_layers,1,i+1)
+#         # ax2 = fig.add_subplot(nu_layers,1,i+1)
+#         if isinstance(complete_st[nu_layers-1-i],objects.ThinFilm):
+#             file_name   = 'beta_st%s.txt' % format_st
+#             wavelengths = np.genfromtxt(file_name, usecols=(1))
+#             num_BMs     = np.genfromtxt(file_name, usecols=(0))
+#             start_col   = 2
+#         else:
+#             file_name   = 'omega_st%s.txt' % format_st
+#             wavelengths = np.genfromtxt(file_name, usecols=(2))
+#             num_BMs     = np.genfromtxt(file_name, usecols=(1))
+#             start_col   = 5
+
+#         count = 1
+#         for i in range(len(num_BMs)):
+#             prop = []
+#             prop_im = []
+#             re = np.genfromtxt(file_name, usecols=(start_col+2*i),   invalid_raise=False)
+#             im = np.genfromtxt(file_name, usecols=(start_col+2*i+1), invalid_raise=False)
+#             nu_real_modes = len(re)
+#             for j in range(nu_real_modes):
+#                 if re[j] > im[j]:
+#                     prop.append(re[j])
+#                     prop_im.append(im[j])
+#             count +=1
+#             if len(prop) == 0:
+#                 for j in range(nu_real_modes):
+#                     prop.append(re[j])
+#                     prop_im.append(im[j])
+#                 count +=1
+
+#             trim_wls = wavelengths[0:len(prop)]
+#             ax1.plot(trim_wls, prop, 'ro')
+#             ax1.set_xlabel('Wavelength (nm)')
+#             ax1.set_ylabel(r'Re(k$_z$)')
+#             # plt.xlim((wavelengths[0], wavelengths[-1]))
+#             # ax2.plot(trim_wls, prop_im, 'bo')
+#             # ax2.set_xlabel('Wavelength (nm)')
+#             # ax2.set_ylabel(r'Im(k$_z$)')
+#         ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+#         # ax2.set_xlim((wavelengths[0], wavelengths[-1]))
 
 
-
-
-
-def k_plot(t_func_k,nu_PW_pols):
-    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-    ax1 = fig.add_subplot(1,1,1)
-    ks = range(nu_PW_pols)
-    np.savetxt('%(s)s.txt'% {'s' : 't_func_k',}, t_func_k, fmt = '%18.12f')
-    ax1.plot(ks,t_func_k)
-    ax1.set_xlabel('k vector')
-    ax1.set_ylabel(r'$|E|_{trans}$')
-    plt.savefig('t_func_k')
-
-def t_func_k_plot(stack_list):
-    for stack in stack_list:
-        # print stack.T_net[0,:]
-        nu_PW_pols = 2*stack.layers[0].structure.num_pw_per_pol
-        trans_k = np.abs(stack.trans_vector)
-        trans_k_array = np.array(trans_k).reshape(-1,)
-        tot_trans_k_array = trans_k_array#**2
-        # print repr(trans_k)
-        # print repr(tot_trans_k_array)
-        k_plot(tot_trans_k_array,nu_PW_pols)
-
-
-
-
-
-
-
-
-
+#     plt.savefig('Disp_Diagram')
 
 
 # def omega_plot_concentration(st, BM_min,BM_max):
@@ -224,6 +284,46 @@ def t_func_k_plot(stack_list):
 # if __name__ == "__main__":
 #     import sys
 #     omega_plot_concentration(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
+#######################################################################################
+
+
+
+
+
+
+#######################################################################################
+def k_plot(t_func_k,nu_PW_pols):
+    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(1,1,1)
+    ks = range(nu_PW_pols)
+    np.savetxt('%(s)s.txt'% {'s' : 't_func_k',}, t_func_k, fmt = '%18.12f')
+    ax1.plot(ks,t_func_k)
+    ax1.set_xlabel('k vector')
+    ax1.set_ylabel(r'$|E|_{trans}$')
+    plt.savefig('t_func_k')
+
+def t_func_k_plot(stack_list):
+    for stack in stack_list:
+        # print stack.T_net[0,:]
+        nu_PW_pols = 2*stack.layers[0].structure.num_pw_per_pol
+        trans_k = np.abs(stack.trans_vector)
+        trans_k_array = np.array(trans_k).reshape(-1,)
+        tot_trans_k_array = trans_k_array#**2
+        # print repr(trans_k)
+        # print repr(tot_trans_k_array)
+        k_plot(tot_trans_k_array,nu_PW_pols)
+#######################################################################################
+
+
+
+
+
+
+
+
+
+
+
 
 
 # def average_spec(spec_name,av_spec_name,num_wl,num_h):
@@ -292,147 +392,6 @@ def t_func_k_plot(stack_list):
 #         plt.savefig('Animated/%d' % i)
 
 
-# def efficiency(wavelengths,i_spec,spec):
-#     #  Total solar irradiance - integral of I(lambda) from 310nm-4000nm
-#     #  intergral done in Mathematica (OtherCode/Silicon_ASTM/ASTMG173.nb)
-#     tot_irradiance = 900.084
-#     bandgap_wl     = wavelengths[-1] #have as property of material.
-#     expression     = i_spec*spec*wavelengths
-#     integral_tmp   = np.trapz(expression, x=wavelengths)
-#     Efficiency     = integral_tmp/(bandgap_wl*tot_irradiance)
-#     return Efficiency
-
-# def irradiance(Absorb, W_Absorb, Trans, W_Trans, Reflec, W_Reflec, radius1, radius2=0,
-#         period=0, ff=0):
-#     data         = np.loadtxt('%s.txt' % Absorb)
-#     wavelengths  = data[:,0]
-#     spec         = data[:,1]
-#     h_av         = data[:,2] 
-#     i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
-#     i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,2])
-
-#     # call efficiency function 
-#     Efficiency = efficiency(wavelengths,i_spec,spec)
-#     np.savetxt('Efficiency.txt', [Efficiency, radius1, radius2,
-#         period, ff], fmt = '%12.8f')
-
-#     # weighted absorptance
-#     weighting(i_spec, wavelengths, spec, h_av, W_Absorb)
-#     # weighted transmittance
-#     data         = np.loadtxt('%s.txt' % Trans)
-#     spec         = data[:,1] 
-#     weighting(i_spec, wavelengths, spec, h_av, W_Trans)
-#     # weighted reflectance
-#     data         = np.loadtxt('%s.txt' % Reflec)
-#     spec         = data[:,1] 
-#     weighting(i_spec, wavelengths, spec, h_av, W_Reflec)
-#     return Efficiency
-
-
-# def weighting(weight_by, wavelengths, spectrum, h_av, w_spectum):
-#     # spec_data      = np.loadtxt('%s.txt' % spectrum)
-#     # spec           = spec_data[:,1]
-#     weighted       = spectrum*weight_by/weight_by.max()
-#     weigthed_array = zip(wavelengths, weighted, h_av)
-#     np.savetxt('%s.txt' % w_spectum, weigthed_array, fmt = '%18.11f')
-
-
-# def tra_plot(spectra_name, spec_list, layer, light, max_num_BMs, max_order_PWs, Efficiency):
-#     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-#     for i in range(len(spec_list)):
-#         ax1 = fig.add_subplot(3,1,i+1)
-#         spec_name = spec_list.pop(0)
-#         s_data  = np.loadtxt('%s.txt' % spec_name)
-#         wavelengths = s_data[:,0]
-#         spectrum = s_data[:,1]
-#         ax1.plot(wavelengths, spectrum)
-#         ax1.set_xlabel('Wavelength (nm)')
-#         ax1.set_ylabel(spec_name)
-#         plt.axis([wavelengths[0], wavelengths[-1], 0.0, 1])
-#     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
-#     'period'        : layer.period, 'radius' : layer.radius1,}
-#     tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, '% {
-#     'ff'            : layer.ff, 
-#     'h_one'         : layer.height_nm, }
-#     tmp2 = r'$k_\parallel d$ = '
-#     k_pll = light.k_pll * layer.period
-#     tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}
-#     tmp6 = 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
-#     'max_num_BMs'   : max_num_BMs,
-#     'max_order_PWs' : max_order_PWs, }
-#     tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
-#     tmp8 = ' %'
-#     tmp_end = tmp10 + tmp2 + tmp3 + tmp6 + tmp7 + tmp8
-
-#     if layer.radius2 + layer.radius3 + layer.radius4 == 0:
-#         imp_facts = tmp1 + tmp_end
-#     elif layer.radius3 + layer.radius4 == 0:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         imp_facts = tmp1 +  tmp11 + tmp_end
-#     elif layer.radius4 == 0:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         tmp12 = 'a3 = %(radius)d '% {'radius' : layer.radius3,}
-#         imp_facts = tmp1 + tmp11 + tmp12 + tmp_end
-#     else:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         tmp12 = 'a3 = %(radius)d '% {'radius' : layer.radius3,}
-#         tmp13 = 'a4 = %(radius)d '% {'radius' : layer.radius4,}
-#         imp_facts = tmp1 + tmp11 + tmp12 + tmp13 + tmp_end
-
-#     plt.suptitle(imp_facts)
-#     plt.savefig(spectra_name)
-
-
-# def overlay_plot(spectra_name, spec_list, layer, light, max_num_BMs, max_order_PWs, Efficiency):
-#     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-#     ax1 = fig.add_subplot(3,1,2)
-#     line_list = ['k-','r-.','b--','g:','m,']
-#     for i in range(len(spec_list)):
-#         spec_name   = spec_list.pop(0)
-#         line_name   = line_list.pop(0)
-#         s_data      = np.loadtxt('%s.txt' % spec_name)
-#         wavelengths = s_data[:,0]
-#         spectrum    = s_data[:,1]
-#         ax1.plot(wavelengths, spectrum, line_name)
-#         ax1.set_xlabel('Wavelength (nm)')
-#         ax1.set_ylabel(spec_name)
-#         plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
-#     plt.legend( ('posxy 100','posxy 95','posxy 98') )
-#     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
-#     'period'        : layer.period, 'radius' : layer.radius1,}
-#     tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, '% {
-#     'ff'            : layer.ff, 
-#     'h_one'         : layer.height_nm, }
-#     tmp2 = r'$k_\parallel d$ = '
-#     k_pll = light.k_pll * layer.period
-#     tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}
-#     tmp4 = r'$\phi$ = '
-#     tmp5 = '%(phi)6.2f, '% {'phi' : light.phi, }
-#     tmp6 = 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
-#     'max_num_BMs'   : max_num_BMs,
-#     'max_order_PWs' : max_order_PWs, }
-#     tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
-#     tmp8 = ' %'
-#     tmp_end = tmp10 + tmp2 + tmp3 + tmp6 + tmp7 + tmp8
-
-#     if layer.radius2 + layer.radius3 + layer.radius4 == 0:
-#         imp_facts = tmp1 + tmp_end
-#     elif layer.radius3 + layer.radius4 == 0:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         imp_facts = tmp1 +  tmp11 + tmp_end
-#     elif layer.radius4 == 0:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         tmp12 = 'a3 = %(radius)d '% {'radius' : layer.radius3,}
-#         imp_facts = tmp1 + tmp11 + tmp12 + tmp_end
-#     else:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         tmp12 = 'a3 = %(radius)d '% {'radius' : layer.radius3,}
-#         tmp13 = 'a4 = %(radius)d '% {'radius' : layer.radius4,}
-#         imp_facts = tmp1 + tmp11 + tmp12 + tmp13 + tmp_end
-
-#     plt.suptitle(imp_facts)
-#     plt.savefig(spectra_name)
-
 
 # def height_plot(name_out, name_in, layer, light, max_num_BMs, max_order_PWs, Efficiency_h,
 #     Efficiency,num_h):
@@ -471,35 +430,7 @@ def t_func_k_plot(stack_list):
 #     cbar.set_ticklabels(tick_array)
 #     cbar.ax.set_ylabel('Absorptance')
 
-#     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
-#     'period'        : layer.period, 'radius' : layer.radius1,}
-#     tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d, '% {
-#     'ff'            : layer.ff, 
-#     'h_one'         : layer.height_nm, }
-#     tmp2 = r'$k_\parallel d$ = '
-#     k_pll = light.k_pll * layer.period
-#     tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}
-#     tmp6 = 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
-#     'max_num_BMs'   : max_num_BMs,
-#     'max_order_PWs' : max_order_PWs, }
-#     tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
-#     tmp8 = ' %'
-#     tmp_end = tmp10 + tmp2 + tmp3 + tmp6 + tmp7 + tmp8
 
-#     if layer.radius2 + layer.radius3 + layer.radius4 == 0:
-#         imp_facts = tmp1 + tmp_end
-#     elif layer.radius3 + layer.radius4 == 0:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         imp_facts = tmp1 +  tmp11 + tmp_end
-#     elif layer.radius4 == 0:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         tmp12 = 'a3 = %(radius)d '% {'radius' : layer.radius3,}
-#         imp_facts = tmp1 + tmp11 + tmp12 + tmp_end
-#     else:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         tmp12 = 'a3 = %(radius)d '% {'radius' : layer.radius3,}
-#         tmp13 = 'a4 = %(radius)d '% {'radius' : layer.radius4,}
-#         imp_facts = tmp1 + tmp11 + tmp12 + tmp13 + tmp_end
 
 #     plt.suptitle(imp_facts)
 #     plt.savefig(name_out)
@@ -546,87 +477,6 @@ def t_func_k_plot(stack_list):
 #     plt.savefig('%s_eta_bar' % name_out)
 
 
-# def omega_plot(complete_st, layer, light, max_num_BMs, max_order_PWs, Efficiency):
-#     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-#     nu_layers = len(complete_st)
-#     for i in range(0, nu_layers):
-#         #reverse order so top layer gets plotted up top
-#         st = nu_layers-1-i
-#         format_st     = '%04d' % st
-#         ax1 = fig.add_subplot(nu_layers,1,i+1)
-#         # ax2 = fig.add_subplot(nu_layers,1,i+1)
-#         if isinstance(complete_st[nu_layers-1-i],objects.ThinFilm):
-#             file_name   = 'beta_st%s.txt' % format_st
-#             wavelengths = np.genfromtxt(file_name, usecols=(1))
-#             num_BMs     = np.genfromtxt(file_name, usecols=(0))
-#             start_col   = 2
-#         else:
-#             file_name   = 'omega_st%s.txt' % format_st
-#             wavelengths = np.genfromtxt(file_name, usecols=(2))
-#             num_BMs     = np.genfromtxt(file_name, usecols=(1))
-#             start_col   = 5
-
-#         count = 1
-#         for i in range(len(num_BMs)):
-#             prop = []
-#             prop_im = []
-#             re = np.genfromtxt(file_name, usecols=(start_col+2*i),   invalid_raise=False)
-#             im = np.genfromtxt(file_name, usecols=(start_col+2*i+1), invalid_raise=False)
-#             nu_real_modes = len(re)
-#             for j in range(nu_real_modes):
-#                 if re[j] > im[j]:
-#                     prop.append(re[j])
-#                     prop_im.append(im[j])
-#             count +=1
-#             if len(prop) == 0:
-#                 for j in range(nu_real_modes):
-#                     prop.append(re[j])
-#                     prop_im.append(im[j])
-#                 count +=1
-
-#             trim_wls = wavelengths[0:len(prop)]
-#             ax1.plot(trim_wls, prop, 'ro')
-#             ax1.set_xlabel('Wavelength (nm)')
-#             ax1.set_ylabel(r'Re(k$_z$)')
-#             # plt.xlim((wavelengths[0], wavelengths[-1]))
-#             # ax2.plot(trim_wls, prop_im, 'bo')
-#             # ax2.set_xlabel('Wavelength (nm)')
-#             # ax2.set_ylabel(r'Im(k$_z$)')
-#         ax1.set_xlim((wavelengths[0], wavelengths[-1]))
-#         # ax2.set_xlim((wavelengths[0], wavelengths[-1]))
-
-#     tmp1 = 'd = %(period)d, a1 = %(radius)d '% {
-#     'period'        : layer.period, 'radius' : layer.radius1,}
-#     tmp10 ='ff = %(ff)4.2f, \nh_1 = %(h_one)d,  '% {
-#     'ff'            : layer.ff, 
-#     'h_one'         : layer.height_nm, }
-#     tmp2 = r'$k_\parallel d$ = '
-#     k_pll = light.k_pll * layer.period
-#     tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}
-#     tmp6 = 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d'% {
-#     'max_num_BMs'   : max_num_BMs,
-#     'max_order_PWs' : max_order_PWs, }
-#     tmp7 = '\n' r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
-#     tmp8 = ' %'
-#     tmp_end = tmp10 + tmp2 + tmp3 + tmp6 + tmp7 + tmp8
-
-#     if layer.radius2 + layer.radius3 + layer.radius4 == 0:
-#         imp_facts = tmp1 + tmp_end
-#     elif layer.radius3 + layer.radius4 == 0:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         imp_facts = tmp1 +  tmp11 + tmp_end
-#     elif layer.radius4 == 0:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         tmp12 = 'a3 = %(radius)d '% {'radius' : layer.radius3,}
-#         imp_facts = tmp1 + tmp11 + tmp12 + tmp_end
-#     else:
-#         tmp11 = 'a2 = %(radius)d '% {'radius' : layer.radius2,}
-#         tmp12 = 'a3 = %(radius)d '% {'radius' : layer.radius3,}
-#         tmp13 = 'a4 = %(radius)d '% {'radius' : layer.radius4,}
-#         imp_facts = tmp1 + tmp11 + tmp12 + tmp13 + tmp_end
-
-#     plt.suptitle(imp_facts)
-#     plt.savefig('Disp_Diagram')
 
 
 
