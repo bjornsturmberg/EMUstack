@@ -3,9 +3,9 @@ c     Explicit inputs
      *    lambda, nval, ordre_ls, d_in_nm,
      *    debug, mesh_file, mesh_format, npt, nel,
      *    n_eff, bloch_vec, lx, ly, tol, 
-     *    E_H_field, i_cond, itermax, PropModes,
+     *    E_H_field, i_cond, itermax,
      *    PrintSolution, PrintAll,
-     *    Checks, q_average, plot_real, plot_imag, plot_abs,
+     *    q_average, plot_real, plot_imag, plot_abs,
      *    Loss, neq_PW, cmplx_max, 
 c     "Optional" inputs (Python guesses these)
      *    nb_typ_el,
@@ -102,10 +102,9 @@ C  Names and Controls
       character gmsh_file_pos*100
       character overlap_file*100, dir_name*100
       character*100 tchar
-      integer*8 namelength, PrintAll, Checks
+      integer*8 namelength, PrintAll!, Checks
 C      integer*8 PrintOmega
-      integer*8 PrintSolution
-      integer*8 PropModes
+      integer*8 PrintSolution!, PropModes
       integer*8 d_in_nm, pair_warning, Loss
       integer*8 q_average, plot_real, plot_imag, plot_abs
 
@@ -136,7 +135,6 @@ c     new breed of variables to prise out of a, b and c
       complex*16, target :: beta1(nval), beta2(nval)
       complex*16, pointer :: beta(:)
       complex*16 mode_pol(4,nval)
-c     Fresnel scattering matrices
  
 Cf2py intent(out) beta1, overlap_J, overlap_J_dagger
 Cf2py intent(out) sol1, sol2, mode_pol
@@ -152,6 +150,10 @@ c      3*npt+nel+nnodes*nel
       !write(*,*) "cmplx_max = ", cmplx_max
       !write(*,*) "real_max = ", real_max
       !write(*,*) "int_max = ", int_max
+
+C     Old inputs now internal to here and commented out by default.
+C      Checks = 0
+C      PropModes = 0
 
       allocate(b(cmplx_max), STAT=allocate_status)
       if (allocate_status /= 0) then
@@ -649,23 +651,23 @@ CCCCCCCCCCCCCCCCCCCCCCCC  End Prime, Adjoint Loop  CCCCCCCCCCCCCCCCCCCCCC
 C
 
 CCCC Hardcore Debugging - Print all arrays + some variables CCCCC
-      if (debug .eq. 2) then
-        PrintAll = 1
-        Checks = 2
-
-        open (unit=1111,file="Normed/Debug_data.txt", status='unknown')
-        write(1111,*) "lambda = ", lambda
-        write(1111,*) "eps_eff = ", (eps_eff(i),i=1,nb_typ_el)
-        write(1111,*) "shift = ", shift
-        write(1111,*) "bloch_vec(1) = ", bloch_vec(1)
-        write(1111,*) "bloch_vec(2) = ", bloch_vec(2) 
-        write(1111,*) "k_0 = ", k_0
-        write(1111,*) 
-        do i=1,nval
-          write(1111,"(i4,2(g22.14),g18.10)") i, 
-     *       beta1(i)
-        enddo
-      endif
+C      if (debug .eq. 2) then
+C        PrintAll = 1
+C        Checks = 2
+C
+C        open (unit=1111,file="Normed/Debug_data.txt", status='unknown')
+C        write(1111,*) "lambda = ", lambda
+C        write(1111,*) "eps_eff = ", (eps_eff(i),i=1,nb_typ_el)
+C        write(1111,*) "shift = ", shift
+C        write(1111,*) "bloch_vec(1) = ", bloch_vec(1)
+C        write(1111,*) "bloch_vec(2) = ", bloch_vec(2) 
+C        write(1111,*) "k_0 = ", k_0
+C        write(1111,*) 
+C        do i=1,nval
+C          write(1111,"(i4,2(g22.14),g18.10)") i, 
+C     *       beta1(i)
+C        enddo
+C      endif
 CCCC Hardcore Debugging - End                               CCCCC
 
 C  Orthogonal integral
@@ -696,10 +698,10 @@ C    Save Original solution
         dir_name = "Output/Fields"
         call write_sol (nval, nel, nnodes, E_H_field, lambda,
      *       beta1, sol1, mesh_file, dir_name)
-        call write_param (E_H_field, lambda, npt, nel, i_cond,
-     *       nval, nvect, itermax, tol, shift, lx, ly, 
-     *       mesh_file, mesh_format, n_conv, nb_typ_el, eps_eff,
-     *       bloch_vec, dir_name)
+C        call write_param (E_H_field, lambda, npt, nel, i_cond,
+C     *       nval, nvect, itermax, tol, shift, lx, ly, 
+C     *       mesh_file, mesh_format, n_conv, nb_typ_el, eps_eff,
+C     *       bloch_vec, dir_name)
       tchar = "Output/FieldsPNG/All_plots_png_abs2_eE.geo"
       open (unit=34,file=tchar)
         do i=1,nval
@@ -779,80 +781,76 @@ C  J_dagger_overlap
         write(ui,*) "MAIN: CPU time for J_dagger_overlap :",
      *  (time2_J-time1_J)
       endif
-C
-C  Scattering Matrices
-      if (debug .eq. 1) then
-        write(ui,*) "MAIN: Scattering Matrices"
-      endif
+
 C
 C
 C
 CCCCCCCCCCCCCCCCCCCCC Calculation Checks CCCCCCCCCCCCCCCCCCCCC
 C
 C  Completeness Check
-      if (Checks .eq. 1) then
-        write(ui,*) "MAIN: K_overlap Integral"
-        call K_overlap(nval, nel, npt, nnodes, 
-     *    nb_typ_el, type_el, table_nod, x_arr,   
-     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
-     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
-     *    PrintAll, k_0, ordre_ls)
-        write(ui,*) "MAIN: Completeness Test"
-        call Completeness (nval, neq_PW, 
-     *    overlap_K, overlap_J)
-      write(ui,*) "numberprop_N = ", numberprop_N
-      endif 
+C      if (Checks .eq. 1) then
+C        write(ui,*) "MAIN: K_overlap Integral"
+C        call K_overlap(nval, nel, npt, nnodes, 
+C     *    nb_typ_el, type_el, table_nod, x_arr,   
+C     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
+C     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
+C     *    PrintAll, k_0, ordre_ls)
+C        write(ui,*) "MAIN: Completeness Test"
+C        call Completeness (nval, neq_PW, 
+C     *    overlap_K, overlap_J)
+C      write(ui,*) "numberprop_N = ", numberprop_N
+C      endif 
 C
 
 
 C     
 C  Search for number of propagating Bloch Modes
-      if (PropModes .eq. 1 .and. Loss .eq. 0) then
-      numberprop_N = 0
-      do i=1,nval
-        test = beta1(i)
-        if (ABS(IMAG(test)) .lt. 1.0d-5) then
-          numberprop_N = numberprop_N + 1
-        endif
-      enddo
-      write(200,*) lambda*d_in_nm, numberprop_N
-      endif
+C      if (PropModes .eq. 1 .and. Loss .eq. 0) then
+C      numberprop_N = 0
+C      do i=1,nval
+C        test = beta1(i)
+C        if (ABS(IMAG(test)) .lt. 1.0d-5) then
+C          numberprop_N = numberprop_N + 1
+C        endif
+C      enddo
+C      write(200,*) lambda*d_in_nm, numberprop_N
+C      endif
 C
 C
 C
-      if (PropModes .eq. 1) then
-        if (Loss .eq. 0) then
-          close(200)
-        endif
-        close(565)
-        close(566)
-      endif
+C      if (PropModes .eq. 1) then
+C        if (Loss .eq. 0) then
+C          close(200)
+C        endif
+C        close(565)
+C        close(566)
+C      endif
 C
       call cpu_time(time2_postp)
 C
 CCCCCCCCCCCCCCCCCCCCCC Calculation Checks CCCCCCCCCCCCCCCCCCCCC
 CC
 CC  Completeness Check
-      if (Checks .eq. 1) then
-        write(ui,*) "MAIN: K_overlap Integral"
-        call K_overlap(nval, nel, npt, nnodes, 
-     *    nb_typ_el, type_el, table_nod, x_arr,   
-     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
-     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
-     *    PrintAll, k_0, ordre_ls)
-        write(ui,*) "MAIN: Completeness Test"
-        call Completeness (nval, neq_PW, 
-     *    overlap_K, overlap_J)
+C      if (Checks .eq. 1) then
+C        write(ui,*) "MAIN: K_overlap Integral"
+C        call K_overlap(nval, nel, npt, nnodes, 
+C     *    nb_typ_el, type_el, table_nod, x_arr,   
+C     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
+C     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
+C     *    PrintAll, k_0, ordre_ls)
+C        write(ui,*) "MAIN: Completeness Test"
+C        call Completeness (nval, neq_PW, 
+C     *    overlap_K, overlap_J)
 C  Search for number of propagating Bloch Modes
-      numberprop_N = 0
-      do i=1,nval
-        test = beta1(i)
-        if (ABS(IMAG(test)) .lt. 1.0d-5) then
-          numberprop_N = numberprop_N + 1
-        endif
-      enddo
-      write(ui,*) "numberprop_N = ", numberprop_N
-      endif 
+C      numberprop_N = 0
+C      do i=1,nval
+C        test = beta1(i)
+C        if (ABS(IMAG(test)) .lt. 1.0d-5) then
+C          numberprop_N = numberprop_N + 1
+C        endif
+C      enddo
+C      write(ui,*) "numberprop_N = ", numberprop_N
+C      endif 
 C
 C#########################  End Calculations  ###########################
 C

@@ -31,7 +31,7 @@ from stack import *
 start = time.time()
 ################ Simulation parameters ################
 
-simo_para  = objects.Controls(debug = 0,max_order_PWs = 3, num_cores = 5,
+simo_para  = objects.Controls(FEM_debug = False, max_order_PWs = 3, num_cores = 5,
     PrintAll = 0, Checks = 0, PrintSolution = 0, PrintSupModes = 0)
 # Remove results of previous simulations
 clear_previous.clean('.txt')

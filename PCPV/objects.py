@@ -397,8 +397,6 @@ class Light(object):
 class Controls(object):
     """
     0  debug         - 0 for full simulations, 1 for full details
-    0  TEmode        - Calculate t,r,a for the incident TE polarisation
-    1  TMmode        - Calculate t,r,a for the incident TM polarisation
     1  PropModes     - Save # of propagating modes & det(I-RPRP) 1, save SVD 2
     0  PrintSolution - Save FEM Bloch modes for lambda selected below.
     0  PrintSupModes - Save supermode field distributions
@@ -406,7 +404,6 @@ class Controls(object):
     0  Checks        - Check completeness, energy conservation
 
     1                    # Selected formulation (1=E-Field, 2=H-Field)
-    1                    # Number of wavelength to be scanned (n_lambda)
     2                    # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
     1.0d0                # X dimension of unit cell (lx)
     1.0d0                # Y dimension of unit cell (ly)
@@ -414,19 +411,19 @@ class Controls(object):
     0.0d0                # ARPACK accuracy (0.0 for machine precision)(tol) 
     5.0d0 0.0d0          # Re and Im of parameter for shift-and-invert method
     """
-    def __init__(self, debug = 0, PrintSolution = 0, 
-        PrintSupModes = 0, PrintAll = 0, Checks = 0, PropModes = 0, q_average = 0, 
+    def __init__(self, FEM_debug = False, max_order_PWs = 3, num_cores = 8, 
+        PrintSolution = 0, PrintSupModes = 0, PrintAll = 0, q_average = 0, 
         plot_real = 1, plot_imag = 0, plot_abs = 0, tol = 0, E_H_field = 1, 
-        i_cond = 2, itermax = 30, incident = 0, 
+        i_cond = 2, itermax = 30, 
         x_order_in = 0, x_order_out = 0, y_order_in = 0, y_order_out = 0,
-        what4incident = 2, out4incident = 0,
-        max_order_PWs = 3, num_cores = 8, leave_cpus = False):
-        self.debug          = debug
+        leave_cpus = False):
+        if FEM_debug == True:
+            self.debug      = 1
+        else:
+            self.debug      = 0
         self.PrintSolution  = PrintSolution
         self.PrintSupModes  = PrintSupModes
         self.PrintAll       = PrintAll
-        self.Checks         = Checks
-        self.PropModes      = PropModes
         self.q_average      = q_average
         self.plot_real      = plot_real
         self.plot_imag      = plot_imag
@@ -435,13 +432,10 @@ class Controls(object):
         self.E_H_field      = E_H_field
         self.i_cond         = i_cond
         self.itermax        = itermax
-        self.incident       = incident
         self.x_order_in     = x_order_in
         self.x_order_out    = x_order_out
         self.y_order_in     = y_order_in
         self.y_order_out    = y_order_out
-        self.what4incident  = what4incident
-        self.out4incident   = out4incident
         self.max_order_PWs  = max_order_PWs
         self.num_cores      = num_cores
         if leave_cpus == True:
