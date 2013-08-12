@@ -8,76 +8,149 @@ from mode_calcs import Simmo, Anallo
 data_location = '../PCPV/Data/'
 
 class NanoStruct(object):
-    """ Represents structured layer
+    """ Represents a structured layer.
+
+        INPUTS:
+
+        - 'geometry'      : '1D_grating', 'NW_array'
+
+        - 'period'        : The diameter the unit cell in nanometers.
+
+        - 'radius1'       : The cross-section of the inclusion in nm 
+            (radius of NW, diameter of gratings )
+        - 'radius2-16'    : The radius of further inclusions.
+
+        - 'height_nm'     : The thickness of the layer in nm or 'semi_inf'
+            for a semi-infinte layer.
+
+        - 'inclusion_a'   : A :Material: instance for first inclusion, 
+            specified as dispersive refractive index (eg. materials.Si_c) 
+            or nondispersive complex number (eg. Material(1.0 + 0.0j)).
+
+        - 'inclusion_b'   : "  " for the second inclusion medium.
+        - 'background'    : "  " for the background medium.
+
+        - 'loss'          : If False sets Im(n) = 0, if True leaves n as is.
+
+        - 'ellipticity'   : 
+        - 'square'        : 
+
+        - 'ff'            : 
+        - 'set_ff'        : 
+        - 'ff_rand'       : 
+        
+        - 'posx'          : 
+        - 'posy'          : 
+ 
+        - 'small_d'       : Distance between 2 inclusions of interleaved 1D grating.
+
+        - 'make_mesh_now' : If True, program creates a FEM mesh with provided 
+            NanoStruct parameters. If False, must provide mesh_file name of 
+            existing .mail that will be run despite NanoStruct parameters.
+
+        - 'force_mesh'    : If True, a new mesh is created despite existance of 
+            mesh with same parameter. This is used to make mesh with equal 
+            period etc. but different lc refinement.
+
+        - 'mesh_file'     : If using a set premade mesh give its name including 
+            .mail (eg. 600_60.mail), it must be located in PCPV/Data/
+
+        - 'nb_typ_el'     : Number of different FEM element types (media)
+            1 background, either 1 or 2 for inclusions (+ 2 depreciated 
+            for super/substrate) = 4 or 5.
+
+        - 'lc_bkg'        : Length constant of meshing of background medium.
+        - 'lc2'           : "  " on inclusion surfaces. (smaller = finer mesh)
+        - 'lc3-6'         : "  " from center of inclusions.
+
+        - `plot_modes'    : Plot modes (ie. FEM solutions) in gmsh format, 
+            you get epsilon*|E|^2 & either real/imag/abs of 
+            x,y,z components, field vectors.
+            NOTE: these plots are created in Output/Fields, 
+            and Output/FieldsPNG, which you must create.
+
+        - `plot_real'     : Plot the real part of modal fields.
+        - `plot_imag'     : Plot the imaginary part of modal fields.
+        - `plot_abs'      : Plot the absolute value of modal fields.
     """
-    def __init__(self, geometry, period, radius1, radius2=0, radius3=0, 
-        radius4=0, radius5=0, radius6=0, radius7=0, radius8=0, 
-        radius9=0, radius10=0, radius11=0, radius12=0, radius13=0,
-        radius14=0, radius15=0, radius16=0, ellipticity = 0.0, 
-        square = False, mesh_file = 'NEED_FILE.mail', ff=0, 
-        set_ff = False, ff_rand = False, height_nm = 2330, 
-        inclusion_a = materials.Si_c, 
-        inclusion_b = materials.Air, background = materials.Air,
-        loss = True, lx = 1, ly = 1, mesh_format = 1, nb_typ_el = 5, 
-        make_mesh_now = False, force_mesh = False, lc_bkg = 0.09, 
-        lc2= 1.7, lc3 = 1.9, lc4 = 1.9, lc5 = 1.9, lc6 = 1.9,
-        posx = 0, posy = 0, small_d = 0, max_num_BMs = 100):
-        self.geometry    = geometry
-        self.radius1     = radius1
-        self.radius2     = radius2
-        self.radius3     = radius3
-        self.radius4     = radius4
-        self.radius5     = radius5
-        self.radius6     = radius6
-        self.radius7     = radius7
-        self.radius8     = radius8
-        self.radius9     = radius9
-        self.radius10    = radius10
-        self.radius11    = radius11
-        self.radius12    = radius12
-        self.radius13    = radius13
-        self.radius14    = radius14
-        self.radius15    = radius15
-        self.radius16    = radius16
-        self.period      = period
+
+#TODO include position variable
+
+    def __init__(self, geometry, period, radius1, 
+        height_nm=2330,
+        inclusion_a = materials.Si_c, inclusion_b = materials.Air,
+        background = materials.Air, loss=True,
+        radius2=0,  radius3=0, radius4=0, radius5=0, radius6=0, 
+        radius7=0, radius8=0, radius9=0, radius10=0, radius11=0, 
+        radius12=0, radius13=0,radius14=0, radius15=0, radius16=0, 
+        ellipticity=0.0, square=False,
+        ff=0, set_ff=False, ff_rand=False, 
+        posx=0, posy=0, small_d=0,
+        make_mesh_now=True, force_mesh=False, 
+        mesh_file='NEED_FILE.mail', nb_typ_el=5, 
+        lc_bkg=0.09, lc2=1.7, lc3=1.9, lc4=1.9, lc5=1.9, lc6=1.9,
+        plot_modes=False, plot_real=1, plot_imag=0, plot_abs=0):
+        self.geometry      = geometry
+        self.period        = period
+        self.radius1       = radius1
+        self.height_nm     = height_nm
+        self.inclusion_a   = inclusion_a
+        self.inclusion_b   = inclusion_b
+        self.background    = background
+        self.loss          = loss
+        self.radius2       = radius2
+        self.radius3       = radius3
+        self.radius4       = radius4
+        self.radius5       = radius5
+        self.radius6       = radius6
+        self.radius7       = radius7
+        self.radius8       = radius8
+        self.radius9       = radius9
+        self.radius10      = radius10
+        self.radius11      = radius11
+        self.radius12      = radius12
+        self.radius13      = radius13
+        self.radius14      = radius14
+        self.radius15      = radius15
+        self.radius16      = radius16
+        self.ellipticity   = ellipticity
+        if ellipticity > 1.0:
+            raise TypeError, "ellipticity must be less than 1.0"
+        self.square        = square
+        if square == True:
+            self.square_int = 1
+        else:
+            self.square_int = 0
         if geometry == 'NW_array':
-            self.ff      = calculate_ff(square,period,radius1,radius2,
+            self.ff = calculate_ff(square,period,radius1,radius2,
                 radius3,radius4,radius5,radius6,radius7,radius8,radius9,
                 radius10,radius11,radius12,radius13,radius14,radius15,
                 radius16,ellipticity)
         elif geometry == '1D_grating':
-            self.ff      = (radius1 + radius2)/period
-        self.ff_rand     = ff_rand
-        self.height_nm   = height_nm
-        self.inclusion_a = inclusion_a
-        self.inclusion_b = inclusion_b
-        self.background  = background
-        self.loss        = loss
-        self.lx          = lx
-        self.ly          = ly
-        self.nb_typ_el   = nb_typ_el
-        self.set_ff      = set_ff
-        if make_mesh_now:
-            self.lc  = lc_bkg
-            self.lc2 = lc2
-            self.lc3 = lc3
-            self.lc4 = lc4
-            self.lc5 = lc5
-            self.lc6 = lc6
-            self.ellipticity = ellipticity
-            if ellipticity > 1.0:
-                raise TypeError, "ellipticity must be less than 1.0"
-            self.square = square
-            self.square_int = 0
-            self.posx = posx
-            self.posy = posy
-            self.small_d = small_d
-            self.mesh_format = mesh_format
-            self.force_mesh  = force_mesh
+            self.ff        = (radius1 + radius2)/period
+        self.set_ff        = set_ff
+        self.ff_rand       = ff_rand
+        self.posx          = posx
+        self.posy          = posy
+        self.small_d       = small_d
+        self.force_mesh    = force_mesh
+        self.nb_typ_el     = nb_typ_el
+        self.lc            = lc_bkg
+        self.lc2           = lc2
+        self.lc3           = lc3
+        self.lc4           = lc4
+        self.lc5           = lc5
+        self.lc6           = lc6
+        if make_mesh_now == True:
             self.make_mesh()
         else:
-            self.mesh_file   = mesh_file
-            self.mesh_format = mesh_format
+            self.mesh_file = mesh_file
+        if plot_modes == True:
+            self.plot_modes = 1
+        else: self.plot_modes = 0
+        self.plot_real     = plot_real
+        self.plot_imag     = plot_imag
+        self.plot_abs      = plot_abs 
 
     def make_mesh(self):
         if self.geometry == 'NW_array':
@@ -124,7 +197,6 @@ class NanoStruct(object):
             if self.ellipticity != 0:
                 msh_name = msh_name + '_e_%(e)i' % {'e' : self.ellipticity*100,}
             if self.square == True:
-                self.square_int = 1
                 msh_name = msh_name + '_sq'
             if self.posx != 0:
                 msh_name = msh_name + 'x%(e)i' % {'e' : self.posx*100,}
@@ -189,7 +261,7 @@ class NanoStruct(object):
                 geo = geo.replace('d_in_nm = 0;', "d_in_nm = %i;" % self.period)
                 geo = geo.replace('a1 = 0;', "a1 = %i;" % self.radius1)
                 geo = geo.replace('ellipticity = 0;', "ellipticity = %f;" % self.ellipticity)
-                geo = geo.replace('square = 0;', "square = %i;" % self.square)
+                geo = geo.replace('square = 0;', "square = %i;" % self.square_int)
                 geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
                 geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
                 geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
@@ -294,36 +366,60 @@ class NanoStruct(object):
                 # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
                 # os.system(gmsh_cmd)
 
-    def calc_modes(self, light, simo_para, **args):
+    def calc_modes(self, light, **args):
         """ Run a simulation to find the structure's modes.
 
             INPUTS:
 
-            - `light`:  A :Light: instance representing incident light
+            - `light`: A :Light: instance representing incident light.
 
-            - `simo_para`: TODO: delete this. Old-school parameters given
-                    by a :Controls: instance
-
-            - `args`: A dict of options to pass to :Simmo.calc_modes:.
+            - `args` : A dict of options to pass to :Simmo.calc_modes:.
         """
-        simmo = Simmo(self, light, simo_para) 
+        simmo = Simmo(self, light) 
 
         simmo.calc_modes(**args)
         return simmo
 
 
+
+
+
+
+
+
+
+
+
+
 class ThinFilm(object):
-    """ Represents homogeneous film """
+    """ Represents an unstructured homogeneous film.
+
+        INPUTS:
+
+        - 'period'         : Artificial period imposed on homogeneous film 
+            to give consistently defined plane waves in terms of 
+            diffraction orders of structured layers.
+
+        - 'height_nm'      : The thickness of the layer in nm or 'semi_inf'
+            for a semi-infinte layer.
+
+        - 'material'       : A :Material: instance specifying the n of 
+            the layer and related methods.
+
+        - 'num_pw_per_pol' : Number of plane waves per polarisation.
+
+        - 'loss'           : If False sets Im(n) = 0, if True leaves n as is.
+    """
     def __init__(self, period, height_nm = 2330, material = materials.Si_c, 
         num_pw_per_pol = 0, loss = True):
         self.period         = period
-        self.height_nm       = height_nm
+        self.height_nm      = height_nm
         self.material       = material
         self.num_pw_per_pol = num_pw_per_pol
         self.loss           = loss
     
-    def calc_modes(self, light, simo_para):
-        an = Anallo(self, light, simo_para)
+    def calc_modes(self, light):
+        an = Anallo(self, light)
         an.calc_modes()
         return an
 
@@ -339,19 +435,22 @@ class Light(object):
 
         INPUTS:
 
-        - `wl_nm`   : Wavelength, in nanometres
+        - `wl_nm`         : Wavelength, in nanometers.
 
-        - `k_parallel` : The wave vector components (k_x, k_y)
-            parallel to the interface planes. Units of nm^-1
+        - `max_order_PWs` : Maximum plane wave order to include.
 
-        - `theta`   : polar angle of incidence in degrees
+        - `k_parallel`    : The wave vector components (k_x, k_y)
+            parallel to the interface planes. Units of nm^-1.
 
-        - `phi`     : azimuthal angle of incidence in degrees
+        - `theta`         : Polar angle of incidence in degrees.
+
+        - `phi`           : Azimuthal angle of incidence in degrees.
     """
-    def __init__(self, wl_nm, k_parallel = [0.,0.], 
+    def __init__(self, wl_nm, max_order_PWs = 3, k_parallel = [0.,0.], 
         theta = None, phi = None, n_inc = 1.):
         self.wl_nm = float(wl_nm)
         self._air_anallos = {}
+        self.max_order_PWs  = max_order_PWs
 
         if None == theta:
             self.k_pll = np.array(k_parallel, dtype='float64')
@@ -367,21 +466,21 @@ class Light(object):
             self.k_pll = k*np.sin(theta) * np.array(
                         [np.cos(phi), np.sin(phi)], dtype='float64')
 
-        # FEM allegedly dislikes normal incidence and associated degeneracy
+        # FEM does not deal well with degeneracies that occur at normal incidence
         if abs(self.k_pll).sum() < 1e-15:
             self.k_pll[0] += 1e-15
 
-    def _air_ref(self, period, simo_para):
+    def _air_ref(self, period):
         """ Return a :Anallo: corresponding to this :Light: in free space.
 
-            The :Anallo: will have `len(anallo.k_z) == 2 * num_pw`
+            The :Anallo: will have `len(anallo.k_z) == 2 * num_pw'.
         """
-        #TODO: replace `simo_para` by `num_pw`
-        if (simo_para, period) in self._air_anallos:
-            return self._air_anallos[(simo_para, period)]
+
+        if (period) in self._air_anallos:
+            return self._air_anallos[(period)]
         else:
             air = ThinFilm(period = period, material = materials.Air)
-            an = Anallo(air, self, simo_para)
+            an = Anallo(air, self)
 
             an.is_air_ref = True
 
@@ -390,56 +489,5 @@ class Light(object):
             an.k_z = np.append(kz, kz)
 
             # Save this for future reference (we'll be back)
-            self._air_anallos[(simo_para, period)] = an
+            self._air_anallos[(period)] = an
             return an
-
-
-class Controls(object):
-    """
-    0  debug         - 0 for full simulations, 1 for full details
-    1  PropModes     - Save # of propagating modes & det(I-RPRP) 1, save SVD 2
-    0  PrintSolution - Save FEM Bloch modes for lambda selected below.
-    0  PrintSupModes - Save supermode field distributions
-    0  PrintAll      - Save J overlap, orthogonal
-    0  Checks        - Check completeness, energy conservation
-
-    1                    # Selected formulation (1=E-Field, 2=H-Field)
-    2                    # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
-    1.0d0                # X dimension of unit cell (lx)
-    1.0d0                # Y dimension of unit cell (ly)
-    30                   # Maximum number of iterations for convergence (itermax)
-    0.0d0                # ARPACK accuracy (0.0 for machine precision)(tol) 
-    5.0d0 0.0d0          # Re and Im of parameter for shift-and-invert method
-    """
-    def __init__(self, FEM_debug = False, max_order_PWs = 3, num_cores = 8, 
-        PrintSolution = 0, PrintSupModes = 0, PrintAll = 0, q_average = 0, 
-        plot_real = 1, plot_imag = 0, plot_abs = 0, tol = 0, E_H_field = 1, 
-        i_cond = 2, itermax = 30, 
-        x_order_in = 0, x_order_out = 0, y_order_in = 0, y_order_out = 0,
-        leave_cpus = False):
-        if FEM_debug == True:
-            self.debug      = 1
-        else:
-            self.debug      = 0
-        self.PrintSolution  = PrintSolution
-        self.PrintSupModes  = PrintSupModes
-        self.PrintAll       = PrintAll
-        self.q_average      = q_average
-        self.plot_real      = plot_real
-        self.plot_imag      = plot_imag
-        self.plot_abs       = plot_abs
-        self.tol            = tol
-        self.E_H_field      = E_H_field
-        self.i_cond         = i_cond
-        self.itermax        = itermax
-        self.x_order_in     = x_order_in
-        self.x_order_out    = x_order_out
-        self.y_order_in     = y_order_in
-        self.y_order_out    = y_order_out
-        self.max_order_PWs  = max_order_PWs
-        self.num_cores      = num_cores
-        if leave_cpus == True:
-            # number of cpus to leave free
-            import multiprocessing   as mp
-            num_cores_sahand_gets = 8
-            self.num_cores = mp.cpu_count() - num_cores_sahand_gets

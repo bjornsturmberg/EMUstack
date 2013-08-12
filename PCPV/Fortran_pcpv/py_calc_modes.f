@@ -1,14 +1,11 @@
       subroutine calc_modes(
 c     Explicit inputs
      *    lambda, nval, ordre_ls, d_in_nm,
-     *    debug, mesh_file, mesh_format, npt, nel,
-     *    n_eff, bloch_vec, lx, ly, tol, 
+     *    debug, mesh_file, npt, nel,
+     *    n_eff, bloch_vec,
      *    E_H_field, i_cond, itermax,
-     *    PrintSolution, PrintAll,
-     *    q_average, plot_real, plot_imag, plot_abs,
-     *    Loss, neq_PW, cmplx_max, 
-c     "Optional" inputs (Python guesses these)
-     *    nb_typ_el,
+     *    plot_modes, plot_real, plot_imag, plot_abs,
+     *    neq_PW, cmplx_max, nb_typ_el,
 c     Outputs
      *    beta1, overlap_J, overlap_J_dagger, sol1, sol2, mode_pol)
 C************************************************************************
@@ -82,7 +79,7 @@ C  Renumbering
 c      integer*8 ip_row_ptr, ip_bandw_1, ip_adjncy
 c      integer*8 len_adj, len_adj_max, len_0_adj_max
 c, iout, nonz_1, nonz_2
-      integer*8 i, j, mesh_format
+      integer*8 i, j!, mesh_format
 c     Wavelength lambda is in normalised units of d_in_nm
       double precision lambda
       double precision freq, lat_vecs(2,2), tol
@@ -92,7 +89,7 @@ C  Timing variables
       double precision time1, time2
       double precision time1_fact, time2_fact
       double precision time1_asmbl, time2_asmbl
-      double precision time1_postp, time2_postp
+      double precision time1_postp
       double precision time1_arpack, time2_arpack
       double precision time1_J, time2_J
       character*(8) start_date, end_date
@@ -103,9 +100,8 @@ C  Names and Controls
       character overlap_file*100, dir_name*100
       character*100 tchar
       integer*8 namelength, PrintAll!, Checks
-C      integer*8 PrintOmega
-      integer*8 PrintSolution!, PropModes
-      integer*8 d_in_nm, pair_warning, Loss
+      integer*8 plot_modes
+      integer*8 d_in_nm, pair_warning
       integer*8 q_average, plot_real, plot_imag, plot_abs
 
 c     Declare the pointers of the real super-vector
@@ -152,8 +148,13 @@ c      3*npt+nel+nnodes*nel
       !write(*,*) "int_max = ", int_max
 
 C     Old inputs now internal to here and commented out by default.
-C      Checks = 0
-C      PropModes = 0
+C      mesh_format = 1
+C      Checks = 0 ! check completeness, energy conservation
+      PrintAll = debug ! only need to print when debugging J overlap, orthogonal
+      tol = 0.0 ! ARPACK accuracy (0.0 for machine precision)
+      q_average = 0
+      lx=1 ! Diameter of unit cell. Default, lx = 1.0.
+      ly=1 ! NOTE: currently requires ly=lx, ie square unit cell.
 
       allocate(b(cmplx_max), STAT=allocate_status)
       if (allocate_status /= 0) then
@@ -502,6 +503,7 @@ C  Index number of the core materials (material with highest Re(eps_eff))
           n_core(1) = 4
       endif
       n_core(2) = n_core(1)
+C Parameter for shift-and-invert method
       shift = 1.01d0*Dble(n_eff(n_core(1)))**2 * k_0**2
      *    - bloch_vec(1)**2 - bloch_vec(2)**2
       if(debug .eq. 1) then
@@ -638,7 +640,7 @@ C
         enddo
       endif
 C
-C  Dispersion Diagram
+C  Calculate energy in each medium (typ_el)
       if (n_k .eq. 2) then
         call mode_energy (nval, nel, npt, n_ddl, nnodes, 
      *     n_core, table_nod, type_el, nb_typ_el, eps_eff, 
@@ -649,26 +651,6 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCC  End Prime, Adjoint Loop  CCCCCCCCCCCCCCCCCCCCCC
 C
-
-CCCC Hardcore Debugging - Print all arrays + some variables CCCCC
-C      if (debug .eq. 2) then
-C        PrintAll = 1
-C        Checks = 2
-C
-C        open (unit=1111,file="Normed/Debug_data.txt", status='unknown')
-C        write(1111,*) "lambda = ", lambda
-C        write(1111,*) "eps_eff = ", (eps_eff(i),i=1,nb_typ_el)
-C        write(1111,*) "shift = ", shift
-C        write(1111,*) "bloch_vec(1) = ", bloch_vec(1)
-C        write(1111,*) "bloch_vec(2) = ", bloch_vec(2) 
-C        write(1111,*) "k_0 = ", k_0
-C        write(1111,*) 
-C        do i=1,nval
-C          write(1111,"(i4,2(g22.14),g18.10)") i, 
-C     *       beta1(i)
-C        enddo
-C      endif
-CCCC Hardcore Debugging - End                               CCCCC
 
 C  Orthogonal integral
       pair_warning = 0
@@ -694,7 +676,7 @@ C  Orthogonal integral
      *  (time2_J-time1_J)
       endif     
 C    Save Original solution
-      if (PrintSolution .eq. 1) then
+      if (plot_modes .eq. 1) then
         dir_name = "Output/Fields"
         call write_sol (nval, nel, nnodes, E_H_field, lambda,
      *       beta1, sol1, mesh_file, dir_name)
@@ -800,35 +782,6 @@ C        call Completeness (nval, neq_PW,
 C     *    overlap_K, overlap_J)
 C      write(ui,*) "numberprop_N = ", numberprop_N
 C      endif 
-C
-
-
-C     
-C  Search for number of propagating Bloch Modes
-C      if (PropModes .eq. 1 .and. Loss .eq. 0) then
-C      numberprop_N = 0
-C      do i=1,nval
-C        test = beta1(i)
-C        if (ABS(IMAG(test)) .lt. 1.0d-5) then
-C          numberprop_N = numberprop_N + 1
-C        endif
-C      enddo
-C      write(200,*) lambda*d_in_nm, numberprop_N
-C      endif
-C
-C
-C
-C      if (PropModes .eq. 1) then
-C        if (Loss .eq. 0) then
-C          close(200)
-C        endif
-C        close(565)
-C        close(566)
-C      endif
-C
-      call cpu_time(time2_postp)
-C
-CCCCCCCCCCCCCCCCCCCCCC Calculation Checks CCCCCCCCCCCCCCCCCCCCC
 CC
 CC  Completeness Check
 C      if (Checks .eq. 1) then
@@ -879,8 +832,8 @@ C
      *         (time2_asmbl-time1_asmbl), 
      *         100*(time2_asmbl-time1_asmbl)/(time2-time1),"%"
         write(26,*) "Post-processsing : CPU time and % Total time = ",  
-     *         (time2_postp-time1_postp), 
-     *         100*(time2_postp-time1_postp)/(time2-time1),"%"
+     *         (time2-time1_postp), 
+     *         100*(time2-time1_postp)/(time2-time1),"%"
         write(26,*) "Pre-Assembly : CPU time and % Total time = ",  
      *         (time1_asmbl-time1), 
      *         100*(time1_asmbl-time1)/(time2-time1),"%"

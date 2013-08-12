@@ -3,33 +3,24 @@
 
 python module pcpv ! in 
     interface  ! in :pcpv
-        subroutine calc_modes(lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,mesh_format,npt,nel,n_eff,bloch_vec,lx,ly,tol,e_h_field,i_cond,itermax,propmodes,printsolution,printall,checks,q_average,plot_real,plot_imag,plot_abs,loss,neq_pw,cmplx_max,nb_typ_el,beta1,overlap_j,overlap_j_dagger,sol1,sol2,mode_pol) ! in :pcpv:py_calc_modes.f
+        subroutine calc_modes(lambda,nval,ordre_ls,d_in_nm,debug,mesh_file,npt,nel,n_eff,bloch_vec,e_h_field,i_cond,itermax,plot_modes,plot_real,plot_imag,plot_abs,neq_pw,cmplx_max,nb_typ_el,beta1,overlap_j,overlap_j_dagger,sol1,sol2,mode_pol) ! in :pcpv:py_calc_modes.f
             double precision :: lambda
             integer*8 :: nval
             integer*8 :: ordre_ls
             integer*8 :: d_in_nm
             integer*8 :: debug
             character*100 :: mesh_file
-            integer*8 :: mesh_format
             integer*8 :: npt
             integer*8 :: nel
             complex*16 dimension(nb_typ_el) :: n_eff
             double precision dimension(2) :: bloch_vec
-            double precision :: lx
-            double precision :: ly
-            double precision :: tol
             integer*8 :: e_h_field
             integer*8 :: i_cond
             integer*8 :: itermax
-            integer*8 :: propmodes
-            integer*8 :: printsolution
-            integer*8 :: printall
-            integer*8 :: checks
-            integer*8 :: q_average
+            integer*8 :: plot_modes
             integer*8 :: plot_real
             integer*8 :: plot_imag
             integer*8 :: plot_abs
-            integer*8 :: loss
             integer*8 :: neq_pw
             integer*8 :: cmplx_max
             integer*8, optional,check(len(n_eff)>=nb_typ_el),depend(n_eff) :: nb_typ_el=len(n_eff)

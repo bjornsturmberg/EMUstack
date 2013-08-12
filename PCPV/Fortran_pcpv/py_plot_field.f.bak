@@ -5,7 +5,7 @@ c     Explicit inputs
      *    n_eff,
      *    substrate, bloch_vec, h_1, h_2, num_h, lx, ly, tol, 
      *    E_H_field, i_cond, itermax, pol, traLambda, PropModes,
-     *    PrintSolution, PrintSupModes, PrintOmega, PrintAll,
+     *    plot_modes, PrintSupModes, PrintOmega, PrintAll,
      *    Checks, q_average, plot_real, plot_imag, plot_abs,
      *    incident, what4incident, out4incident, Loss, title,
      *    neq_PW, Zeroth_Order,
@@ -108,7 +108,7 @@ C  Names and Controls
       character overlap_file*100, dir_name*100, buf1*4, buf2*4
       character*100 tchar
       integer*8 namelength, PrintAll, PrintOmega, Checks, traLambda
-      integer*8 PrintSolution, pol, PrintSupModes
+      integer*8 plot_modes, pol, PrintSupModes
       integer*8 substrate, num_h
       integer*8 PropModes
 C     Thicknesses h_1 and h_2 are in normalised units of d_on_lambda
@@ -282,7 +282,7 @@ C
      *     lx, ly, type_nod, type_el, table_nod, 
      *     x_arr, mesh_file)
 C
-      if (PrintSupModes + PrintSolution .ge. 1) then
+      if (PrintSupModes + plot_modes .ge. 1) then
 C  Export the mesh to gmsh format
         call mail_to_gmsh (nel, npt, nnodes, type_el, 
      *    type_nod, table_nod, 
@@ -295,7 +295,7 @@ C     *    nb_typ_el, x_arr)
 C
       call lattice_vec (npt, x_arr, lat_vecs)
 C
-C     if (PrintSupModes + PrintSolution .ge. 1) then
+C     if (PrintSupModes + plot_modes .ge. 1) then
 C        call gmsh_interface_c4 (nel, npt, nnodes, type_el, 
 C     *    type_nod, table_nod, 
 C     *    nb_typ_el, x_arr, lat_vecs)
@@ -759,7 +759,7 @@ C  Orthogonal integral
      *  (time2_J-time1_J)
       endif     
 C    Save Original solution
-      if (PrintSolution .eq. 1) then
+      if (plot_modes .eq. 1) then
         dir_name = "Output/Fields"
         call write_sol (nval, nel, nnodes, E_H_field, lambda,
      *       beta1, sol1, mesh_file, dir_name)
@@ -920,7 +920,7 @@ C  Scattering Matrices
 C      call ScatMat_sub ( overlap_J, overlap_J_dagger,  
 C     *    X_mat, X_mat_b, neq_PW, nval, 
 C     *    beta1, T12, R12, T21, R21,
-C     *    PrintAll, PrintSolution, 
+C     *    PrintAll, plot_modes, 
 C     *    lx, h_1, h_2, num_h, Checks, T_Lambda, 
 C     *    R_Lambda, traLambda, pol, PropModes, lambda, d_in_nm,
 C     *    numberprop_S, numberprop_S_b, freq, Zeroth_Order_inv,
@@ -937,7 +937,7 @@ C  Scattering Matrices
 C      call ScatMat( overlap_J, overlap_J_dagger,  
 C     *    X_mat, neq_PW, nval, 
 C     *    beta1, T12, R12, T21, R21,
-C     *    PrintAll, PrintSolution, 
+C     *    PrintAll, plot_modes, 
 C     *    lx, h_1, h_2, num_h, Checks, T_Lambda, 
 C     *    R_Lambda, traLambda, pol, PropModes, lambda, d_in_nm,
 C     *    numberprop_S, freq, Zeroth_Order_inv,

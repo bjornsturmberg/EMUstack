@@ -31,8 +31,12 @@ from stack import *
 start = time.time()
 ################ Simulation parameters ################
 
-simo_para  = objects.Controls(FEM_debug = False, max_order_PWs = 3, num_cores = 5,
-    PrintAll = 0, Checks = 0, PrintSolution = 0, PrintSupModes = 0)
+# Number of CPUs to use im simulation
+num_cores = 5
+# # Alternatively specify the number of CPUs to leave free on machine
+# leave_cpus = 4 
+# num_cores = mp.cpu_count() - leave_cpus
+
 # Remove results of previous simulations
 clear_previous.clean('.txt')
 clear_previous.clean('.pdf')
@@ -45,7 +49,7 @@ wl_2     = 1127
 no_wl_1  = 3
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
 # Single wavelength run
 # wl_super = 450
 # wavelengths = np.array([wl_super])
@@ -70,7 +74,7 @@ bottom3  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
 NWs = objects.NanoStruct('NW_array', period, 60, height_nm = 2330, 
     inclusion_a = materials.Si_c, background = materials.Air, 
     loss = True, nb_typ_el = 4, 
-    make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)#Material(1.0 + 0.0j)
+    make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)
 
 # Find num_BM for each simulation in a somewhat arbitrary way
 # Maybe roll this out into a Bjorn-specific function
@@ -82,21 +86,21 @@ def simulate_stack(light):
     # num_BM = max_num_BMs
     
     ################ Evaluate each layer individually ##############
-    sim_cover = cover.calc_modes(light, simo_para)
-    sim_bot1  = bottom1.calc_modes(light, simo_para)
-    sim_TH2   = TH2.calc_modes(light, simo_para)
-    sim_bot3  = bottom3.calc_modes(light, simo_para)
-    sim_TF4   = TF4.calc_modes(light, simo_para)
-    sim_NWs   = NWs.calc_modes(light, simo_para, num_BM = num_BM)
+    sim_cover = cover.calc_modes(light)
+    sim_bot1  = bottom1.calc_modes(light)
+    sim_TH2   = TH2.calc_modes(light)
+    sim_bot3  = bottom3.calc_modes(light)
+    sim_TF4   = TF4.calc_modes(light)
+    sim_NWs   = NWs.calc_modes(light, num_BM = num_BM)
 
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
     solar_cell list MUST be ordered from bottom to top!
     """
 
-    stack0 = Stack((sim_bot1,sim_cover))
-    stack1 = Stack((sim_bot1,sim_TH2,sim_NWs, sim_cover))
-    # stack1 = Stack((sim_bot1,sim_TH2,sim_TF4, sim_cover))
+    stack0 = Stack((sim_bot1, sim_cover))
+    stack1 = Stack((sim_bot1, sim_TH2, sim_NWs, sim_cover))
+    # stack1 = Stack((sim_bot1, sim_TH2, sim_TF4, sim_cover))
     stack0.calc_scat(pol = 'TE')
     stack1.calc_scat(pol = 'TE')
 
@@ -126,7 +130,7 @@ def simulate_stack(light):
 
 
 # Run in parallel across wavelengths.
-pool = Pool(simo_para.num_cores)
+pool = Pool(num_cores)
 stacks_wl_list = pool.map(simulate_stack, light_list)
 # Run one at a time
 # stacks_wl_list = map(simulate_stack, light_list)
@@ -146,7 +150,7 @@ last_light_object = light_list.pop()
 
 # #### Example 0: simple interface.
 # param_layer = bottom1 # Specify the layer for which the parameters should be printed on figures.
-# params_string = plotting.gen_params_string(param_layer, last_light_object, simo_para.max_order_PWs)
+# params_string = plotting.gen_params_string(param_layer, last_light_object)
 # stack_label = 0 # Specify which stack you are dealing with.
 # stack0_wl_list = []
 # for i in range(len(wavelengths)):
@@ -158,8 +162,7 @@ last_light_object = light_list.pop()
 
 
 param_layer = TF4 # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, simo_para.max_order_PWs,
-    max_num_BMs=max_num_BMs)
+params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=max_num_BMs)
 
 #### Example 1: simple multilayered stack.
 stack_label = 1 # Specify which stack you are dealing with.

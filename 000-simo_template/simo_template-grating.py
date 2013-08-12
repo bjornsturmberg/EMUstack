@@ -31,8 +31,7 @@ from stack import *
 start = time.time()
 ################ Simulation parameters ################
 
-simo_para  = objects.Controls(debug = False,max_order_PWs = 5, num_cores = 3,
-    PrintAll = 0, Checks = 0, PrintSolution = 0, PrintSupModes = 0)
+simo_para  = objects.Controls(num_cores = 3, plot_modes = 0)
 # Remove results of previous simulations
 clear_previous.clean('.txt')
 clear_previous.clean('.pdf')
@@ -45,7 +44,7 @@ wl_2     = 1200
 no_wl_1  = 3
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 5) for wl in wavelengths]
 # # Single wavelength run
 # wl_super = 1000
 # wavelengths = np.array([wl_super])

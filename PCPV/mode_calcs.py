@@ -23,7 +23,7 @@ class Modes(object):
 
     def air_ref(self):
         """ Return an :Anallo: for air for the same :Light: as this."""
-        return self.light._air_ref(self.structure.period, self.other_para)
+        return self.light._air_ref(self.structure.period)
 
     def calc_grating_orders(self, max_order):
         """ Return the grating order indices px and py, unsorted."""
@@ -50,14 +50,21 @@ class Modes(object):
                     _interfaces_i_have_known.pop(key)
 
 
+
+
+
+
+
+
+
+
 class Anallo(Modes):
     """ Like a :Simmo:, but for a thin film, and calculated analytically."""
-    def __init__(self, thin_film, light, other_para):
-        self.structure  = thin_film
-        self.light      = light
-        self.other_para = other_para
-        self.max_order_PWs   = other_para.max_order_PWs
-        self.is_air_ref = False
+    def __init__(self, thin_film, light):
+        self.structure     = thin_film
+        self.light         = light
+        self.max_order_PWs = light.max_order_PWs
+        self.is_air_ref    = False
 
     def calc_modes(self):
         #TODO: switch to just using calc_kz()?
@@ -166,22 +173,27 @@ class Anallo(Modes):
         return inc_amp
 
 
+
+
+
+
+
+
+
 class Simmo(Modes):
     """docstring for Simmo"""
-    def __init__(self, structure, light, other_para):
+    def __init__(self, structure, light):
         self.structure      = structure
         self.light          = light
-        self.other_para     = other_para
-        self.max_order_PWs  = other_para.max_order_PWs
+        self.max_order_PWs  = light.max_order_PWs
         self.prop_consts    = None
         self.mode_pol       = None
 
     def calc_modes(self, num_BM, delete_working = True):
-        """ Run the FEM in Fortran"""
+        """ Run the FEM in Fortran """
         st = self.structure
         wl = self.light.wl_nm
         # 1st and 2nd elements of n_eff are deprecated
-        # and _hopefully_ do nothing now (no guarantees)
         # previously, 1st element was superstrate index,
         # 2nd was substrate.
         n_effs = np.array([1., 1., st.background.n(wl), st.inclusion_a.n(wl), 
@@ -209,22 +221,21 @@ class Simmo(Modes):
         # on the mesh file to work out RAM requirements
         cmplx_max = 2**27
 
+        # Parameters that control how FEM routine runs
+        FEM_debug = 0   # Fortran routine will print info to screen and save additional into to file
+        E_H_field = 1   # Selected formulation (1=E-Field, 2=H-Field)
+        i_cond    = 2   # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
+        itermax   = 30  # Maximum number of iterations for convergence
+
         resm = pcpv.calc_modes(
             self.wl_norm(), self.num_BM, self.max_order_PWs, 
-            self.structure.period, self.other_para.debug, 
-            self.structure.mesh_file, self.structure.mesh_format, 
-            n_msh_pts, n_msh_el,
-            n_effs, self.k_pll_norm(), 
-            self.structure.lx, self.structure.ly, self.other_para.tol, 
-            self.other_para.E_H_field, self.other_para.i_cond, 
-            self.other_para.itermax, 
-            self.other_para.PropModes, 
-            self.other_para.PrintSolution, self.other_para.PrintAll, 
-            self.other_para.Checks, self.other_para.q_average, 
-            self.other_para.plot_real, self.other_para.plot_imag, 
-            self.other_para.plot_abs, 
-            self.structure.loss,
-            num_pw_per_pol, cmplx_max
+            self.structure.period, FEM_debug, 
+            self.structure.mesh_file, n_msh_pts, n_msh_el,
+            n_effs, self.k_pll_norm(),
+            E_H_field, i_cond, itermax, 
+            self.structure.plot_modes, self.structure.plot_real, 
+            self.structure.plot_imag, self.structure.plot_abs,
+            num_pw_per_pol, cmplx_max, self.structure.nb_typ_el
         )
 
         self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol = resm

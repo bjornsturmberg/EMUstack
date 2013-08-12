@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 
 #######################################################################################
-def gen_params_string(param_layer, light, max_order_PWs, max_num_BMs=0):
+def gen_params_string(param_layer, light, max_num_BMs=0):
     # Plot t,r,a for each layer & total, then save each to text files
     if isinstance(param_layer,objects.NanoStruct):
         params_2_print = 'ff = %5.3f, '% param_layer.ff
@@ -39,10 +39,10 @@ def gen_params_string(param_layer, light, max_order_PWs, max_num_BMs=0):
         elif param_layer.geometry == '1D_grating':
             params_2_print += ''
         params_2_print += 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d, '% {
-        'max_num_BMs'   : max_num_BMs,'max_order_PWs' : max_order_PWs, }
+        'max_num_BMs'   : max_num_BMs,'max_order_PWs' : light.max_order_PWs, }
     else:
         # params_2_print = 'Homogeneous Film'
-        params_2_print = 'max_PW_order = %(max_order_PWs)d, '% {'max_order_PWs' : max_order_PWs, }
+        params_2_print = 'max_PW_order = %(max_order_PWs)d, '% {'max_order_PWs' : light.max_order_PWs, }
 
 
     # k_pll = light.k_pll * param_layer.period
