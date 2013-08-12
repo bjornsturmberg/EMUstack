@@ -28,6 +28,7 @@ from stack import *
 # but unfortunately simulate_stack is defined in a lazy-but-easy
 # way: the structures are inherited rather than passed in.
 
+start = time.time()
 ################ Simulation parameters ################
 
 simo_para  = objects.Controls(debug = 0,max_order_PWs = 5, num_cores = 3,
@@ -35,6 +36,7 @@ simo_para  = objects.Controls(debug = 0,max_order_PWs = 5, num_cores = 3,
 # Remove results of previous simulations
 clear_previous.clean('.txt')
 clear_previous.clean('.pdf')
+clear_previous.clean('.gif')
 clear_previous.clean('.log')
 
 ################ Light parameters #####################
@@ -70,10 +72,9 @@ mirror = objects.ThinFilm(period = period, height_nm = 100,
     material = materials.Ag, loss = True)
 
 
-stack_list = []
 # Find num_BM for each simulation in a somewhat arbitrary way
 # Maybe roll this out into a Bjorn-specific function
-max_n = max([grating_1.inclusion_a.n(wl).real for wl in wavelengths])
+# max_n = max([grating_1.inclusion_a.n(wl).real for wl in wavelengths])
 max_num_BMs = 163
 
 def simulate_stack(light):
@@ -96,7 +97,6 @@ def simulate_stack(light):
     return stack
 
 
-start = time.time()
 
 # Run in parallel across wavelengths.
 pool = Pool(simo_para.num_cores)
@@ -105,38 +105,33 @@ stack_list = pool.map(simulate_stack, light_list)
 # module.stack_list = map(simulate_stack, light_list)
     
 
-t_r_a_plots(stack_list)
-
-# specify which layer is the active one (where absorption generates charge carriers)
-active_layer = homo_film
-act_lay_nu   = 0
-# specify which layer for which the parameters should be printed on figures
-lay_print_params = grating_1
-
-
-
-################# Efficiency & weighted spectra for active layer ################
-plotting.average_spec('Lay_Absorb_%d' % act_lay_nu, 'Av_Absorb',  
-    len(wavelengths), 1)
-plotting.average_spec('Lay_Trans_%d'  % act_lay_nu, 'Av_Trans',   
-    len(wavelengths), 1)
-plotting.average_spec('Reflectance', 'Av_Reflec',  
-    len(wavelengths), 1)
-# Interpolate solar spectrum and calculate efficiency
-Efficiency = plotting.irradiance('Av_Absorb', 'Weighted_Absorb', 'Av_Trans', 'Weighted_Trans',
- 'Av_Reflec', 'Weighted_Reflec', lay_print_params.radius1, period, ff = lay_print_params.ff)
-# Plot averaged sprectra
+######################## Plotting ########################
 last_light_object = light_list.pop()
-spec_list = ['Av_Absorb', 'Av_Trans', 'Av_Reflec']
-plotting.tra_plot('Spectra', spec_list, lay_print_params, last_light_object,
-    max_num_BMs, simo_para.max_order_PWs, Efficiency)
-# Plot weighted averaged sprectra
-spec_list = ['Weighted_Absorb', 'Weighted_Trans', 'Weighted_Reflec']
-plotting.tra_plot('Spectra_weighted', spec_list, lay_print_params, last_light_object, 
-    max_num_BMs, simo_para.max_order_PWs, Efficiency)
-# # Plot dispersion diagrams for each layer
-# plotting.omega_plot(solar_cell, lay_print_params, last_light_object, 
-#     max_num_BMs, simo_para.max_order_PWs, Efficiency)
+param_layer = grating_1 # Specify the layer for which the parameters should be printed on figures.
+params_string = plotting.gen_params_string(param_layer, last_light_object, simo_para.max_order_PWs,
+    max_num_BMs=max_num_BMs)
+
+
+active_layer_nu = 2 # Specify which layer is the active one (where absorption generates charge carriers).
+# Plot total transmission, reflection, absorption & that of each layer. 
+# Also calculate efficiency of active layer.
+Efficiency = plotting.t_r_a_plots(stack_list, wavelengths, params_string, 
+    active_layer_nu=active_layer_nu) 
+# Dispersion
+plotting.omega_plot(stack_list, wavelengths, params_string) 
+# # Energy Concentration
+# which_layer = 2
+# which_modes = [1,2] # can be a single mode or multiple
+# plotting.E_conc_plot(stack_list, which_layer, which_modes, wavelengths, 
+#     params_string)
+
+
+
+
+######################## Single Wavelength Plotting ########################
+# Plot transmission as a function of k vector.
+plotting.t_func_k_plot(stack_list)
+
 
 
 # Wrapping up simulation by printing to screen and log file

@@ -46,7 +46,7 @@ no_wl_1  = 3
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 light_list  = [objects.Light(wl) for wl in wavelengths]
-# # Single wavelength run
+# Single wavelength run
 # wl_super = 450
 # wavelengths = np.array([wl_super])
 # light_list  = [objects.Light(wl) for wl in wavelengths]
@@ -59,8 +59,8 @@ cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = True)
 
 bottom1  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
-    material = materials.Air, loss = False)
-bottom2  = objects.ThinFilm(period = period, height_nm = 100,
+    material = materials.Si_c, loss = False)
+TH2  = objects.ThinFilm(period = period, height_nm = 100,
     material = materials.SiO2_a, loss = True)
 TF4  = objects.ThinFilm(period = period, height_nm = 200,
     material = materials.Si_c, loss = True)
@@ -72,7 +72,6 @@ NWs = objects.NanoStruct('NW_array', period, 60, height_nm = 2330,
     loss = True, nb_typ_el = 4, 
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)#Material(1.0 + 0.0j)
 
-stack_list = []
 # Find num_BM for each simulation in a somewhat arbitrary way
 # Maybe roll this out into a Bjorn-specific function
 max_n = max([NWs.inclusion_a.n(wl).real for wl in wavelengths])
@@ -84,45 +83,45 @@ def simulate_stack(light):
     
     ################ Evaluate each layer individually ##############
     sim_cover = cover.calc_modes(light, simo_para)
-    sim_bot1 = bottom1.calc_modes(light, simo_para)
-    sim_bot2 = bottom2.calc_modes(light, simo_para)
-    sim_bot3 = bottom3.calc_modes(light, simo_para)
-    sim_TF4  = TF4.calc_modes(light, simo_para)
-    # sim_NWs = NWs.calc_modes(light, simo_para, num_BM = num_BM)
+    sim_bot1  = bottom1.calc_modes(light, simo_para)
+    sim_TH2   = TH2.calc_modes(light, simo_para)
+    sim_bot3  = bottom3.calc_modes(light, simo_para)
+    sim_TF4   = TF4.calc_modes(light, simo_para)
+    sim_NWs   = NWs.calc_modes(light, simo_para, num_BM = num_BM)
 
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
     solar_cell list MUST be ordered from bottom to top!
     """
 
-    stack1 = Stack((sim_bot1,sim_cover))
-    # stack2 = Stack((sim_bot1,sim_bot2,sim_NWs, sim_cover))
-    stack2 = Stack((sim_bot1,sim_bot2,sim_TF4, sim_cover))
+    stack0 = Stack((sim_bot1,sim_cover))
+    stack1 = Stack((sim_bot1,sim_TH2,sim_NWs, sim_cover))
+    # stack1 = Stack((sim_bot1,sim_TH2,sim_TF4, sim_cover))
+    stack0.calc_scat(pol = 'TE')
     stack1.calc_scat(pol = 'TE')
-    stack2.calc_scat(pol = 'TE')
 
 # multiple heights for sim_TF4
-    stack3_indiv_hs = []
+    stack2_indiv_hs = []
     average_t = 0
     average_r = 0
     average_a = 0
 
     num_h = 10
     for h in np.linspace(100,2000,num_h):
-        stack3 = Stack((sim_bot1,sim_bot2,sim_TF4, sim_cover), heights_nm = ([bottom2.height_nm,h]))
-        stack3.calc_scat(pol = 'TE')
+        stack2 = Stack((sim_bot1,sim_TH2,sim_TF4, sim_cover), heights_nm = ([TH2.height_nm,h]))
+        stack2.calc_scat(pol = 'TE')
 
-        stack3_indiv_hs.append(stack3)
+        stack2_indiv_hs.append(stack2)
 
-        average_t += stack3.t_list[-1]/num_h
-        average_r += stack3.r_list[-1]/num_h
-        average_a += stack3.a_list[-1]/num_h
-    stack3.t_list[-1] = average_t
-    stack3.r_list[-1] = average_r
-    stack3.a_list[-1] = average_a
+        average_t += stack2.t_list[-1]/num_h
+        average_r += stack2.r_list[-1]/num_h
+        average_a += stack2.a_list[-1]/num_h
+    stack2.t_list[-1] = average_t
+    stack2.r_list[-1] = average_r
+    stack2.a_list[-1] = average_a
 
-# stack3 contains info on the last height and the average spectra
-    return [stack1,stack2,stack3,stack3_indiv_hs] 
+# stack2 contains info on the last height and the average spectra
+    return [stack0,stack1,stack2,stack2_indiv_hs] 
     # return stack1
 
 
@@ -137,18 +136,30 @@ stacks_wl_list = pool.map(simulate_stack, light_list)
 # Pull apart simultaneously simulated stakes into single stack, all wls arrays.
 # Unnecissary if just returning a single stack
 np.array(stacks_wl_list)
-# stack1_wl_list = []
-# for i in range(len(wavelengths)):
-#     stack1_wl_list.append(stacks_wl_list[i][0])
 
 
 ######################## Plotting ########################
 last_light_object = light_list.pop()
+
+
+
+
+# #### Example 0: simple interface.
+# param_layer = bottom1 # Specify the layer for which the parameters should be printed on figures.
+# params_string = plotting.gen_params_string(param_layer, last_light_object, simo_para.max_order_PWs)
+# stack_label = 0 # Specify which stack you are dealing with.
+# stack0_wl_list = []
+# for i in range(len(wavelengths)):
+#     stack0_wl_list.append(stacks_wl_list[i][stack_label])
+# # Plot total transmission, reflection, absorption & that of each layer.
+# Efficiency = plotting.t_r_a_plots(stack0_wl_list, wavelengths, params_string, 
+#     stack_label=stack_label) 
+
+
+
 param_layer = TF4 # Specify the layer for which the parameters should be printed on figures.
 params_string = plotting.gen_params_string(param_layer, last_light_object, simo_para.max_order_PWs,
     max_num_BMs=max_num_BMs)
-
-
 
 #### Example 1: simple multilayered stack.
 stack_label = 1 # Specify which stack you are dealing with.
@@ -164,9 +175,12 @@ Efficiency = plotting.t_r_a_plots(stack1_wl_list, wavelengths, params_string,
 plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stack_label) 
 # # Energy Concentration
 # which_layer = 2
-# which_modes = [1,2] # can be a single mode or multiple
+# which_modes = [1,2] # can be a single mode or multiple modes
 # plotting.E_conc_plot(stack1_wl_list, which_layer, which_modes, wavelengths, 
 #     params_string, stack_label=stack_label)
+
+
+
 
 
 # #### Example 2: averaged multilayered stack where one layer has many heights.
@@ -180,30 +194,30 @@ plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stac
 
 
 
-#### Example 3: individual spectra of multilayered stack where one layer has many heights.
-stack_label = 3
-active_layer_nu = 2
-number_of_hs = len(stacks_wl_list[0][stack_label])
-for h in range(number_of_hs):
-    gen_name = '_h-'
-    h_name = str(h)
-    additional_name = gen_name+h_name # You can add an arbitry string onto the end of the spectra filenames.
-    stack3_hs_wl_list = []
-    for i in range(len(wavelengths)):
-        stack3_hs_wl_list.append(stacks_wl_list[i][stack_label][h])
-    Efficiency = plotting.t_r_a_plots(stack3_hs_wl_list, wavelengths, params_string, 
-        active_layer_nu=active_layer_nu, stack_label=stack_label, add_name = additional_name)
-# Animate spectra as a function of heights.
-from os import system as ossys
-delay = 5 # delay between images in gif in seconds
-names = 'Lay_Absorb_stack'+str(stack_label)+gen_name
-gif_cmd = 'convert -delay %(d)i +dither -layers Optimize -colors 16 %(n)s*.pdf %(n)s.gif'% {
-'d' : delay, 'n' : names}
-ossys(gif_cmd)
-opt_cmd = 'gifsicle -O2 %(n)s.gif -o %(n)s-opt.gif'% {'n' : names}
-ossys(opt_cmd)
-rm_cmd = 'rm %(n)s.gif'% {'n' : names}
-ossys(rm_cmd)
+# #### Example 3: individual spectra of multilayered stack where one layer has many heights.
+# stack_label = 3
+# active_layer_nu = 2
+# number_of_hs = len(stacks_wl_list[0][stack_label])
+# for h in range(number_of_hs):
+#     gen_name = '_h-'
+#     h_name = str(h)
+#     additional_name = gen_name+h_name # You can add an arbitry string onto the end of the spectra filenames.
+#     stack3_hs_wl_list = []
+#     for i in range(len(wavelengths)):
+#         stack3_hs_wl_list.append(stacks_wl_list[i][stack_label][h])
+#     Efficiency = plotting.t_r_a_plots(stack3_hs_wl_list, wavelengths, params_string, 
+#         active_layer_nu=active_layer_nu, stack_label=stack_label, add_name = additional_name)
+# # Animate spectra as a function of heights.
+# from os import system as ossys
+# delay = 5 # delay between images in gif in seconds
+# names = 'Lay_Absorb_stack'+str(stack_label)+gen_name
+# gif_cmd = 'convert -delay %(d)i +dither -layers Optimize -colors 16 %(n)s*.pdf %(n)s.gif'% {
+# 'd' : delay, 'n' : names}
+# ossys(gif_cmd)
+# opt_cmd = 'gifsicle -O2 %(n)s.gif -o %(n)s-opt.gif'% {'n' : names}
+# ossys(opt_cmd)
+# rm_cmd = 'rm %(n)s.gif'% {'n' : names}
+# ossys(rm_cmd)
 
 
 
@@ -211,7 +225,14 @@ ossys(rm_cmd)
 # Plot transmission as a function of k vector.
 # plotting.t_func_k_plot(stack3_wl_list)
 
-# plot_scat_mats # done in stack.py
+# # Visualise the Scattering Matrices
+# for i in range(len(wavelengths)):
+#     extra_title = 'R_net'
+#     plotting.vis_scat_mats(stack1_wl_list[i].R_net, i, extra_title)
+#     extra_title = 'R_12'
+#     plotting.vis_scat_mats(stack1_wl_list[i].layers[2].T21, i, extra_title)
+
+
 
 
 ######################## Wrapping up ########################

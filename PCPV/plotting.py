@@ -56,7 +56,7 @@ def gen_params_string(param_layer, light, max_order_PWs, max_num_BMs=0):
 
 
 #######################################################################################
-def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=1, stack_label=1, add_name=''):
+def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, stack_label=1, add_name=''):
     # Plot t,r,a for each layer & total, then save each to text files
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
@@ -247,14 +247,17 @@ def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
                     imag_k_zs.append(np.imag(k))
             wl = np.ones(len(real_k_zs))*wavelengths[i]
             ax1.plot(wl,real_k_zs,'bo')
-            ax1.set_xlabel('Wavelength (nm)')
-            ax1.set_ylabel(r'Real $k_z$')
             wl = np.ones(len(imag_k_zs))*wavelengths[i]
             ax2.plot(wl,imag_k_zs,'ro')
-            ax2.set_xlabel('Wavelength (nm)')
-            ax2.set_ylabel(r'Imaginary $k_z$')
+        ax1.set_ylabel(r'Real $k_z$')
+        ax2.set_ylabel(r'Imaginary $k_z$')
         if l == 0: ax1.set_ylabel('Top Layer'), ax2.set_ylabel('Top Layer')
-        if l == num_layers-1: ax1.set_ylabel('Bottom Layer'), ax2.set_ylabel('Bottom Layer')
+        if l != num_layers-1:
+            ax1.set_xticklabels( () )
+            ax2.set_xticklabels( () )
+        else:
+            ax1.set_ylabel('Bottom Layer'), ax2.set_ylabel('Bottom Layer')
+            ax1.set_xlabel('Wavelength (nm)'), ax2.set_xlabel('Wavelength (nm)')
         plt.xlim((wavelengths[0], wavelengths[-1]))
     fig1.suptitle(r'Real $k_z$'+params_2_print+'\n')
     fig2.suptitle(r'Imaginary $k_z$'+params_2_print+'\n')
@@ -288,6 +291,33 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_p
 
 # np.genfromtxt can deal with incomplete data!
 #     num_BMs     = np.genfromtxt(file_name, usecols=(1))
+#######################################################################################
+
+
+
+
+
+
+#######################################################################################
+# plot scattering matrices as grayscale images
+def vis_scat_mats(scat_mat,wl=0,extra_title=''):
+    image = np.real(abs(scat_mat))
+    plt.matshow(image,cmap=plt.cm.gray)
+    print np.shape(scat_mat)
+    scat_mat_dim_x = np.shape(scat_mat)[0]
+    scat_mat_dim_y = np.shape(scat_mat)[1]
+    half_dim_x = scat_mat_dim_x/2-0.5
+    half_dim_y = scat_mat_dim_y/2-0.5
+    plt.plot([-0.5, scat_mat_dim_y-0.5],[half_dim_x,half_dim_x],'r', linewidth=1)
+    plt.plot([half_dim_y,half_dim_y],[-0.5, scat_mat_dim_x-0.5],'r', linewidth=1)
+    plt.axis([-0.5, scat_mat_dim_y-0.5, scat_mat_dim_x-0.5,  -0.5])
+    plt.xticks([half_dim_y/2, scat_mat_dim_y-half_dim_y/2],['TE', 'TM'])
+    plt.yticks([half_dim_x/2, scat_mat_dim_x-half_dim_x/2],['TE', 'TM'])
+    cbar = plt.colorbar(extend='neither')
+    plt.xlabel('Incoming Orders')
+    plt.ylabel('Outgoing Orders')
+    plt.suptitle('%s Scattering Matrix' % extra_title)
+    plt.savefig('Scat_mat-%(title)s_wl%(wl)i' % {'title' : extra_title, 'wl' : wl})
 #######################################################################################
 
 

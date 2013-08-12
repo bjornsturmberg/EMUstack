@@ -420,8 +420,7 @@ class Controls(object):
         i_cond = 2, itermax = 30, incident = 0, 
         x_order_in = 0, x_order_out = 0, y_order_in = 0, y_order_out = 0,
         what4incident = 2, out4incident = 0,
-        max_order_PWs = 3, num_cores = 8, leave_cpus = False,
-        plot_scat_mats = False):
+        max_order_PWs = 3, num_cores = 8, leave_cpus = False):
         self.debug          = debug
         self.PrintSolution  = PrintSolution
         self.PrintSupModes  = PrintSupModes
@@ -445,7 +444,6 @@ class Controls(object):
         self.out4incident   = out4incident
         self.max_order_PWs  = max_order_PWs
         self.num_cores      = num_cores
-        self.plot_scat_mats = plot_scat_mats
         if leave_cpus == True:
             # number of cpus to leave free
             import multiprocessing   as mp

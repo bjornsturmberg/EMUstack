@@ -306,20 +306,6 @@ class Stack(object):
         self.t_list.append(t_layer)
 
 
-    # plot scattering matrices as grayscale images
-        if self.layers[0].other_para.plot_scat_mats == True:
-            im = np.real(abs(rnet_list[-1]))
-            plt.matshow(im,cmap=plt.cm.gray)
-            cbar = plt.colorbar(extend='neither')
-            plt.xlabel('Incoming Orders')
-            plt.ylabel('Outgoing Orders')
-            plt.suptitle('Net Reflection Scattering Matrix')
-            plt.savefig('Rnet_wl %f' % self.layers[0].light.wl_nm)
-            # for i in range(len(rnet_list)):
-            #     im = np.real(rnet_list[i])
-            #     plt.matshow(im,cmap=plt.cm.gray)
-            #     plt.savefig('0testmat%i' % i)
-
     def _check_periods_are_consistent(self):
         """ Raise an error if layers have different periods."""
         for lay in self.layers:
