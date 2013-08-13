@@ -73,7 +73,7 @@ bottom3  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
 
 NWs = objects.NanoStruct('NW_array', period, 60, height_nm = 2330, 
     inclusion_a = materials.Si_c, background = materials.Air, 
-    loss = True, nb_typ_el = 4, 
+    loss = True, nb_typ_el = 2, 
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)
 
 # Find num_BM for each simulation in a somewhat arbitrary way

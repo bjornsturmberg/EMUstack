@@ -12,7 +12,7 @@ class NanoStruct(object):
 
         INPUTS:
 
-        - 'geometry'      : '1D_grating', 'NW_array'
+        - 'geometry'      : Either 1D or 2D structure; '1D_grating', 'NW_array'.
 
         - 'period'        : The diameter the unit cell in nanometers.
 
@@ -56,8 +56,7 @@ class NanoStruct(object):
             .mail (eg. 600_60.mail), it must be located in PCPV/Data/
 
         - 'nb_typ_el'     : Number of different FEM element types (media)
-            1 background, either 1 or 2 for inclusions (+ 2 depreciated 
-            for super/substrate) = 4 or 5.
+            1 background, either 1 or 2 inclusions(_a,_b) = 2 or 3.
 
         - 'lc_bkg'        : Length constant of meshing of background medium.
         - 'lc2'           : "  " on inclusion surfaces. (smaller = finer mesh)
@@ -74,7 +73,6 @@ class NanoStruct(object):
         - `plot_abs'      : Plot the absolute value of modal fields.
     """
 
-#TODO include position variable
 
     def __init__(self, geometry, period, radius1, 
         height_nm=2330,
@@ -87,7 +85,7 @@ class NanoStruct(object):
         ff=0, set_ff=False, ff_rand=False, 
         posx=0, posy=0, small_d=0,
         make_mesh_now=True, force_mesh=False, 
-        mesh_file='NEED_FILE.mail', nb_typ_el=5, 
+        mesh_file='NEED_FILE.mail', nb_typ_el=2, 
         lc_bkg=0.09, lc2=1.7, lc3=1.9, lc4=1.9, lc5=1.9, lc6=1.9,
         plot_modes=False, plot_real=1, plot_imag=0, plot_abs=0):
         self.geometry      = geometry
@@ -192,7 +190,7 @@ class NanoStruct(object):
                     self.radius1 = np.sqrt((self.ff*(self.period)**2)/3.14159265)
             else:
                 # except KeyError:
-                raise  NotImplementedError, "must have at least one cylinder of nonzero radius."
+                raise ValueError, "must have at least one cylinder of nonzero radius."
 
             if self.ellipticity != 0:
                 msh_name = msh_name + '_e_%(e)i' % {'e' : self.ellipticity*100,}
@@ -319,8 +317,7 @@ class NanoStruct(object):
                 supercell = 1
                 msh_name  =  '1D_%(d)i_%(radius)i' % {'d' : self.period, 'radius' : self.radius1}
             else:
-                # except KeyError:
-                raise  NotImplementedError, "must have at least one grating of nonzero width."
+                raise ValueError, "must have at least one grating of nonzero width."
 
             if self.posx != 0:
                 msh_name = msh_name + 'x%(e)i' % {'e' : self.posx,}

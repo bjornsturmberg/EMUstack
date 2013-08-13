@@ -157,6 +157,6 @@ Physical Line(96) = {7, 8, 9, 10, 11, 12};
 Physical Line(97) = {13, 14, 15, 16, 17, 18};
 Physical Line(98) = {19, 20, 21, 24, 25, 26};
 
-Physical Surface(3) = {88, 90, 92, 94};
-Physical Surface(4) = {64, 66, 68, 70};
-Physical Surface(5) = {56, 76, 78, 58, 80, 82, 60, 84, 86, 62, 74, 72};
+Physical Surface(1) = {88, 90, 92, 94};
+Physical Surface(2) = {64, 66, 68, 70};
+Physical Surface(3) = {56, 76, 78, 58, 80, 82, 60, 84, 86, 62, 74, 72};

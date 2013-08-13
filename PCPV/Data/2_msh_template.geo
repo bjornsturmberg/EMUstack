@@ -103,6 +103,6 @@ Physical Line(102) = {5, 6, 7, 8};
 Physical Line(103) = {9, 10, 11, 12};
 Physical Line(104) = {13, 14, 15, 16};
 
-Physical Surface(3) = {94, 96, 98, 100};
-Physical Surface(4) = {86, 88, 90, 92};
-Physical Surface(5) = {78, 80, 82, 84};
+Physical Surface(1) = {94, 96, 98, 100};
+Physical Surface(2) = {86, 88, 90, 92};
+Physical Surface(3) = {78, 80, 82, 84};

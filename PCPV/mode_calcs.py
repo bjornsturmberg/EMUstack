@@ -193,10 +193,7 @@ class Simmo(Modes):
         """ Run the FEM in Fortran """
         st = self.structure
         wl = self.light.wl_nm
-        # 1st and 2nd elements of n_eff are deprecated
-        # previously, 1st element was superstrate index,
-        # 2nd was substrate.
-        n_effs = np.array([1., 1., st.background.n(wl), st.inclusion_a.n(wl), 
+        n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl), 
             st.inclusion_b.n(wl)])
         n_effs = n_effs[:st.nb_typ_el]
 
@@ -253,7 +250,7 @@ def r_t_mat(lay1, lay2):
     """
     assert lay1.structure.period == lay2.structure.period
 
-    # We memoise to avoid extra calculations
+    # We memorise to avoid extra calculations
     global _interfaces_i_have_known
     # Have we seen this interface before?
     try:

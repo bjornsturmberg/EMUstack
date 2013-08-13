@@ -55,5 +55,5 @@ Physical Line(24) = {6};
 Physical Line(25) = {7, 8, 9, 10};
 
 
-Physical Surface(3) = {15, 21};
-Physical Surface(4) = {17, 19};
+Physical Surface(1) = {15, 21};
+Physical Surface(2) = {17, 19};

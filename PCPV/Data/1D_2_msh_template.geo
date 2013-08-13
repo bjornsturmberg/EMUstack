@@ -78,6 +78,6 @@ Physical Line(34) = {8};
 Physical Line(35) = {9, 10, 11, 12, 13, 14};
 
 
-Physical Surface(3) = {21, 25, 27, 31};
-Physical Surface(4) = {23};
-Physical Surface(5) = {29};
+Physical Surface(1) = {21, 25, 27, 31};
+Physical Surface(2) = {23};
+Physical Surface(3) = {29};

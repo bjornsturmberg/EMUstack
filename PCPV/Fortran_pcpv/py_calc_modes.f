@@ -497,10 +497,10 @@ C
       k_0 = 2.0d0*pi*freq
 C
 C  Index number of the core materials (material with highest Re(eps_eff))
-      if(dble(eps_eff(3)) .gt. dble(eps_eff(4))) then
-          n_core(1) = 3
+      if(dble(eps_eff(2)) .gt. dble(eps_eff(3))) then
+          n_core(1) = 2
       else
-          n_core(1) = 4
+          n_core(1) = 3
       endif
       n_core(2) = n_core(1)
 C Parameter for shift-and-invert method

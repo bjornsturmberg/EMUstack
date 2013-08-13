@@ -82,8 +82,8 @@ Physical Line(2) = {3,4};
 Physical Line(3) = {5,6};
 Physical Line(4) = {7,8};
 
-Physical Surface(3) = {24,26,28,22};
-Physical Surface(4) = {30,32,34,36};
+Physical Surface(1) = {24,26,28,22};
+Physical Surface(2) = {30,32,34,36};
 
 
 EndIf
@@ -126,7 +126,7 @@ Physical Line(2) = {3,4};
 Physical Line(3) = {5,6};
 Physical Line(4) = {7,8};
 
-Physical Surface(3) = {26, 32, 30, 28};
-Physical Surface(4) = {34, 36, 38, 40};
+Physical Surface(1) = {26, 32, 30, 28};
+Physical Surface(2) = {34, 36, 38, 40};
 
 EndIf
