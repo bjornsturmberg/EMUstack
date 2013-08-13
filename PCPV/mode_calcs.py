@@ -160,15 +160,15 @@ class Anallo(Modes):
         elif 'TM' == pol:
             inc_amp[spec_TM] = 1
         elif 'R Circ' == pol:
-            raise NotImplementedError
             inc_amp[spec_TE] = 1/sqrt(2.)
-            inc_amp[spec_TM] = +1j/sqrt(2.) # Or is it -?
+            inc_amp[spec_TM] = +1j/sqrt(2.)
         elif 'L Circ' == pol:
-            raise NotImplementedError
             inc_amp[spec_TE] = 1/sqrt(2.)
-            inc_amp[spec_TM] = -1j/sqrt(2.) # Or is it +?
+            inc_amp[spec_TM] = -1j/sqrt(2.)
         else:
-            raise NotImplementedError
+            raise NotImplementedError, \
+            "Must select from the currently implemented polarisations; \
+             TE, TM, R Circ, L Circ."
 
         return inc_amp
 
