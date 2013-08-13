@@ -1,7 +1,7 @@
-d = 1; // grating period
-d_in_nm = 0;
+d = 1; // unit cell period
+d_in_nm = 0; // grating period
 w1 = 0;
-h_width1 = (w1/d_in_nm)*d*0.5;
+h_width1 = (w1/(2*d_in_nm))*d;
 lc = 0; // 0.501 0.201 0.0701;
 lc2 = lc/1; // on grating surfaces
 

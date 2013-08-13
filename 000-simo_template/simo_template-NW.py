@@ -57,7 +57,7 @@ light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
 
 
 # period must be consistent throughout simulation!!!
-period = 600.0
+period = 600
 
 cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = True)
@@ -71,9 +71,9 @@ TF4  = objects.ThinFilm(period = period, height_nm = 200,
 bottom3  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.TiO2, loss = False)
 
-NWs = objects.NanoStruct('NW_array', period, 60, height_nm = 2330, 
-    inclusion_a = materials.Si_c, background = materials.Air, 
-    loss = True, nb_typ_el = 2, 
+NW_diameter = 120
+NWs = objects.NanoStruct('NW_array', period, NW_diameter, height_nm = 2330, 
+    inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)
 
 # Find num_BM for each simulation in a somewhat arbitrary way

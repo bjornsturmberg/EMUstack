@@ -126,11 +126,11 @@ C
 C     Plane waves order s
 C   RK    x component
                 PlaneW_RK(s2,1) = alpha*val_exp
-C             y component
+C         y component
                 PlaneW_RK(s2,2) = beta*val_exp
 C   RE    x component
                 PlaneW_RE(s2,1) = beta*val_exp
-C             y component
+C         y component
                 PlaneW_RE(s2,2) = -alpha*val_exp
                 s = s + 1
               endif

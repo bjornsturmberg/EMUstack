@@ -193,9 +193,13 @@ class Simmo(Modes):
         """ Run the FEM in Fortran """
         st = self.structure
         wl = self.light.wl_nm
+        if self.structure.diameter2 == 0:
+            nb_typ_el = 2
+        else:
+            nb_typ_el = 3
         n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl), 
             st.inclusion_b.n(wl)])
-        n_effs = n_effs[:st.nb_typ_el]
+        n_effs = n_effs[:nb_typ_el]
 
         if self.structure.loss == False:
             n_effs = n_effs.real
@@ -232,7 +236,7 @@ class Simmo(Modes):
             E_H_field, i_cond, itermax, 
             self.structure.plot_modes, self.structure.plot_real, 
             self.structure.plot_imag, self.structure.plot_abs,
-            num_pw_per_pol, cmplx_max, self.structure.nb_typ_el
+            num_pw_per_pol, cmplx_max, nb_typ_el
         )
 
         self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol = resm

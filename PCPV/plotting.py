@@ -16,24 +16,24 @@ def gen_params_string(param_layer, light, max_num_BMs=0):
     # Plot t,r,a for each layer & total, then save each to text files
     if isinstance(param_layer,objects.NanoStruct):
         params_2_print = 'ff = %5.3f, '% param_layer.ff
-        params_2_print += 'd = %(period)d, a1 = %(radius)d, '% {
-        'period'        : param_layer.period, 'radius' : param_layer.radius1,}
-        if param_layer.radius2 != 0: params_2_print += 'a2 = %(rad)d '% {'rad' : param_layer.radius2,}
+        params_2_print += 'd = %(period)d, a1 = %(diameter)d, '% {
+        'period'        : param_layer.period, 'diameter' : param_layer.diameter1,}
+        if param_layer.diameter2 != 0: params_2_print += 'a2 = %(rad)d '% {'rad' : param_layer.diameter2,}
         if param_layer.geometry == 'NW_array':
-            if param_layer.radius3 != 0: params_2_print += 'a3 = %(rad)d '% {'rad' : param_layer.radius3,}
-            if param_layer.radius4 != 0: params_2_print += 'a4 = %(rad)d '% {'rad' : param_layer.radius4,}
-            if param_layer.radius5 != 0: params_2_print += '\na5 = %(rad)d '% {'rad' : param_layer.radius5,}
-            if param_layer.radius6 != 0: params_2_print += 'a6 = %(rad)d '% {'rad' : param_layer.radius6,}
-            if param_layer.radius7 != 0: params_2_print += 'a7 = %(rad)d '% {'rad' : param_layer.radius7,}
-            if param_layer.radius8 != 0: params_2_print += 'a8 = %(rad)d '% {'rad' : param_layer.radius8,}
-            if param_layer.radius9 != 0: params_2_print += 'a9 = %(rad)d \n'% {'rad' : param_layer.radius9,}
-            if param_layer.radius10 != 0: params_2_print += 'a10 = %(rad)d '% {'rad' : param_layer.radius10,}
-            if param_layer.radius11 != 0: params_2_print += 'a11 = %(rad)d '% {'rad' : param_layer.radius11,}
-            if param_layer.radius12 != 0: params_2_print += 'a12 = %(rad)d '% {'rad' : param_layer.radius12,}
-            if param_layer.radius13 != 0: params_2_print += 'a13 = %(rad)d '% {'rad' : param_layer.radius13,}
-            if param_layer.radius14 != 0: params_2_print += 'a14 = %(rad)d '% {'rad' : param_layer.radius14,}
-            if param_layer.radius15 != 0: params_2_print += 'a15 = %(rad)d '% {'rad' : param_layer.radius15,}
-            if param_layer.radius16 != 0: params_2_print += 'a16 = %(rad)d \n'% {'rad' : param_layer.radius16,}
+            if param_layer.diameter3  != 0: params_2_print += 'a3 = %(rad)d '%    {'rad' : param_layer.diameter3,}
+            if param_layer.diameter4  != 0: params_2_print += 'a4 = %(rad)d '%    {'rad' : param_layer.diameter4,}
+            if param_layer.diameter5  != 0: params_2_print += '\na5 = %(rad)d '%  {'rad' : param_layer.diameter5,}
+            if param_layer.diameter6  != 0: params_2_print += 'a6 = %(rad)d '%    {'rad' : param_layer.diameter6,}
+            if param_layer.diameter7  != 0: params_2_print += 'a7 = %(rad)d '%    {'rad' : param_layer.diameter7,}
+            if param_layer.diameter8  != 0: params_2_print += 'a8 = %(rad)d '%    {'rad' : param_layer.diameter8,}
+            if param_layer.diameter9  != 0: params_2_print += 'a9 = %(rad)d \n'%  {'rad' : param_layer.diameter9,}
+            if param_layer.diameter10 != 0: params_2_print += 'a10 = %(rad)d '%   {'rad' : param_layer.diameter10,}
+            if param_layer.diameter11 != 0: params_2_print += 'a11 = %(rad)d '%   {'rad' : param_layer.diameter11,}
+            if param_layer.diameter12 != 0: params_2_print += 'a12 = %(rad)d '%   {'rad' : param_layer.diameter12,}
+            if param_layer.diameter13 != 0: params_2_print += 'a13 = %(rad)d '%   {'rad' : param_layer.diameter13,}
+            if param_layer.diameter14 != 0: params_2_print += 'a14 = %(rad)d '%   {'rad' : param_layer.diameter14,}
+            if param_layer.diameter15 != 0: params_2_print += 'a15 = %(rad)d '%   {'rad' : param_layer.diameter15,}
+            if param_layer.diameter16 != 0: params_2_print += 'a16 = %(rad)d \n'% {'rad' : param_layer.diameter16,}
             if param_layer.square == True: params_2_print += '\nSquare NWs '
             if param_layer.ellipticity == True: params_2_print += '\nEllipticity = %(rad)5.3f '% {'rad' : param_layer.ellipticity,}
         elif param_layer.geometry == '1D_grating':
@@ -114,7 +114,7 @@ def ult_efficiency(active_abs, wavelengths):
     expression   = i_spec*active_abs*wavelengths
     integral_tmp = np.trapz(expression, x=wavelengths)
     Efficiency   = integral_tmp/(bandgap_wl*tot_irradiance)   
-    # np.savetxt('Efficiency.txt', [Efficiency, radius1, radius2,
+    # np.savetxt('Efficiency.txt', [Efficiency, diameter1, diameter2,
     # period, ff], fmt = '%12.8f')
     return Efficiency, i_spec
 

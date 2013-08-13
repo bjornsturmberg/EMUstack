@@ -124,7 +124,17 @@ class Stack(object):
         return f_down_list, f_up_list
 
     def calc_scat(self, pol = 'TE', incoming_amplitudes = None):
-        """ Calculate the transmission and reflection matrices of the stack"""
+        """ Calculate the transmission and reflection matrices of the stack
+
+            In relation to the FEM mesh the polarisation is orientated,
+            - vertically   for TE
+            - horizontally for TM
+            at normal incidence (polar angle theta = 0, azimuthal angle phi = 0).
+
+        """
+        # Can check this against lines ~ 127 in J_overlap.f E components are TE, have diffraction
+        # orders along beta, which is along y.
+
         # TODO: Switch to calc_R_T_net, which does not use infinitesimal air 
         # layers. This will require rewriting the parts that calculate fluxes
         # through each layer.
