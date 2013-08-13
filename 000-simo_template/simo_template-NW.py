@@ -23,11 +23,6 @@ import materials
 import plotting
 from stack import *
 
-
-# The following should be in the function "setup_module()",
-# but unfortunately simulate_stack is defined in a lazy-but-easy
-# way: the structures are inherited rather than passed in.
-
 start = time.time()
 ################ Simulation parameters ################
 
@@ -76,8 +71,7 @@ NWs = objects.NanoStruct('NW_array', period, NW_diameter, height_nm = 2330,
     inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)
 
-# Find num_BM for each simulation in a somewhat arbitrary way
-# Maybe roll this out into a Bjorn-specific function
+# Find num_BM for each simulation (wl) as num decreases w decreasing index contrast.
 max_n = max([NWs.inclusion_a.n(wl).real for wl in wavelengths])
 max_num_BMs = 200
 

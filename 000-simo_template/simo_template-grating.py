@@ -23,15 +23,15 @@ import materials
 import plotting
 from stack import *
 
-
-# The following should be in the function "setup_module()",
-# but unfortunately simulate_stack is defined in a lazy-but-easy
-# way: the structures are inherited rather than passed in.
-
 start = time.time()
 ################ Simulation parameters ################
 
-simo_para  = objects.Controls(num_cores = 3, plot_modes = 0)
+# Number of CPUs to use im simulation
+num_cores = 5
+# # Alternatively specify the number of CPUs to leave free on machine
+# leave_cpus = 4 
+# num_cores = mp.cpu_count() - leave_cpus
+
 # Remove results of previous simulations
 clear_previous.clean('.txt')
 clear_previous.clean('.pdf')
@@ -64,21 +64,15 @@ bottom = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 grating_1 = objects.NanoStruct('1D_grating', period, 100, height_nm = 25, 
-    inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True, nb_typ_el = 4, 
+    inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True,
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.05, lc2= 4.0)
 
 mirror = objects.ThinFilm(period = period, height_nm = 100,
     material = materials.Ag, loss = True)
 
-
-# Find num_BM for each simulation in a somewhat arbitrary way
-# Maybe roll this out into a Bjorn-specific function
-# max_n = max([grating_1.inclusion_a.n(wl).real for wl in wavelengths])
-max_num_BMs = 163
+num_BM = 163
 
 def simulate_stack(light):
-    num_BM = max_num_BMs#round(max_num_BMs * grating_1.inclusion_a.n(light.wl_nm).real/max_n)
-    
     ################ Evaluate each layer individually ##############
     sim_cover = cover.calc_modes(light, simo_para)
     sim_homo_film = homo_film.calc_modes(light, simo_para)
@@ -130,6 +124,14 @@ plotting.omega_plot(stack_list, wavelengths, params_string)
 ######################## Single Wavelength Plotting ########################
 # Plot transmission as a function of k vector.
 plotting.t_func_k_plot(stack_list)
+
+
+# # Visualise the Scattering Matrices
+# for i in range(len(wavelengths)):
+#     extra_title = 'R_net'
+#     plotting.vis_scat_mats(stack1_wl_list[i].R_net, i, extra_title)
+#     extra_title = 'R_12'
+#     plotting.vis_scat_mats(stack1_wl_list[i].layers[2].T21, i, extra_title)
 
 
 
