@@ -104,6 +104,9 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, s
 
 
 def ult_efficiency(active_abs, wavelengths):
+
+    # TODO make E_g a property of material, not just longst wl included.
+
     Irrad_spec_file = '../PCPV/Data/ASTM_1_5_spectrum'
     #  Total solar irradiance - integral of I(lambda) from 310nm-4000nm
     #  intergral done in Mathematica (OtherCode/Silicon_ASTM/ASTMG173.nb)

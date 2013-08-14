@@ -27,7 +27,7 @@ start = time.time()
 ################ Simulation parameters ################
 
 # Number of CPUs to use im simulation
-num_cores = 5
+num_cores = 7
 # # Alternatively specify the number of CPUs to leave free on machine
 # leave_cpus = 4 
 # num_cores = mp.cpu_count() - leave_cpus
@@ -52,7 +52,7 @@ light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
 
 
 # period must be consistent throughout simulation!!!
-period = 600
+period = 600.5
 
 cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = True)
@@ -66,7 +66,7 @@ TF4  = objects.ThinFilm(period = period, height_nm = 200,
 bottom3  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.TiO2, loss = False)
 
-NW_diameter = 120
+NW_diameter = 120.4
 NWs = objects.NanoStruct('NW_array', period, NW_diameter, height_nm = 2330, 
     inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)
@@ -93,7 +93,8 @@ def simulate_stack(light):
     """
 
     stack0 = Stack((sim_bot1, sim_cover))
-    stack1 = Stack((sim_bot1, sim_TH2, sim_NWs, sim_cover))
+    stack1 = Stack((sim_bot1, sim_NWs, sim_cover))
+    # stack1 = Stack((sim_bot1, sim_TH2, sim_NWs, sim_cover))
     # stack1 = Stack((sim_bot1, sim_TH2, sim_TF4, sim_cover))
     stack0.calc_scat(pol = 'TE')
     stack1.calc_scat(pol = 'TE')
@@ -142,6 +143,35 @@ last_light_object = light_list.pop()
 
 
 
+
+param_layer = NWs # Specify the layer for which the parameters should be printed on figures.
+params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=max_num_BMs)
+
+#### Example 1: simple multilayered stack.
+stack_label = 1 # Specify which stack you are dealing with.
+stack1_wl_list = []
+for i in range(len(wavelengths)):
+    stack1_wl_list.append(stacks_wl_list[i][stack_label])
+active_layer_nu = 1
+
+Efficiency = plotting.t_r_a_plots(stack1_wl_list, wavelengths, params_string, 
+    active_layer_nu=active_layer_nu, stack_label=stack_label) 
+# Dispersion
+plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stack_label) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # #### Example 0: simple interface.
 # param_layer = bottom1 # Specify the layer for which the parameters should be printed on figures.
 # params_string = plotting.gen_params_string(param_layer, last_light_object)
@@ -155,26 +185,27 @@ last_light_object = light_list.pop()
 
 
 
-param_layer = TF4 # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=max_num_BMs)
 
-#### Example 1: simple multilayered stack.
-stack_label = 1 # Specify which stack you are dealing with.
-stack1_wl_list = []
-for i in range(len(wavelengths)):
-    stack1_wl_list.append(stacks_wl_list[i][stack_label])
-active_layer_nu = 2 # Specify which layer is the active one (where absorption generates charge carriers).
-# Plot total transmission, reflection, absorption & that of each layer. 
-# Also calculate efficiency of active layer.
-Efficiency = plotting.t_r_a_plots(stack1_wl_list, wavelengths, params_string, 
-    active_layer_nu=active_layer_nu, stack_label=stack_label) 
-# Dispersion
-plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stack_label) 
-# # Energy Concentration
-# which_layer = 2
-# which_modes = [1,2] # can be a single mode or multiple modes
-# plotting.E_conc_plot(stack1_wl_list, which_layer, which_modes, wavelengths, 
-#     params_string, stack_label=stack_label)
+# param_layer = TF4 # Specify the layer for which the parameters should be printed on figures.
+# params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=max_num_BMs)
+
+# #### Example 1: simple multilayered stack.
+# stack_label = 1 # Specify which stack you are dealing with.
+# stack1_wl_list = []
+# for i in range(len(wavelengths)):
+#     stack1_wl_list.append(stacks_wl_list[i][stack_label])
+# active_layer_nu = 2 # Specify which layer is the active one (where absorption generates charge carriers).
+# # Plot total transmission, reflection, absorption & that of each layer. 
+# # Also calculate efficiency of active layer.
+# Efficiency = plotting.t_r_a_plots(stack1_wl_list, wavelengths, params_string, 
+#     active_layer_nu=active_layer_nu, stack_label=stack_label) 
+# # Dispersion
+# plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stack_label) 
+# # # Energy Concentration
+# # which_layer = 2
+# # which_modes = [1,2] # can be a single mode or multiple modes
+# # plotting.E_conc_plot(stack1_wl_list, which_layer, which_modes, wavelengths, 
+# #     params_string, stack_label=stack_label)
 
 
 

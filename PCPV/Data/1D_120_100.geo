@@ -1,7 +1,7 @@
-d = 1; // grating period
-d_in_nm = 120;
-w1 = 100;
-h_width1 = (w1/d_in_nm)*d*0.5;
+d = 1; // unit cell period
+d_in_nm = 120.000000; // grating period
+w1 = 100.000000;
+h_width1 = (w1/(2*d_in_nm))*d;
 lc = 0.050000; // 0.501 0.201 0.0701;
 lc2 = lc/4.000000; // on grating surfaces
 
@@ -55,5 +55,5 @@ Physical Line(24) = {6};
 Physical Line(25) = {7, 8, 9, 10};
 
 
-Physical Surface(3) = {15, 21};
-Physical Surface(4) = {17, 19};
+Physical Surface(1) = {15, 21};
+Physical Surface(2) = {17, 19};

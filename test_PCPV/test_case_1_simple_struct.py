@@ -26,11 +26,13 @@ from numpy.testing import assert_allclose as assert_ac
 from numpy.testing import assert_equal
 
 start = time.time()
-label_nu = 0
 ################ Simulation parameters ################
 
-simo_para  = objects.Controls(debug = 0, max_order_PWs = 0, num_cores = 1,
-        Checks = 0)
+# Number of CPUs to use im simulation
+num_cores = 1
+# # Alternatively specify the number of CPUs to leave free on machine
+# leave_cpus = 4 
+# num_cores = mp.cpu_count() - leave_cpus
 
 # Remove results of previous simulations
 clear_previous.clean('.txt')
@@ -45,7 +47,7 @@ clear_previous.clean('.pdf')
 # Single wavelength run
 wl_super =  500.0
 wavelengths = np.array([wl_super])
-light_list  = [objects.Light(wl) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 1) for wl in wavelengths]
 light = light_list[0]
 
 
@@ -60,22 +62,19 @@ period  = 600
 
 cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
-sim_cover = cover.calc_modes(light, simo_para)
+sim_cover = cover.calc_modes(light)
 
-radius1 = 60
-num_BM = 30
-grating_1 = objects.NanoStruct('NW_array', period, radius1, square = False,
-    set_ff = False, height_nm = 1000,
+NW_diameter = 120
+num_BM = 20
+grating_1 = objects.NanoStruct('NW_array', period, NW_diameter, height_nm = 2330,
     inclusion_a = materials.Si_c, background = materials.Air,
-    loss = True, nb_typ_el = 4, 
-    make_mesh_now = True, force_mesh = True,
-    lc_bkg = 0.15, lc2= 1.5, lc3= 1.5)
-sim_grat1 = grating_1.calc_modes(light, simo_para, num_BM = num_BM)
+    loss = True, make_mesh_now = True, force_mesh = True,
+    lc_bkg = 0.07, lc2= 1.5, lc3= 2.0)
+sim_grat1 = grating_1.calc_modes(light, num_BM = num_BM)
 
-# will only ever use top scattering matrices for the bottom layer
 bottom = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.SiO2_a, loss = False)
-sim_bot = bottom.calc_modes(light, simo_para)
+sim_bot = bottom.calc_modes(light)
 
 
 
@@ -84,9 +83,16 @@ sim_bot = bottom.calc_modes(light, simo_para)
 solar_cell list MUST be ordered from bottom to top!
 """
 stack = Stack((sim_bot, sim_grat1, sim_cover))
-stack.calc_scat()
+stack.calc_scat(pol = 'TE')
 stack_list = [stack]
-t_r_a_plots(stack_list)
+
+last_light_object = light_list.pop()
+param_layer = grating_1 # Specify the layer for which the parameters should be printed on figures.
+params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
+active_layer_nu = 1
+Efficiency = plotting.t_r_a_plots(stack_list, wavelengths, params_string, 
+    active_layer_nu=active_layer_nu)
+
 
 
 # # SAVE DATA AS REFERENCE
@@ -95,7 +101,27 @@ t_r_a_plots(stack_list)
 # # in the future
 # testing.save_reference_data("case_1", stack_list)
 
-def test_stack_list_matches_saved(casefile_name = 'case_1', stack_list = stack_list, rtol = 1e-6, atol = 1e-6):
+def results_match_reference(filename):
+    rtol = 1e-6
+    atol = 1e-2
+    reference = np.loadtxt("ref/case_1/" + filename)
+    result    = np.loadtxt(filename)
+    np.testing.assert_allclose(result, reference, rtol, atol, filename)
+
+def test_txt_results():
+    result_files = (
+        "Absorptance_stack1.txt",
+        "Lay_Absorb_0_stack1.txt",
+        "Lay_Trans_0_stack1.txt",
+        "Reflectance_stack1.txt",
+        "Transmittance_stack1.txt",
+        )
+    for f in result_files:
+        yield results_match_reference, f
+
+def test_stack_list_matches_saved(casefile_name = 'case_1', stack_list = stack_list):
+    rtol = 1e-6
+    atol = 1e-0
     ref = np.load("ref/%s.npz" % casefile_name)
     yield assert_equal, len(stack_list), len(ref['stack_list'])
     for stack, rstack in zip(stack_list, ref['stack_list']):
@@ -111,18 +137,3 @@ def test_stack_list_matches_saved(casefile_name = 'case_1', stack_list = stack_l
             #TODO: yield assert_ac, lay.sol1, rlay['sol1']
         yield assert_ac, stack.R_net, rstack['R_net'], rtol, atol, lbl_s + 'R_net'
         yield assert_ac, stack.T_net, rstack['T_net'], rtol, atol, lbl_s + 'T_net'
-
-def results_match_reference(filename):
-    reference = np.loadtxt("ref/case_1/" + filename)
-    result    = np.loadtxt(filename)
-    np.testing.assert_allclose(result, reference, 1e-7, 1e-6, filename)
-
-def test_txt_results():
-    result_files = (
-        "Absorptance.txt",
-        "Lay_Absorb_0.txt",
-        "Lay_Trans_0.txt",
-        "Reflectance.txt",       "Transmittance.txt",
-        )
-    for f in result_files:
-        yield results_match_reference, f
