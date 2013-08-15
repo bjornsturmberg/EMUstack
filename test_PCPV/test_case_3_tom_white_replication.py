@@ -14,7 +14,6 @@ import datetime
 import numpy as np
 import sys
 from multiprocessing import Pool
-# import multiprocessing   as mp
 sys.path.append("../PCPV/")
 
 import clear_previous
@@ -132,7 +131,7 @@ def setup_module(module):
 def results_match_reference(filename):
     rtol = 1e-6
     atol = 1e-2
-    reference = np.loadtxt("ref/case_4/" + filename)
+    reference = np.loadtxt("ref/case_3/" + filename)
     result    = np.loadtxt(filename)
     np.testing.assert_allclose(result, reference, rtol, atol, filename)
 
@@ -151,7 +150,7 @@ def test_txt_results():
     for f in result_files:
         yield results_match_reference, f
 
-def test_stack_list_matches_saved(casefile_name = 'case_4'):
+def test_stack_list_matches_saved(casefile_name = 'case_3'):
     rtol = 1e-0
     atol = 1e-0
     ref = np.load("ref/%s.npz" % casefile_name)

@@ -138,11 +138,14 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
         ax1.plot(wavelengths, layer_spec)
         ax2 = ax1.twiny()
         ax2.plot(energies, layer_spec, alpha=0)
-        if i == nu_layers-1:
-            ax1.set_xlabel('Wavelength (nm)')
+        if i == 0:
             ax2.set_xlabel('Energy (eV)')
+        elif i == nu_layers-1:
+            ax1.set_xlabel('Wavelength (nm)')
             ax1.set_ylabel('Total')
-        else:
+        if i != 0:
+            ax2.set_xticklabels( () )
+        if i != nu_layers-1:
             ax1.set_xticklabels( () )
         if spectra_name == 'Lay_Absorb':
             if i == 0: ax1.set_ylabel('Top Layer')
