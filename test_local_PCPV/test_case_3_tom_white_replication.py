@@ -44,16 +44,16 @@ clear_previous.clean('.pdf')
 # clear_previous.clean('.log')
 
 ################ Light parameters #####################
-wl_1     = 900
-wl_2     = 1050
-no_wl_1  = 2
-# Set up light objects
-wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
+# wl_1     = 900
+# wl_2     = 1050
+# no_wl_1  = 2
+# # Set up light objects
+# wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
+# light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
 # # Single wavelength run
-# wl_super = 1000
-# wavelengths = np.array([wl_super])
-# light_list  = [objects.Light(wl) for wl in wavelengths]
+wl_super = 1000
+wavelengths = np.array([wl_super])
+light_list  = [objects.Light(wl) for wl in wavelengths]
 
 
 # period must be consistent throughout simulation!!!
@@ -124,13 +124,13 @@ def setup_module(module):
     # # Only run this after changing what is simulated - this
     # # generates a new set of reference answers to check against
     # # in the future
-    # testing.save_reference_data("case_4", stack_list)
+    # testing.save_reference_data("case_3", stack_list)
 
 
 
 def results_match_reference(filename):
     rtol = 1e-6
-    atol = 1e-2
+    atol = 1e-6
     reference = np.loadtxt("ref/case_3/" + filename)
     result    = np.loadtxt(filename)
     np.testing.assert_allclose(result, reference, rtol, atol, filename)
@@ -151,8 +151,8 @@ def test_txt_results():
         yield results_match_reference, f
 
 def test_stack_list_matches_saved(casefile_name = 'case_3'):
-    rtol = 1e-0
-    atol = 1e-0
+    rtol = 1e-4
+    atol = 1e-3
     ref = np.load("ref/%s.npz" % casefile_name)
     yield assert_equal, len(stack_list), len(ref['stack_list'])
     for stack, rstack in zip(stack_list, ref['stack_list']):
