@@ -3,6 +3,7 @@ import objects
 import mode_calcs
 
 import numpy as np
+import subprocess
 from matplotlib.mlab import griddata
 import matplotlib
 matplotlib.use('pdf')
@@ -11,8 +12,21 @@ import matplotlib.pyplot as plt
 
 
 
+
+#######################################################################################
+def clear_previous(file_type):
+    """ Delete all files of specified type 'file_type', eg '.txt' """
+
+    files_rm = 'rm *%s'% file_type
+    subprocess.call(files_rm, shell = True)
+#######################################################################################
+
+
+
 #######################################################################################
 def gen_params_string(param_layer, light, max_num_BMs=0):
+    """ Generate the string of simulation info that is to be printed at the top of plots. """
+
     # Plot t,r,a for each layer & total, then save each to text files
     if isinstance(param_layer,objects.NanoStruct):
         params_2_print = 'ff = %5.3f, '% param_layer.ff
@@ -41,7 +55,6 @@ def gen_params_string(param_layer, light, max_num_BMs=0):
         params_2_print += 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d, '% {
         'max_num_BMs'   : max_num_BMs,'max_order_PWs' : light.max_order_PWs, }
     else:
-        # params_2_print = 'Homogeneous Film'
         params_2_print = 'max_PW_order = %(max_order_PWs)d, '% {'max_order_PWs' : light.max_order_PWs, }
 
 
@@ -57,7 +70,7 @@ def gen_params_string(param_layer, light, max_num_BMs=0):
 
 #######################################################################################
 def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, stack_label=1, add_name=''):
-    # Plot t,r,a for each layer & total, then save each to text files
+    """ Plot t,r,a for each layer & total, then save each to text files. """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
     params_2_print += '\n'r'$h_t,...,h_b$ = '
@@ -104,7 +117,9 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, s
 
 
 def ult_efficiency(active_abs, wavelengths):
+    """
 
+    """
     # TODO make E_g a property of material, not just longst wl included.
 
     Irrad_spec_file = '../PCPV/Data/ASTM_1_5_spectrum'
@@ -123,6 +138,8 @@ def ult_efficiency(active_abs, wavelengths):
 
 
 def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, stack_label, add_name):
+    """ The plotting function for one type of spectrum across all layers. """
+
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     nu_layers = len(spec_list)/len(wavelengths)
     h_array = np.ones(len(wavelengths))*total_h
@@ -190,6 +207,8 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
         plt.savefig('%(s)s_stack%(bon)i%(add)s'% {'s' : spectra_name, 'bon' : stack_label,'add' : add_name})
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label, add_name):
+    """ The plotting function for total t,r,a spectra on one plot. """
+
     h  = 6.626068e-34;
     c  = 299792458;
     eV = 1.60217646e-19;
@@ -237,6 +256,10 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
 
 #######################################################################################
 def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
+    """ Plots the dispersion diagram of each layer in one plot. """
+
+    # TODO: plot dispersion in normal way - omega(k)
+
     num_layers = len(stack_wl_list[0].layers)
     fig1 = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     fig2 = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
@@ -272,6 +295,8 @@ def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
 def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_print, stack_label=1):
+    """ Plots the energy concentration (\epsilon |E_{cyl}| / \epsilon |E_{cell}|) of given layer. """
+
     if isinstance(stack_wl_list[0].layers[which_layer], mode_calcs.Simmo):
         num_layers = len(stack_wl_list[0].layers)
         fig1 = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
@@ -285,7 +310,7 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_p
                 ax1.plot(wavelengths[i],E_conc_tmp,'bo')
         plt.xlim((wavelengths[0], wavelengths[-1]))
         ax1.set_xlabel('Wavelength (nm)')
-        ax1.set_ylabel(r'$E_{cyl} / E_{cell}$')
+        ax1.set_ylabel(r'$\epsilon |E_{cyl}| / \epsilon |E_{cell}|$')
         # ax2.plot(wavelengths,E_conc,'k')
         # ax2.set_xlabel('Wavelength (nm)')
         # ax2.set_ylabel(r'$E_{cyl} / E_{cell}$')
@@ -305,8 +330,8 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_p
 
 
 #######################################################################################
-# plot scattering matrices as grayscale images
 def vis_scat_mats(scat_mat,wl=0,extra_title=''):
+    """ Plot given scattering matrix as grayscale images. """
     image = np.real(abs(scat_mat))
     plt.matshow(image,cmap=plt.cm.gray)
     print np.shape(scat_mat)

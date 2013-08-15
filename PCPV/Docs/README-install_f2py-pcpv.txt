@@ -11,7 +11,7 @@ Unpack SuiteSparse into PCPV/Fortran_pcpv/, it should create a directory there, 
 mkdir where you want SuiteSparse installed, in my case PCPV/Fortran_pcpv/SS_installed
 mkdir  SS_installed/lib SS_installed/include
 edit SuiteSparse/SuiteSparse_config/SuiteSparse_config.mk
-for consistence across the whole build, use intel fortran compiler
+for consitency across the whole build, use intel fortran compiler
 line 75 F77 = gfortran --> ifort
 set path to install folder
 line 85 INSTALL_LIB = /suphys/bjorn/Usyd_Running/f2pytest/PCPV/Fortran_pcpv/SS_install/lib
@@ -59,27 +59,56 @@ C     ifort likes the following
 8) Edit Fortran_pcpv/Makefile update paths and names to yours
 SS_LIB_LOCATION = /suphys/bjorn/Usyd_Running/f2pytest/PCPV/Fortran_pcpv/SSparse_install/lib
 ARPACK_LIB_LOCATION = /suphys/bjorn/Usyd_Running/f2pytest/PCPV/Fortran_pcpv/ARPACK
-ARPACK_NAME = SILLIAC
 UMFPACK_NAME = umf4_f77zwrapper.o
 #uncomment line 62
 #comment line 63 (this removes timing routines)
 
 
+9) Edit PCPV/Data/gmsh_conversion/Makefile
+selecting your fortran compiler on line 10.
+
+# FC = gfortran
+FC = ifort
+
+Make in this directory.
+
+
 9) make (paying close care to cross all your digits)
 
-10) cd all the way back to base of pcpv package in this case f2pytest/
-then cd test_PCPV
-(find more digits to cross, steal from others by amputation if necissary)
-python nosetests
-. = pass
-F = FAIL
 
-11) There may be many fails, these are probably related to using different versions of gmsh
-If tests all complete but with fails you will need to update the test references for your compilation.
+11) 2 set of tests test_instalation installation test_local
 
 Open test_PCPV/test_case_* and make adjustments near the bottom as described there.
 Run tests once with loose constraints, if these all pass copy your results into ref/ and reset hard constraints for your future comparisons.
 
+10) cd all the way back to base of pcpv package in this case f2pytest/
+then cd test_PCPV
+
+python nosetests
+. = pass
+F = FAIL
+
 12) That's all there is, there isn't any more.
 
 
+
+
+
+
+
+
+#######################################
+
+Re Makefiles - vayu links to arpack automatically if you load python 2.7.3
+module load intel-fc/12.1.6.233 intel-cc/12.1.6.233 intel-mkl/12.1.6.233 python/2.7.3 python/2.7.3-matplotlib
+
+
+"check if suitesparse-metis-dev, arpack-dev (or whatever it's called), etc are installed on your machine already. If so, you're golden and skip to step X"
+
+
+When I suggested installing to a different location, I didn't mean inside the PCPV folder - I meant in ~/lib/ or on the computer's hard drive or something else. I think putting the libraries in the PCPV folder is a bad idea, but I don't know enough to know why.
+
+
+I haven't bothered with grammar or rephrasing, but I will pass on the advice once given to me by a Swiss mathematician:
+If you write an "if", then you must always follow it by a "then".
+I've found that rule is very useful for technical writing.

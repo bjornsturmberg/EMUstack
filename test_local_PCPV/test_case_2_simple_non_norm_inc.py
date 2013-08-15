@@ -1,11 +1,14 @@
+"""
+Test simulation of a relatively simple structure;
+a dilute silicon nanowire array, at non-normal incidence.
+"""
+
 import time
 import datetime
 import numpy as np
 import sys
-# import multiprocessing   as mp
 sys.path.append("../PCPV/")
 
-import clear_previous
 import objects
 import materials
 import plotting
@@ -25,9 +28,9 @@ def setup_module(module):
     # num_cores = mp.cpu_count() - leave_cpus
 
     # Remove results of previous simulations
-    clear_previous.clean('.txt')
-    clear_previous.clean('.pdf')
-    # clear_previous.clean('.log')
+    plotting.clear_previous('.txt')
+    plotting.clear_previous('.pdf')
+    # plotting.clear_previous('.log')
 
     ################ Light parameters #####################
 

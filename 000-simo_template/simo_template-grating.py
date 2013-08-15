@@ -14,10 +14,8 @@ import datetime
 import numpy as np
 import sys
 from multiprocessing import Pool
-# import multiprocessing   as mp
 sys.path.append("../PCPV/")
 
-import clear_previous
 import objects
 import materials
 import plotting
@@ -33,10 +31,10 @@ num_cores = 5
 # num_cores = mp.cpu_count() - leave_cpus
 
 # Remove results of previous simulations
-clear_previous.clean('.txt')
-clear_previous.clean('.pdf')
-clear_previous.clean('.gif')
-clear_previous.clean('.log')
+plotting.clear_previous('.txt')
+plotting.clear_previous('.pdf')
+plotting.clear_previous('.gif')
+plotting.clear_previous('.log')
 
 ################ Light parameters #####################
 wl_1     = 900

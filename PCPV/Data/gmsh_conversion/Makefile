@@ -7,7 +7,8 @@ OBJS = $(CODE:.f=.o)
 
 BIN = conv_gmsh_py.exe
 
-FC = gfortran
+# FC = gfortran
+FC = ifort
 
 # Libraries
 LIBS = 

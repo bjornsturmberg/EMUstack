@@ -2,7 +2,6 @@ import os
 import numpy as np
 import random
 import materials
-from calculate_ff import calculate_ff
 from mode_calcs import Simmo, Anallo
 
 data_location = '../PCPV/Data/'
@@ -507,8 +506,36 @@ class Light(object):
             return an
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def dec_float_str(dec_float):
-    """ Convert float with decimal point into string with _ in place of ."""
+    """ Convert float with decimal point into string with '_' in place of '.' """
     string = str(dec_float)
     fmt_string = string.replace('.','_')
     return fmt_string
+
+
+
+def calculate_ff(square, d, a1, a2=0, a3=0, a4=0, a5=0, a6=0, a7=0, a8=0, a9=0, a10=0,
+    a11=0, a12=0, a13=0, a14=0, a15=0, a16=0, el1 = 0):
+
+    if square == False:
+        ff = np.pi*((a1/2)**2*np.sqrt(1-el1) + (a2/2)**2 + (a3/2)**2 + (a4/2)**2 + (a5/2)**2 + (a6/2)**2 + 
+            (a7/2)**2 + (a8/2)**2 + (a9/2)**2 + (a10/2)**2 + (a11/2)**2 + (a12/2)**2 + (a13/2)**2 + 
+            (a14/2)**2 + (a15/2)**2 + (a16/2)**2)/(d)**2
+    else:
+        ff = ((a1)**2 + (a2)**2 + (a3)**2 + (a4)**2 + (a5)**2 + (a6)**2 + (a7)**2 + (a8)**2 + (a9)**2
+            + (a10)**2 + (a11)**2 + (a12)**2 + (a13)**2 + (a14)**2 + (a15)**2 + (a16)**2)/(d)**2 
+    return ff
