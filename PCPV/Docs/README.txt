@@ -16,6 +16,34 @@
 
 
 
+
+
+
+
+
+Advantages;
+- Fequency domain so can include real disperisive refractive index data.
+- Designed to include lossy materials.
+- FEM allows for arbitrary geometries in x-y plane.
+- Vectorial FEM ... advantages.
+- Analytic treatment of honogeneous films, including dispersive and lossy layers.
+- Only need to calculate scattering matrices of each unique layer once per wavelength.
+- Can then combine layers in arbitrary stack(s), including nanostructured layers directly onto one another.
+- Repeated interfaces are recognised and not re-calcuated.
+- Completely open source and compatibale with freely available compilers for fortran and python. 
+- Integrated with highly optimised libries (but also functions without these at slower speeds), including;
+    - BLAS
+    - LAPACK
+    - UMFPACK
+    - ARPACK
+
+
+
+
+
+
+
+
 Hi!
 
 BlochCode can calculate Bloch modes, Bloch factors and impedances for 2D

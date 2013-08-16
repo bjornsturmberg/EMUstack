@@ -95,7 +95,7 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, s
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
-    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths)
+    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label)
     params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
     params_2_print += ' %'
 
@@ -116,9 +116,10 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, s
     return Efficiency
 
 
-def ult_efficiency(active_abs, wavelengths):
-    """
-
+def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label):
+    """ Calculate the photovoltaic ultimate efficiency achieved in the specified active layer. 
+        For definition see Sturmberg et al., Optics Express, Vol. 19, Issue S5, pp. A1067-A1081 (2011)
+        http://dx.doi.org/10.1364/OE.19.0A1067
     """
     # TODO make E_g a property of material, not just longst wl included.
 
@@ -132,8 +133,8 @@ def ult_efficiency(active_abs, wavelengths):
     expression   = i_spec*active_abs*wavelengths
     integral_tmp = np.trapz(expression, x=wavelengths)
     Efficiency   = integral_tmp/(bandgap_wl*tot_irradiance)   
-    # np.savetxt('Efficiency.txt', [Efficiency, diameter1, diameter2,
-    # period, ff], fmt = '%12.8f')
+    eta_string   = 'eta = %8.6f \n'% Efficiency + params_2_print
+    np.savetxt('Efficiency_stack%i.txt'% stack_label, np.array([eta_string]), fmt = '%s')
     return Efficiency, i_spec
 
 
@@ -258,14 +259,19 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
 def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
     """ Plots the dispersion diagram of each layer in one plot. """
 
-    # TODO: plot dispersion in normal way - omega(k)
+    period = np.array(stack_wl_list[0].layers[0].structure.period)
+    normed_omegas = 1/wavelengths*period
 
     num_layers = len(stack_wl_list[0].layers)
     fig1 = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     fig2 = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    fig3 = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    fig4 = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     for l in range(num_layers):
-        ax1 = fig1.add_subplot(num_layers,1,l+1)
-        ax2 = fig2.add_subplot(num_layers,1,l+1)
+        ax1 = fig1.add_subplot(num_layers,1,num_layers-l)
+        ax2 = fig2.add_subplot(num_layers,1,num_layers-l)
+        ax3 = fig3.add_subplot(num_layers,1,num_layers-l)
+        ax4 = fig4.add_subplot(num_layers,1,num_layers-l)
         for i in range(len(wavelengths)):
             k_zs = stack_wl_list[i].layers[l].k_z
             real_k_zs = []
@@ -278,29 +284,51 @@ def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
             ax1.plot(wl,real_k_zs,'bo')
             wl = np.ones(len(imag_k_zs))*wavelengths[i]
             ax2.plot(wl,imag_k_zs,'ro')
-        ax1.set_ylabel(r'Real $k_z$')
-        ax2.set_ylabel(r'Imaginary $k_z$')
-        if l == 0: ax1.set_ylabel('Top Layer'), ax2.set_ylabel('Top Layer')
+            om = np.ones(len(real_k_zs))*normed_omegas[i]
+            ax3.plot(real_k_zs,om,'bo')
+            om = np.ones(len(imag_k_zs))*normed_omegas[i]
+            ax4.plot(imag_k_zs, om,'ro')
+        ax1.set_ylabel(r'Real $k_z$'), ax2.set_ylabel(r'Imaginary $k_z$')
+        ax3.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)'), ax4.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)')
+        if l == 0: 
+            ax1.set_ylabel('Bottom Layer'), ax2.set_ylabel('Bottom Layer')
+            ax3.set_ylabel('Bottom Layer'), ax4.set_ylabel('Bottom Layer')
         if l != num_layers-1:
             ax1.set_xticklabels( () )
             ax2.set_xticklabels( () )
+            ax3.set_xticklabels( () )
+            ax4.set_xticklabels( () )
         else:
-            ax1.set_ylabel('Bottom Layer'), ax2.set_ylabel('Bottom Layer')
+            ax1.set_ylabel('Top Layer'), ax2.set_ylabel('Top Layer')
+            ax3.set_ylabel('Top Layer'), ax4.set_ylabel('Top Layer')
             ax1.set_xlabel('Wavelength (nm)'), ax2.set_xlabel('Wavelength (nm)')
-        plt.xlim((wavelengths[0], wavelengths[-1]))
+            ax3.set_xlabel(r'Real $k_z$'), ax4.set_xlabel(r'Imaginary $k_z$')
+        ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+        ax2.set_xlim((wavelengths[0], wavelengths[-1]))
+        # Plot the (dispersive) light line in homogeneous layers.
+        if isinstance(stack_wl_list[0].layers[l], mode_calcs.Anallo):
+            ns = [stack_wl_list[i].layers[l].n() for i in range(len(wavelengths))]
+            ax3.plot(np.real(ns)*normed_omegas, normed_omegas,'k',linewidth=2)
     fig1.suptitle(r'Real $k_z$'+params_2_print+'\n')
     fig2.suptitle(r'Imaginary $k_z$'+params_2_print+'\n')
+    fig3.suptitle(r'Real $k_z$'+params_2_print+'\n')
+    fig4.suptitle(r'Imaginary $k_z$'+params_2_print+'\n')
     fig1.savefig('Disp_Diagram_Re_stack%(bon)i'% {'bon' : stack_label})
     fig2.savefig('Disp_Diagram_Im_stack%(bon)i'% {'bon' : stack_label})
+    fig3.savefig('Disp_Diagram_w(k)_Re_stack%(bon)i'% {'bon' : stack_label})
+    fig4.savefig('Disp_Diagram_w(k)_Im_stack%(bon)i'% {'bon' : stack_label})
+    # Uncomment if you wish to save the dispersion data of a simulation to file.
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
 def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_print, stack_label=1):
-    """ Plots the energy concentration (\epsilon |E_{cyl}| / \epsilon |E_{cell}|) of given layer. """
+    """ Plots the energy concentration (epsilon |E_{cyl}| / epsilon |E_{cell}|) of given layer. """
 
     if isinstance(stack_wl_list[0].layers[which_layer], mode_calcs.Simmo):
         num_layers = len(stack_wl_list[0].layers)
         fig1 = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
         ax1 = fig1.add_subplot(1,1,1)
+        # Uncomment if you wish to have a continuous curve plotted.
+        # ax1 = fig1.add_subplot(1,1,1)       
         # ax2 = fig1.add_subplot(2,1,2)
         # E_conc = []
         for i in range(len(wavelengths)):
@@ -319,9 +347,6 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_p
     else:
         print "\n ERROR: plotting.E_conc_plot; \n Can only calculate energy concentration in NanoStruct layers."
         print repr(stack_wl_list[0].layers[which_layer])
-
-# np.genfromtxt can deal with incomplete data!
-#     num_BMs     = np.genfromtxt(file_name, usecols=(1))
 #######################################################################################
 
 
@@ -387,6 +412,8 @@ def t_func_k_plot(stack_list):
 
 
 
+# np.genfromtxt can deal with incomplete data!
+#     num_BMs     = np.genfromtxt(file_name, usecols=(1))
 
 
 
