@@ -1,4 +1,24 @@
-#
+"""
+    plotting.py is a subroutine of PCPV that contains numerous plotting
+    routines. These were developed during simmulations for photovoltaics,
+    hence the efficiency calculations.
+
+    Copyright (C) 2013  Bjorn Sturmberg
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import objects
 import mode_calcs
 
@@ -68,6 +88,13 @@ def gen_params_string(param_layer, light, max_num_BMs=0):
 #######################################################################################
 
 
+
+def zeros_int_str(zero_int):
+    """ Convert integer into string with '0' in place of ' ' """
+    string = '%4.0f' % zero_int
+    fmt_string = string.replace(' ','0')
+    return fmt_string
+
 #######################################################################################
 def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, stack_label=1, add_name=''):
     """ Plot t,r,a for each layer & total, then save each to text files. """
@@ -75,6 +102,8 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, s
     height_list = stack_wl_list[0].heights_nm()[::-1]
     params_2_print += '\n'r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
+
+    stack_label = zeros_int_str(stack_label)
 
     # wavelengths = np.array([s.layers[0].light.wl_nm for s in stack_wl_list]) #look at first layer to find wls.
     a_list = []
@@ -93,8 +122,8 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, s
     for i in range(len(wavelengths)): 
         active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
-        t_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
-        r_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
+        t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
+        r_tot.append(float(r_list[i]))
     Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label)
     params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
     params_2_print += ' %'
@@ -133,8 +162,8 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label):
     expression   = i_spec*active_abs*wavelengths
     integral_tmp = np.trapz(expression, x=wavelengths)
     Efficiency   = integral_tmp/(bandgap_wl*tot_irradiance)   
-    eta_string   = 'eta = %8.6f \n'% Efficiency + params_2_print
-    np.savetxt('Efficiency_stack%i.txt'% stack_label, np.array([eta_string]), fmt = '%s')
+    eta_string   = '%8.6f \n'% Efficiency + '\neta = %8.6f \n'% Efficiency + params_2_print
+    np.savetxt('Efficiency_stack%s.txt'% stack_label, np.array([eta_string]), fmt = '%s')
     return Efficiency, i_spec
 
 
@@ -199,13 +228,13 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
         plt.ylim((0, 1))
 
         if i != nu_layers-1: 
-            np.savetxt('%(s)s_%(i)i_stack%(bon)i%(add)s.txt'% {'s' : lay_spec_name, 'i' : i, 
+            np.savetxt('%(s)s_%(i)i_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 'i' : i, 
                 'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
         else:
-            np.savetxt('%(s)s_stack%(bon)i%(add)s.txt'% {'s' : lay_spec_name, 
+            np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
                 'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
 
-        plt.savefig('%(s)s_stack%(bon)i%(add)s'% {'s' : spectra_name, 'bon' : stack_label,'add' : add_name})
+        plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : spectra_name, 'bon' : stack_label,'add' : add_name})
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label, add_name):
     """ The plotting function for total t,r,a spectra on one plot. """
@@ -250,7 +279,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
     ax2.set_xlim((energies[0], energies[-1]))
     plt.ylim((0, 1))
     plt.suptitle(plot_name+add_name+'\n'+params_2_print)
-    plt.savefig('%(s)s_stack%(bon)i%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+    plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 #######################################################################################
 
 
@@ -259,6 +288,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
 def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
     """ Plots the dispersion diagram of each layer in one plot. """
 
+    stack_label = zeros_int_str(stack_label)
     period = np.array(stack_wl_list[0].layers[0].structure.period)
     normed_omegas = 1/wavelengths*period
 
@@ -313,16 +343,17 @@ def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
     fig2.suptitle(r'Imaginary $k_z$'+params_2_print+'\n')
     fig3.suptitle(r'Real $k_z$'+params_2_print+'\n')
     fig4.suptitle(r'Imaginary $k_z$'+params_2_print+'\n')
-    fig1.savefig('Disp_Diagram_Re_stack%(bon)i'% {'bon' : stack_label})
-    fig2.savefig('Disp_Diagram_Im_stack%(bon)i'% {'bon' : stack_label})
-    fig3.savefig('Disp_Diagram_w(k)_Re_stack%(bon)i'% {'bon' : stack_label})
-    fig4.savefig('Disp_Diagram_w(k)_Im_stack%(bon)i'% {'bon' : stack_label})
+    fig1.savefig('Disp_Diagram_Re_stack%(bon)s'% {'bon' : stack_label})
+    fig2.savefig('Disp_Diagram_Im_stack%(bon)s'% {'bon' : stack_label})
+    fig3.savefig('Disp_Diagram_w(k)_Re_stack%(bon)s'% {'bon' : stack_label})
+    fig4.savefig('Disp_Diagram_w(k)_Im_stack%(bon)s'% {'bon' : stack_label})
     # Uncomment if you wish to save the dispersion data of a simulation to file.
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
 def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_print, stack_label=1):
     """ Plots the energy concentration (epsilon |E_{cyl}| / epsilon |E_{cell}|) of given layer. """
 
+    stack_label = zeros_int_str(stack_label)
     if isinstance(stack_wl_list[0].layers[which_layer], mode_calcs.Simmo):
         num_layers = len(stack_wl_list[0].layers)
         fig1 = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
@@ -343,7 +374,7 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_p
         # ax2.set_xlabel('Wavelength (nm)')
         # ax2.set_ylabel(r'$E_{cyl} / E_{cell}$')
         fig1.suptitle('Energy Concentration = '+r'$E_{cyl} / E_{cell}$'+'\n'+params_2_print)
-        fig1.savefig('Energy_Concentration_stack%(bon)i'% {'bon' : stack_label})
+        fig1.savefig('Energy_Concentration_stack%(bon)s'% {'bon' : stack_label})
     else:
         print "\n ERROR: plotting.E_conc_plot; \n Can only calculate energy concentration in NanoStruct layers."
         print repr(stack_wl_list[0].layers[which_layer])

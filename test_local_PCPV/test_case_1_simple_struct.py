@@ -102,11 +102,11 @@ def results_match_reference(filename):
 
 def test_txt_results():
     result_files = (
-        "Absorptance_stack1.txt",
-        "Lay_Absorb_0_stack1.txt",
-        "Lay_Trans_0_stack1.txt",
-        "Reflectance_stack1.txt",
-        "Transmittance_stack1.txt",
+        "Absorptance_stack0001.txt",
+        "Lay_Absorb_0_stack0001.txt",
+        "Lay_Trans_0_stack0001.txt",
+        "Reflectance_stack0001.txt",
+        "Transmittance_stack0001.txt",
         )
     for f in result_files:
         yield results_match_reference, f

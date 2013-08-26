@@ -1,12 +1,28 @@
+"""
+    stack.py is a subroutine of PCPV that contains the Stack object,
+    which takes layers with known scattering matrices and calculates
+    the net scattering matrices of the multilayered stack.
+
+    Copyright (C) 2013  Bjorn Sturmberg
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import numpy as np
 from objects import Anallo, Simmo
 from mode_calcs import r_t_mat
 from scipy import sqrt
-
-# import matplotlib
-# matplotlib.use('pdf')
-# import matplotlib.pyplot as plt
-
 
 class Stack(object):
     """ Represents a stack of layers evaluated at one frequency.

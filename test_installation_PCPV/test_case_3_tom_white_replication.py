@@ -1,12 +1,6 @@
 """
-The Ueber python script, the only one that needs to be edited to set up all 
-simulation parameters.
-Uses other python scripts to prime the simulation (interpolate raw data over chosen 
-wavelengths etc.), then calls the fortran routine pcpv.exe for each wavelength giving 
-it all the required details. It does this by spanning a new process for each wavelength,
-keeping the total running instances to a maximum number (num_cores_to_use). Finally all 
-results are collected in text files and the spectra are plotted. A log file is found in
-python_log.txt
+Test simulation of a relatively difficult structure;
+a multilayered stack including a dielectric grating and silver mirror.
 """
 
 import time
@@ -16,7 +10,6 @@ import sys
 from multiprocessing import Pool
 sys.path.append("../PCPV/")
 
-import clear_previous
 import objects
 import materials
 import plotting
@@ -39,9 +32,9 @@ num_cores = 7
 # num_cores = mp.cpu_count() - leave_cpus
 
 # Remove results of previous simulations
-clear_previous.clean('.txt')
-clear_previous.clean('.pdf')
-# clear_previous.clean('.log')
+plotting.clear_previous('.txt')
+plotting.clear_previous('.pdf')
+# plotting.clear_previous('.log')
 
 ################ Light parameters #####################
 # wl_1     = 900
@@ -137,15 +130,15 @@ def results_match_reference(filename):
 
 def test_txt_results():
     result_files = (
-        "Absorptance_stack1.txt",
-        "Lay_Absorb_0_stack1.txt",
-        "Lay_Absorb_1_stack1.txt",
-        "Lay_Absorb_2_stack1.txt",
-        "Lay_Trans_0_stack1.txt",
-        "Lay_Trans_1_stack1.txt",
-        "Lay_Trans_2_stack1.txt",
-        "Reflectance_stack1.txt",
-        "Transmittance_stack1.txt",
+        "Absorptance_stack0001.txt",
+        "Lay_Absorb_0_stack0001.txt",
+        "Lay_Absorb_1_stack0001.txt",
+        "Lay_Absorb_2_stack0001.txt",
+        "Lay_Trans_0_stack0001.txt",
+        "Lay_Trans_1_stack0001.txt",
+        "Lay_Trans_2_stack0001.txt",
+        "Reflectance_stack0001.txt",
+        "Transmittance_stack0001.txt",
     )
     for f in result_files:
         yield results_match_reference, f

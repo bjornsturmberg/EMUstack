@@ -1,12 +1,31 @@
 """
-The Ueber python script, the only one that needs to be edited to set up all 
-simulation parameters.
-Uses other python scripts to prime the simulation (interpolate raw data over chosen 
-wavelengths etc.), then calls the fortran routine pcpv.exe for each wavelength giving 
-it all the required details. It does this by spanning a new process for each wavelength,
-keeping the total running instances to a maximum number (num_cores_to_use). Finally all 
-results are collected in text files and the spectra are plotted. A log file is found in
-python_log.txt
+Template python script file to execute a simulation. To start, open a terminal and change
+directory to the directory containing this file (which must be in the same directory as 
+the PCPV directory). Run this script file by executing the following in the command line
+
+$ python simo_template-NW.py
+
+This will use num_cores worth of your CPUs, and by default return you in the command
+line, having printed results and saved plots to file as specified towards the end of 
+this file. If instead you wish to have direct access to the simulation results (for 
+further manipulation, debugging etc.) run this script with
+
+$ python -i simo_template-NW.py
+
+which, after the calculations are complete, will return you into an interactive session 
+of python, in which all simulation objects are accessible. In this session you can access
+the docstrings of objects/classes/methods by typing
+
+>>> from pydoc import help
+>>> help(objects.Light)
+
+where we have accessed the docstring of the Light class from objects.py
+
+
+In real simulation scripts replace this docstring with a brief description of the 
+simulation, eg.
+`Simulating NW array with period 600 nm and NW diameter 120 nm, placed ontop of 
+different substrates.'
 """
 
 import time
@@ -50,7 +69,7 @@ light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
 
 
 # period must be consistent throughout simulation!!!
-period = 600.5
+period = 600
 
 cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = True)
@@ -64,7 +83,7 @@ TF4  = objects.ThinFilm(period = period, height_nm = 200,
 bottom3  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.TiO2, loss = False)
 
-NW_diameter = 120.4
+NW_diameter = 120
 NWs = objects.NanoStruct('NW_array', period, NW_diameter, height_nm = 2330, 
     inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)
@@ -235,7 +254,7 @@ plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stac
 #         active_layer_nu=active_layer_nu, stack_label=stack_label, add_name = additional_name)
 # # Animate spectra as a function of heights.
 # from os import system as ossys
-# delay = 5 # delay between images in gif in seconds
+# delay = 5 # delay between images in gif in hundredths of a second
 # names = 'Lay_Absorb_stack'+str(stack_label)+gen_name
 # gif_cmd = 'convert -delay %(d)i +dither -layers Optimize -colors 16 %(n)s*.pdf %(n)s.gif'% {
 # 'd' : delay, 'n' : names}

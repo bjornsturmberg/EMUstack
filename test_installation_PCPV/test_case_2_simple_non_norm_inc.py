@@ -1,11 +1,14 @@
+"""
+Test simulation of a relatively simple structure;
+a dilute silicon nanowire array, at non-normal incidence.
+"""
+
 import time
 import datetime
 import numpy as np
 import sys
-# import multiprocessing   as mp
 sys.path.append("../PCPV/")
 
-import clear_previous
 import objects
 import materials
 import plotting
@@ -25,10 +28,9 @@ def setup_module(module):
     # num_cores = mp.cpu_count() - leave_cpus
 
     # Remove results of previous simulations
-    clear_previous.clean('.txt')
-    clear_previous.clean('.pdf')
-    # clear_previous.clean('.log')
-
+    plotting.clear_previous('.txt')
+    plotting.clear_previous('.pdf')
+    # plotting.clear_previous('.log')
     ################ Light parameters #####################
 
     # # Set up light objects
@@ -100,11 +102,11 @@ def results_match_reference(filename):
 
 def test_txt_results():
     result_files = (
-        "Absorptance_stack1.txt",
-        "Lay_Absorb_0_stack1.txt",
-        "Lay_Trans_0_stack1.txt",
-        "Reflectance_stack1.txt",
-        "Transmittance_stack1.txt",
+        "Absorptance_stack0001.txt",
+        "Lay_Absorb_0_stack0001.txt",
+        "Lay_Trans_0_stack0001.txt",
+        "Reflectance_stack0001.txt",
+        "Transmittance_stack0001.txt",
         )
     for f in result_files:
         yield results_match_reference, f

@@ -1,12 +1,31 @@
 """
-The Ueber python script, the only one that needs to be edited to set up all 
-simulation parameters.
-Uses other python scripts to prime the simulation (interpolate raw data over chosen 
-wavelengths etc.), then calls the fortran routine pcpv.exe for each wavelength giving 
-it all the required details. It does this by spanning a new process for each wavelength,
-keeping the total running instances to a maximum number (num_cores_to_use). Finally all 
-results are collected in text files and the spectra are plotted. A log file is found in
-python_log.txt
+Template python script file to execute a simulation. To start, open a terminal and change
+directory to the directory containing this file (which must be in the same directory as 
+the PCPV directory). Run this script file by executing the following in the command line
+
+$ python simo_template-grating.py
+
+This will use num_cores worth of your CPUs, and by default return you in the command
+line, having printed results and saved plots to file as specified towards the end of 
+this file. If instead you wish to have direct access to the simulation results (for 
+further manipulation, debugging etc.) run this script with
+
+$ python -i simo_template-grating.py
+
+which, after the calculations are complete, will return you into an interactive session 
+of python, in which all simulation objects are accessible. In this session you can access
+the docstrings of objects/classes/methods by typing
+
+>>> from pydoc import help
+>>> help(objects.Light)
+
+where we have accessed the docstring of the Light class from objects.py
+
+
+In real simulation scripts replace this docstring with a brief description of the 
+simulation, eg.
+`Simulating the coupling of normally incident light into evanescent orders through a 
+metallic grating of period 120 nm. Included 3 PW orders.'
 """
 
 import time

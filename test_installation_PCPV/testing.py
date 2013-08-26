@@ -2,7 +2,7 @@ import numpy as np
 from numpy.testing import assert_allclose as assert_ac
 
 from objects import Simmo
-
+from os import system as ossys
 
 def save_reference_data(casefile_name, stack_list):
     ref_stack_list = []
@@ -23,5 +23,9 @@ def save_reference_data(casefile_name, stack_list):
         ref_stack_list.append(rstack)
     np.savez_compressed("ref/%s.npz" % casefile_name, 
         stack_list = ref_stack_list)
+
+    cp_cmd = 'cp *.txt ref/%s/' % casefile_name
+    ossys(cp_cmd)
+
     assert False, "Reference results saved successfully, \
 but tests will now pass trivially so let's not run them now."

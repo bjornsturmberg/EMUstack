@@ -1,3 +1,24 @@
+"""
+    mode_calcs.py is a subroutine of PCPV that contains methods to 
+    calculate the modes of a given layer, either analytically 
+    (class 'Anallo') or from the FEM routine (class 'Simmo').
+
+    Copyright (C) 2013  Bjorn Sturmberg
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import numpy as np
 import sys
 from scipy import sqrt
@@ -116,6 +137,7 @@ class Anallo(Modes):
             return self.structure.material.n(self.light.wl_nm)
         else:
             return self.structure.material.n(self.light.wl_nm).real
+
 
     def k(self):
         """ Return the normalised wavenumber in the background material"""
