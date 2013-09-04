@@ -162,7 +162,9 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label):
     expression   = i_spec*active_abs*wavelengths
     integral_tmp = np.trapz(expression, x=wavelengths)
     Efficiency   = integral_tmp/(bandgap_wl*tot_irradiance)   
-    eta_string   = '%8.6f \n'% Efficiency + '\neta = %8.6f \n'% Efficiency + params_2_print
+    nums_2_print = params_2_print.split()
+    eta_string   = '%8.6f \n'% Efficiency + nums_2_print[5].replace(',','\n') 
+    + nums_2_print[8].replace(',','\n') + nums_2_print[11].replace(',','\n') #save params in easy to read in fmt 
     np.savetxt('Efficiency_stack%s.txt'% stack_label, np.array([eta_string]), fmt = '%s')
     return Efficiency, i_spec
 
@@ -280,6 +282,194 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
     plt.ylim((0, 1))
     plt.suptitle(plot_name+add_name+'\n'+params_2_print)
     plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+
+
+
+def t_r_a_plots_subs(stack_wl_list, wavelengths, params_2_print, period, sub_n, active_layer_nu=0, stack_label=1, add_name=''):
+    """ Plot t,r,a for each layer & total, then save each to text files. """
+
+    height_list = stack_wl_list[0].heights_nm()[::-1]
+    params_2_print += '\n'r'$h_t,...,h_b$ = '
+    params_2_print += ''.join('%4d, ' % num for num in height_list)
+
+    stack_label = zeros_int_str(stack_label)
+
+    # wavelengths = np.array([s.layers[0].light.wl_nm for s in stack_wl_list]) #look at first layer to find wls.
+    a_list = []
+    t_list = []
+    r_list = []
+    for stack in stack_wl_list:
+        a_list.extend(stack.a_list)
+        t_list.extend(stack.t_list)
+        r_list.extend(stack.r_list)
+
+    layers_steps = len(stack_wl_list[0].layers) - 1
+    active_abs = []
+    a_tot      = []
+    t_tot      = []
+    r_tot      = []
+    for i in range(len(wavelengths)): 
+        active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
+        a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
+        t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
+        r_tot.append(float(r_list[i]))
+    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label)
+    params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
+    params_2_print += ' %'
+
+    total_h = sum(stack_wl_list[0].heights_nm()) #look at first wl result to find h.
+    layers_plot('Lay_Absorb', a_list, wavelengths, total_h, params_2_print, stack_label, add_name)
+    layers_plot('Lay_Trans',  t_list, wavelengths, total_h, params_2_print, stack_label, add_name)
+    layers_plot('Lay_Reflec', r_list, wavelengths, total_h, params_2_print, stack_label, add_name)
+    # Also plot total t,r,a on a single plot
+    plot_name = 'Total_Spectra'
+    total_tra_plot_subs(plot_name, a_tot, t_tot, r_tot, wavelengths, params_2_print,
+      stack_label, add_name, period, sub_n)
+    # Also plot totals weighted by solar irradiance
+    weighting = Irradiance/Irradiance.max()
+    a_weighted = a_tot*weighting
+    t_weighted = t_tot*weighting
+    r_weighted = r_tot*weighting
+    plot_name = 'Weighted_Total_Spectra'
+    total_tra_plot_subs(plot_name, a_weighted, t_weighted, r_weighted, wavelengths, params_2_print,
+      stack_label, add_name, period, sub_n)
+    return Efficiency
+def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label, add_name, period, sub_n):
+    """ The plotting function for total t,r,a spectra on one plot. """
+
+    t_WA_01 = sub_n * period
+    t_WA_11 = sub_n * period / np.sqrt(2)
+    t_WA_20 = sub_n * period / 2
+    t_WA_21 = sub_n * period / np.sqrt(5)
+    t_WA_22 = sub_n * period / np.sqrt(8)
+    t_WA_30 = sub_n * period / 3
+
+    r_WA_01 = period
+    r_WA_11 = period / np.sqrt(2)
+    r_WA_20 = period / 2
+    r_WA_21 = period / np.sqrt(5)
+    r_WA_22 = period / np.sqrt(8)
+
+    sub_line01 = [t_WA_01, t_WA_01]
+    sub_line11 = [t_WA_11, t_WA_11]
+    sub_line20 = [t_WA_20, t_WA_20]
+    sub_line21 = [t_WA_21, t_WA_21]
+    sub_line22 = [t_WA_22, t_WA_22]
+    sub_line30 = [t_WA_30, t_WA_30]
+    sup_line01 = [r_WA_01, r_WA_01]
+    sup_line11 = [r_WA_11, r_WA_11]
+    sup_line20 = [r_WA_20, r_WA_20]
+    sup_line21 = [r_WA_21, r_WA_21]
+    sup_line22 = [r_WA_22, r_WA_22]
+    v_line = [0, 1]
+
+    h  = 6.626068e-34;
+    c  = 299792458;
+    eV = 1.60217646e-19;
+    energies  = (h*c/(wavelengths*1e-9))/eV
+    # num_e_ticks = 4
+    # e_ticks_tmp = np.linspace(energies.min(), energies.max(), num_e_ticks)
+    # e_ticks = [ round(elem, 2) for elem in e_ticks_tmp ]
+    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(3,1,1)
+    ax1.plot(wavelengths, a_spec)
+    ax1.plot(sub_line01, v_line, 'k')
+    ax1.plot(sub_line11, v_line, 'k')
+    ax1.plot(sub_line20, v_line, 'k')
+    ax1.plot(sub_line21, v_line, 'k')
+    ax1.plot(sub_line22, v_line, 'k')
+    ax1.plot(sub_line30, v_line, 'k')
+    ax1.plot(sup_line01, v_line, 'r')
+    ax1.plot(sup_line11, v_line, 'r')
+    ax1.plot(sup_line20, v_line, 'r')
+    ax1.plot(sup_line21, v_line, 'r')
+    ax1.plot(sup_line22, v_line, 'r')
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Absorptance')
+    ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+    ax2 = ax1.twiny()
+    ax2.plot(energies, a_spec, alpha=0)
+    # ax2.set_xticks(e_ticks)
+    ax2.set_xlabel('Energy (eV)')
+    ax2.set_xlim((energies[0], energies[-1]))
+    plt.ylim((0, 1))
+    ax1 = fig.add_subplot(3,1,2)
+    ax1.plot(wavelengths, t_spec)
+    ax1.plot(sub_line01, v_line, 'k')
+    ax1.plot(sub_line11, v_line, 'k')
+    ax1.plot(sub_line20, v_line, 'k')
+    ax1.plot(sub_line21, v_line, 'k')
+    ax1.plot(sub_line22, v_line, 'k')
+    ax1.plot(sub_line30, v_line, 'k')
+    ax1.plot(sup_line01, v_line, 'r')
+    ax1.plot(sup_line11, v_line, 'r')
+    ax1.plot(sup_line20, v_line, 'r')
+    ax1.plot(sup_line21, v_line, 'r')
+    ax1.plot(sup_line22, v_line, 'r')
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Transmittance')
+    ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+    ax2 = ax1.twiny()
+    ax2.plot(energies, t_spec, alpha=0)
+    ax2.set_xticklabels( () )
+    ax2.set_xlim((energies[0], energies[-1]))
+    plt.ylim((0, 1))
+    ax1 = fig.add_subplot(3,1,3)
+    ax1.plot(wavelengths, r_spec)
+    ax1.plot(sub_line01, v_line, 'k')
+    ax1.plot(sub_line11, v_line, 'k')
+    ax1.plot(sub_line20, v_line, 'k')
+    ax1.plot(sub_line21, v_line, 'k')
+    ax1.plot(sub_line22, v_line, 'k')
+    ax1.plot(sub_line30, v_line, 'k')
+    ax1.plot(sup_line01, v_line, 'r')
+    ax1.plot(sup_line11, v_line, 'r')
+    ax1.plot(sup_line20, v_line, 'r')
+    ax1.plot(sup_line21, v_line, 'r')
+    ax1.plot(sup_line22, v_line, 'r')
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Reflectance')
+    ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+    ax2 = ax1.twiny()
+    ax2.plot(energies, r_spec, alpha=0)
+    ax2.set_xticklabels( () )
+    ax2.set_xlim((energies[0], energies[-1]))
+    plt.ylim((0, 1))
+    plt.suptitle(plot_name+add_name+'\n'+params_2_print)
+    plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+
+
+
+def t_r_a_NO_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, stack_label=1, add_name=''):
+    """ Plot t,r,a for each layer & total, then save each to text files. """
+
+    height_list = stack_wl_list[0].heights_nm()[::-1]
+    params_2_print += '\n'r'$h_t,...,h_b$ = '
+    params_2_print += ''.join('%4d, ' % num for num in height_list)
+
+    stack_label = zeros_int_str(stack_label)
+
+    # wavelengths = np.array([s.layers[0].light.wl_nm for s in stack_wl_list]) #look at first layer to find wls.
+    a_list = []
+    t_list = []
+    r_list = []
+    for stack in stack_wl_list:
+        a_list.extend(stack.a_list)
+        t_list.extend(stack.t_list)
+        r_list.extend(stack.r_list)
+
+    layers_steps = len(stack_wl_list[0].layers) - 1
+    active_abs = []
+    a_tot      = []
+    t_tot      = []
+    r_tot      = []
+    for i in range(len(wavelengths)): 
+        active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
+        a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
+        t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
+        r_tot.append(float(r_list[i]))
+    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label)
+    return Efficiency
 #######################################################################################
 
 

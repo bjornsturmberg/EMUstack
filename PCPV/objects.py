@@ -57,8 +57,8 @@ class NanoStruct(object):
 
         - 'square'        : If True, 'NW_array' has square NWs (ie. 2D grating).
 
-        - 'ff'            : The fill fraction of the inclusions. If non-zero value 
-            given at assignment diameters are overritten s.t. given ff is achieved,
+        - 'ff'            : The fill fraction of the inclusions. If non-zero, 
+            the specified diameters are overritten s.t. given ff is achieved,
             otherwise ff is calculated from parameters and stored in self.ff.
         - 'ff_rand'       : If True, diameters overritten with random diameters,
             s.t. the ff is as assigned. Must provide non-zero dummy diameters.
@@ -108,7 +108,7 @@ class NanoStruct(object):
         small_d=0, posx=0, posy=0,
         make_mesh_now=True, force_mesh=False, 
         mesh_file='NEED_FILE.mail', 
-        lc_bkg=0.09, lc2=1.7, lc3=1.9, lc4=1.9, lc5=1.9, lc6=1.9,
+        lc_bkg=0.09, lc2=1.0, lc3=1.0, lc4=1.0, lc5=1.0, lc6=1.0,
         plot_modes=False, plot_real=1, plot_imag=0, plot_abs=0):
         self.geometry      = geometry
         self.period        = period
