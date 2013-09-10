@@ -1,4 +1,23 @@
 """
+    simmo_template-NW.py is a simulation script template for PCPV.
+
+    Copyright (C) 2013  Bjorn Sturmberg
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+"""
 Template python script file to execute a simulation. To start, open a terminal and change
 directory to the directory containing this file (which must be in the same directory as 
 the PCPV directory). Run this script file by executing the following in the command line
@@ -70,17 +89,18 @@ light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
 
 # period must be consistent throughout simulation!!!
 period = 600
+max_num_BMs = 200
 
-cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+cover  = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = True)
 
-bottom1  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+bottom1  = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Si_c, loss = False)
-TH2  = objects.ThinFilm(period = period, height_nm = 100,
+TH2  = objects.ThinFilm(period, height_nm = 100,
     material = materials.SiO2_a, loss = True)
-TF4  = objects.ThinFilm(period = period, height_nm = 200,
+TF4  = objects.ThinFilm(period, height_nm = 200,
     material = materials.Si_c, loss = True)
-bottom3  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+bottom3  = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.TiO2, loss = False)
 
 NW_diameter = 120
@@ -90,7 +110,6 @@ NWs = objects.NanoStruct('NW_array', period, NW_diameter, height_nm = 2330,
 
 # Find num_BM for each simulation (wl) as num decreases w decreasing index contrast.
 max_n = max([NWs.inclusion_a.n(wl).real for wl in wavelengths])
-max_num_BMs = 200
 
 def simulate_stack(light):
     num_BM = round(max_num_BMs * NWs.inclusion_a.n(light.wl_nm).real/max_n)

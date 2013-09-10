@@ -290,11 +290,11 @@ class NanoStruct(object):
                 geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
                 if self.posx != 0:
                     # appropriate for old definition of fraction of distance to touching
-                    geo = geo.replace('posx = 0;', "posx = %f;" % (self.posx/self.period*(self.period/(2*np.sqrt(supercell)) - self.diameter1)))
+                    geo = geo.replace('posx = 0;', "posx = %f;" % (self.posx/self.period*(self.period/(2*np.sqrt(supercell)) - self.diameter1/2.0)))
                     # appropriate for % shift of distance of centre point to (ind) unitcell boundary (ie d/2)
                     # geo = geo.replace('posx = 0;', "posx = %f;" % float(self.posx/supercell))
                 if self.posy != 0:
-                    geo = geo.replace('posy = 0;', "posy = %f;" % (self.posy/self.period*(self.period/(2*np.sqrt(supercell)) - self.diameter1)))
+                    geo = geo.replace('posy = 0;', "posy = %f;" % (self.posy/self.period*(self.period/(2*np.sqrt(supercell)) - self.diameter1/2.0)))
                     # geo = geo.replace('posy = 0;', "posy = %f;" % float(self.posy/supercell))
                 if supercell > 1:
                     geo = geo.replace('a2 = 0;', "a2 = %f;" % self.diameter2)
@@ -502,8 +502,8 @@ class Light(object):
                         [np.cos(phi), np.sin(phi)], dtype='float64')
 
         # Avoid the degeneracies that occur at normal incidence (FEM does not deal well with them)
-        if abs(self.k_pll).sum() < 1e-15:
-            self.k_pll[0] += 1e-15
+        if abs(self.k_pll).sum() < 1e-5:
+            self.k_pll[0] += 1e-5
 
     def _air_ref(self, period):
         """ Return a :Anallo: corresponding to this :Light: in free space.

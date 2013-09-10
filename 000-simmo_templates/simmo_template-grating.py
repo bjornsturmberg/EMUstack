@@ -1,4 +1,23 @@
 """
+    simmo_template-grating.py is a simulation script template for PCPV.
+
+    Copyright (C) 2013  Bjorn Sturmberg
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+"""
 Template python script file to execute a simulation. To start, open a terminal and change
 directory to the directory containing this file (which must be in the same directory as 
 the PCPV directory). Run this script file by executing the following in the command line
@@ -27,6 +46,8 @@ simulation, eg.
 `Simulating the coupling of normally incident light into evanescent orders through a 
 metallic grating of period 120 nm. Included 3 PW orders.'
 """
+
+
 
 import time
 import datetime
@@ -71,14 +92,15 @@ light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
 
 # period must be consistent throughout simulation!!!
 period = 120
+num_BM = 90#163
 
-cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+cover  = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Material(3.5 + 0.0j), loss = True)
 
-homo_film  = objects.ThinFilm(period = period, height_nm = 5,
+homo_film  = objects.ThinFilm(period, height_nm = 5,
     material = materials.Material(3.6 + 0.27j), loss = True)
 
-bottom = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+bottom = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 grating_diameter = 100
@@ -86,10 +108,9 @@ grating_1 = objects.NanoStruct('1D_grating', period, grating_diameter, height_nm
     inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True,
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.05, lc2= 4.0)
 
-mirror = objects.ThinFilm(period = period, height_nm = 100,
+mirror = objects.ThinFilm(period, height_nm = 100,
     material = materials.Ag, loss = True)
 
-num_BM = 90#163
 
 def simulate_stack(light):
     ################ Evaluate each layer individually ##############

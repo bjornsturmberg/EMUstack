@@ -1,6 +1,6 @@
 """
     plotting.py is a subroutine of PCPV that contains numerous plotting
-    routines. These were developed during simmulations for photovoltaics,
+    routines. These were developed during simulations for photovoltaics,
     hence the efficiency calculations.
 
     Copyright (C) 2013  Bjorn Sturmberg
@@ -164,7 +164,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label):
     Efficiency   = integral_tmp/(bandgap_wl*tot_irradiance)   
     nums_2_print = params_2_print.split()
     eta_string   = '%8.6f \n'% Efficiency + nums_2_print[5].replace(',','\n') + \
-      nums_2_print[8].replace(',','\n') + nums_2_print[11].replace(',','\n') #save params in easy to read in fmt 
+      nums_2_print[8].replace(',','\n') #save params in easy to read in fmt 
     np.savetxt('Efficiency_stack%s.txt'% stack_label, np.array([eta_string]), fmt = '%s')
     return Efficiency, i_spec
 
