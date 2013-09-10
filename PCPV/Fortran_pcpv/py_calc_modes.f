@@ -69,7 +69,7 @@ C  Variable used by valpr
       integer*8 n_conv, i_base
       double precision ls_data(10)
 c      integer*8 pointer_int(20), pointer_cmplx(20)
-      integer*8 index(1000), n_core(2)
+      integer*8 index(nval), n_core(2)
       complex*16 z_beta, z_tmp, z_tmp0
       integer*8 n_edge, n_face, n_ddl, n_ddl_max, n_k
 c     variable used by UMFPACK
@@ -125,7 +125,7 @@ c     new breed of variables to prise out of a, b and c
       complex*16 sol_avg(3, npt)
       complex*16 overlap_J(2*neq_PW, nval)
       complex*16 overlap_J_dagger(nval, 2*neq_PW)
-      complex*16 overlap_K(nval, 2*neq_PW)
+C      complex*16 overlap_K(nval, 2*neq_PW)
       complex*16 overlap_L(nval, nval)
 
       complex*16, target :: beta1(nval), beta2(nval)
@@ -139,7 +139,7 @@ Cf2py intent(out) sol1, sol2, mode_pol
       n_64 = 2
 C     !n_64**28 on Vayu, **27 before
 C      cmplx_max=n_64**25
-      real_max=n_64**22
+      real_max=n_64**21
       int_max=n_64**22
 c      3*npt+nel+nnodes*nel 
 

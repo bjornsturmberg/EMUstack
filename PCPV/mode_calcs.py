@@ -242,7 +242,7 @@ class Simmo(Modes):
         # Size of Fortran's complex superarray (scales with mesh)
         # In theory could do some python-based preprocessing
         # on the mesh file to work out RAM requirements
-        cmplx_max = 2**27
+        cmplx_max = 2**27#30
 
         # Parameters that control how FEM routine runs
         FEM_debug = 0   # Fortran routine will print info to screen and save additional into to file
