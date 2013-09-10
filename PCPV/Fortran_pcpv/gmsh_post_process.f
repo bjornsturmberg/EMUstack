@@ -169,6 +169,8 @@ C      close (unit=33)
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
      *           // '_' // tval // '_abs2.pos'
       open (unit=26,file=tchar)
+        write(26,*) "View.ArrowSizeMax = 40;"
+        write(26,*) "View.ArrowSizeMin = 0;"
         write(26,*) "General.Color.Background = {255,255,255};"
         write(26,*) "General.Color.BackgroundGradient={255,255,255};"
         write(26,*) "View.AdaptVisualizationGrid =1;"
@@ -183,6 +185,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
      *            // '_' // tval // 'x_re.pos'
       open (unit=27,file=tchar)
+        write(27,*) "View.ArrowSizeMax = 40;"
+        write(27,*) "View.ArrowSizeMin = 0;"
         write(27,*) "General.Color.Background = {255,255,255};"
         write(27,*) "General.Color.BackgroundGradient={255,255,255};"
         write(27,*) "View.AdaptVisualizationGrid =1;"
@@ -196,6 +200,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
      *           // '_' // tval // 'y_re.pos'
       open (unit=28,file=tchar)
+        write(28,*) "View.ArrowSizeMax = 40;"
+        write(28,*) "View.ArrowSizeMin = 0;"
         write(28,*) "General.Color.Background = {255,255,255};"
         write(28,*) "General.Color.BackgroundGradient={255,255,255};"
         write(28,*) "View.AdaptVisualizationGrid =1;"
@@ -208,6 +214,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
      *           // '_' // tval // 'z_re.pos'
       open (unit=29,file=tchar)
+        write(29,*) "View.ArrowSizeMax = 40;"
+        write(29,*) "View.ArrowSizeMin = 0;"
         write(29,*) "General.Color.Background = {255,255,255};"
         write(29,*) "General.Color.BackgroundGradient={255,255,255};"
         write(29,*) "View.AdaptVisualizationGrid =1;"
@@ -220,6 +228,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
      *           // '_' // tval // 'v_re.pos'
       open (unit=30,file=tchar)
+        write(30,*) "View.ArrowSizeMax = 40;"
+        write(30,*) "View.ArrowSizeMin = 0;"
         write(30,*) "General.Color.Background = {255,255,255};"
         write(30,*) "General.Color.BackgroundGradient={255,255,255};"
         write(30,*) "View.AdaptVisualizationGrid =1;"
@@ -232,6 +242,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
      *           //'_ind.pos'
       open (unit=31,file=tchar)
+        write(31,*) "View.ArrowSizeMax = 40;"
+        write(31,*) "View.ArrowSizeMin = 0;"
         write(31,*) "General.Color.Background = {255,255,255};"
         write(31,*) "General.Color.BackgroundGradient={255,255,255};"
         write(31,*) "View.AdaptVisualizationGrid =1;"
@@ -243,6 +255,8 @@ C
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
      *           // '_' // tval // '_abs2_eE.pos'
       open (unit=32,file=tchar)
+        write(32,*) "View.ArrowSizeMax = 40;"
+        write(32,*) "View.ArrowSizeMin = 0;"
         write(32,*) "General.Color.Background = {255,255,255};"
         write(32,*) "General.Color.BackgroundGradient={255,255,255};"
         write(32,*) "View.AdaptVisualizationGrid =1;"
@@ -351,6 +365,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
      *           // '_' // tval // 'x_im.pos'
       open (unit=27,file=tchar)
+        write(27,*) "View.ArrowSizeMax = 40;"
+        write(27,*) "View.ArrowSizeMin = 0;"
         write(27,*) "General.Color.Background = {255,255,255};"
         write(27,*) "General.Color.BackgroundGradient={255,255,255};"
         write(27,*) "View.AdaptVisualizationGrid =1;"
@@ -363,6 +379,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
      *           // '_' // tval // 'y_im.pos'
       open (unit=28,file=tchar)
+        write(28,*) "View.ArrowSizeMax = 40;"
+        write(28,*) "View.ArrowSizeMin = 0;"
         write(28,*) "General.Color.Background = {255,255,255};"
         write(28,*) "General.Color.BackgroundGradient={255,255,255};"
         write(28,*) "View.AdaptVisualizationGrid =1;"
@@ -375,6 +393,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
      *           // '_' // tval // 'z_im.pos'
       open (unit=29,file=tchar)
+        write(29,*) "View.ArrowSizeMax = 40;"
+        write(29,*) "View.ArrowSizeMin = 0;"
         write(29,*) "General.Color.Background = {255,255,255};"
         write(29,*) "General.Color.BackgroundGradient={255,255,255};"
         write(29,*) "View.AdaptVisualizationGrid =1;"
@@ -387,6 +407,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
      *           // '_' // tval // 'v_im.pos'
       open (unit=30,file=tchar)
+        write(30,*) "View.ArrowSizeMax = 40;"
+        write(30,*) "View.ArrowSizeMin = 0;"
         write(30,*) "General.Color.Background = {255,255,255};"
         write(30,*) "General.Color.BackgroundGradient={255,255,255};"
         write(30,*) "View.AdaptVisualizationGrid =1;"
@@ -451,6 +473,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
      *           // '_' // tval // 'x_abs.pos'
       open (unit=27,file=tchar)
+        write(27,*) "View.ArrowSizeMax = 40;"
+        write(27,*) "View.ArrowSizeMin = 0;"
         write(27,*) "General.Color.Background = {255,255,255};"
         write(27,*) "General.Color.BackgroundGradient={255,255,255};"
         write(27,*) "View.AdaptVisualizationGrid =1;"
@@ -463,6 +487,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
      *           // '_' // tval // 'y_abs.pos'
       open (unit=28,file=tchar)
+        write(28,*) "View.ArrowSizeMax = 40;"
+        write(28,*) "View.ArrowSizeMin = 0;"
         write(28,*) "General.Color.Background = {255,255,255};"
         write(28,*) "General.Color.BackgroundGradient={255,255,255};"
         write(28,*) "View.AdaptVisualizationGrid =1;"
@@ -475,6 +501,8 @@ c
       tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
      *           // '_' // tval // 'z_abs.pos'
       open (unit=29,file=tchar)
+        write(29,*) "View.ArrowSizeMax = 40;"
+        write(29,*) "View.ArrowSizeMin = 0;"
         write(29,*) "General.Color.Background = {255,255,255};"
         write(29,*) "General.Color.BackgroundGradient={255,255,255};"
         write(29,*) "View.AdaptVisualizationGrid =1;"
