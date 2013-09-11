@@ -24,12 +24,12 @@ python module pcpv ! in
             integer*8 :: neq_pw
             integer*8 :: cmplx_max
             integer*8, optional,check(len(n_eff)>=nb_typ_el),depend(n_eff) :: nb_typ_el=len(n_eff)
-            complex*16, target,dimension(nval),intent(out),depend(nval) :: beta1
-            complex*16 dimension(2 * neq_pw,nval),intent(out),depend(neq_pw,nval) :: overlap_j
-            complex*16 dimension(nval,2 * neq_pw),intent(out),depend(nval,neq_pw) :: overlap_j_dagger
-            complex*16, target,dimension(3,13,nval,nel),intent(out),depend(nval,nel) :: sol1
-            complex*16, target,dimension(3,13,nval,nel),intent(out),depend(nval,nel) :: sol2
-            complex*16 dimension(4,nval),intent(out),depend(nval) :: mode_pol
+            complex*16, target,dimension(3000),intent(out) :: beta1
+            complex*16 dimension(2 * neq_pw,3000),intent(out),depend(neq_pw) :: overlap_j
+            complex*16 dimension(3000,2 * neq_pw),intent(out),depend(neq_pw) :: overlap_j_dagger
+            complex*16, target,dimension(3,13,3000,nel),intent(out),depend(nel) :: sol1
+            complex*16, target,dimension(3,13,3000,nel),intent(out),depend(nel) :: sol2
+            complex*16 dimension(4,3000),intent(out) :: mode_pol
         end subroutine calc_modes
     end interface 
 end python module pcpv

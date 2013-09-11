@@ -8,6 +8,7 @@ c     Explicit inputs
      *    neq_PW, cmplx_max, nb_typ_el,
 c     Outputs
      *    beta1, overlap_J, overlap_J_dagger, sol1, sol2, mode_pol)
+
 C************************************************************************
 C
 C  Program:
@@ -66,10 +67,12 @@ c     E_H_field = 2 => Magnetic field formulation (H-Field)
       integer*8 npt_p3, numberprop_N
 C  Variable used by valpr
       integer*8 nval, nvect, itermax, ltrav
+      integer*8 nval_max
+      parameter(nval_max=3000)
       integer*8 n_conv, i_base
       double precision ls_data(10)
 c      integer*8 pointer_int(20), pointer_cmplx(20)
-      integer*8 index(nval), n_core(2)
+      integer*8 index(nval_max), n_core(2)
       complex*16 z_beta, z_tmp, z_tmp0
       integer*8 n_edge, n_face, n_ddl, n_ddl_max, n_k
 c     variable used by UMFPACK
@@ -119,18 +122,18 @@ c     Declare the pointers of for sparse matrix storage
 
 c     new breed of variables to prise out of a, b and c
       complex*16 x_arr(2,npt)
-      complex*16, target :: sol1(3,nnodes+7,nval,nel)
-      complex*16, target :: sol2(3,nnodes+7,nval,nel)
+      complex*16, target :: sol1(3,nnodes+7,nval_max,nel)
+      complex*16, target :: sol2(3,nnodes+7,nval_max,nel)
       complex*16, pointer :: sol(:,:,:,:)
       complex*16 sol_avg(3, npt)
-      complex*16 overlap_J(2*neq_PW, nval)
-      complex*16 overlap_J_dagger(nval, 2*neq_PW)
-C      complex*16 overlap_K(nval, 2*neq_PW)
-      complex*16 overlap_L(nval, nval)
+      complex*16 overlap_J(2*neq_PW, nval_max)
+      complex*16 overlap_J_dagger(nval_max, 2*neq_PW)
+C      complex*16 overlap_K(nval_max, 2*neq_PW)
+      complex*16 overlap_L(nval_max, nval_max)
 
-      complex*16, target :: beta1(nval), beta2(nval)
+      complex*16, target :: beta1(nval_max), beta2(nval_max)
       complex*16, pointer :: beta(:)
-      complex*16 mode_pol(4,nval)
+      complex*16 mode_pol(4,nval_max)
  
 Cf2py intent(out) beta1, overlap_J, overlap_J_dagger
 Cf2py intent(out) sol1, sol2, mode_pol
@@ -155,6 +158,10 @@ C      Checks = 0 ! check completeness, energy conservation
       q_average = 0
       lx=1 ! Diameter of unit cell. Default, lx = 1.0.
       ly=1 ! NOTE: currently requires ly=lx, ie square unit cell.
+
+      if (debug .eq. 1) then
+        write(*,*) "WELCOME TO DEBUG MODE"
+      endif
 
       allocate(b(cmplx_max), STAT=allocate_status)
       if (allocate_status /= 0) then

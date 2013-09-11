@@ -260,7 +260,6 @@ class Simmo(Modes):
             self.structure.plot_imag, self.structure.plot_abs,
             num_pw_per_pol, cmplx_max, nb_typ_el
         )
-
         self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol = resm
 
         self.J, self.J_dag = np.mat(J), np.mat(J_dag)
