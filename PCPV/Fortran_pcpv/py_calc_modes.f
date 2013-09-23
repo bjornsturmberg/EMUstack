@@ -122,18 +122,18 @@ c     Declare the pointers of for sparse matrix storage
 
 c     new breed of variables to prise out of a, b and c
       complex*16 x_arr(2,npt)
-      complex*16, target :: sol1(3,nnodes+7,nval_max,nel)
-      complex*16, target :: sol2(3,nnodes+7,nval_max,nel)
+      complex*16, target :: sol1(3,nnodes+7,nval,nel)
+      complex*16, target :: sol2(3,nnodes+7,nval,nel)
       complex*16, pointer :: sol(:,:,:,:)
       complex*16 sol_avg(3, npt)
-      complex*16 overlap_J(2*neq_PW, nval_max)
-      complex*16 overlap_J_dagger(nval_max, 2*neq_PW)
-C      complex*16 overlap_K(nval_max, 2*neq_PW)
-      complex*16 overlap_L(nval_max, nval_max)
+      complex*16 overlap_J(2*neq_PW, nval)
+      complex*16 overlap_J_dagger(nval, 2*neq_PW)
+C      complex*16 overlap_K(nval, 2*neq_PW)
+      complex*16 overlap_L(nval, nval)
 
-      complex*16, target :: beta1(nval_max), beta2(nval_max)
+      complex*16, target :: beta1(nval), beta2(nval)
       complex*16, pointer :: beta(:)
-      complex*16 mode_pol(4,nval_max)
+      complex*16 mode_pol(4,nval)
  
 Cf2py intent(out) beta1, overlap_J, overlap_J_dagger
 Cf2py intent(out) sol1, sol2, mode_pol
@@ -142,7 +142,7 @@ Cf2py intent(out) sol1, sol2, mode_pol
       n_64 = 2
 C     !n_64**28 on Vayu, **27 before
 C      cmplx_max=n_64**25
-      real_max=n_64**21
+      real_max=n_64**22
       int_max=n_64**22
 c      3*npt+nel+nnodes*nel 
 

@@ -142,8 +142,8 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, s
     r_weighted = r_tot*weighting
     plot_name = 'Weighted_Total_Spectra'
     total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, wavelengths, params_2_print, stack_label, add_name)
+    # extinction_plot(t_tot, wavelengths, params_2_print, stack_label, add_name)
     return Efficiency
-
 
 def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label):
     """ Calculate the photovoltaic ultimate efficiency achieved in the specified active layer. 
@@ -175,9 +175,9 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     nu_layers = len(spec_list)/len(wavelengths)
     h_array = np.ones(len(wavelengths))*total_h
-    h  = 6.626068e-34;
-    c  = 299792458;
-    eV = 1.60217646e-19;
+    h  = 6.626068e-34
+    c  = 299792458
+    eV = 1.60217646e-19
     energies  = (h*c/(wavelengths*1e-9))/eV
     for i in range(nu_layers):
         layer_spec = []
@@ -241,9 +241,9 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label, add_name):
     """ The plotting function for total t,r,a spectra on one plot. """
 
-    h  = 6.626068e-34;
-    c  = 299792458;
-    eV = 1.60217646e-19;
+    h  = 6.626068e-34
+    c  = 299792458
+    eV = 1.60217646e-19
     energies  = (h*c/(wavelengths*1e-9))/eV
     # num_e_ticks = 4
     # e_ticks_tmp = np.linspace(energies.min(), energies.max(), num_e_ticks)
@@ -363,9 +363,9 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
     sup_line22 = [r_WA_22, r_WA_22]
     v_line = [0, 1]
 
-    h  = 6.626068e-34;
-    c  = 299792458;
-    eV = 1.60217646e-19;
+    h  = 6.626068e-34
+    c  = 299792458
+    eV = 1.60217646e-19
     energies  = (h*c/(wavelengths*1e-9))/eV
     # num_e_ticks = 4
     # e_ticks_tmp = np.linspace(energies.min(), energies.max(), num_e_ticks)
@@ -470,6 +470,32 @@ def t_r_a_NO_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0
         r_tot.append(float(r_list[i]))
     Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label)
     return Efficiency
+
+
+
+
+
+def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
+    """ The plotting function for total t,r,a spectra on one plot. """
+
+    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(3,1,2)
+    extinciton = np.log10(1.0/np.array(t_spec))
+    ax1.plot(wavelengths, extinciton)
+    plt.ylim((0, 4.5))
+    ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_ylabel('Extinciton')
+    plot_name = 'extinciton'
+    plt.suptitle(plot_name+add_name+'\n'+params_2_print)
+    plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+
+
+
+
+
+
+
+
 #######################################################################################
 
 
@@ -508,23 +534,23 @@ def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
             ax3.plot(real_k_zs,om,'bo')
             om = np.ones(len(imag_k_zs))*normed_omegas[i]
             ax4.plot(imag_k_zs, om,'ro')
-        ax1.set_ylabel(r'Real $k_z$'), ax2.set_ylabel(r'Imaginary $k_z$')
+        ax1.set_ylabel(r'Real $k_zd$'), ax2.set_ylabel(r'Imaginary $k_zd$')
         ax3.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)'), ax4.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)')
         if l == 0: 
             ax1.set_ylabel('Bottom Layer'), ax2.set_ylabel('Bottom Layer')
             ax3.set_ylabel('Bottom Layer'), ax4.set_ylabel('Bottom Layer')
-        if l != num_layers-1:
+            ax3.set_xlabel(r'Real $k_zd$'), ax4.set_xlabel(r'Imaginary $k_zd$')
+            ax1.set_xlabel('Wavelength (nm)'), ax2.set_xlabel('Wavelength (nm)')
+        else:
             ax1.set_xticklabels( () )
             ax2.set_xticklabels( () )
             ax3.set_xticklabels( () )
             ax4.set_xticklabels( () )
-        else:
+        if l == num_layers-1:
             ax1.set_ylabel('Top Layer'), ax2.set_ylabel('Top Layer')
             ax3.set_ylabel('Top Layer'), ax4.set_ylabel('Top Layer')
-            ax1.set_xlabel('Wavelength (nm)'), ax2.set_xlabel('Wavelength (nm)')
-            ax3.set_xlabel(r'Real $k_z$'), ax4.set_xlabel(r'Imaginary $k_z$')
-        ax1.set_xlim((wavelengths[0], wavelengths[-1]))
         ax2.set_xlim((wavelengths[0], wavelengths[-1]))
+        ax1.set_xlim((wavelengths[0], wavelengths[-1]))
         # Plot the (dispersive) light line in homogeneous layers.
         if isinstance(stack_wl_list[0].layers[l], mode_calcs.Anallo):
             ns = [stack_wl_list[i].layers[l].n() for i in range(len(wavelengths))]

@@ -322,7 +322,7 @@ $ cp SS_install/lib/umf4_f77zwrapper64.o PCPV/Fortran_pcpv/Lib/
 \label{ARPACK}
 \begin{enumerate}
 \item IF you have made SuiteSparse yourself, then edit PCPV/Fortran\_pcpv/zarpack\_util.f 
-selecting fortran compiler you are using on lines 768-771
+specifying whether or not your fortran compiler has ETIME is a built in function of your compiler (INTRINSIC). On lines 768-771,
 \begin{lstlisting}
 C     gfortran likes the following
 C      INTRINSIC          ETIME

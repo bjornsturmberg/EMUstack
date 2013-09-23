@@ -29,13 +29,15 @@ class Material(object):
 
         If the material is dispersive, the refractive index at a given
         wavelength is calculated by linear interpolation from the 
-        initially given data `n`.
+        initially given data `n`. Materials may also have `n` calculated
+        from a Drude model with input paramters.
 
         INPUTS:
 
-        - `n`: Either a scalar refractive index, or an array
-                of values `(wavelength, n)`, or 
-                `(wavelength, real(n), imag(n))`.
+        - `n`: Either a scalar refractive index,
+                an array of values `(wavelength, n)`, or 
+                `(wavelength, real(n), imag(n))`,
+                or omega_p, omega_g, eps_inf for Drude model.
     """
     def __init__(self, n):
         if () == np.shape(n):
@@ -43,7 +45,16 @@ class Material(object):
             self._n = lambda x: n
             self.data_wls = None
             self.data_ns = n
-        else:
+        elif np.shape(n) == (3,):
+            # we will calculate n from the Drude model with input omega_p, omega_g, eps_inf values
+            c = 299792458
+            omega_plasma = n[0]
+            omega_gamma  = n[1]
+            eps_inf      = n[2]
+            self.data_wls = 'Drude'
+            self.data_ns = [omega_plasma,omega_gamma,eps_inf,c]
+            self._n = lambda x: np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
+        elif np.shape(n) >= (2,1):
             self.data_wls = n[:,0]
             if len(n[0]) == 2:
                 # n is an array of wavelengths and (possibly-complex)
@@ -59,17 +70,14 @@ class Material(object):
             # else:
             self._n = interp1d(self.data_wls, self.data_ns)
 
+        else:
+            raise ValueError, \
+            "You must either set a constant refractive index, provide tabulated data, or drude parameters"
+
+
     def n(self, wl_nm):
         """ Return n for the specified wavelength."""
         return self._n(wl_nm)
-
-    def n_drude(self, wavelength, plasma_wl, gamma_wl):
-        # http://www.wave-scattering.com/drudefit.html
-        c = 2.98e8*1e9
-        numer = c*wavelength**2
-        denom = c*plasma_wl**2 - 1j*2*np.pi*gamma_wl*wavelength*plasma_wl**2
-        drude_n = 1 - numer/denom
-        return np.sqrt(drude_n)
 
     def __getstate__(self):
         """ Can't pickle self._n, so remove it from what is pickled."""
@@ -82,33 +90,39 @@ class Material(object):
         self.__dict__ = d
         if None == self.data_wls:
             self._n = lambda x: self.data_ns
-        else:
+        elif self.data_wls == 'Drude':
+            self._n = lambda x: np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
+        else:                   
             self._n = interp1d(self.data_wls, self.data_ns)
 
 
-Air    = Material(np.loadtxt('%sAir.txt'% data_location))
+Air      = Material(np.loadtxt('%sAir.txt'% data_location))
+H2O      = Material(np.loadtxt('%sH2O.txt'% data_location)) #  G. M. Hale and M. R. Querry. doi:10.1364/AO.12.000555
 # Transparent oxides
-TiO2   = Material(np.loadtxt('%sTiO2.txt'% data_location))
-ITO    = Material(np.loadtxt('%sITO.txt'% data_location))           #Filmetrics.com
+TiO2     = Material(np.loadtxt('%sTiO2.txt'% data_location))
+ITO      = Material(np.loadtxt('%sITO.txt'% data_location))           #Filmetrics.com
 # Semiconductors
-Si_c   = Material(np.loadtxt('%sSi_c.txt'% data_location))
-Si_a   = Material(np.loadtxt('%sSi_a.txt'% data_location))
-SiO2_a = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
-CuO    = Material(np.loadtxt('%sCuO.txt'% data_location))
-CdTe   = Material(np.loadtxt('%sCdTe.txt'% data_location))
-FeS2   = Material(np.loadtxt('%sFeS2.txt'% data_location))
-Zn3P2  = Material(np.loadtxt('%sZn3P2.txt'% data_location))
-Sb2S3  = Material(np.loadtxt('%sSb2S3.txt'% data_location))
-AlGaAs = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
-Al2O3  = Material(np.loadtxt('%sAl2O3.txt'% data_location)) #http://refractiveindex.info/?group=CRYSTALS&material=Al2O3
-GaAs   = Material(np.loadtxt('%sGaAs.txt'% data_location))
-Si3N4  = Material(np.loadtxt('%sSi3N4.txt'% data_location))
-InP    = Material(np.loadtxt('%sInP.txt'% data_location))
-InAs   = Material(np.loadtxt('%sInAs.txt'% data_location))          #Filmetrics.com
-GaP    = Material(np.loadtxt('%sGaP.txt'% data_location))           #Filmetrics.com
+Si_c     = Material(np.loadtxt('%sSi_c.txt'% data_location))
+Si_a     = Material(np.loadtxt('%sSi_a.txt'% data_location))
+SiO2_a   = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
+CuO      = Material(np.loadtxt('%sCuO.txt'% data_location))
+CdTe     = Material(np.loadtxt('%sCdTe.txt'% data_location))
+FeS2     = Material(np.loadtxt('%sFeS2.txt'% data_location))
+Zn3P2    = Material(np.loadtxt('%sZn3P2.txt'% data_location))
+Sb2S3    = Material(np.loadtxt('%sSb2S3.txt'% data_location))
+AlGaAs   = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
+Al2O3    = Material(np.loadtxt('%sAl2O3.txt'% data_location)) #http://refractiveindex.info/?group=CRYSTALS&material=Al2O3
+GaAs     = Material(np.loadtxt('%sGaAs.txt'% data_location))
+InGaAs   = Material(np.loadtxt('%sInGaAs.txt'% data_location)) #http://refractiveindex.info/?group=CRYSTALS&material=InGaAs
+Si3N4    = Material(np.loadtxt('%sSi3N4.txt'% data_location))
+InP      = Material(np.loadtxt('%sInP.txt'% data_location))
+InAs     = Material(np.loadtxt('%sInAs.txt'% data_location))          #Filmetrics.com
+GaP      = Material(np.loadtxt('%sGaP.txt'% data_location))           #Filmetrics.com
 # Metals
-Au     = Material(np.loadtxt('%sAu.txt'% data_location))
-Ag     = Material(np.loadtxt('%sAg.txt'% data_location))
+Au       = Material(np.loadtxt('%sAu.txt'% data_location))
+# for Drude model, need to give [omega_plasma, omega_gamma, eplison_infinity]
+Au_drude = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
+Ag       = Material(np.loadtxt('%sAg.txt'% data_location))
 
 
 # import matplotlib

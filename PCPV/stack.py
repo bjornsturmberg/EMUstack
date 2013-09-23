@@ -306,6 +306,9 @@ class Stack(object):
         self.trans_vector = f2_minus
         flux_TE  = np.linalg.norm(f2_minus[0:num_prop_out])**2
         flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
+        ### just take out T_00 component (replicate Anttu PHYSICAL REVIEW B 83, 165431 (2011))
+        # flux_TE  = np.linalg.norm(f2_minus[0])**2
+        # flux_TM  = np.linalg.norm(f2_minus[neq_PW])**2
         down_fluxes.append(flux_TE + flux_TM)
 
     # calculate absorptance in each layer
