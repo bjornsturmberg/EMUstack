@@ -150,7 +150,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label):
         For definition see Sturmberg et al., Optics Express, Vol. 19, Issue S5, pp. A1067-A1081 (2011)
         http://dx.doi.org/10.1364/OE.19.0A1067
     """
-    # TODO make E_g a property of material, not just longst wl included.
+    # TODO make E_g a property of material, not just longest wl included.
 
     Irrad_spec_file = '../PCPV/Data/ASTM_1_5_spectrum'
     #  Total solar irradiance - integral of I(lambda) from 310nm-4000nm
@@ -163,8 +163,11 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label):
     integral_tmp = np.trapz(expression, x=wavelengths)
     Efficiency   = integral_tmp/(bandgap_wl*tot_irradiance)   
     nums_2_print = params_2_print.split()
-    eta_string   = '%8.6f \n'% Efficiency + nums_2_print[5].replace(',','\n') + \
-      nums_2_print[8].replace(',','\n') #save params in easy to read in fmt 
+    if len(nums_2_print) >= 8:
+        eta_string   = '%8.6f \n'% Efficiency + nums_2_print[5].replace(',','\n') + \
+          nums_2_print[8].replace(',','\n') #save params in easy to read in fmt
+    else:
+        eta_string   = '%8.6f \n'% Efficiency
     np.savetxt('Efficiency_stack%s.txt'% stack_label, np.array([eta_string]), fmt = '%s')
     return Efficiency, i_spec
 
@@ -490,6 +493,45 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
     plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
 
+
+
+def EOT_plot(stack_wl_list, wavelengths, params_2_print, add_name=''):
+    """ Plot T_{00} as in Martin-Moreno PRL 86 2001. """
+
+    height_list = stack_wl_list[0].heights_nm()[::-1]
+    params_2_print += r'$h_t,...,h_b$ = '
+    params_2_print += ''.join('%4d, ' % num for num in height_list)
+
+    T_00 = []
+    for i in range(len(wavelengths)): 
+        t00  = stack_wl_list[i].T_net[0,0]
+        t00c = t00.conjugate()
+        T_00.append(np.real(t00*t00c))
+
+    fig = plt.figure()#num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(2,1,1)
+    ax1.plot(wavelengths, T_00)
+    # ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_xlabel(r'$\lambda/a$')
+    ax1.set_ylabel(r'T$_{00}$')
+    # plt.ylim((0, 0.3))
+
+
+    R_00 = []
+    for i in range(len(wavelengths)): 
+        r00  = stack_wl_list[i].R_net[0,0]
+        r00c = r00.conjugate()
+        R_00.append(np.real(r00*r00c))
+
+    ax1 = fig.add_subplot(2,1,2)
+    ax1.plot(wavelengths, R_00)
+    # ax1.set_xlabel('Wavelength (nm)')
+    ax1.set_xlabel(r'$\lambda/a$')
+    ax1.set_ylabel(r'R$_{00}$')
+    plt.ylim((0.2, 1.0))
+    plot_name = 'EOT'
+    plt.suptitle(params_2_print)
+    plt.savefig('%(s)s_%(add)s'% {'s' : plot_name, 'add' : add_name})
 
 
 

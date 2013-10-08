@@ -119,10 +119,11 @@ InP      = Material(np.loadtxt('%sInP.txt'% data_location))
 InAs     = Material(np.loadtxt('%sInAs.txt'% data_location))          #Filmetrics.com
 GaP      = Material(np.loadtxt('%sGaP.txt'% data_location))           #Filmetrics.com
 # Metals
-Au       = Material(np.loadtxt('%sAu.txt'% data_location))
-# for Drude model, need to give [omega_plasma, omega_gamma, eplison_infinity]
-Au_drude = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
+Au       = Material(np.loadtxt('%sAu_JC.txt'% data_location)) # Default - Johnson and Christie
+Au_Palik = Material(np.loadtxt('%sAu_Palik.txt'% data_location)) # Palik
 Ag       = Material(np.loadtxt('%sAg.txt'% data_location))
+# Drude model - need to give [omega_plasma, omega_gamma, eplison_infinity]
+Au_drude = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
 
 
 # import matplotlib
