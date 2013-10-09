@@ -124,7 +124,7 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, s
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
-    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label)
+    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name)
     params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
     params_2_print += ' %'
 
@@ -145,7 +145,7 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, s
     # extinction_plot(t_tot, wavelengths, params_2_print, stack_label, add_name)
     return Efficiency
 
-def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label):
+def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name):
     """ Calculate the photovoltaic ultimate efficiency achieved in the specified active layer. 
         For definition see Sturmberg et al., Optics Express, Vol. 19, Issue S5, pp. A1067-A1081 (2011)
         http://dx.doi.org/10.1364/OE.19.0A1067
@@ -168,7 +168,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label):
           nums_2_print[8].replace(',','\n') #save params in easy to read in fmt
     else:
         eta_string   = '%8.6f \n'% Efficiency
-    np.savetxt('Efficiency_stack%s.txt'% stack_label, np.array([eta_string]), fmt = '%s')
+    np.savetxt('Efficiency_stack%(bon)s_%(add)s'% {'bon' : stack_label,'add' : add_name}, np.array([eta_string]), fmt = '%s')
     return Efficiency, i_spec
 
 
@@ -233,13 +233,13 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
         plt.ylim((0, 1))
 
         if i != nu_layers-1: 
-            np.savetxt('%(s)s_%(i)i_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 'i' : i, 
+            np.savetxt('%(s)s_%(i)i_stack%(bon)s_%(add)s.txt'% {'s' : lay_spec_name, 'i' : i, 
                 'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
         else:
-            np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
+            np.savetxt('%(s)s_stack%(bon)s_%(add)s.txt'% {'s' : lay_spec_name, 
                 'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
 
-        plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : spectra_name, 'bon' : stack_label,'add' : add_name})
+        plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : spectra_name, 'bon' : stack_label,'add' : add_name})
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label, add_name):
     """ The plotting function for total t,r,a spectra on one plot. """
@@ -284,7 +284,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
     ax2.set_xlim((energies[0], energies[-1]))
     plt.ylim((0, 1))
     plt.suptitle(plot_name+add_name+'\n'+params_2_print)
-    plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+    plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
 
 
@@ -439,7 +439,7 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
     ax2.set_xlim((energies[0], energies[-1]))
     plt.ylim((0, 1))
     plt.suptitle(plot_name+add_name+'\n'+params_2_print)
-    plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+    plt.savefig('%(s)s_stack%(bon)s__%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
 
 
@@ -490,7 +490,7 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
     ax1.set_ylabel('Extinciton')
     plot_name = 'extinciton'
     plt.suptitle(plot_name+add_name+'\n'+params_2_print)
-    plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+    plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
 
 
