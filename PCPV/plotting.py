@@ -136,7 +136,8 @@ def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, s
     plot_name = 'Total_Spectra'
     total_tra_plot(plot_name, a_tot, t_tot, r_tot, wavelengths, params_2_print, stack_label, add_name)
     # Also plot totals weighted by solar irradiance
-    weighting = Irradiance/Irradiance.max()
+    bandgap_wl   = wavelengths[-1] 
+    weighting = Irradiance/Irradiance.max()*(wavelengths/bandgap_wl)
     a_weighted = a_tot*weighting
     t_weighted = t_tot*weighting
     r_weighted = r_tot*weighting
@@ -168,7 +169,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
           nums_2_print[8].replace(',','\n') #save params in easy to read in fmt
     else:
         eta_string   = '%8.6f \n'% Efficiency
-    np.savetxt('Efficiency_stack%(bon)s_%(add)s'% {'bon' : stack_label,'add' : add_name}, np.array([eta_string]), fmt = '%s')
+    np.savetxt('Efficiency_stack%(bon)s_%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, np.array([eta_string]), fmt = '%s')
     return Efficiency, i_spec
 
 

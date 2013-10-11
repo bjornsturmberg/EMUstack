@@ -96,13 +96,13 @@ class Material(object):
             self._n = interp1d(self.data_wls, self.data_ns)
 
 
-Air      = Material(np.loadtxt('%sAir.txt'% data_location))
-H2O      = Material(np.loadtxt('%sH2O.txt'% data_location)) #  G. M. Hale and M. R. Querry. doi:10.1364/AO.12.000555
+Air      = Material(np.loadtxt('%sAir.txt'% data_location))         # Idealised Air n=1.0, k = 0.0 everywhere
+H2O      = Material(np.loadtxt('%sH2O.txt'% data_location))         # G. M. Hale and M. R. Querry. doi:10.1364/AO.12.000555
 # Transparent oxides
 TiO2     = Material(np.loadtxt('%sTiO2.txt'% data_location))
-ITO      = Material(np.loadtxt('%sITO.txt'% data_location))           #Filmetrics.com
+ITO      = Material(np.loadtxt('%sITO.txt'% data_location))         # Filmetrics.com
 # Semiconductors
-Si_c     = Material(np.loadtxt('%sSi_c.txt'% data_location))
+Si_c     = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
 Si_a     = Material(np.loadtxt('%sSi_a.txt'% data_location))
 SiO2_a   = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
 CuO      = Material(np.loadtxt('%sCuO.txt'% data_location))
@@ -111,16 +111,16 @@ FeS2     = Material(np.loadtxt('%sFeS2.txt'% data_location))
 Zn3P2    = Material(np.loadtxt('%sZn3P2.txt'% data_location))
 Sb2S3    = Material(np.loadtxt('%sSb2S3.txt'% data_location))
 AlGaAs   = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
-Al2O3    = Material(np.loadtxt('%sAl2O3.txt'% data_location)) #http://refractiveindex.info/?group=CRYSTALS&material=Al2O3
-GaAs     = Material(np.loadtxt('%sGaAs.txt'% data_location))
-InGaAs   = Material(np.loadtxt('%sInGaAs.txt'% data_location)) #http://refractiveindex.info/?group=CRYSTALS&material=InGaAs
+Al2O3    = Material(np.loadtxt('%sAl2O3.txt'% data_location))       # http://refractiveindex.info/?group=CRYSTALS&material=Al2O3
+GaAs     = Material(np.loadtxt('%sGaAs.txt'% data_location))        # http://www.filmetrics.com/refractive-index-database/GaAs/Gallium-Arsenide
+InGaAs   = Material(np.loadtxt('%sInGaAs.txt'% data_location))      # http://refractiveindex.info/?group=CRYSTALS&material=InGaAs
 Si3N4    = Material(np.loadtxt('%sSi3N4.txt'% data_location))
 InP      = Material(np.loadtxt('%sInP.txt'% data_location))
-InAs     = Material(np.loadtxt('%sInAs.txt'% data_location))          #Filmetrics.com
-GaP      = Material(np.loadtxt('%sGaP.txt'% data_location))           #Filmetrics.com
+InAs     = Material(np.loadtxt('%sInAs.txt'% data_location))        # Filmetrics.com
+GaP      = Material(np.loadtxt('%sGaP.txt'% data_location))         # Filmetrics.com
 # Metals
-Au       = Material(np.loadtxt('%sAu_JC.txt'% data_location)) # Default - Johnson and Christie
-Au_Palik = Material(np.loadtxt('%sAu_Palik.txt'% data_location)) # Palik
+Au       = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Default - Johnson and Christie
+Au_Palik = Material(np.loadtxt('%sAu_Palik.txt'% data_location))    # Palik
 Ag       = Material(np.loadtxt('%sAg.txt'% data_location))
 # Drude model - need to give [omega_plasma, omega_gamma, eplison_infinity]
 Au_drude = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie

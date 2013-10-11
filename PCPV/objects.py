@@ -382,6 +382,8 @@ class NanoStruct(object):
                 # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
                 # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
                 # os.system(gmsh_cmd)
+        else:
+            raise ValueError, "Must be simulating either a '1D_grating' or a 'NW_array'."
 
     def calc_modes(self, light, **args):
         """ Run a simulation to find the structure's modes.
