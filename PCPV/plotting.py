@@ -95,6 +95,14 @@ def zeros_int_str(zero_int):
     fmt_string = string.replace(' ','0')
     return fmt_string
 
+def tick_function(energies):
+    """ Convert energy in eV into wavelengths in nm """
+    h  = 6.626068e-34;
+    c  = 299792458;
+    eV = 1.60217646e-19;
+    wls = h*c/(energies*eV)*1e9
+    return wls
+
 #######################################################################################
 def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, stack_label=1, add_name=''):
     """ Plot t,r,a for each layer & total, then save each to text files. """
@@ -179,10 +187,6 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     nu_layers = len(spec_list)/len(wavelengths)
     h_array = np.ones(len(wavelengths))*total_h
-    h  = 6.626068e-34
-    c  = 299792458
-    eV = 1.60217646e-19
-    energies  = (h*c/(wavelengths*1e-9))/eV
     for i in range(nu_layers):
         layer_spec = []
         for wl in range(len(wavelengths)):
@@ -190,7 +194,12 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
         ax1 = fig.add_subplot(nu_layers,1,i+1)
         ax1.plot(wavelengths, layer_spec)
         ax2 = ax1.twiny()
-        ax2.plot(energies, layer_spec, alpha=0)
+        new_tick_values = np.linspace(10,0.5,20)
+        new_tick_locations = tick_function(new_tick_values)
+        new_tick_labels = ["%.1f" % z for z in new_tick_values]
+        ax2.set_xticks(new_tick_locations)
+        ax2.set_xticklabels(new_tick_labels)
+        ax2.set_xlim((wavelengths[0], wavelengths[-1]))  
         if i == 0:
             ax2.set_xlabel('Energy (eV)')
         elif i == nu_layers-1:
@@ -230,7 +239,6 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
                 lay_spec_name = 'Reflectance'
         av_array = zip(wavelengths, layer_spec, h_array)
         ax1.set_xlim((wavelengths[0], wavelengths[-1]))
-        ax2.set_xlim((energies[0], energies[-1]))
         plt.ylim((0, 1))
 
         if i != nu_layers-1: 
@@ -245,13 +253,6 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label, add_name):
     """ The plotting function for total t,r,a spectra on one plot. """
 
-    h  = 6.626068e-34
-    c  = 299792458
-    eV = 1.60217646e-19
-    energies  = (h*c/(wavelengths*1e-9))/eV
-    # num_e_ticks = 4
-    # e_ticks_tmp = np.linspace(energies.min(), energies.max(), num_e_ticks)
-    # e_ticks = [ round(elem, 2) for elem in e_ticks_tmp ]
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(3,1,1)
     ax1.plot(wavelengths, a_spec)
@@ -259,10 +260,13 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
     ax1.set_ylabel('Absorptance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
     ax2 = ax1.twiny()
-    ax2.plot(energies, a_spec, alpha=0)
-    # ax2.set_xticks(e_ticks)
+    new_tick_values = np.linspace(10,0.5,20)
+    new_tick_locations = tick_function(new_tick_values)
+    new_tick_labels = ["%.1f" % z for z in new_tick_values]
+    ax2.set_xticks(new_tick_locations)
+    ax2.set_xticklabels(new_tick_labels)
+    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
     ax2.set_xlabel('Energy (eV)')
-    ax2.set_xlim((energies[0], energies[-1]))
     plt.ylim((0, 1))
     ax1 = fig.add_subplot(3,1,2)
     ax1.plot(wavelengths, t_spec)
@@ -270,9 +274,9 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
     ax1.set_ylabel('Transmittance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
     ax2 = ax1.twiny()
-    ax2.plot(energies, t_spec, alpha=0)
     ax2.set_xticklabels( () )
-    ax2.set_xlim((energies[0], energies[-1]))
+    ax2.set_xticks(new_tick_locations)
+    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
     plt.ylim((0, 1))
     ax1 = fig.add_subplot(3,1,3)
     ax1.plot(wavelengths, r_spec)
@@ -280,9 +284,9 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
     ax1.set_ylabel('Reflectance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
     ax2 = ax1.twiny()
-    ax2.plot(energies, r_spec, alpha=0)
     ax2.set_xticklabels( () )
-    ax2.set_xlim((energies[0], energies[-1]))
+    ax2.set_xticks(new_tick_locations)
+    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
     plt.ylim((0, 1))
     plt.suptitle(plot_name+add_name+'\n'+params_2_print)
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
@@ -367,13 +371,6 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
     sup_line22 = [r_WA_22, r_WA_22]
     v_line = [0, 1]
 
-    h  = 6.626068e-34
-    c  = 299792458
-    eV = 1.60217646e-19
-    energies  = (h*c/(wavelengths*1e-9))/eV
-    # num_e_ticks = 4
-    # e_ticks_tmp = np.linspace(energies.min(), energies.max(), num_e_ticks)
-    # e_ticks = [ round(elem, 2) for elem in e_ticks_tmp ]
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(3,1,1)
     ax1.plot(wavelengths, a_spec)
@@ -392,10 +389,13 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
     ax1.set_ylabel('Absorptance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
     ax2 = ax1.twiny()
-    ax2.plot(energies, a_spec, alpha=0)
-    # ax2.set_xticks(e_ticks)
+    new_tick_values = np.linspace(10,0.5,20)
+    new_tick_locations = tick_function(new_tick_values)
+    new_tick_labels = ["%.1f" % z for z in new_tick_values]
+    ax2.set_xticks(new_tick_locations)
+    ax2.set_xticklabels(new_tick_labels)
+    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
     ax2.set_xlabel('Energy (eV)')
-    ax2.set_xlim((energies[0], energies[-1]))
     plt.ylim((0, 1))
     ax1 = fig.add_subplot(3,1,2)
     ax1.plot(wavelengths, t_spec)
@@ -414,9 +414,9 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
     ax1.set_ylabel('Transmittance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
     ax2 = ax1.twiny()
-    ax2.plot(energies, t_spec, alpha=0)
     ax2.set_xticklabels( () )
-    ax2.set_xlim((energies[0], energies[-1]))
+    ax2.set_xticks(new_tick_locations)
+    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
     plt.ylim((0, 1))
     ax1 = fig.add_subplot(3,1,3)
     ax1.plot(wavelengths, r_spec)
@@ -435,9 +435,9 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
     ax1.set_ylabel('Reflectance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
     ax2 = ax1.twiny()
-    ax2.plot(energies, r_spec, alpha=0)
     ax2.set_xticklabels( () )
-    ax2.set_xlim((energies[0], energies[-1]))
+    ax2.set_xticks(new_tick_locations)
+    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
     plt.ylim((0, 1))
     plt.suptitle(plot_name+add_name+'\n'+params_2_print)
     plt.savefig('%(s)s_stack%(bon)s__%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
