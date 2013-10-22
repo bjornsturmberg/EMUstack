@@ -103,6 +103,7 @@ TiO2     = Material(np.loadtxt('%sTiO2.txt'% data_location))
 ITO      = Material(np.loadtxt('%sITO.txt'% data_location))         # Filmetrics.com
 # Semiconductors
 Si_c     = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
+Si_c_mod     = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
 Si_a     = Material(np.loadtxt('%sSi_a.txt'% data_location))
 SiO2_a   = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
 CuO      = Material(np.loadtxt('%sCuO.txt'% data_location))

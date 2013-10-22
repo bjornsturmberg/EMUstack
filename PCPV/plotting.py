@@ -472,7 +472,7 @@ def t_r_a_NO_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
-    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label)
+    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name)
     return Efficiency
 
 
