@@ -119,6 +119,7 @@ Si3N4    = Material(np.loadtxt('%sSi3N4.txt'% data_location))
 InP      = Material(np.loadtxt('%sInP.txt'% data_location))
 InAs     = Material(np.loadtxt('%sInAs.txt'% data_location))        # Filmetrics.com
 GaP      = Material(np.loadtxt('%sGaP.txt'% data_location))         # Filmetrics.com
+Ge       = Material(np.loadtxt('%sGe.txt'% data_location))          # http://www.filmetrics.com/refractive-index-database/Ge/Germanium
 # Metals
 Au       = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Default - Johnson and Christie
 Au_Palik = Material(np.loadtxt('%sAu_Palik.txt'% data_location))    # Palik
