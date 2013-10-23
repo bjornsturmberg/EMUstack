@@ -529,7 +529,7 @@ def EOT_plot(stack_wl_list, wavelengths, params_2_print, add_name=''):
     # ax1.set_xlabel('Wavelength (nm)')
     ax1.set_xlabel(r'$\lambda/a$')
     ax1.set_ylabel(r'R$_{00}$')
-    plt.ylim((0.2, 1.0))
+    # plt.ylim((0.2, 1.0))
     plot_name = 'EOT'
     plt.suptitle(params_2_print)
     plt.savefig('%(s)s_%(add)s'% {'s' : plot_name, 'add' : add_name})

@@ -121,9 +121,10 @@ InAs     = Material(np.loadtxt('%sInAs.txt'% data_location))        # Filmetrics
 GaP      = Material(np.loadtxt('%sGaP.txt'% data_location))         # Filmetrics.com
 Ge       = Material(np.loadtxt('%sGe.txt'% data_location))          # http://www.filmetrics.com/refractive-index-database/Ge/Germanium
 # Metals
-Au       = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Default - Johnson and Christie
+Au       = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Default - Johnson and Christy
 Au_Palik = Material(np.loadtxt('%sAu_Palik.txt'% data_location))    # Palik
-Ag       = Material(np.loadtxt('%sAg.txt'% data_location))
+Ag       = Material(np.loadtxt('%sAg_JC.txt'% data_location))       # Default - Johnson and Christy
+Ag_Palik = Material(np.loadtxt('%sAg_Palik.txt'% data_location))    # Palik
 # Drude model - need to give [omega_plasma, omega_gamma, eplison_infinity]
 Au_drude = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
 
