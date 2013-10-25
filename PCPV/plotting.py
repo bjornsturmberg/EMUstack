@@ -496,8 +496,10 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
 
 
 
-def EOT_plot(stack_wl_list, wavelengths, params_2_print, add_name=''):
-    """ Plot T_{00} as in Martin-Moreno PRL 86 2001. """
+def EOT_plot(stack_wl_list, wavelengths, params_2_print, num_pw_per_pol=0, add_name=''):
+    """ Plot T_{00} as in Martin-Moreno PRL 86 2001. 
+        To plot {9,0} component of TM polarisation set num_pw_per_pol = num_pw_per_pol.
+    """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
     params_2_print += r'$h_t,...,h_b$ = '
@@ -505,7 +507,7 @@ def EOT_plot(stack_wl_list, wavelengths, params_2_print, add_name=''):
 
     T_00 = []
     for i in range(len(wavelengths)): 
-        t00  = stack_wl_list[i].T_net[0,0]
+        t00  = stack_wl_list[i].T_net[num_pw_per_pol,num_pw_per_pol]
         t00c = t00.conjugate()
         T_00.append(np.real(t00*t00c))
 
@@ -520,7 +522,7 @@ def EOT_plot(stack_wl_list, wavelengths, params_2_print, add_name=''):
 
     R_00 = []
     for i in range(len(wavelengths)): 
-        r00  = stack_wl_list[i].R_net[0,0]
+        r00  = stack_wl_list[i].R_net[num_pw_per_pol,num_pw_per_pol]
         r00c = r00.conjugate()
         R_00.append(np.real(r00*r00c))
 

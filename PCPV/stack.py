@@ -83,7 +83,7 @@ class Stack(object):
         if save_working:
             self.R_net_list, self.T_net_list = [], []
 
-        #TODO: swap order of layers
+        # TODO: swap order of layers
         # Reflection and transmission at bottom of structure
         R_net, T_net = r_t_mat(self.layers[1], self.layers[0])[:2]
 
@@ -277,14 +277,14 @@ class Stack(object):
         flux_TM = np.linalg.norm(d_minus[neq_PW:neq_PW+num_prop_in])**2
         down_fluxes.append(flux_TE + flux_TM)
 
-    #   up into semi-inf off top air gap
+    # up into semi-inf off top air gap
         d_plus  = rnet_list[-1]*d_minus
     # total reflected flux
         flux_TE = np.linalg.norm(d_plus[0:num_prop_in])**2
         flux_TM = np.linalg.norm(d_plus[neq_PW:neq_PW+num_prop_in])**2
         up_flux.append(flux_TE + flux_TM)
 
-    #   incoming from semi-inf into top air gap
+    # incoming from semi-inf into top air gap
         f1_minus = inv_t21_list[-1]*d_minus
 
         for i in range(len(self.layers) - 2):
@@ -306,9 +306,6 @@ class Stack(object):
         self.trans_vector = f2_minus
         flux_TE  = np.linalg.norm(f2_minus[0:num_prop_out])**2
         flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
-        ### just take out T_00 component (replicate Anttu PHYSICAL REVIEW B 83, 165431 (2011))
-        # flux_TE  = np.linalg.norm(f2_minus[0])**2
-        # flux_TM  = np.linalg.norm(f2_minus[neq_PW])**2
         down_fluxes.append(flux_TE + flux_TM)
 
     # calculate absorptance in each layer
@@ -317,8 +314,6 @@ class Stack(object):
             self.a_list.append(a_layer)
         a_layer = abs(down_fluxes[0]-down_fluxes[-1]-up_flux[0])
         self.a_list.append(a_layer)
-        # sum_abs = sum(a_list[-nu_TFs:])
-        # a_list.append(a_layer - sum_abs)
 
     # calculate reflectance in each layer
         for i in range(1,len(up_flux)-1):

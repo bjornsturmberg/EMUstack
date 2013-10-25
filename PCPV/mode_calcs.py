@@ -258,8 +258,8 @@ class Simmo(Modes):
             E_H_field, i_cond, itermax, 
             self.structure.plot_modes, self.structure.plot_real, 
             self.structure.plot_imag, self.structure.plot_abs,
-            num_pw_per_pol, cmplx_max, nb_typ_el
-        )
+            num_pw_per_pol, cmplx_max, nb_typ_el)
+
         self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol = resm
 
         self.J, self.J_dag = np.mat(J), np.mat(J_dag)
@@ -361,6 +361,6 @@ def r_t_mat_tf_ns(an1, sim2):
     # T21 = 2 A (I + BA)^-1 = T12^T
     R21 = np.linalg.solve(denominator, (np.eye(len(B)) - B*A))
     T21 = 2 * A * denominator.I
-    #T21 = T12.T
+    # T21 = T12.T
 
     return np.mat(R12), np.mat(T12), np.mat(R21), np.mat(T21)
