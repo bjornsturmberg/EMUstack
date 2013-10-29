@@ -1,5 +1,5 @@
 """
-    simmo_template-NW.py is a simulation script template for PCPV.
+    simmo_template-NW.py is a simulation script template for EMUstack.
 
     Copyright (C) 2013  Bjorn Sturmberg
 
@@ -20,7 +20,7 @@
 """
 Template python script file to execute a simulation. To start, open a terminal and change
 directory to the directory containing this file (which must be in the same directory as 
-the PCPV directory). Run this script file by executing the following in the command line
+the EMUstack directory). Run this script file by executing the following in the command line
 
 $ python simo_template-NW.py
 
@@ -52,7 +52,7 @@ import datetime
 import numpy as np
 import sys
 from multiprocessing import Pool
-sys.path.append("../PCPV/")
+sys.path.append("../EMUstack/")
 
 import objects
 import materials

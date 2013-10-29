@@ -1,0 +1,922 @@
+\documentclass[11pt,a4paper,twoside]{report}
+
+%Honours Thesis Design by Bjorn Sturmberg copy left!!!
+
+\usepackage{amssymb, amsmath, graphicx, float, appendix, url, verbatim, geometry}
+\usepackage[pdfpagelabels]{hyperref}
+\usepackage[hang, small, bf]{caption}
+\usepackage{subfig,ifthen}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{listings}
+
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+\definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+\definecolor{medium-blue}{rgb}{0,0,0.5}
+\hypersetup{
+	pdfauthor={Bj\"{o}rn Sturmberg},
+	pdftitle={EMUstack},
+	pdfstartview=Fit,
+	pdffitwindow=false,
+	pdfmenubar=true,
+	pdftoolbar=true,
+	% pdfpagemode=fullscreen,
+	pdfpagelayout=SinglePage,
+	pdfdisplaydoctitle=true,
+	% bookmarks=true,
+	% bookmarksopen=false,
+	% bookmarksnumbered=true,
+	unicode=true,
+	plainpages=false,
+	colorlinks=true,
+    %pdfborder = 0 0 1,
+    %urlbordercolors = 1 0 0,
+    %pdfborderstyle={/S/U/W 1}
+    %linkcolor=blue,
+    colorlinks, linkcolor={dark-red},
+    citecolor={dark-blue}, urlcolor={medium-blue},
+	%pagebackref=true,
+	}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\lstset{
+  frame=tb,
+  language=python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  % numberstyle=\tiny\color{gray},
+  % keywordstyle=\color{blue},
+  % commentstyle=\color{NavyBlue},
+  % stringstyle=\color{Red},
+  breaklines=true,
+  breakatwhitespace=true
+  tabsize=4
+}
+
+
+\usepackage{titlesec}
+\providecommand{\e}[1]{\ensuremath{\times 10^{#1}}}
+
+\newcommand*{\blankpage}{%
+\vspace*{\fill}
+%sd
+\vspace*{\fill}}
+
+\usepackage{fancyhdr}
+\fancypagestyle{plain}{}
+
+
+\renewcommand*{\cleardoublepage}{\clearpage\if@twoside \ifodd\c@page\else
+\blankpage
+\thispagestyle{empty}
+%\addtocounter{page}{-1}
+%\newpage
+\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+
+\newcommand{\newevenside}{
+	\ifthenelse{\isodd{\thepage+1}}{\newpage}
+	{
+	\newpage
+	\textcolor{white}{placeholder} 
+	\thispagestyle{empty}
+	\newpage
+	}
+}
+
+
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+\newcommand*{\titleGM}{\begingroup % Create the command for including the title page in the document
+\hbox{ % Horizontal box
+\hspace*{0.2\textwidth} % Whitespace to the left of the title page
+\rule{1pt}{\textheight} % Vertical line
+\hspace*{0.05\textwidth} % Whitespace between the vertical line and title page text
+\parbox[b]{0.75\textwidth}{ % Paragraph box which restricts text to less than the width of the page
+
+
+\newcommand{\CodeName}{MULASASS}
+\newcommand{\CodeVersion}{0.6}
+
+
+{\noindent\Huge\bfseries \CodeName \\[0.5\baselineskip] }
+{\noindent\huge \textbf{M}ulti-\textbf{L}ayered \textbf{S}emi-\textbf{A}nalytic \textbf{S}cattering matrix \textbf{S}olver}
+\\[2\baselineskip] % Title
+{\large \textit{Documentation, Release \CodeVersion}} \\[4\baselineskip] % Tagline or further description
+{\Large \textsc{Bj\"{o}rn Sturmberg \\  Kokou Dossou}} \\[2\baselineskip] % Author name
+{\Large \textsc{\today}} % Date
+
+\vspace{0.4\textheight} % Whitespace between the title block and the publisher
+{\noindent Brought to you with the support of,\\ \\
+The Australian Renewable Energy Agency,\\
+CUDOS, an Australian Research Council Center of Excellence,\\
+School of Physics, The University of Sydney,\\
+School of Mathematical Sciences, University of Technology Sydney,\\
+National Computational Infrastructure, Australia.
+}\\[\baselineskip] % Publisher and logo
+}}
+\endgroup}
+%----------------------------------------------------------------------------------------
+
+
+\pagestyle{fancy}
+\setlength{\hoffset}{0pt}
+\setlength{\voffset}{-25pt}
+\oddsidemargin=0pt
+\evensidemargin=0pt
+\headheight=14pt
+% \headsep=25pt
+\textheight=660pt
+\textwidth=440pt
+% \headwidth=440pt
+% \marginparsep=0pt
+% \marginparwidth=0pt
+% \footskip=0pt
+% \footheight=12pt
+% \footsep=25pt
+\renewcommand\headrulewidth{0.5pt}
+\renewcommand\footrulewidth{0.5pt}
+\fancyfoot{}
+% \fancyfoot[LE,RO]{\thepage}
+\fancyhead{}
+
+
+
+
+
+\begin{document}
+\pagenumbering{alph}
+
+\thispagestyle{empty}
+\titleGM % This command includes the title page
+
+
+
+\newevenside
+\thispagestyle{fancy}
+\pagenumbering{roman}
+\setcounter{page}{1}
+\fancyhead[LE,RO]{{\bfseries MULASASS Documentation, Release 0.9}}
+\fancyfoot[RO,LE]{\thepage}
+\tableofcontents
+ 
+
+\newcommand{\CodeName}{MULASASS }
+\newcommand{\CodeVersion}{0.6}
+
+
+\renewcommand{\chaptermark}[1]{\markboth{ \textit{#1} }{}}
+\chapter{Introduction}
+\label{Intro}
+\fancyfoot[LE,RO]{}
+\fancyfoot[LO,RE]{\thepage}
+\fancyhead[LO,RE]{{\bfseries \CodeName\ Documentation, Release \CodeVersion}}
+\fancyhead[RO]{\MakeUppercase{\chaptername}\ \thechapter.\ \textit{} }
+\fancyhead[LE]{\leftmark}
+\pagenumbering{arabic}
+
+
+\section{Description of \CodeName}
+
+\CodeName calculates the scattering matrices of a multi-layered structure, where each layer can be homogeneous or structured (down to sub-wavelength dimensions) and the materials may have complex, dispersive refractive indices. The scattering matrices are powerful tools from which many physical quantities, such as the total transmission, absorption in each layer, and the resonances of the structure, can be derived.
+
+An advantage of \CodeName over other scattering matrix programs (for example \href{http://camfr.sourceforge.net/index.html}{CAMFR}) is that the fields in each layer are considered in their natural basis with transmission scattering matrices converting fields between them. The fields in homogeneous layers are therefore expressed in terms of plane waves, while the natural basis in the periodically structured layers are Bloch modes. Expressing fields in their natural basis gives the terms of the scattering matrices intuitive meaning, providing access to greater physical insights. It is also advantages for the speed and accuracy of the numerical method.
+
+Inherent to the scattering matrix approach is the requirement that the interfaces between layers be planar, {\it ie.} that each layer is uniform in one direction (here labelled {\it z}). In this nomenclature the incident field must have $k_z = k_{\perp} \ne 0$, but is unconstrained in $k_{\parallel} = k_{x,y}$.
+In our implementation, the only constraint placed on each layer in the x-y plane, is that it must be periodic, at least at the supercell level. This is because the modes of structured media are calculated using a vectorial Finite Element Method (FEM) routine with periodic boundary conditions. 
+The scattering matrices of homogeneous media are calculated analytically resulting in excellent accuracy and speed.
+
+\CodeName has been designed to handle lossy media with dispersive refractive indices, with the complex refractive index at each frequency being taken directly from tabulated results of experimental measurements. This is an advantage of frequency domain methods over time domain methods such as the Finite Difference Time Domain (FDTD) where refractive indices are included by analytic approximations such as the Drude model (for example \href{http://ab-initio.mit.edu/wiki/index.php/Meep}{MEEP}). It is also possible to include media with lossless and/or non-dispersive refractive indices in \CodeName.
+
+Taking full advantage of the boundary-element nature of the scattering matrix method it is possible to vary the thickness of a layer by a single, numerically inexpensive, matrix multiplication. Furthermore, \CodeName recognises when interfaces are repeated so that their scattering matrices need not be recalculated but rather just retrieved from memory, which takes practically no computation time.
+
+By integrating a 2D finite element method calculation into the scattering matrix method \CodeName provides a powerful, versatile tool for nanophotonic simulations that are both computationally efficient and physically insightful. 
+
+\CodeName is a completely open source package, utilising free, open source compilers, meshing programs and libraries! The low-level numerical routines are written in Fortran for optimal performance, while higher-level processing is done in python.
+% \CodeName currently comes with template FEM mesh for 1D and 2D gratings, such as lamellar gratings and Nanowire/Nanohole arrays. For these structures the \CodeName will automatically create FEM mesh with the specified parameters. For other structures, the open source program \href{http://geuz.org/gmsh/}{gmsh} may be used to create the FEM mesh. 
+
+In summary, the advantages of \CodeName are;
+\begin{itemize}
+    \item Calculates the scattering matrices between layers in their natural bases, for maximum physical insights.
+    \item Designed to include lossy, dispersive materials, with frequency resolved (experimentally measured) refractive indices.
+    \item FEM allows for arbitrary in-plane geometries, down to the periodicity of the supercell.
+    \item Homogeneous layers are calculated analytically for optimal accuracy and speed.
+    \item The scattering matrix method efficiently combines arbitrary number of layers into a stack.
+    \item Synthesis of efficient Fortran routine with dynamic, high-level programming in Python.
+    \item Completely open source package! Including FEM meshing program, Fortran FEM routine, Python multi-layered scattering matrix implementation. 
+    \item Integrated with highly optimised libraries (but also functions without these at slower speeds), including; BLAS, LAPACK, ARPACK, UMFPACK
+    \item Vectorial FEM advantages?
+    \item Get band structure at same time as t,r,a.
+    \item Both/all polarasations at once
+\end{itemize}
+
+
+
+\chapter{Installation}
+\label{Install}
+
+\CodeName has been developed for use on Linux and Unix-like operating systems. It may be easily ported to other operating systems, but there are no current plans for doing so. If you are willing and able to do so, please get in contact!
+For now we take you through the installation process on Linux and Unix-like operating systems
+
+
+
+\section{GitHub Repository}
+By reading this document you have almost certainly found the \href{https://github.com}{GitHub repository of \CodeName}. If not, go there now!
+
+\section{Compilers}
+\CodeName is written in Python and Fortran, both of which can be compiled with open-source compilers. 
+The Fortran components (\CodeName source code and libraries) have been successfully compiled with intel's ifortran as well as open-source gfortran. 
+The Python components requires \href{http://scipy.org/}{NumPy and SciPy} to be installed, preferably as part of \href{https://www.enthought.com/products/epd/}{Endthought}, which is free for academic use.
+
+
+
+\section{Easy installation}
+On Ubuntu the following may be installed from the `Ubunutu software centre'
+\begin{lstlisting}
+libsuitesparse-metis-3.1.0
+libsuitesparse-metis-dev
+\end{lstlisting}
+In which case you can skip down to installing ARPACK in Sect. \ref{ARPACK}.
+
+
+
+\section{SuiteSparse}
+The FEM routine used in \CodeName makes use of the highly optimised \href{https://www.cise.ufl.edu/research/sparse/umfpack/}{UMFPACK} (Unsymmetric MultiFrontal Package) direct solver for sparse matrices developed by Prof. Timothy A. Davis. This is distributed as part of the  SuiteSparse libraries under the GPL license.
+
+\begin{enumerate}
+\item Download SuiteSparse from \href{https://www.cise.ufl.edu/research/sparse/SuiteSparse/}{https://www.cise.ufl.edu/research/sparse/SuiteSparse/}
+
+
+\item Unpack SuiteSparse into EMUstack/Fortran\_EMUstack/, it should create a directory there, SuiteSparse/
+\lstset{language=bash}
+mkdir where you want SuiteSparse installed, in my case EMUstack/Fortran\_EMUstack/SS\_installed
+\begin{lstlisting}
+$ mkdir  SS_installed/lib SS_installed/include
+\end{lstlisting}
+
+edit SuiteSparse/SuiteSparse\_config/SuiteSparse\_config.mk for consistency across the whole build, use intel fortran compiler
+\begin{lstlisting}
+line 75 F77 = gfortran --> ifort
+\end{lstlisting}
+set path to install folder
+\begin{lstlisting}
+line 85 INSTALL_LIB = /suphys/bjorn/Usyd_Running/f2pytest/EMUstack/Fortran_EMUstack/SS_install/lib
+line 86 INSTALL_INCLUDE = /suphys/bjorn/Usyd_Running/f2pytest/EMUstack/Fortran_EMUstack/SS_install/include
+\end{lstlisting}
+
+line 290ish commenting out all other references to these
+\begin{lstlisting}
+F77 = ifort
+CC = icc
+BLAS   = -L/apps/intel-ct/12.1.9.293/mkl/lib/intel64 -lmkl_rt
+LAPACK = -L/apps/intel-ct/12.1.9.293/mkl/lib/intel64 -lmkl_rt
+\end{lstlisting}
+
+\begin{lstlisting}
+$ mkdir the INSTALL_LIB and INSTALL_INCLUDE dirs
+\end{lstlisting}
+
+
+\item Download metis-4.0 http://glaros.dtc.umn.edu/gkhome/fsroot/sw/metis/OLD
+Unpack metis into SuiteSparse/
+\begin{lstlisting}
+$ cd SuiteSparse/metis-4.0
+\end{lstlisting}
+optionally edit metis-4.0/Makefile.in as per SuiteSparse/ README.txt plus with -fPIC
+\begin{lstlisting}
+CC = gcc
+or 
+CC = icc
+OPTFLAGS = -O3 -fPIC
+\end{lstlisting}
+\begin{lstlisting}
+$ make
+$ cp f2pytest/EMUstack/Fortran_EMUstack/SuiteSparse/metis-4.0/libmetis.a f2pytest/EMUstack/Fortran_EMUstack/SS_install/lib/
+\end{lstlisting}
+
+
+\item in SuiteSparse/
+\begin{lstlisting}
+$ make library
+$ make install
+$ cd SuiteSparse/UMFPACK/Demo
+$ make fortran64
+$ cp SuiteSparse/UMFPACK/Demo/umf4_f77zwrapper64.o into SS_install/lib/
+\end{lstlisting}
+Copy the libraries into EMUstack/Fortran\_EMUstack/Lib/ so that EMUstack/ is a complete package that can be moved across machine without alteration.
+
+\begin{lstlisting}
+$ cp SS_install/lib/*.a EMUstack/Fortran_EMUstack/Lib/
+$ cp SS_install/lib/umf4_f77zwrapper64.o EMUstack/Fortran_EMUstack/Lib/
+\end{lstlisting}
+\end{enumerate}
+
+
+
+
+
+\section{ARPACK}
+\label{ARPACK}
+\begin{enumerate}
+\item IF you have made SuiteSparse yourself, then edit EMUstack/Fortran\_EMUstack/zarpack\_util.f 
+specifying whether or not your fortran compiler has ETIME is a built in function of your compiler (INTRINSIC). On lines 768-771,
+\begin{lstlisting}
+C     gfortran likes the following
+C      INTRINSIC          ETIME
+C     ifort likes the following
+      EXTERNAL           ETIME
+\end{lstlisting}
+
+ELSE IF, when running \CodeName there are errors involving zneupd or znaupd then
+\begin{lstlisting}
+$ mv zarpack.f zarpack.f.bak
+$ mv zarpack_util.f zarpack_util.f.bak
+\end{lstlisting}
+and build ARPACK as described below.
+ 
+
+\item ELSE IF you are using Ubuntu package versions of SuiteSparse, then there is some issue with zarpack\_util.f
+You will need to build ARPACK yourself. Download it here \href{http://www.caam.rice.edu/software/ARPACK/download.html}{http://www.caam.rice.edu/software/ARPACK/download.html} (choosing the stable arpack96 version).
+Unpack into same directory as SuiteSparse/ in my case Fortran\_EMUstack/
+edit ARmake.inc
+line 28 
+\begin{lstlisting}
+home = $(HOME)/ARPACK --> /suphys/bjorn/Usyd_Running/f2pytest/EMUstack/Fortran_EMUstack/ARPACK
+line 104 FC      = f77 --> ifort or gfort
+line 105 FFLAGS = -O -cg89 --> -O -fPIC
+line 115 MAKE    = /bin/make --> /usr/bin/make
+\end{lstlisting}
+
+\begin{lstlisting}
+$ make lib
+\end{lstlisting}
+\end{enumerate}
+
+
+
+
+\section{Make \CodeName}
+
+Edit Fortran\_EMUstack/Makefile to reflect what compiler you are using and how you installed the libraries.
+The Makefile has further details.
+
+
+
+
+The installation of \CodeName is complete.
+However you almost certainly wish to have the freedom to create FEM mesh for your chosen parameters. To do this you will need to install the meshing program Gmsh and compile a simple Fortran routine.
+
+
+
+
+\section{Install Gmsh and gmsh\_conversion.f}
+
+\begin{enumerate}
+\item Install Gmsh,
+\begin{itemize}
+\item IF using Ubuntu, then install Gmsh from the `Ubunutu software centre'. Done.
+
+\item ELSE, 
+
+\begin{enumerate}
+\item Download cmake sourse folder, unzip/tar, install.
+\item Download a stable version of Gmsh source code from \href{http://geuz.org/gmsh/}{http://geuz.org/gmsh/}.
+To date, \CodeName has been successfully used with Gmsh versions 2.5.1, 2.6.1
+\item Unzip/tar gmsh source code. 
+\item Follow gmsh\_source/README.txt, with the following options to avoid non-standard libraries (only required for GUI anyway) and to install it into an appropriate directory (one you have write access to);
+\begin{lstlisting}
+$ cmake -DENABLE\_FLTK=0 -DCMAKE\_INSTALL\_PREFIX=/opt ..
+\end{lstlisting}
+
+\item To test the installation, run
+\begin{lstlisting}
+$ which gmsh 
+\end{lstlisting}
+which should give the path to the installation.
+
+\item Gmsh can be launched by executing
+\begin{lstlisting}
+$ gmsh
+\end{lstlisting}
+
+\end{enumerate}
+\end{itemize}
+
+
+\item Compile the gmsh\_conversion.f Fortran routine,
+
+\begin{lstlisting}
+$ cd EMUstack/Data/gmsh_conversion/
+\end{lstlisting}
+
+Edit Makefile, selecting your Fortran compiler on line 10.
+  
+\begin{lstlisting}
+# FC = gfortran
+FC = ifort
+\end{lstlisting}
+
+then,
+
+\begin{lstlisting}
+$ make
+\end{lstlisting}
+
+
+\item It is also recommended to install Gmsh on your personal computer so that field plots may be opened locally. Versions of Gmsh can be downloaded for Windows, Mac or Linux.
+
+\end{enumerate}
+
+
+\subsection{Supercomputer example}
+
+As an example, the following process was used on the NCI supercomputer Raijin;
+\begin{enumerate}
+\item If there is a file `cmake' in gmsh-source/build/ remove/rename it.
+\item Load the cmake module,
+\begin{lstlisting}
+$ module load cmake
+\end{lstlisting}
+\item Make sure the mkl module is loaded.
+
+\item In the CMakeLists.txt file in the base directory, make the following changes in the section
+
+\begin{lstlisting}
+if(ENABLE_BLAS_LAPACK)
+...
+    elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+       if(HAVE_64BIT_SIZE_T)
+           set(MKL_PATH lib/em64t)
+\end{lstlisting}
+
+change (the 2 occurrences of) 
+\newline
+\newline
+set(MKL\_PATH lib/em64t) $\to$ set(MKL\_PATH mklroot/lib/intel64)
+\newline
+\newline
+where mklroot is the output of the command `echo \$MKLROOT' i.e. the absolute path the the MKL libraries (CMake can't/won't read environment variables). 
+\newline
+
+Still under `elseif(\${CMAKE\_SYSTEM\_NAME} MATCHES ``Linux'')', change
+\newline
+\newline
+set(MKL\_LIBS\_REQUIRED mkl\_gf\_lp64 iomp5 mkl\_gnu\_thread mkl\_core guide pthread)\newline
+$\to$ set(MKL\_LIBS\_REQUIRED mkl\_core mkl\_sequential mkl\_intel\_lp64)
+\newline
+\newline
+and
+\newline
+\newline
+find\_all\_libraries(LAPACK\_LIBRARIES MKL\_LIBS\_REQUIRED ``'' \${MKL\_PATH}) $\to$
+find\_all\_libraries(LAPACK\_LIBRARIES MKL\_LIBS\_REQUIRED \${MKL\_PATH} ``'')
+
+
+\item On using the cmake command you should see,
+\begin{lstlisting}
+Found Blas(IntelMKL)
+Found Lapack(IntelMKL)
+\end{lstlisting}
+
+
+
+\item Run cmake to create the appropriate makefile for the machine, and install gmsh.
+\begin{lstlisting}
+$ cmake -DENABLE_FLTK=0 -DCMAKE_INSTALL_PREFIX=/home/562/bxs562/gmsh ..
+$ make
+$ make install
+\end{lstlisting}
+
+\item Lastly, add gmsh to your path,
+In .cshrc file (.bashrs will be similar but different) add the line,
+\begin{lstlisting}
+set path=( /home/562/bxs562/gmsh/bin $path ) 
+\end{lstlisting}
+
+
+\end{enumerate}
+
+
+
+
+
+
+\section*{The installation of \CodeName is now fully complete!!!}
+
+
+
+\section{Test the installation}
+
+While the installation is complete, you now probably want to check that everything has gone as planned... To do this (and to check sanity check any changes made in the future) \CodeName comes with multiple test calculations.
+
+\begin{enumerate}
+\item \CodeName ships with 2 sets of tests; one to test an installation on a new machine, and another to test against when making modifications on the same machine. These tests are located in test\_installation\_EMUstack/ and test\_local\_EMUstack/ respectively. The actual test calculations performed in these sets are identical, and on downloading the reference data tested against is also identical.
+
+This structure has been designed in response to installations on different machines giving slightly different results, particularly when different versions of gmsh have been used. To test a new installation please first run the tests in test\_installation\_EMUstack/. To do this
+
+\begin{lstlisting}
+$ cd test_installation_EMUstack/
+$ nosetests
+\end{lstlisting}
+
+During testing, individual test results are displayed with\
+. = pass \
+F = FAIL.
+
+\item Once you are satisfied with you installation and the test\_installation\_EMUstack/ tests have all passed, update the test reference data in test\_local\_EMUstack/. To do this uncomment the line beginning with testing.save\_reference\_data in test\_local\_EMUstack/test\_case*.py and then
+
+\begin{lstlisting}
+$ cd test_local_EMUstack/
+$ nosetests
+\end{lstlisting}
+
+and then re-comment those lines. Note that the test itself will fail giving the following message;
+``AssertionError: Reference results saved successfully, but tests will now pass trivially so let's not run them now.''
+
+\item When making updates and modifications on \CodeName you should check that your results are still consistent with the test cases to the accuracy as set in test\_local\_EMUstack/. To do this run
+
+\begin{lstlisting}
+$ cd test_local_EMUstack/
+$ nosetests
+\end{lstlisting}
+
+with the testing.save\_reference\_data line commented out.
+\end{enumerate}
+
+
+
+
+\section*{Enjoy \CodeName!!!}
+
+
+
+
+
+
+
+
+
+\chapter{Use}
+\label{Use}
+
+
+\section{Python + Fortran}
+
+\CodeName is a synthesis of Python and Fortran. These are used for high-level, dynamic, object oriented programming, and lower-level, highly efficient, robust programming respectively. This coding philosophy was inspired by \href{https://launchpad.net/blochcode}{BlochCode} and is shared by many other open-source projects such as \href{http://camfr.sourceforge.net/index.html}{CAMFR} and \href{http://mrcwa.sourceforge.net/}{MRCWA}. 
+
+
+
+
+
+
+
+
+
+
+\section{Templates}
+
+\CodeName comes with multiple template simulation scripts. These are located in 000-simmo\_templates/
+These are ready to be executed, which is done by running a simmo.py file in the command line, eg.
+
+\begin{lstlisting}
+$ cd 000-simmo_templates/
+$ python simo_template-grating.py
+\end{lstlisting}
+
+The template files are comprehensively commented, which we hope makes them self-explanatory. For now we just highlight the parameters most often changed.
+
+
+
+
+
+
+\section{Setup}
+Right at the top, we can briefly describe the simulation that we are creating.
+We do this by (mis-)using the python docstring format, eg.
+
+\begin{lstlisting}
+"""
+Simulating the coupling of normally incident light into evanescent orders through a 
+metallic grating of period 120 nm. Included 3 PW orders.
+"""
+\end{lstlisting}
+
+Next we need to specify the number of CPUs the simulation is to have access to. This is set by the num\_cores parameter. Alternatively you can also specify the number of CPUs to leave free.
+
+\begin{lstlisting}
+# Number of CPUs to use im simulation
+num_cores = 5
+# # Alternatively specify the number of CPUs to leave free on machine
+# leave_cpus = 4 
+# num_cores = mp.cpu_count() - leave_cpus
+\end{lstlisting}
+
+
+
+
+\section{Light}
+The properties of the incident light are specified in the `Light' class within objects.py. If considering multiple wavelengths (or multiple k vectors) we create a list of Light object instances. The simulation will be carried out for each of these Light objects (in parallel if num\_cores~$>~1$). Each Light instance has the following properties;
+
+\begin{lstlisting}
+class Light(object):
+    """ Represents the light incident on structure.
+
+        Incident angles may either be specified by `k_parallel` or by
+        incident angles `theta` and `phi`, together with the refractive
+        index `n_inc` of the incident medium.
+
+        `wl_nm` and `k_pll` are both in unnormalised units.
+
+        INPUTS:
+
+        - `wl_nm`         : Wavelength, in nanometers.
+
+        - `max_order_PWs` : Maximum plane wave order to include.
+
+        - `k_parallel`    : The wave vector components (k_x, k_y)
+            parallel to the interface planes. Units of nm^-1.
+
+        - `theta`         : Polar angle of incidence in degrees.
+
+        - `phi`           : Azimuthal angle of incidence in degrees.
+    """
+\end{lstlisting}
+
+Note that this doesn't specify the polarisation. This is because every calculation contains both TE and TM polarisations, with the scattering matrices containing terms for scattering from TE $\to$ TE, TM $\to$ TM, TE $\to$ TM, and TM $\to$ TE. The matrices are structured as,
+
+
+\begin{tabular}{ r|c|c| }
+\multicolumn{1}{r}{}
+\\
+\cline{2-3}
+$S_{12} = $ & TE $\to$ TE & TM $\to$ TE \\
+\cline{2-3}
+            & TE $\to$ TM & TM $\to$ TM \\
+\cline{2-3}
+\end{tabular}
+\\ \\ where $S_{12}$ can be either a transmission or reflection scattering matrix. We can select the total transmittance and reflectance for a particular polarisation from these later on (see Sect. \ref{stack}).
+
+
+
+
+
+\section{Layers}
+
+Having defined the properties of the incident light, we now need to define the structure that is being investigated.
+
+\CodeName can calculate the scattering matrices (and derived properties) of an arbitrary number of layers, stacked in arbitrary combinations. For the scattering matrix approach to valid, each layer must be invariant along the axis normal to the plane of its interfaces (here taken as the x-y plane). In the x-y plane each layer may be composed of an arbitrary collection of media, of arbitrary form. Or a layer may of course be homogeneous in the x-y plane.
+
+\CodeName treats these 2 types of layers, homogeneous and structured, vastly differently. Fundamentally this is because homogeneous layers can be treated analytically, while structured layers must be simulated using numerical techniques (here FEM).
+
+We define each individual, z-invariant, layer as an object. 
+Note that all layers must have a the same periodicity. This is required so that the plane wave diffraction orders are defined consistently throughout a stack. All homogeneous layer must therefore have an artificial periodicity imposed on them. 
+
+\subsection{Homogeneous layers}
+If a layer is homogeneous it is an instance of the objects.ThinFilm class with the following properties;
+
+
+\begin{lstlisting}
+class ThinFilm(object):
+    """ Represents an unstructured homogeneous film.
+
+        INPUTS:
+
+        - 'period'         : Artificial period imposed on homogeneous film 
+            to give consistently defined plane waves in terms of 
+            diffraction orders of structured layers.
+
+        - 'height_nm'      : The thickness of the layer in nm or 'semi_inf'
+            for a semi-infinte layer.
+
+        - 'material'       : A :Material: instance specifying the n of 
+            the layer and related methods.
+
+        - 'num_pw_per_pol' : Number of plane waves per polarisation.
+
+        - 'loss'           : If False sets Im(n) = 0, if True leaves n as is.
+    """
+\end{lstlisting}
+
+
+
+\subsection{Structured layers}
+If a layer is structured it is an instance of the objects.NanoStruct class. If the layer is a 1D or 2D grating \CodeName comes with template FEM mesh and will automatically make a mesh to represent your specified geometry if `make\_mesh\_now' is set to `True'. Otherwise a new mesh will have to be made in gmsh and either used directly or set up as a new template file. The mesh files are created at the time a NanoStruc object is initialised.
+
+The other properties of structured layers are as follows;
+
+
+\begin{lstlisting}
+class NanoStruct(object):
+    """ Represents a structured layer.
+
+        INPUTS:
+
+        - 'geometry'      : Either 1D or 2D structure; '1D_grating', 'NW_array'.
+
+        - 'period'        : The diameter the unit cell in nanometers.
+
+        - 'diameter1'     : The diameter of the inclusion in nm.
+        - 'diameter2-16'  : The diameter of further inclusions in nm.
+
+        - 'height_nm'     : The thickness of the layer in nm or 'semi_inf'
+            for a semi-infinte layer.
+
+        - 'inclusion_a'   : A :Material: instance for first inclusion, 
+            specified as dispersive refractive index (eg. materials.Si_c) 
+            or nondispersive complex number (eg. Material(1.0 + 0.0j)).
+
+        - 'inclusion_b'   : "  " for the second inclusion medium.
+        - 'background'    : "  " for the background medium.
+
+        - 'loss'          : If False, Im(n) = 0, if True n as in :Material: instance.
+
+        - 'ellipticity'   : If != 0, inclusion has given ellipticity, with b=diameter,
+           a=diameter-ellipticity*diameter. NOTE: only implemented for 1 inclusion.
+
+        - 'square'        : If True, 'NW_array' has square NWs (ie. 2D grating).
+
+        - 'ff'            : The fill fraction of the inclusions. If non-zero, 
+            the specified diameters are overritten s.t. given ff is achieved,
+            otherwise ff is calculated from parameters and stored in self.ff.
+        - 'ff_rand'       : If True, diameters overritten with random diameters,
+            s.t. the ff is as assigned. Must provide non-zero dummy diameters.
+        
+        - 'posx'          : Shift NWs laterally towards center (each other), 
+            posx is a fraction of the distance possible before NWs touching.
+        - 'posy'          : Shift NWs vertically "  ". 
+ 
+        - 'small_d'       : Distance between 2 inclusions of interleaved 1D grating.
+
+        - 'make_mesh_now' : If True, program creates a FEM mesh with provided 
+            NanoStruct parameters. If False, must provide mesh_file name of 
+            existing .mail that will be run despite NanoStruct parameters.
+
+        - 'force_mesh'    : If True, a new mesh is created despite existance of 
+            mesh with same parameter. This is used to make mesh with equal 
+            period etc. but different lc refinement.
+
+        - 'mesh_file'     : If using a set premade mesh give its name including 
+            .mail (eg. 600_60.mail), it must be located in EMUstack/Data/
+
+        - 'lc_bkg'        : Length constant of meshing of background medium.
+        - 'lc2'           : "  " on inclusion surfaces. (smaller = finer mesh)
+        - 'lc3-6'         : "  " from center of inclusions.
+
+        - `plot_modes'    : Plot modes (ie. FEM solutions) in gmsh format, 
+            you get epsilon*|E|^2 & either real/imag/abs of 
+            x,y,z components, field vectors.
+            NOTE: these plots are created in Output/Fields, 
+            and Output/FieldsPNG, which you must create.
+
+        - `plot_real'     : Plot the real part of modal fields.
+        - `plot_imag'     : Plot the imaginary part of modal fields.
+        - `plot_abs'      : Plot the absolute value of modal fields.
+    """
+\end{lstlisting}
+
+
+
+\section{Simulate\_stack}
+\label{stack}
+We have now fully specified the properties of each layer in the problem and the light to be considered. The last thing we must specify is how to stack the layers together. Before doing this however, we first calculate the scattering matrices of each individual layer (between 2 semi-infinite air layers). This will allow us to stack the individual layers arbitrarily, changing their thicknesses with ease and recognise any repeated interfaces which need not be recalculated.
+
+All of the real calculation occurs in the function simulate\_stack defined in the simulation script itself. This function handles a single light instance and therefore must be called for each instance of light you are interested in. It firstly calculates the scattering matrices of each individual layer, storing this information in an instance of the layer object (which has the relevant scattering matrix calculation method defined on it). 
+
+A Stack object is defined within the function, where the simulation instances are listed from bottom to top. Multiple Stack objects may be defined within each simulation\_stack call and the heights of layers may be changed (see simmo\_template-NWs). Loops varying the Stack composition/ordering/heights are all able to be implemented within this function.
+
+To finally execute the calculation we must call the simulation\_stack with each light instance in light\_list. This is simply done with the Python `map' function. However we in general wish to consider many light instance in one simulation script. This poses an `embarrassingly parallel' problem in the frequency domain, where each frequency/k-vector can be evaluated totally independently of all others. 
+
+To exploit this in \CodeName, we use the Python `multiprocessing' package. This contains the function `Pool', which is handed our mapped list of simulation\_stack calls for each light instance in light\_list. `Pool' then feeds the light\_list instances through simulation\_stack managing the number of concurrent subprocesses (similar to threads in regular parallel computing) to be num\_cores.
+
+
+At the end of the simulation\_stack calculations you are left with a list of Stack objects, one for each light instance in light\_list. These have the properties of the Stack class as defined in stack.py.
+
+\begin{lstlisting}
+class Stack(object):
+    """ Represents a stack of layers evaluated at one frequency.
+
+        This includes the semi-infinite input and output layers.
+
+        INPUTS:
+
+          - `layers` : a tuple of :ThinFilm:s and :NanoStruct:s 
+            ordered from top to bottom layer.
+
+          - `heights_nm` : a tuple of the heights of the inside layers,
+            i.e., all layers except for the top and bottom. This 
+            overrides any heights specified in the :ThinFilm: or
+            :NanoStruct: objects.
+
+    """
+\end{lstlisting}
+
+To plot quantities across the light\_list instances (often wavelengths) results must be taken from each element of this list. This is implemented in many of the plotting functions.
+
+
+
+
+\section{Plotting}
+Various plotting functions are included with \CodeName. These are located and described in plotting.py.
+An exception to this is the plotting of modal field plots. This is done directly in the FEM routine and is therefore specified when creating the NanoStruct instance with the `plot\_modes' variable. IF these are to be saved the directories 
+\begin{itemize}
+\item Output/Fields/
+\item Output/FieldsPNG/
+\end{itemize}
+must be created inside the simulation instance directory (eg. 000-simmo\_templates).
+
+Viewing of field plots, or FEM mesh is done using Gmsh. Geometry files have the extension .geo, FEM mesh files are .msh and .mail where .msh can be displayed with Gmsh and .mail are used by the Fortran FEM routine (the conversion FYI is done in gmsh\_conversion.f). Field plots are stored as .pos files. 
+The E-field components plotted include the
+\begin{itemize}
+	\item x-component (x\_re.pos),
+	\item y-component (y\_re.pos),
+	\item z-component (z\_re.pos),
+	\item vectorial plot (v\_re.pos),
+	\item $|E|^2$ (\_abs2.pos),
+	\item energy, $\epsilon|E|^2$ (\_abs2\_eE.pos).
+\end{itemize}
+
+
+
+To open a file in Gmsh from the command line run,
+
+\begin{lstlisting}
+gmsh simmo_location/Output/Fields/msh_name.ext
+\end{lstlisting}
+
+where the .ext can be any of the formats discussed above. 
+
+Otherwise you may also open files from your file manager if Gmsh has been installed.
+
+
+To convert all energy distribution plots into .png files run
+\begin{lstlisting}
+gmsh simmo_location/Output/FieldsPNG/All_plots_png_abs2_eE.geo
+\end{lstlisting}
+
+
+
+\section{Help \& Debugging}
+If you wish to have direct access to the simulation results (for 
+further manipulation, debugging etc.) run the simulation script as
+
+\begin{lstlisting}
+$ python -i simo_template-grating.py
+\end{lstlisting}
+
+which, after the calculations are complete, will return you into an interactive session 
+of python, in which all simulation objects are accessible. In this session you can access
+the docstrings of objects/classes/methods by typing
+
+\begin{lstlisting}
+>>> from pydoc import help
+>>> help(objects.Light)
+\end{lstlisting}
+
+where we have accessed the docstring of the `Light' class from objects.py.
+
+
+
+
+
+
+
+\section{Notes for running \CodeName on NCI supercomputers}
+
+Make sure 
+
+\begin{lstlisting}
+intel-fc
+intel-cc
+intel-mkl
+python
+python...-matplotlib
+\end{lstlisting}
+
+are all loaded. This is best done by adding
+
+\begin{lstlisting}
+module load intel-fc/12.1.9.293
+module load intel-cc/12.1.9.293
+module load intel-mkl/12.1.9.293
+module load python/2.7.3
+module load python/2.7.3-matplotlib
+\end{lstlisting}
+
+to the bottom of your .login, .profile, and .cshrc/.bashrc files (or different versions numbers).
+
+
+
+
+
+\chapter{Contributing}
+\label{Cont}
+
+
+
+
+
+
+\end{document}
