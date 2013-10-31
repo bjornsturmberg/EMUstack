@@ -171,6 +171,32 @@ Efficiency = plotting.t_r_a_plots(stack_list, wavelengths, params_string, active
 
 
 
+
+
+
+
+# betas = stacks_wl_list[0][0][0].layers[1].k_z
+# print betas
+# betas = stacks_wl_list[0][0][0].layers[0].k_z
+# print betas
+
+# Rnet = stacks_wl_list[0][0][0].R_net
+# J_mat = stacks_wl_list[0][0][0].layers[1].J
+# T_c = np.sum((np.abs(stacks_wl_list[0][0][0].layers[1].T12)), axis=1)
+# print T_c
+# print Rnet
+# print J_mat
+# print_fmt = zip(np.real(betas),np.imag(betas),T_c)
+# np.savetxt('Coupling_beta.txt', print_fmt, fmt = '%7.4f')
+# print_fmt = zip(np.real(betas),np.imag(betas))
+# np.savetxt('Coupling_beta.txt', print_fmt)
+
+
+
+
+
+
+
 # Wrapping up simulation by printing to screen and log file
 print '\n*******************************************'
 print 'The ultimate efficiency is %12.8f' % Efficiency

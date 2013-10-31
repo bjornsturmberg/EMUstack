@@ -3,7 +3,7 @@
     routines. These were developed during simulations for photovoltaics,
     hence the efficiency calculations.
 
-    Copyright (C) 2013  Bjorn Sturmberg
+    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -7,6 +7,7 @@ import time
 import datetime
 import numpy as np
 import sys
+from multiprocessing import Pool
 sys.path.append("../EMUstack/")
 
 import objects
@@ -21,7 +22,7 @@ start = time.time()
 ################ Simulation parameters ################
 
 # Number of CPUs to use im simulation
-num_cores = 1
+num_cores = 2
 # # Alternatively specify the number of CPUs to leave free on machine
 # leave_cpus = 4 
 # num_cores = mp.cpu_count() - leave_cpus
@@ -34,13 +35,13 @@ plotting.clear_previous('.pdf')
 ################ Light parameters #####################
 
 # # Set up light objects
-# wavelengths = [310, 410, 531.2007, 707.495,  881.786, 987.9632]
-# light_list  = [objects.Light(wl) for wl in wavelengths]
-# Single wavelength run
-wl_super =  500.0
-wavelengths = np.array([wl_super])
-light_list  = [objects.Light(wl, max_order_PWs = 1) for wl in wavelengths]
-light = light_list[0]
+wavelengths = np.array([500, 1000])
+light_list  = [objects.Light(wl, max_order_PWs = 2) for wl in wavelengths]
+# # Single wavelength run
+# wl_super =  500.0
+# wavelengths = np.array([wl_super])
+# light_list  = [objects.Light(wl, max_order_PWs = 1) for wl in wavelengths]
+# light = light_list[0]
 
 
 ################ Scattering matrices (for distinct layers) ##############
@@ -54,44 +55,59 @@ period  = 600
 
 cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
-sim_cover = cover.calc_modes(light)
 
 NW_diameter = 120
-num_BM = 20
+num_BM = 40
 grating_1 = objects.NanoStruct('NW_array', period, NW_diameter, height_nm = 2330,
     inclusion_a = materials.Si_c, background = materials.Air,
     loss = True, make_mesh_now = True, force_mesh = True,
     lc_bkg = 0.07, lc2= 1.5, lc3= 2.0)
-sim_grat1 = grating_1.calc_modes(light, num_BM = num_BM)
 
 bottom = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.SiO2_a, loss = False)
-sim_bot = bottom.calc_modes(light)
 
 
 
-################ Construct & solve for full solar cell structure ##############
-""" Now when defining full structure order is critical and
-solar_cell list MUST be ordered from bottom to top!
-"""
-stack = Stack((sim_bot, sim_grat1, sim_cover))
-stack.calc_scat(pol = 'TE')
-stack_list = [stack]
 
-last_light_object = light_list.pop()
-param_layer = grating_1 # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
-active_layer_nu = 1
-Efficiency = plotting.t_r_a_plots(stack_list, wavelengths, params_string, 
-    active_layer_nu=active_layer_nu)
+stack_list = []
+def simulate_stack(light):
+    
+    ################ Evaluate each layer individually ##############
+    sim_cover = cover.calc_modes(light)
+    sim_grat1 = grating_1.calc_modes(light, num_BM = num_BM)
+    sim_bot = bottom.calc_modes(light)
+
+    ################ Evaluate full solar cell structure ##############
+    """ Now when defining full structure order is critical and
+    solar_cell list MUST be ordered from bottom to top!
+    """
+    stack = Stack((sim_bot, sim_grat1, sim_cover))
+    stack.calc_scat(pol = 'TE')
+
+    return stack
+
+def setup_module(module):
+    start = time.time()
+
+    # Run in parallel across wavelengths.
+    # This has to be in a setup_module otherwise nosetests will crash :(
+    pool = Pool(2)
+    module.stack_list = pool.map(simulate_stack, light_list)
+
+    last_light_object = light_list.pop()
+    param_layer = grating_1 # Specify the layer for which the parameters should be printed on figures.
+    params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
+    active_layer_nu = 1
+    Efficiency = plotting.t_r_a_plots(stack_list, wavelengths, params_string, 
+        active_layer_nu=active_layer_nu)
 
 
+    # # SAVE DATA AS REFERENCE
+    # # Only run this after changing what is simulated - this
+    # # generates a new set of reference answers to check against
+    # # in the future
+    # testing.save_reference_data("case_1", stack_list)
 
-# # SAVE DATA AS REFERENCE
-# # Only run this after changing what is simulated - this
-# # generates a new set of reference answers to check against
-# # in the future
-# testing.save_reference_data("case_1", stack_list)
 
 def results_match_reference(filename):
     rtol = 1e-6
