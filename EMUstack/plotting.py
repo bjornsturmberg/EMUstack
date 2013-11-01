@@ -166,7 +166,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
     #  intergral done in Mathematica (OtherCode/Silicon_ASTM/ASTMG173.nb)
     tot_irradiance = 900.084
     i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
-    i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,2])
+    i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
     bandgap_wl   = wavelengths[-1] #have as property of material.
     expression   = i_spec*active_abs*wavelengths
     integral_tmp = np.trapz(expression, x=wavelengths)
