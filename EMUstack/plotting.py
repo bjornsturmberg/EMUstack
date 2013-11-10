@@ -161,7 +161,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
     """
     # TODO make E_g a property of material, not just longest wl included.
 
-    Irrad_spec_file = '../EMUstack/Data/ASTM_1_5_spectrum'
+    Irrad_spec_file = '../EMUstack/Data/ASTMG173'
     #  Total solar irradiance - integral of I(lambda) from 310nm-4000nm
     #  intergral done in Mathematica (OtherCode/Silicon_ASTM/ASTMG173.nb)
     tot_irradiance = 900.084
