@@ -7,7 +7,7 @@ import time
 import datetime
 import numpy as np
 import sys
-sys.path.append("../EMUstack/")
+sys.path.append("../EMUstack_backend/")
 
 import objects
 import materials

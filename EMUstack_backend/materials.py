@@ -22,7 +22,7 @@
 import numpy as np
 from scipy.interpolate import UnivariateSpline, interp1d
 
-data_location = '../EMUstack/Data/'
+data_location = '../EMUstack_backend/Data/'
 
 class Material(object):
     """ Represents a material with a refractive index n.

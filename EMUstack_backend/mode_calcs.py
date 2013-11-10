@@ -22,11 +22,11 @@
 import numpy as np
 import sys
 from scipy import sqrt
-sys.path.append("../EMUstack/")
+sys.path.append("../EMUstack_backend/")
 
 import materials
 import objects
-from Fortran_EMUstack import EMUstack
+from Fortran import EMUstack
 
 _interfaces_i_have_known = {}
 pi = np.pi
@@ -236,7 +236,7 @@ class Simmo(Modes):
         d = self.structure.period
 
         # Prepare for the mesh
-        with open("../EMUstack/Data/"+self.structure.mesh_file) as f:
+        with open("../EMUstack_backend/Data/"+self.structure.mesh_file) as f:
             n_msh_pts, n_msh_el = [int(i) for i in f.readline().split()]
 
         # Size of Fortran's complex superarray (scales with mesh)

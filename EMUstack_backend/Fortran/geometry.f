@@ -25,7 +25,8 @@ c
 c
       ui = 6
 c
-        open (unit=24,file="../EMUstack/Data/"//mesh_file,status='old')
+        open (unit=24,file="../EMUstack_backend/Data/"//mesh_file,
+     *     status='old')
         read(24,*) npt2, nel2
 c
       if(npt .ne. npt2) then

@@ -26,7 +26,7 @@ import random
 import materials
 from mode_calcs import Simmo, Anallo
 
-data_location = '../EMUstack/Data/'
+data_location = '../EMUstack_backend//Data/'
 
 class NanoStruct(object):
     """ Represents a structured layer.
@@ -78,7 +78,7 @@ class NanoStruct(object):
             period etc. but different lc refinement.
 
         - 'mesh_file'     : If using a set premade mesh give its name including 
-            .mail (eg. 600_60.mail), it must be located in EMUstack/Data/
+            .mail (eg. 600_60.mail), it must be located in EMUstack_backend/Data/
 
         - 'lc_bkg'        : Length constant of meshing of background medium.
         - 'lc2'           : "  " on inclusion surfaces. (smaller = finer mesh)
