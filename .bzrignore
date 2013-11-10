@@ -1,6 +1,0 @@
-*.exe
-*.pyc
-*.o
-test_PCPV/*.txt
-test_PCPV/*.pdf
-*.npy
