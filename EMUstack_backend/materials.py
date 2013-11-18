@@ -103,7 +103,7 @@ TiO2     = Material(np.loadtxt('%sTiO2.txt'% data_location))
 ITO      = Material(np.loadtxt('%sITO.txt'% data_location))         # Filmetrics.com
 # Semiconductors
 Si_c     = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
-Si_c_mod     = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
+Si_c_mod = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
 Si_a     = Material(np.loadtxt('%sSi_a.txt'% data_location))
 SiO2_a   = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
 CuO      = Material(np.loadtxt('%sCuO.txt'% data_location))
@@ -115,7 +115,8 @@ AlGaAs   = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
 Al2O3    = Material(np.loadtxt('%sAl2O3.txt'% data_location))       # http://refractiveindex.info/?group=CRYSTALS&material=Al2O3
 GaAs     = Material(np.loadtxt('%sGaAs.txt'% data_location))        # http://www.filmetrics.com/refractive-index-database/GaAs/Gallium-Arsenide
 InGaAs   = Material(np.loadtxt('%sInGaAs.txt'% data_location))      # http://refractiveindex.info/?group=CRYSTALS&material=InGaAs
-Si3N4    = Material(np.loadtxt('%sSi3N4.txt'% data_location))
+Si3N4    = Material(np.loadtxt('%sSi3N4.txt'% data_location))       # http://www.filmetrics.com/refractive-index-database/Si3N4/Silicon-Nitride-SiN
+MgF2     = Material(np.loadtxt('%sMgF2.txt'% data_location))        # http://www.filmetrics.com/refractive-index-database/MgF2/Magnesium-Fluoride
 InP      = Material(np.loadtxt('%sInP.txt'% data_location))
 InAs     = Material(np.loadtxt('%sInAs.txt'% data_location))        # Filmetrics.com
 GaP      = Material(np.loadtxt('%sGaP.txt'% data_location))         # Filmetrics.com

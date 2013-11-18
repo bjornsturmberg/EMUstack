@@ -29,8 +29,16 @@ import matplotlib
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
+# font = {'family' : 'normal',
+#         'weight' : 'bold',
+#         'size'   : 18}
 
+font = {'size'   : 18}
 
+matplotlib.rc('font', **font)
+
+linesstrength = 2.5
+title_font = 14
 
 
 #######################################################################################
@@ -192,7 +200,7 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
         for wl in range(len(wavelengths)):
             layer_spec = np.append(layer_spec,spec_list[wl*nu_layers + i])
         ax1 = fig.add_subplot(nu_layers,1,i+1)
-        ax1.plot(wavelengths, layer_spec)
+        ax1.plot(wavelengths, layer_spec, linewidth=linesstrength)
         ax2 = ax1.twiny()
         new_tick_values = np.linspace(10,0.5,20)
         new_tick_locations = tick_function(new_tick_values)
@@ -213,7 +221,7 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
             if i == 0: ax1.set_ylabel('Top Layer')
             if i == nu_layers-2: ax1.set_ylabel('Bottom Layer')
             suptitle_w_params = 'Absorptance in each layer'+add_name+'\n'+params_2_print
-            plt.suptitle(suptitle_w_params)
+            plt.suptitle(suptitle_w_params,fontsize=title_font)
             lay_spec_name = 'Lay_Absorb'
             if i == nu_layers-1: 
                 ax1.set_ylabel('Total')
@@ -222,7 +230,7 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
             if i == 0: ax1.set_ylabel('Top Layer')
             if i == nu_layers-2: ax1.set_ylabel('Bottom Layer')
             suptitle_w_params = 'Transmittance in each layer'+add_name+'\n'+params_2_print
-            plt.suptitle(suptitle_w_params)
+            plt.suptitle(suptitle_w_params,fontsize=title_font)
             lay_spec_name = 'Lay_Trans'
             if i == nu_layers-1: 
                 ax1.set_ylabel('Total')
@@ -232,7 +240,7 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
             if i == nu_layers-3: ax1.set_ylabel('Bottom Layer')
             if i == nu_layers-2: ax1.set_ylabel('Substrate')
             suptitle_w_params = 'Reflectance in each layer'+add_name+'\n'+params_2_print
-            plt.suptitle(suptitle_w_params)
+            plt.suptitle(suptitle_w_params,fontsize=title_font)
             lay_spec_name = 'Lay_Reflec'
             if i == nu_layers-1: 
                 ax1.set_ylabel('Total')
@@ -255,7 +263,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
 
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(3,1,1)
-    ax1.plot(wavelengths, a_spec)
+    ax1.plot(wavelengths, a_spec, linewidth=linesstrength)
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Absorptance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
@@ -269,7 +277,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
     ax2.set_xlabel('Energy (eV)')
     plt.ylim((0, 1))
     ax1 = fig.add_subplot(3,1,2)
-    ax1.plot(wavelengths, t_spec)
+    ax1.plot(wavelengths, t_spec, linewidth=linesstrength)
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Transmittance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
@@ -279,7 +287,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
     ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
     plt.ylim((0, 1))
     ax1 = fig.add_subplot(3,1,3)
-    ax1.plot(wavelengths, r_spec)
+    ax1.plot(wavelengths, r_spec, linewidth=linesstrength)
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Reflectance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
@@ -288,7 +296,8 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
     ax2.set_xticks(new_tick_locations)
     ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
     plt.ylim((0, 1))
-    plt.suptitle(plot_name+add_name+'\n'+params_2_print)
+    plt.suptitle(params_2_print,fontsize=title_font)
+    # plt.suptitle(plot_name+add_name+'\n'+params_2_print)
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
 
@@ -374,17 +383,17 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(3,1,1)
     ax1.plot(wavelengths, a_spec)
-    ax1.plot(sub_line01, v_line, 'k')
-    ax1.plot(sub_line11, v_line, 'k')
-    ax1.plot(sub_line20, v_line, 'k')
-    ax1.plot(sub_line21, v_line, 'k')
-    ax1.plot(sub_line22, v_line, 'k')
-    ax1.plot(sub_line30, v_line, 'k')
-    ax1.plot(sup_line01, v_line, 'r')
-    ax1.plot(sup_line11, v_line, 'r')
-    ax1.plot(sup_line20, v_line, 'r')
-    ax1.plot(sup_line21, v_line, 'r')
-    ax1.plot(sup_line22, v_line, 'r')
+    ax1.plot(sub_line01, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line11, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line20, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line21, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line22, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line30, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sup_line01, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line11, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line20, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line21, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line22, v_line, 'r', linewidth=linesstrength)
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Absorptance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
@@ -399,17 +408,17 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
     plt.ylim((0, 1))
     ax1 = fig.add_subplot(3,1,2)
     ax1.plot(wavelengths, t_spec)
-    ax1.plot(sub_line01, v_line, 'k')
-    ax1.plot(sub_line11, v_line, 'k')
-    ax1.plot(sub_line20, v_line, 'k')
-    ax1.plot(sub_line21, v_line, 'k')
-    ax1.plot(sub_line22, v_line, 'k')
-    ax1.plot(sub_line30, v_line, 'k')
-    ax1.plot(sup_line01, v_line, 'r')
-    ax1.plot(sup_line11, v_line, 'r')
-    ax1.plot(sup_line20, v_line, 'r')
-    ax1.plot(sup_line21, v_line, 'r')
-    ax1.plot(sup_line22, v_line, 'r')
+    ax1.plot(sub_line01, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line11, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line20, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line21, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line22, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line30, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sup_line01, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line11, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line20, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line21, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line22, v_line, 'r', linewidth=linesstrength)
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Transmittance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
@@ -420,17 +429,17 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
     plt.ylim((0, 1))
     ax1 = fig.add_subplot(3,1,3)
     ax1.plot(wavelengths, r_spec)
-    ax1.plot(sub_line01, v_line, 'k')
-    ax1.plot(sub_line11, v_line, 'k')
-    ax1.plot(sub_line20, v_line, 'k')
-    ax1.plot(sub_line21, v_line, 'k')
-    ax1.plot(sub_line22, v_line, 'k')
-    ax1.plot(sub_line30, v_line, 'k')
-    ax1.plot(sup_line01, v_line, 'r')
-    ax1.plot(sup_line11, v_line, 'r')
-    ax1.plot(sup_line20, v_line, 'r')
-    ax1.plot(sup_line21, v_line, 'r')
-    ax1.plot(sup_line22, v_line, 'r')
+    ax1.plot(sub_line01, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line11, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line20, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line21, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line22, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sub_line30, v_line, 'k', linewidth=linesstrength)
+    ax1.plot(sup_line01, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line11, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line20, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line21, v_line, 'r', linewidth=linesstrength)
+    ax1.plot(sup_line22, v_line, 'r', linewidth=linesstrength)
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Reflectance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
@@ -439,7 +448,8 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
     ax2.set_xticks(new_tick_locations)
     ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
     plt.ylim((0, 1))
-    plt.suptitle(plot_name+add_name+'\n'+params_2_print)
+    plt.suptitle(params_2_print,fontsize=title_font)
+    # plt.suptitle(plot_name+add_name+'\n'+params_2_print)
     plt.savefig('%(s)s_stack%(bon)s__%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
 
@@ -485,12 +495,12 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(3,1,2)
     extinciton = np.log10(1.0/np.array(t_spec))
-    ax1.plot(wavelengths, extinciton)
+    ax1.plot(wavelengths, extinciton, linewidth=linesstrength)
     plt.ylim((0, 4.5))
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Extinciton')
     plot_name = 'extinciton'
-    plt.suptitle(plot_name+add_name+'\n'+params_2_print)
+    plt.suptitle(plot_name+add_name+'\n'+params_2_print,fontsize=title_font)
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
 
@@ -513,7 +523,7 @@ def EOT_plot(stack_wl_list, wavelengths, params_2_print, num_pw_per_pol=0, add_n
 
     fig = plt.figure()#num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(2,1,1)
-    ax1.plot(wavelengths, T_00)
+    ax1.plot(wavelengths, T_00, linewidth=linesstrength)
     # ax1.set_xlabel('Wavelength (nm)')
     ax1.set_xlabel(r'$\lambda/a$')
     ax1.set_ylabel(r'T$_{00}$')
@@ -527,13 +537,13 @@ def EOT_plot(stack_wl_list, wavelengths, params_2_print, num_pw_per_pol=0, add_n
         R_00.append(np.real(r00*r00c))
 
     ax1 = fig.add_subplot(2,1,2)
-    ax1.plot(wavelengths, R_00)
+    ax1.plot(wavelengths, R_00, linewidth=linesstrength)
     # ax1.set_xlabel('Wavelength (nm)')
     ax1.set_xlabel(r'$\lambda/a$')
     ax1.set_ylabel(r'R$_{00}$')
     # plt.ylim((0.2, 1.0))
     plot_name = 'EOT'
-    plt.suptitle(params_2_print)
+    plt.suptitle(params_2_print,fontsize=title_font)
     plt.savefig('%(s)s_%(add)s'% {'s' : plot_name, 'add' : add_name})
 
 
@@ -572,13 +582,13 @@ def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
                     real_k_zs.append(np.real(k))
                     imag_k_zs.append(np.imag(k))
             wl = np.ones(len(real_k_zs))*wavelengths[i]
-            ax1.plot(wl,real_k_zs,'bo')
+            ax1.plot(wl,real_k_zs,'bo', linewidth=linesstrength)
             wl = np.ones(len(imag_k_zs))*wavelengths[i]
-            ax2.plot(wl,imag_k_zs,'ro')
+            ax2.plot(wl,imag_k_zs,'ro', linewidth=linesstrength)
             om = np.ones(len(real_k_zs))*normed_omegas[i]
-            ax3.plot(real_k_zs,om,'bo')
+            ax3.plot(real_k_zs,om,'bo', linewidth=linesstrength)
             om = np.ones(len(imag_k_zs))*normed_omegas[i]
-            ax4.plot(imag_k_zs, om,'ro')
+            ax4.plot(imag_k_zs, om,'ro', linewidth=linesstrength)
         ax1.set_ylabel(r'Real $k_zd$'), ax2.set_ylabel(r'Imaginary $k_zd$')
         ax3.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)'), ax4.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)')
         if l == 0: 
@@ -599,11 +609,11 @@ def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
         # Plot the (dispersive) light line in homogeneous layers.
         if isinstance(stack_wl_list[0].layers[l], mode_calcs.Anallo):
             ns = [stack_wl_list[i].layers[l].n() for i in range(len(wavelengths))]
-            ax3.plot(np.real(ns)*normed_omegas, normed_omegas,'k',linewidth=2)
-    fig1.suptitle(r'Real $k_z$'+params_2_print+'\n')
-    fig2.suptitle(r'Imaginary $k_z$'+params_2_print+'\n')
-    fig3.suptitle(r'Real $k_z$'+params_2_print+'\n')
-    fig4.suptitle(r'Imaginary $k_z$'+params_2_print+'\n')
+            ax3.plot(np.real(ns)*normed_omegas, normed_omegas,'k', linewidth=linesstrength)
+    fig1.suptitle(r'Real $k_z$'+params_2_print+'\n',fontsize=title_font)
+    fig2.suptitle(r'Imaginary $k_z$'+params_2_print+'\n',fontsize=title_font)
+    fig3.suptitle(r'Real $k_z$'+params_2_print+'\n',fontsize=title_font)
+    fig4.suptitle(r'Imaginary $k_z$'+params_2_print+'\n',fontsize=title_font)
     fig1.savefig('Disp_Diagram_Re_stack%(bon)s'% {'bon' : stack_label})
     fig2.savefig('Disp_Diagram_Im_stack%(bon)s'% {'bon' : stack_label})
     fig3.savefig('Disp_Diagram_w(k)_Re_stack%(bon)s'% {'bon' : stack_label})
@@ -627,14 +637,14 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_p
             for mode in which_modes:
                 E_conc_tmp = np.real(stack_wl_list[i].layers[which_layer].mode_pol[3,mode])
                 # E_conc.append(E_conc_tmp)
-                ax1.plot(wavelengths[i],E_conc_tmp,'bo')
+                ax1.plot(wavelengths[i],E_conc_tmp,'bo', linewidth=linesstrength)
         plt.xlim((wavelengths[0], wavelengths[-1]))
         ax1.set_xlabel('Wavelength (nm)')
         ax1.set_ylabel(r'$\epsilon |E_{cyl}| / \epsilon |E_{cell}|$')
-        # ax2.plot(wavelengths,E_conc,'k')
+        # ax2.plot(wavelengths,E_conc,'k', linewidth=linesstrength)
         # ax2.set_xlabel('Wavelength (nm)')
         # ax2.set_ylabel(r'$E_{cyl} / E_{cell}$')
-        fig1.suptitle('Energy Concentration = '+r'$E_{cyl} / E_{cell}$'+'\n'+params_2_print)
+        fig1.suptitle('Energy Concentration = '+r'$E_{cyl} / E_{cell}$'+'\n'+params_2_print,fontsize=title_font)
         fig1.savefig('Energy_Concentration_stack%(bon)s'% {'bon' : stack_label})
     else:
         print "\n ERROR: plotting.E_conc_plot; \n Can only calculate energy concentration in NanoStruct layers."
@@ -664,7 +674,7 @@ def vis_scat_mats(scat_mat,wl=0,extra_title=''):
     cbar = plt.colorbar(extend='neither')
     plt.xlabel('Incoming Orders')
     plt.ylabel('Outgoing Orders')
-    plt.suptitle('%s Scattering Matrix' % extra_title)
+    plt.suptitle('%s Scattering Matrix' % extra_title,fontsize=title_font)
     plt.savefig('Scat_mat-%(title)s_wl%(wl)i' % {'title' : extra_title, 'wl' : wl})
 #######################################################################################
 
@@ -679,7 +689,7 @@ def k_plot(t_func_k,nu_PW_pols):
     ax1 = fig.add_subplot(1,1,1)
     ks = range(nu_PW_pols)
     np.savetxt('%(s)s.txt'% {'s' : 't_func_k',}, t_func_k, fmt = '%18.12f')
-    ax1.plot(ks,t_func_k)
+    ax1.plot(ks,t_func_k, linewidth=linesstrength)
     ax1.set_xlabel('k vector')
     ax1.set_ylabel(r'$|E|_{trans}$')
     plt.savefig('t_func_k')

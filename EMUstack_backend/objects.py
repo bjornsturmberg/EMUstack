@@ -28,6 +28,16 @@ from mode_calcs import Simmo, Anallo
 
 data_location = '../EMUstack_backend//Data/'
 
+# Acknowledgements
+print '#################################################################\n' + \
+      'EMUstack is brought to you by Bjorn Sturmberg, Kokou Dossou, \n' + \
+      'Felix Lawrence, Lindsay Botton, with support from CUDOS and ARENA\n' + \
+      'Starting EMUstack calculation ...\n' + \
+      '#################################################################\n'
+
+
+
+
 class NanoStruct(object):
     """ Represents a structured layer.
 
