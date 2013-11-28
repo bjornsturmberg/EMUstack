@@ -1,5 +1,5 @@
 """
-    simmo_template-NW.py is a simulation script template for EMUstack.
+    simmo_template-many_in_one.py is a simulation script template for EMUstack.
 
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
@@ -22,14 +22,14 @@ Template python script file to execute a simulation. To start, open a terminal a
 directory to the directory containing this file (which must be in the same directory as 
 the EMUstack directory). Run this script file by executing the following in the command line
 
-$ python simo_template-NW.py
+$ python simo_template-many_in_one.py
 
 This will use num_cores worth of your CPUs, and by default return you in the command
 line, having printed results and saved plots to file as specified towards the end of 
 this file. If instead you wish to have direct access to the simulation results (for 
 further manipulation, debugging etc.) run this script with
 
-$ python -i simo_template-NW.py
+$ python -i simo_template-many_in_one.py
 
 which, after the calculations are complete, will return you into an interactive session 
 of python, in which all simulation objects are accessible. In this session you can access
