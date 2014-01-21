@@ -1,5 +1,5 @@
 """
-    simmo_NW_array.py is a simulation script template for EMUstack.
+    simmo_NW_array.py is a simulation example for EMUstack.
 
     Copyright (C) 2013  Bjorn Sturmberg
 
@@ -157,21 +157,6 @@ Efficiency = plotting.t_r_a_plots(stack1_wl_list, wavelengths, params_string,
     active_layer_nu=active_layer_nu, stack_label=stack_label) 
 # Dispersion
 plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stack_label) 
-
-
-
-######################## Single Wavelength Plotting ########################
-# Plot transmission as a function of k vector.
-# plotting.t_func_k_plot(stack3_wl_list)
-
-# # Visualise the Scattering Matrices
-# for i in range(len(wavelengths)):
-#     extra_title = 'R_net'
-#     plotting.vis_scat_mats(stack1_wl_list[i].R_net, i, extra_title)
-#     extra_title = 'R_12'
-#     plotting.vis_scat_mats(stack1_wl_list[i].layers[2].T21, i, extra_title)
-
-
 
 
 ######################## Wrapping up ########################
