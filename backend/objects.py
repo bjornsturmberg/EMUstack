@@ -91,8 +91,10 @@ class NanoStruct(object):
             .mail (eg. 600_60.mail), it must be located in backend/Data/
 
         - 'lc_bkg'        : Length constant of meshing of background medium.
-        - 'lc2'           : "  " on inclusion surfaces. (smaller = finer mesh)
-        - 'lc3-6'         : "  " from center of inclusions.
+            (smaller = finer mesh)
+        - 'lc2'           : factor by which lc_bkg should be reduced on inclusion 
+            surfaces; lc_surface = cl_bkg / lc2.
+        - 'lc3-6'         : "  " at center of inclusions.
 
         - `plot_modes'    : Plot modes (ie. FEM solutions) in gmsh format, 
             you get epsilon*|E|^2 & either real/imag/abs of 
