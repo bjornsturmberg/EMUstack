@@ -54,7 +54,7 @@ import datetime
 import numpy as np
 import sys
 from multiprocessing import Pool
-sys.path.append("../EMUstack_backend/")
+sys.path.append("../backend/")
 
 import objects
 import materials
@@ -66,9 +66,6 @@ start = time.time()
 
 # Number of CPUs to use im simulation
 num_cores = 5
-# # Alternatively specify the number of CPUs to leave free on machine
-# leave_cpus = 4 
-# num_cores = mp.cpu_count() - leave_cpus
 
 # Remove results of previous simulations
 plotting.clear_previous('.txt')
@@ -82,29 +79,24 @@ wl_2     = 1200
 no_wl_1  = 3
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-# max_order_PWs = 5
 light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
-# # Single wavelength run
-# wl_super = 1000
-# wavelengths = np.array([wl_super])
-# light_list  = [objects.Light(wl) for wl in wavelengths]
 
 
 # period must be consistent throughout simulation!!!
 period = 120
-num_BM = 90#163
+num_BM = 90
 
-cover  = objects.ThinFilm(period, height_nm = 'semi_inf',
+superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Material(3.5 + 0.0j), loss = True)
 
 homo_film  = objects.ThinFilm(period, height_nm = 5,
     material = materials.Material(3.6 + 0.27j), loss = True)
 
-bottom = objects.ThinFilm(period, height_nm = 'semi_inf',
+substrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 grating_diameter = 100
-grating_1 = objects.NanoStruct('1D_grating', period, grating_diameter, height_nm = 25, 
+grating = objects.NanoStruct('1D_array', period, grating_diameter, height_nm = 25, 
     inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True,
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.05, lc2= 4.0)
 
@@ -114,17 +106,17 @@ mirror = objects.ThinFilm(period, height_nm = 100,
 
 def simulate_stack(light):
     ################ Evaluate each layer individually ##############
-    sim_cover = cover.calc_modes(light)
-    sim_homo_film = homo_film.calc_modes(light)
-    sim_bot = bottom.calc_modes(light)
-    sim_grat1 = grating_1.calc_modes(light, num_BM = num_BM)
-    sim_mirror = mirror.calc_modes(light)
+    sim_superstrate = superstrate.calc_modes(light)
+    sim_homo_film   = homo_film.calc_modes(light)
+    sim_substrate   = substrate.calc_modes(light)
+    sim_grating     = grating.calc_modes(light, num_BM = num_BM)
+    sim_mirror      = mirror.calc_modes(light)
 
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
     solar_cell list MUST be ordered from bottom to top!
     """
-    stack = Stack((sim_bot, sim_mirror, sim_grat1, sim_homo_film, sim_cover))
+    stack = Stack((sim_substrate, sim_mirror, sim_grating, sim_homo_film, sim_superstrate))
     stack.calc_scat(pol = 'TE')
 
     return stack
@@ -134,8 +126,6 @@ def simulate_stack(light):
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
 stack_list = pool.map(simulate_stack, light_list)
-# # Run one at a time
-# stack_list = map(simulate_stack, light_list)
     
 
 ######################## Plotting ########################
@@ -216,3 +206,4 @@ python_log.close()
 
 print hms_string
 print '*******************************************'
+print ''

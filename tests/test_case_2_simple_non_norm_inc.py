@@ -1,13 +1,14 @@
 """
 Test simulation of a relatively simple structure;
 a dilute silicon nanowire array, at non-normal incidence.
+Uses .mail file from repository (to avoid meshing discrepancies).
 """
 
 import time
 import datetime
 import numpy as np
 import sys
-sys.path.append("../EMUstack_backend/")
+sys.path.append("../backend/")
 
 import objects
 import materials
@@ -18,26 +19,8 @@ from numpy.testing import assert_allclose as assert_ac
 from numpy.testing import assert_equal
 
 def setup_module(module):
-    ################ Simulation parameters ################
-
-
-    # Number of CPUs to use im simulation
-    num_cores = 1
-    # # Alternatively specify the number of CPUs to leave free on machine
-    # leave_cpus = 4 
-    # num_cores = mp.cpu_count() - leave_cpus
-
-    # Remove results of previous simulations
-    plotting.clear_previous('.txt')
-    plotting.clear_previous('.pdf')
-    # plotting.clear_previous('.log')
-
     ################ Light parameters #####################
-
-    # # Set up light objects
-    # wavelengths = [310, 410, 531.2007, 707.495,  881.786, 987.9632]
-    # light_list  = [objects.Light(wl) for wl in wavelengths]
-    # Single wavelength run
+    # Set up light objects
     wl_super =  500.0
     wavelengths = np.array([wl_super])
     light_list  = [objects.Light(wl, theta = 20, phi = 40, max_order_PWs = 1) for wl in wavelengths]
@@ -53,22 +36,20 @@ def setup_module(module):
     # period must be consistent throughout simulation!!!
     period  = 600
 
-    cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
-        material = materials.Air, loss = False)
-    sim_cover = cover.calc_modes(light)
-
     NW_diameter = 120
     num_BM = 20
-    grating_1 = objects.NanoStruct('NW_array', period, NW_diameter, height_nm = 2330,
+    NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
         inclusion_a = materials.Si_c, background = materials.Air,
-        loss = True, make_mesh_now = True, force_mesh = True,
-        lc_bkg = 0.07, lc2= 1.5, lc3= 2.0)
-    sim_grat1 = grating_1.calc_modes(light, num_BM = num_BM)
+        loss = True, make_mesh_now = False, mesh_file='600_120.mail')
+    sim_NW_array = NW_array.calc_modes(light, num_BM = num_BM)
 
-    # will only ever use top scattering matrices for the bottom layer
-    bottom = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+    superstrate  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+        material = materials.Air, loss = False)
+    sim_superstrate = superstrate.calc_modes(light)
+
+    substrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
         material = materials.SiO2_a, loss = False)
-    sim_bot = bottom.calc_modes(light)
+    sim_substrate = substrate.calc_modes(light)
 
 
 
@@ -76,16 +57,15 @@ def setup_module(module):
     """ Now when defining full structure order is critical and
     solar_cell list MUST be ordered from bottom to top!
     """
-    stack = Stack((sim_bot, sim_grat1, sim_cover))
+    stack = Stack((sim_substrate, sim_NW_array, sim_superstrate))
     stack.calc_scat()
     module.stack_list = [stack]
 
     last_light_object = light_list.pop()
-    param_layer = grating_1 # Specify the layer for which the parameters should be printed on figures.
+    param_layer = NW_array # Specify the layer for which the parameters should be printed on figures.
     params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
     active_layer_nu = 1
-    Efficiency = plotting.t_r_a_plots(stack_list, wavelengths, params_string, 
-        active_layer_nu=active_layer_nu)
+    plotting.t_r_a_write_files(stack_list, wavelengths)
 
 
     # # SAVE DATA AS REFERENCE

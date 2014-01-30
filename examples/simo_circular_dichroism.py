@@ -27,7 +27,7 @@ import datetime
 import numpy as np
 import sys
 from multiprocessing import Pool
-sys.path.append("../EMUstack_backend/")
+sys.path.append("../backend/")
 
 import objects
 import materials
@@ -39,9 +39,6 @@ start = time.time()
 
 # Number of CPUs to use im simulation
 num_cores = 15
-# # Alternatively specify the number of CPUs to leave free on machine
-# leave_cpus = 4 
-# num_cores = mp.cpu_count() - leave_cpus
 
 # Remove results of previous simulations
 plotting.clear_previous('.txt')
@@ -56,10 +53,7 @@ no_wl_1  = 21
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 light_list  = [objects.Light(wl,theta = 45, phi = 45, max_order_PWs = 2) for wl in wavelengths]
-# Single wavelength run
-# wl_super = 550
-# wavelengths = np.array([wl_super])
-# light_list  = [objects.Light(wl, max_order_PWs = 0) for wl in wavelengths]
+
 
 
 #period must be consistent throughout simulation!!!
@@ -68,13 +62,13 @@ diam1  = 140
 diam2  = 60
 ellipticity = (float(diam1-diam2))/float(diam1)
 
-Au_NHs = objects.NanoStruct('NW_array', period, diam1,ellipticity = ellipticity,height_nm = 60, 
+Au_NHs = objects.NanoStruct('2D_array', period, diam1,ellipticity = ellipticity,height_nm = 60, 
     inclusion_a = materials.Air, background = materials.Au_drude, loss = True,    
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 5.0)
 
-cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+superstrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = True)
-sub = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+substrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 num_BM = 50
@@ -84,18 +78,18 @@ def simulate_stack(light):
     NH_heights = [60]#np.linspace(10,100,num_h)
 
     ################ Evaluate each layer individually ##############
-    sim_cover = cover.calc_modes(light)
+    sim_superstrate = superstrate.calc_modes(light)
     sim_Au   = Au_NHs.calc_modes(light, num_BM = num_BM)
-    sim_sub = sub.calc_modes(light)
+    sim_substrate = substrate.calc_modes(light)
 
 # Loop over heights
     height_list = []
     # for h in NH_heights:
-    stackSub = Stack((sim_sub, sim_Au, sim_cover))#, heights_nm = ([h]))
+    stackSub = Stack((sim_substrate, sim_Au, sim_superstrate))#, heights_nm = ([h]))
     stackSub.calc_scat(pol = 'R Circ')
-    stackSub2 = Stack((sim_sub, sim_Au, sim_cover))#, heights_nm = ([h]))
+    stackSub2 = Stack((sim_substrate, sim_Au, sim_superstrate))#, heights_nm = ([h]))
     stackSub2.calc_scat(pol = 'L Circ')
-    saveStack = Stack((sim_sub, sim_Au, sim_cover))#, heights_nm = ([h]))
+    saveStack = Stack((sim_substrate, sim_Au, sim_superstrate))#, heights_nm = ([h]))
     
     a_CD = []
     t_CD = []
@@ -159,3 +153,4 @@ python_log.close()
 print '*******************************************'
 print hms_string
 print '*******************************************'
+print ''

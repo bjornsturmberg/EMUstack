@@ -52,7 +52,7 @@ import datetime
 import numpy as np
 import sys
 from multiprocessing import Pool
-sys.path.append("../EMUstack_backend/")
+sys.path.append("../backend/")
 
 import objects
 import materials
@@ -64,9 +64,6 @@ start = time.time()
 
 # Number of CPUs to use im simulation
 num_cores = 7
-# # Alternatively specify the number of CPUs to leave free on machine
-# leave_cpus = 4 
-# num_cores = mp.cpu_count() - leave_cpus
 
 # Remove results of previous simulations
 plotting.clear_previous('.txt')
@@ -81,24 +78,20 @@ no_wl_1  = 3
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
-# Single wavelength run
-# wl_super = 450
-# wavelengths = np.array([wl_super])
-# light_list  = [objects.Light(wl) for wl in wavelengths]
 
 
 # period must be consistent throughout simulation!!!
 period = 600
 max_num_BMs = 200
 
-cover  = objects.ThinFilm(period, height_nm = 'semi_inf',
+superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
-bottom1  = objects.ThinFilm(period, height_nm = 'semi_inf',
+substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.SiO2_a, loss = False)
 
 NW_diameter = 120
-NWs = objects.NanoStruct('NW_array', period, NW_diameter, height_nm = 2330, 
+NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
     inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)
 
@@ -110,19 +103,19 @@ def simulate_stack(light):
     # num_BM = max_num_BMs
     
     ################ Evaluate each layer individually ##############
-    sim_cover = cover.calc_modes(light)
-    sim_bot1  = bottom1.calc_modes(light)
-    sim_NWs   = NWs.calc_modes(light, num_BM = num_BM)
+    sim_superstrate = superstrate.calc_modes(light)
+    sim_substrate   = substrate.calc_modes(light)
+    sim_NWs         = NW_array.calc_modes(light, num_BM = num_BM)
 
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
     solar_cell list MUST be ordered from bottom to top!
     """
 
-    stack1 = Stack((sim_bot1, sim_NWs, sim_cover))
-    stack1.calc_scat(pol = 'TE')
+    stack = Stack((sim_substrate sim_NWs, sim_superstrate))
+    stack.calc_scat(pol = 'TE')
 
-    return [stack1] 
+    return [stack] 
 
 
 # Run in parallel across wavelengths.
@@ -143,20 +136,20 @@ last_light_object = light_list.pop()
 
 
 
-param_layer = NWs # Specify the layer for which the parameters should be printed on figures.
+param_layer = NW_array # Specify the layer for which the parameters should be printed on figures.
 params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=max_num_BMs)
 
 #### Example 1: simple multilayered stack.
 stack_label = 0 # Specify which stack you are dealing with.
-stack1_wl_list = []
+stack_wl_list = []
 for i in range(len(wavelengths)):
-    stack1_wl_list.append(stacks_wl_list[i][stack_label])
+    stack_wl_list.append(stacks_wl_list[i][stack_label])
 active_layer_nu = 1
 
-Efficiency = plotting.t_r_a_plots(stack1_wl_list, wavelengths, params_string, 
+Efficiency = plotting.t_r_a_plots(stack_wl_list, wavelengths, params_string, 
     active_layer_nu=active_layer_nu, stack_label=stack_label) 
 # Dispersion
-plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stack_label) 
+plotting.omega_plot(stack_wl_list, wavelengths, params_string, stack_label=stack_label) 
 
 
 ######################## Wrapping up ########################
@@ -178,3 +171,4 @@ python_log.close()
 
 print hms_string
 print '*******************************************'
+print ''

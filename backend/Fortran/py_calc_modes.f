@@ -501,16 +501,19 @@ C
       write(ui,*) 
       write(ui,*) "--------------------------------------------",
      *     "-------"
-      write(ui,*) "MAIN: Wavelength ", lambda
+      write(ui,*) " Wavelength : ", lambda, " (d)"
+      write(ui,*) "--------------------------------------------",
+     *     "-------"
+      write(ui,*) 
 C
       freq = 1.0d0/lambda
       k_0 = 2.0d0*pi*freq
 C
 C  Index number of the core materials (material with highest Re(eps_eff))
-      if(dble(eps_eff(2)) .gt. dble(eps_eff(3))) then
-          n_core(1) = 2
+      if(dble(eps_eff(1)) .gt. dble(eps_eff(2))) then
+          n_core(1) = 1
       else
-          n_core(1) = 3
+          n_core(1) = 2
       endif
       n_core(2) = n_core(1)
 C Parameter for shift-and-invert method

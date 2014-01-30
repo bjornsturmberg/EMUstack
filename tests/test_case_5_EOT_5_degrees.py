@@ -9,7 +9,7 @@ import datetime
 import numpy as np
 import sys
 # from multiprocessing import Pool
-sys.path.append("../EMUstack_backend/")
+sys.path.append("../backend/")
 
 import objects
 import materials
@@ -20,18 +20,8 @@ from numpy.testing import assert_allclose as assert_ac
 from numpy.testing import assert_equal
 import testing
 
-    ################ Simulation parameters ################
-
-
-# Number of CPUs to use im simulation
-# num_cores = 1
 
 def setup_module(module):  
-    # Remove results of previous simulations
-    # plotting.clear_previous('.txt')
-    # plotting.clear_previous('.pdf')
-    # plotting.clear_previous('.log')
-
     ################ Light parameters #####################
     wl_1     = 1.11*940
     wl_2     = 1.15*940
@@ -44,24 +34,24 @@ def setup_module(module):
 
     #period must be consistent throughout simulation!!!
     period = 940
-    diam1 = 266
-    NHs = objects.NanoStruct('NW_array', period, diam1, height_nm = 200, 
+    diameter = 266
+    NHs = objects.NanoStruct('2D_array', period, diameter, height_nm = 200, 
         inclusion_a = materials.Air, background = materials.Au, loss = True,
-        square = True,    
-        make_mesh_now = True, force_mesh = True, lc_bkg = 0.05, lc2= 5.0, lc3= 3.0)#lc_bkg = 0.08, lc2= 5.0)
+        square = True, make_mesh_now = False, mesh_file='940_266_sq.mail')
 
-    cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+    superstrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
         material = materials.Air, loss = False)
-    sub = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+
+    substrate   = objects.ThinFilm(period = period, height_nm = 'semi_inf',
         material = materials.Air, loss = False)
 
     num_BM = 100
     ################ Evaluate each layer individually ##############
-    sim_NHs = NHs.calc_modes(light, num_BM = num_BM)
-    sim_cover  = cover.calc_modes(light)
-    sim_sub    = sub.calc_modes(light)
+    sim_NHs         = NHs.calc_modes(light, num_BM = num_BM)
+    sim_superstrate = superstrate.calc_modes(light)
+    sim_substrate   = substrate.calc_modes(light)
 
-    stack = Stack((sim_sub, sim_NHs, sim_cover))
+    stack = Stack((sim_substrate, sim_NHs, sim_superstrate))
     stack.calc_scat(pol = 'TM')
     module.stack_list = [stack]
 
@@ -78,7 +68,7 @@ def setup_module(module):
 
 def test_stack_list_matches_saved(casefile_name = 'case_5'):
     rtol = 1e-4
-    atol = 1e-4
+    atol = 1e-3
     ref = np.load("ref/%s.npz" % casefile_name)
     yield assert_equal, len(stack_list), len(ref['stack_list'])
     for stack, rstack in zip(stack_list, ref['stack_list']):
@@ -94,3 +84,7 @@ def test_stack_list_matches_saved(casefile_name = 'case_5'):
             #TODO: yield assert_ac, lay.sol1, rlay['sol1']
         yield assert_ac, stack.R_net, rstack['R_net'], rtol, atol, lbl_s + 'R_net'
         yield assert_ac, stack.T_net, rstack['T_net'], rtol, atol, lbl_s + 'T_net'
+
+
+plotting.clear_previous('.txt')
+plotting.clear_previous('.pdf')

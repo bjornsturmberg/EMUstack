@@ -10,7 +10,7 @@ import datetime
 import numpy as np
 import sys
 from multiprocessing import Pool
-sys.path.append("../EMUstack_backend/")
+sys.path.append("../backend/")
 
 import objects
 import materials
@@ -20,19 +20,6 @@ import testing
 from numpy.testing import assert_allclose as assert_ac
 from numpy.testing import assert_equal
 
-start = time.time()
-################ Simulation parameters ################
-
-# Number of CPUs to use im simulation
-num_cores = 3
-# # Alternatively specify the number of CPUs to leave free on machine
-# leave_cpus = 4 
-# num_cores = mp.cpu_count() - leave_cpus
-
-# Remove results of previous simulations
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-# plotting.clear_previous('.log')
 
 ################ Light parameters #####################
 
@@ -42,11 +29,6 @@ wl_2     = 1000
 no_wl_1  = 3
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 light_list  = [objects.Light(wl, max_order_PWs = 1) for wl in wavelengths]
-# Single wavelength run
-# wl_super =  500.0
-# wavelengths = np.array([wl_super])
-# light_list  = [objects.Light(wl, max_order_PWs = 1) for wl in wavelengths]
-# light = light_list[0]
 
 
 ################ Scattering matrices (for distinct layers) ##############
@@ -58,7 +40,7 @@ structure which is defined later
 # period must be consistent throughout simulation!!!
 period = 1
 
-cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+superstrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Material(3.5 + 0.0j), loss = False)
 
 homo_film1  = objects.ThinFilm(period = period, height_nm = 50,
@@ -67,39 +49,37 @@ homo_film1  = objects.ThinFilm(period = period, height_nm = 50,
 homo_film2  = objects.ThinFilm(period = period, height_nm = 200,
     material = materials.Si_c, loss = True)
 
-mirror = objects.ThinFilm(period = period, height_nm = 100,
+mirror      = objects.ThinFilm(period = period, height_nm = 100,
     material = materials.Ag, loss = True)
 
-bottom = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+substrate   = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
-
 
 stack_list = []
 
 def simulate_stack(light):
     
     ################ Evaluate each layer individually ##############
-    sim_cover = cover.calc_modes(light)
-    sim_homo_film1 = homo_film1.calc_modes(light)
-    sim_homo_film2 = homo_film2.calc_modes(light)
-    sim_mirror = mirror.calc_modes(light)
-    sim_bot = bottom.calc_modes(light)
+    sim_superstrate = superstrate.calc_modes(light)
+    sim_homo_film1  = homo_film1.calc_modes(light)
+    sim_homo_film2  = homo_film2.calc_modes(light)
+    sim_mirror      = mirror.calc_modes(light)
+    sim_substrate   = substrate.calc_modes(light)
 
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
     solar_cell list MUST be ordered from bottom to top!
     """
-    stack = Stack((sim_bot,sim_mirror,sim_homo_film1,sim_homo_film2,sim_homo_film1,sim_homo_film2, sim_cover))
+    stack = Stack((sim_substrate,sim_mirror,sim_homo_film1,sim_homo_film2,
+        sim_homo_film1,sim_homo_film2, sim_superstrate))
     stack.calc_scat(pol = 'TM')
 
     return stack
 
 def setup_module(module):
-    start = time.time()
-
     # Run in parallel across wavelengths.
     # This has to be in a setup_module otherwise nosetests will crash :(
-    pool = Pool(2)
+    pool = Pool(3)
     module.stack_list = pool.map(simulate_stack, light_list)
     # # Run one at a time
     # module.stack_list = map(simulate_stack, light_list)

@@ -26,10 +26,10 @@ import random
 import materials
 from mode_calcs import Simmo, Anallo
 
-data_location = '../EMUstack_backend//Data/'
+data_location = '../backend/Data/'
 
 # Acknowledgements
-print '#################################################################\n' + \
+print '\n#################################################################\n' + \
       'EMUstack is brought to you by Bjorn Sturmberg, Kokou Dossou, \n' + \
       'Felix Lawrence, Lindsay Botton, with support from CUDOS and ARENA\n' + \
       'Starting EMUstack calculation ...\n' + \
@@ -43,7 +43,7 @@ class NanoStruct(object):
 
         INPUTS:
 
-        - 'geometry'      : Either 1D or 2D structure; '1D_grating', 'NW_array'.
+        - 'geometry'      : Either 1D or 2D structure; '1D_array', '2D_array'.
 
         - 'period'        : The diameter the unit cell in nanometers.
 
@@ -65,7 +65,7 @@ class NanoStruct(object):
         - 'ellipticity'   : If != 0, inclusion has given ellipticity, with b=diameter,
            a=diameter-ellipticity*diameter. NOTE: only implemented for 1 inclusion.
 
-        - 'square'        : If True, 'NW_array' has square NWs (ie. 2D grating).
+        - 'square'        : If True, '2D_array' has square NWs (ie. 2D grating).
 
         - 'ff'            : The fill fraction of the inclusions. If non-zero, 
             the specified diameters are overritten s.t. given ff is achieved,
@@ -88,7 +88,7 @@ class NanoStruct(object):
             period etc. but different lc refinement.
 
         - 'mesh_file'     : If using a set premade mesh give its name including 
-            .mail (eg. 600_60.mail), it must be located in EMUstack_backend/Data/
+            .mail (eg. 600_60.mail), it must be located in backend/Data/
 
         - 'lc_bkg'        : Length constant of meshing of background medium.
         - 'lc2'           : "  " on inclusion surfaces. (smaller = finer mesh)
@@ -152,12 +152,12 @@ class NanoStruct(object):
         else:
             self.square_int = 0
         if ff == 0:
-            if geometry == 'NW_array':
+            if geometry == '2D_array':
                 self.ff = calculate_ff(square,period,diameter1,diameter2,
                     diameter3,diameter4,diameter5,diameter6,diameter7,diameter8,diameter9,
                     diameter10,diameter11,diameter12,diameter13,diameter14,diameter15,
                     diameter16,ellipticity)
-            elif geometry == '1D_grating':
+            elif geometry == '1D_array':
                 self.ff        = (diameter1 + diameter2)/period
         else:
             self.ff = ff
@@ -188,7 +188,7 @@ class NanoStruct(object):
         self.plot_abs      = plot_abs 
 
     def make_mesh(self):
-        if self.geometry == 'NW_array':
+        if self.geometry == '2D_array':
             if self.diameter10 > 0:
                 supercell = 16
                 msh_name  =  '%(d)s_%(diameter)s_%(diameters)s_%(diameterss)s_%(diametersss)s_%(adiussss)s' % {
@@ -342,7 +342,7 @@ class NanoStruct(object):
                 # os.system(gmsh_cmd)
 
 
-        elif self.geometry == '1D_grating':
+        elif self.geometry == '1D_array':
             if self.diameter2 > 0:
                 supercell = 2
                 msh_name  =  '1D_%(d)s_%(diameter)s_%(diameters)s' % {
@@ -393,7 +393,7 @@ class NanoStruct(object):
                 # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
                 # os.system(gmsh_cmd)
         else:
-            raise ValueError, "Must be simulating either a '1D_grating' or a 'NW_array'."
+            raise ValueError, "Must be simulating either a '1D_array' or a '2D_array'."
 
     def calc_modes(self, light, **args):
         """ Run a simulation to find the structure's modes.

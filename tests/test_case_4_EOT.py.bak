@@ -9,7 +9,7 @@ import datetime
 import numpy as np
 import sys
 # from multiprocessing import Pool
-sys.path.append("../EMUstack_backend/")
+sys.path.append("../backend/")
 
 import objects
 import materials
@@ -45,7 +45,7 @@ def setup_module(module):
     #period must be consistent throughout simulation!!!
     period = 940
     diam1 = 266
-    NHs = objects.NanoStruct('NW_array', period, diam1, height_nm = 200, 
+    NHs = objects.NanoStruct('2D_array', period, diam1, height_nm = 200, 
         inclusion_a = materials.Air, background = materials.Au, loss = True,
         square = True,    
         make_mesh_now = True, force_mesh = True, lc_bkg = 0.05, lc2= 5.0, lc3= 3.0)#lc_bkg = 0.08, lc2= 5.0)

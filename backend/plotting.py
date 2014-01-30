@@ -61,7 +61,7 @@ def gen_params_string(param_layer, light, max_num_BMs=0):
         params_2_print += 'd = %(period)d, a1 = %(diameter)d, '% {
         'period'        : param_layer.period, 'diameter' : param_layer.diameter1,}
         if param_layer.diameter2 != 0: params_2_print += 'a2 = %(rad)d '% {'rad' : param_layer.diameter2,}
-        if param_layer.geometry == 'NW_array':
+        if param_layer.geometry == '2D_array':
             if param_layer.diameter3  != 0: params_2_print += 'a3 = %(rad)d '%    {'rad' : param_layer.diameter3,}
             if param_layer.diameter4  != 0: params_2_print += 'a4 = %(rad)d '%    {'rad' : param_layer.diameter4,}
             if param_layer.diameter5  != 0: params_2_print += '\na5 = %(rad)d '%  {'rad' : param_layer.diameter5,}
@@ -78,7 +78,7 @@ def gen_params_string(param_layer, light, max_num_BMs=0):
             if param_layer.diameter16 != 0: params_2_print += 'a16 = %(rad)d \n'% {'rad' : param_layer.diameter16,}
             if param_layer.square == True: params_2_print += '\nSquare NWs '
             if param_layer.ellipticity == True: params_2_print += '\nEllipticity = %(rad)5.3f '% {'rad' : param_layer.ellipticity,}
-        elif param_layer.geometry == '1D_grating':
+        elif param_layer.geometry == '1D_array':
             params_2_print += ''
         params_2_print += 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d, '% {
         'max_num_BMs'   : max_num_BMs,'max_order_PWs' : light.max_order_PWs, }
@@ -169,7 +169,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
     """
     # TODO make E_g a property of material, not just longest wl included.
 
-    Irrad_spec_file = '../EMUstack_backend/Data/ASTMG173'
+    Irrad_spec_file = '../backend/Data/ASTMG173'
     #  Total solar irradiance - integral of I(lambda) from 310nm-4000nm
     #  intergral done in Mathematica (OtherCode/Silicon_ASTM/ASTMG173.nb)
     tot_irradiance = 900.084
@@ -351,6 +351,7 @@ def t_r_a_plots_subs(stack_wl_list, wavelengths, params_2_print, period, sub_n, 
     total_tra_plot_subs(plot_name, a_weighted, t_weighted, r_weighted, wavelengths, params_2_print,
       stack_label, add_name, period, sub_n)
     return Efficiency
+
 def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label, add_name, period, sub_n):
     """ The plotting function for total t,r,a spectra on one plot. """
 
@@ -455,7 +456,7 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
 
 
 def t_r_a_NO_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, stack_label=1, add_name=''):
-    """ Plot t,r,a for each layer & total, then save each to text files. """
+    """ Calculate efficiency but do not save or plot spectra. """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
     params_2_print += '\n'r'$h_t,...,h_b$ = '
@@ -463,7 +464,53 @@ def t_r_a_NO_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0
 
     stack_label = zeros_int_str(stack_label)
 
-    # wavelengths = np.array([s.layers[0].light.wl_nm for s in stack_wl_list]) #look at first layer to find wls.
+    a_list = []
+    for stack in stack_wl_list:
+        a_list.extend(stack.a_list)
+
+    layers_steps = len(stack_wl_list[0].layers) - 1
+    active_abs = []
+    for i in range(len(wavelengths)): 
+        active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
+    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name)
+    return Efficiency
+
+
+def layers_print(spectra_name, spec_list, wavelengths, total_h, stack_label=1, add_name=''):
+    """ The plotting function for one type of spectrum across all layers. """
+
+    nu_layers = len(spec_list)/len(wavelengths)
+    h_array = np.ones(len(wavelengths))*total_h
+    for i in range(nu_layers):
+        layer_spec = []
+        for wl in range(len(wavelengths)):
+            layer_spec = np.append(layer_spec,spec_list[wl*nu_layers + i])
+        if spectra_name == 'Lay_Absorb':
+            lay_spec_name = 'Lay_Absorb'
+            if i == nu_layers-1: 
+                lay_spec_name = 'Absorptance'
+        elif spectra_name == 'Lay_Trans':
+            lay_spec_name = 'Lay_Trans'
+            if i == nu_layers-1: 
+                lay_spec_name = 'Transmittance'
+        elif spectra_name == 'Lay_Reflec':
+            lay_spec_name = 'Lay_Reflec'
+            if i == nu_layers-1: 
+                lay_spec_name = 'Reflectance'
+        av_array = zip(wavelengths, layer_spec, h_array)
+
+        if i != nu_layers-1: 
+            np.savetxt('%(s)s_%(i)i_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 'i' : i, 
+                'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
+        else:
+            np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
+                'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
+
+
+def t_r_a_write_files(stack_wl_list, wavelengths, stack_label=1, add_name=''):
+    """ Save t,r,a for each layer & total in text files. """
+    stack_label = zeros_int_str(stack_label)
+
     a_list = []
     t_list = []
     r_list = []
@@ -473,19 +520,18 @@ def t_r_a_NO_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0
         r_list.extend(stack.r_list)
 
     layers_steps = len(stack_wl_list[0].layers) - 1
-    active_abs = []
     a_tot      = []
     t_tot      = []
     r_tot      = []
     for i in range(len(wavelengths)): 
-        active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
-    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name)
-    return Efficiency
 
-
+    total_h = sum(stack_wl_list[0].heights_nm()) #look at first wl result to find h.
+    layers_print('Lay_Absorb', a_list, wavelengths, total_h, stack_label)
+    layers_print('Lay_Trans',  t_list, wavelengths, total_h, stack_label)
+    layers_print('Lay_Reflec', r_list, wavelengths, total_h, stack_label)
 
 
 
@@ -694,11 +740,16 @@ def k_plot(t_func_k,nu_PW_pols):
     ax1.set_ylabel(r'$|E|_{trans}$')
     plt.savefig('t_func_k')
 
-def t_func_k_plot(stack_list):
+def t_func_k_plot(stack_list, light_object, n_H):
     for stack in stack_list:
         # print stack.T_net[0,:]
-        nu_PW_pols = 2*stack.layers[0].structure.num_pw_per_pol
-        trans_k = np.abs(stack.trans_vector)
+        nu_PW_pols = stack.layers[0].structure.num_pw_per_pol
+        print nu_PW_pols
+        k0 = 2*np.pi/light_object.wl_nm
+        print k0
+        # k_array = [(light_object.k_pll + 2*np.pi*m/stack.period) for m in np.linspace(-nu_PW_pols/2,nu_PW_pols/2,nu_PW_pols)]
+
+        trans_k = np.abs(stack.trans_vector[0:nu_PW_pols]) # ASSUMES TE polarisation
         trans_k_array = np.array(trans_k).reshape(-1,)
         tot_trans_k_array = trans_k_array#**2
         # print repr(trans_k)

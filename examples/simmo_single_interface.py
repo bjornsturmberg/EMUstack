@@ -26,7 +26,7 @@ import datetime
 import numpy as np
 import sys
 from multiprocessing import Pool
-sys.path.append("../EMUstack_backend/")
+sys.path.append("../backend/")
 
 import objects
 import materials
@@ -38,9 +38,6 @@ start = time.time()
 
 # Number of CPUs to use im simulation
 num_cores = 7
-# # Alternatively specify the number of CPUs to leave free on machine
-# leave_cpus = 4 
-# num_cores = mp.cpu_count() - leave_cpus
 
 # Remove results of previous simulations
 plotting.clear_previous('.txt')
@@ -55,30 +52,26 @@ no_wl_1  = 3
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
-# Single wavelength run
-# wl_super = 450
-# wavelengths = np.array([wl_super])
-# light_list  = [objects.Light(wl) for wl in wavelengths]
 
 
 # period must be consistent throughout simulation!!!
 period = 600
 
-cover  = objects.ThinFilm(period, height_nm = 'semi_inf',
+superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = True)
-bottom1  = objects.ThinFilm(period, height_nm = 'semi_inf',
+substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Si_c, loss = False)
 
 def simulate_stack(light):    
     ################ Evaluate each layer individually ##############
-    sim_cover = cover.calc_modes(light)
-    sim_bot1  = bottom1.calc_modes(light)
+    sim_superstrate = superstrate.calc_modes(light)
+    sim_substrate   = substrate.calc_modes(light)
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
     solar_cell list MUST be ordered from bottom to top!
     """
 
-    stack0 = Stack((sim_bot1, sim_cover))
+    stack0 = Stack((sim_substrate, sim_superstrate))
     stack0.calc_scat(pol = 'TE')
 
     return [stack0]
@@ -87,9 +80,6 @@ def simulate_stack(light):
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
 stacks_wl_list = pool.map(simulate_stack, light_list)
-# Run one at a time
-# stacks_wl_list = map(simulate_stack, light_list)
-
 
 
 # Pull apart simultaneously simulated stakes into single stack, all wls arrays.
@@ -101,15 +91,14 @@ np.array(stacks_wl_list)
 last_light_object = light_list.pop()
 
 
-#### Example 0: simple interface.
-param_layer = bottom1 # Specify the layer for which the parameters should be printed on figures.
+param_layer = substrate # Specify the layer for which the parameters should be printed on figures.
 params_string = plotting.gen_params_string(param_layer, last_light_object)
 stack_label = 0 # Specify which stack you are dealing with.
-stack0_wl_list = []
+stack_wl_list = []
 for i in range(len(wavelengths)):
-    stack0_wl_list.append(stacks_wl_list[i][stack_label])
+    stack_wl_list.append(stacks_wl_list[i][stack_label])
 # Plot total transmission, reflection, absorption & that of each layer.
-Efficiency = plotting.t_r_a_plots(stack0_wl_list, wavelengths, params_string, 
+Efficiency = plotting.t_r_a_plots(stack_wl_list, wavelengths, params_string, 
     stack_label=stack_label) 
 
 
@@ -133,3 +122,4 @@ python_log.close()
 
 print hms_string
 print '*******************************************'
+print ''

@@ -28,7 +28,7 @@ import datetime
 import numpy as np
 import sys
 from multiprocessing import Pool
-sys.path.append("../EMUstack_backend/")
+sys.path.append("../backend/")
 
 import objects
 import materials
@@ -40,9 +40,6 @@ start = time.time()
 
 # Number of CPUs to use im simulation
 num_cores = 7
-# # Alternatively specify the number of CPUs to leave free on machine
-# leave_cpus = 4 
-# num_cores = mp.cpu_count() - leave_cpus
 
 # Remove results of previous simulations
 plotting.clear_previous('.txt')
@@ -67,20 +64,20 @@ light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
 period = 600
 max_num_BMs = 200
 
-cover  = objects.ThinFilm(period, height_nm = 'semi_inf',
+superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = True)
 
-bottom1  = objects.ThinFilm(period, height_nm = 'semi_inf',
+substrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Si_c, loss = False)
-TH2  = objects.ThinFilm(period, height_nm = 100,
+
+ThinFilm2  = objects.ThinFilm(period, height_nm = 100,
     material = materials.SiO2_a, loss = True)
-TF4  = objects.ThinFilm(period, height_nm = 200,
+
+ThinFilm4  = objects.ThinFilm(period, height_nm = 200,
     material = materials.Si_c, loss = True)
-bottom3  = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.TiO2, loss = False)
 
 NW_diameter = 120
-NWs = objects.NanoStruct('NW_array', period, NW_diameter, height_nm = 2330, 
+NWs = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
     inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)
 
@@ -92,26 +89,25 @@ def simulate_stack(light):
     # num_BM = max_num_BMs
     
     ################ Evaluate each layer individually ##############
-    sim_cover = cover.calc_modes(light)
-    sim_bot1  = bottom1.calc_modes(light)
-    sim_TH2   = TH2.calc_modes(light)
-    sim_bot3  = bottom3.calc_modes(light)
-    sim_TF4   = TF4.calc_modes(light)
-    sim_NWs   = NWs.calc_modes(light, num_BM = num_BM)
+    sim_superstrate = superstrate.calc_modes(light)
+    sim_substrate   = substrate.calc_modes(light)
+    sim_ThinFilm2   = ThinFilm2.calc_modes(light)+
+    sim_ThinFilm4   = ThinFilm4.calc_modes(light)
+    sim_NWs         = NWs.calc_modes(light, num_BM = num_BM)
 
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
     solar_cell list MUST be ordered from bottom to top!
     """
 
-    stack0 = Stack((sim_bot1, sim_cover))
-    stack1 = Stack((sim_bot1, sim_NWs, sim_cover))
-    # stack1 = Stack((sim_bot1, sim_TH2, sim_NWs, sim_cover))
-    # stack1 = Stack((sim_bot1, sim_TH2, sim_TF4, sim_cover))
+    stack0 = Stack((sim_substrate, sim_superstrate))
+    stack1 = Stack((sim_substrate, sim_NWs, sim_superstrate))
+    # stack1 = Stack((sim_substrate, sim_ThinFilm2, sim_NWs, sim_superstrate))
+    # stack1 = Stack((sim_substrate, sim_ThinFilm2, sim_ThinFilm4 sim_superstrate))
     stack0.calc_scat(pol = 'TE')
     stack1.calc_scat(pol = 'TE')
 
-# multiple heights for sim_TF4
+# multiple heights for sim_ThinFilm4 
     stack2_indiv_hs = []
     average_t = 0
     average_r = 0
@@ -119,7 +115,8 @@ def simulate_stack(light):
 
     num_h = 10
     for h in np.linspace(100,2000,num_h):
-        stack2 = Stack((sim_bot1,sim_TH2,sim_TF4, sim_cover), heights_nm = ([TH2.height_nm,h]))
+        stack2 = Stack((sim_substrate,sim_ThinFilm2,sim_ThinFilm4 sim_superstrate),
+         heights_nm = ([sim_ThinFilm2.height_nm,h]))
         stack2.calc_scat(pol = 'TE')
 
         stack2_indiv_hs.append(stack2)
@@ -294,3 +291,4 @@ python_log.close()
 
 print hms_string
 print '*******************************************'
+print ''
