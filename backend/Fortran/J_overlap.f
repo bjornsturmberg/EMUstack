@@ -36,7 +36,7 @@ C  variables for quadrature interpolation
       double precision mat_B(2,2), mat_T(2,2), d
 C
       integer*8 nval_max, PW_max
-      parameter (nval_max = 1000)
+      parameter (nval_max = 3000)
       parameter (PW_max = 200)
       complex*16 PlaneW_RK(PW_max,2)
       complex*16 PlaneW_RE(PW_max,2)
