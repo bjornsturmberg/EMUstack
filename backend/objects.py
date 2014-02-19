@@ -31,7 +31,7 @@ data_location = '../backend/Data/'
 # Acknowledgements
 print '\n#################################################################\n' + \
       'EMUstack is brought to you by Bjorn Sturmberg, Kokou Dossou, \n' + \
-      'Felix Lawrence, Lindsay Botton, with support from CUDOS and ARENA\n' + \
+      'Felix Lawrence and Lindsay Botton, with support from CUDOS and ARENA\n' + \
       'Starting EMUstack calculation ...\n' + \
       '#################################################################\n'
 

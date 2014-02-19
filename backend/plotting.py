@@ -23,6 +23,7 @@ import objects
 import mode_calcs
 
 import numpy as np
+from scipy import sqrt
 import subprocess
 from matplotlib.mlab import griddata
 import matplotlib
@@ -755,6 +756,65 @@ def t_func_k_plot(stack_list, light_object, n_H):
         # print repr(trans_k)
         # print repr(tot_trans_k_array)
         k_plot(tot_trans_k_array,nu_PW_pols)
+
+
+def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
+    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(1,1,1)
+
+    # Create arrays of grating order indexes (-p, ..., p)
+    pxs = np.arange(-light_object.max_order_PWs, light_object.max_order_PWs + 1)
+
+    store_alphas = []
+    store_k_trans = []
+    for stack in stack_list:
+        k0 = stack.layers[0].k()
+        nu_PW_pols = stack.layers[0].structure.num_pw_per_pol
+        # Calculate k_x that correspond to k_y=0 (in normalized units)
+        alpha0, beta0 = stack.layers[0].k_pll_norm()
+        alphas = alpha0 + pxs * 2 * np.pi
+        on_axis_kzs = sqrt(k0**2 - alphas**2)
+        full_k_space = stack.layers[0].k_z
+        # consider only transmission into singular polarization
+        one_pol_k_space = full_k_space[0:len(full_k_space)/2]
+
+        axis_indices = []
+        for a in on_axis_kzs:
+            ix = np.in1d(one_pol_k_space.ravel(), a).reshape(one_pol_k_space.shape)
+            axis_indices = np.append(axis_indices, np.ravel(np.array(np.where(ix))))
+        axis_indices = axis_indices.astype(int)
+
+        # print stack.T_net[axis_indices]
+        # print stack.trans_vector[0:nu_PW_pols]
+
+        trans_k = np.abs(stack.trans_vector[0:nu_PW_pols]).reshape(-1,) # ASSUMES TE polarisation
+        # trans_k = np.abs(stack.trans_vector[nu_PW_pols-1:-1]) # ASSUMES TM polarisation
+        # trans_k = np.abs(stack.trans_vector) # both polarisation in transmission
+        trans_k_array = np.array(trans_k).reshape(-1,)
+
+        select_trans = trans_k_array[axis_indices]
+        store_alphas = np.append(store_alphas,alphas)
+        store_k_trans = np.append(store_k_trans,select_trans)
+
+    sort_indices = np.argsort(store_alphas)
+    plot_alphas = store_alphas[sort_indices]
+    plot_k_trans = store_k_trans[sort_indices]
+
+
+    ax1.plot(plot_alphas,plot_k_trans)#, linewidth=linesstrength)
+
+    new_tick_values = [-min_k_label*k0, -n_H*k0, -k0, 0, k0, n_H*k0, min_k_label*k0]
+    new_tick_labels = [r"$-%ik_0$"%min_k_label,r'$-n_Hk_0$',r'$-k_0$',r'0',r'$k_0$',r'$n_Hk_0$',r"$%ik_0$"%min_k_label]
+    ax1.set_xticks(new_tick_values)
+    ax1.set_xticklabels(new_tick_labels)
+
+    ax1.set_xlabel(r'$k_\parallel$')
+    ax1.set_ylabel(r'$|E|_{trans}$')
+    plt.savefig('t_func_k')
+
+
+
+
 #######################################################################################
 
 
