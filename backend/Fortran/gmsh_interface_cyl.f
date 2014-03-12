@@ -76,7 +76,7 @@ c
           write(26,*) "radius = ",  rad_cyl, ";"
           write(26,*) "x_cent = ",  centre(1), ";"
           write(26,*) "y_cent = ",  centre(2), ";"
-          write(26,*) "x_max = ", x_max, ";"
+          write(26,*) "x_max = ",  x_max, ";"
           write(26,*) "y_max = ",  y_max, ";"
           write(26,*) "x_min = ",  x_min, ";"
           write(26,*) "y_min = ",  y_min, ";"

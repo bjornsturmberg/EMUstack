@@ -704,21 +704,26 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_p
 
 
 #######################################################################################
-def vis_scat_mats(scat_mat,wl=0,extra_title=''):
+def vis_scat_mats(scat_mat,nu_prop_PWs,wl=0,extra_title=''):
     """ Plot given scattering matrix as grayscale images. """
-    image = np.real(abs(scat_mat))
+    image = abs(np.real(scat_mat))
     plt.matshow(image,cmap=plt.cm.gray)
-    print np.shape(scat_mat)
+    # print np.shape(scat_mat)
     scat_mat_dim_x = np.shape(scat_mat)[0]
     scat_mat_dim_y = np.shape(scat_mat)[1]
     half_dim_x = scat_mat_dim_x/2-0.5
     half_dim_y = scat_mat_dim_y/2-0.5
-    plt.plot([-0.5, scat_mat_dim_y-0.5],[half_dim_x,half_dim_x],'r', linewidth=1)
-    plt.plot([half_dim_y,half_dim_y],[-0.5, scat_mat_dim_x-0.5],'r', linewidth=1)
+    plt.plot([-0.5, scat_mat_dim_y-0.5],[half_dim_x,half_dim_x],'w', linewidth=2)
+    plt.plot([half_dim_y,half_dim_y],[-0.5, scat_mat_dim_x-0.5],'w', linewidth=2)
     plt.axis([-0.5, scat_mat_dim_y-0.5, scat_mat_dim_x-0.5,  -0.5])
     plt.xticks([half_dim_y/2, scat_mat_dim_y-half_dim_y/2],['TE', 'TM'])
     plt.yticks([half_dim_x/2, scat_mat_dim_x-half_dim_x/2],['TE', 'TM'])
+    plt.plot([-0.5, scat_mat_dim_y-0.5],[nu_prop_PWs-0.5,nu_prop_PWs-0.5],'r', linewidth=1)
+    plt.plot([nu_prop_PWs-0.5,nu_prop_PWs-0.5],[-0.5, scat_mat_dim_x-0.5],'r', linewidth=1)
+    plt.plot([-0.5, scat_mat_dim_y-0.5],[half_dim_x+nu_prop_PWs,half_dim_x+nu_prop_PWs],'r', linewidth=1)
+    plt.plot([half_dim_y+nu_prop_PWs,half_dim_y+nu_prop_PWs],[-0.5, scat_mat_dim_x-0.5],'r', linewidth=1)
     cbar = plt.colorbar(extend='neither')
+    cbar.ax.set_ylabel('|Re(matrix)|')
     plt.xlabel('Incoming Orders')
     plt.ylabel('Outgoing Orders')
     plt.suptitle('%s Scattering Matrix' % extra_title,fontsize=title_font)
@@ -731,10 +736,10 @@ def vis_scat_mats(scat_mat,wl=0,extra_title=''):
 
 
 #######################################################################################
-def k_plot(t_func_k,nu_PW_pols):
+def k_plot(t_func_k,n_PW_p_pols):
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
-    ks = range(nu_PW_pols)
+    ks = range(n_PW_p_pols)
     np.savetxt('%(s)s.txt'% {'s' : 't_func_k',}, t_func_k, fmt = '%18.12f')
     ax1.plot(ks,t_func_k, linewidth=linesstrength)
     ax1.set_xlabel('k vector')
@@ -744,18 +749,18 @@ def k_plot(t_func_k,nu_PW_pols):
 def t_func_k_plot(stack_list, light_object, n_H):
     for stack in stack_list:
         # print stack.T_net[0,:]
-        nu_PW_pols = stack.layers[0].structure.num_pw_per_pol
-        print nu_PW_pols
+        n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
+        print n_PW_p_pols
         k0 = 2*np.pi/light_object.wl_nm
         print k0
-        # k_array = [(light_object.k_pll + 2*np.pi*m/stack.period) for m in np.linspace(-nu_PW_pols/2,nu_PW_pols/2,nu_PW_pols)]
+        # k_array = [(light_object.k_pll + 2*np.pi*m/stack.period) for m in np.linspace(-n_PW_p_pols/2,n_PW_p_pols/2,n_PW_p_pols)]
 
-        trans_k = np.abs(stack.trans_vector[0:nu_PW_pols]) # ASSUMES TE polarisation
+        trans_k = np.abs(stack.trans_vector[0:n_PW_p_pols]) # ASSUMES TE polarisation
         trans_k_array = np.array(trans_k).reshape(-1,)
         tot_trans_k_array = trans_k_array#**2
         # print repr(trans_k)
         # print repr(tot_trans_k_array)
-        k_plot(tot_trans_k_array,nu_PW_pols)
+        k_plot(tot_trans_k_array,n_PW_p_pols)
 
 
 def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
@@ -769,14 +774,14 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
     store_k_trans = []
     for stack in stack_list:
         k0 = stack.layers[0].k()
-        nu_PW_pols = stack.layers[0].structure.num_pw_per_pol
+        n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
         # Calculate k_x that correspond to k_y=0 (in normalized units)
         alpha0, beta0 = stack.layers[0].k_pll_norm()
         alphas = alpha0 + pxs * 2 * np.pi
         on_axis_kzs = sqrt(k0**2 - alphas**2)
         full_k_space = stack.layers[0].k_z
         # consider only transmission into singular polarization
-        one_pol_k_space = full_k_space[0:len(full_k_space)/2]
+        one_pol_k_space = full_k_space[0:n_PW_p_pols]
 
         axis_indices = []
         for a in on_axis_kzs:
@@ -785,10 +790,10 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
         axis_indices = axis_indices.astype(int)
 
         # print stack.T_net[axis_indices]
-        # print stack.trans_vector[0:nu_PW_pols]
+        # print stack.trans_vector[0:n_PW_p_pols]
 
-        trans_k = np.abs(stack.trans_vector[0:nu_PW_pols]).reshape(-1,) # ASSUMES TE polarisation
-        # trans_k = np.abs(stack.trans_vector[nu_PW_pols-1:-1]) # ASSUMES TM polarisation
+        trans_k = np.abs(stack.trans_vector[0:n_PW_p_pols]).reshape(-1,) # Outgoing TE polarisation 
+        # trans_k = np.abs(stack.trans_vector[n_PW_p_pols-1:-1]).reshape(-1,) # Outgoing TM polarisation
         # trans_k = np.abs(stack.trans_vector) # both polarisation in transmission
         trans_k_array = np.array(trans_k).reshape(-1,)
 
@@ -801,7 +806,8 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
     plot_k_trans = store_k_trans[sort_indices]
 
 
-    ax1.plot(plot_alphas,plot_k_trans)#, linewidth=linesstrength)
+    ax1.plot(plot_alphas,plot_k_trans, linewidth=linesstrength)
+    # ax1.set_ylim((0, 7))
 
     new_tick_values = [-min_k_label*k0, -n_H*k0, -k0, 0, k0, n_H*k0, min_k_label*k0]
     new_tick_labels = [r"$-%ik_0$"%min_k_label,r'$-n_Hk_0$',r'$-k_0$',r'0',r'$k_0$',r'$n_Hk_0$',r"$%ik_0$"%min_k_label]
@@ -815,6 +821,37 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
 
 
 
+def single_order_T(stack_list, angles, chosen_PW_order):
+    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(1,1,1)
+
+    for pxs in chosen_PW_order:
+
+        store_trans = []
+        for stack in stack_list:
+            k0 = stack.layers[0].k()
+            n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
+            # Calculate k_x that correspond to k_y=0 (in normalized units)
+            alpha0, beta0 = stack.layers[0].k_pll_norm()
+            alphas = alpha0 + pxs * 2 * np.pi
+            on_axis_kzs = sqrt(k0**2 - alphas**2)
+            full_k_space = stack.layers[0].k_z
+            # consider only transmission into singular polarization
+            one_pol_k_space = full_k_space[0:n_PW_p_pols]
+
+            ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
+            axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
+
+            trans = np.abs(stack.trans_vector[axis_indices]).reshape(-1,) # Outgoing TE polarisation
+            trans += np.abs(stack.trans_vector[n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+            store_trans = np.append(store_trans,trans)
+
+        ax1.plot(angles,store_trans, label="m = %s" %str(pxs))#, linewidth=linesstrength)
+
+    ax1.legend()
+    ax1.set_xlabel(r'$\theta$')
+    ax1.set_ylabel(r'$|E|_{trans}$')
+    plt.savefig('t_order(theta)')
 #######################################################################################
 
 

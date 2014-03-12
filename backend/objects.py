@@ -369,6 +369,7 @@ class NanoStruct(object):
                 if supercell > 1:
                     geo = geo.replace('w2 = 0;', "w2 = %f;" % self.diameter2)
                     geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
+                    geo = geo.replace('lc4 = lc/1;', "lc4 = lc/%f;" % self.lc4)
                 if self.small_d != 0:
                     # small distance between centre of gratings in nm
                     # calc complementary large distance, which is added to top & bottom
@@ -495,7 +496,7 @@ class Light(object):
 
         - `phi`           : Azimuthal angle of incidence in degrees.
     """
-    def __init__(self, wl_nm, max_order_PWs = 3, k_parallel = [0.,0.], 
+    def __init__(self, wl_nm, max_order_PWs = 2, k_parallel = [0.,0.], 
         theta = None, phi = None, n_inc = 1.):
         self.wl_nm = float(wl_nm)
         self._air_anallos = {}
