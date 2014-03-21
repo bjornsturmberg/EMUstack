@@ -33,13 +33,19 @@ C  variables for quadrature interpolation
       double precision xx(2), xx_g(2), ww, det
       double precision mat_B(2,2), mat_T(2,2), d
 C
-      integer*8 nval_max, PW_max
-      parameter (nval_max = 2000)
-      parameter (PW_max = 1000)
-      complex*16 PlaneW_RK(PW_max,2)
-      complex*16 PlaneW_RE(PW_max,2)
-      complex*16 overlap_K(PW_max,nval_max)
-      complex*16 overlap_E(PW_max,nval_max)
+      integer alloc_stat
+      complex*16, dimension(:,:), allocatable :: PlaneW_RK
+      complex*16, dimension(:,:), allocatable :: PlaneW_RE
+      complex*16, dimension(:,:), allocatable :: overlap_K
+      complex*16, dimension(:,:), allocatable :: overlap_E
+C
+C      integer*8 nval_max, PW_max
+C      parameter (nval_max = 2000)
+C      parameter (PW_max = 1000)
+C      complex*16 PlaneW_RK(PW_max,2)
+C      complex*16 PlaneW_RE(PW_max,2)
+C      complex*16 overlap_K(PW_max,nval_max)
+C      complex*16 overlap_E(PW_max,nval_max)
       complex*16 overlap_J_dagger(nval,2*neq_PW)
       integer*8 index_pw_inv(neq_PW)
       complex*16 ii, val_exp, coeff_1
@@ -58,18 +64,37 @@ C
         write(ui,*) "overlap_J_dagger: Aborting..."
         stop
       endif
-      if ( nval .gt. nval_max ) then
-        write(ui,*) "overlap_J_dagger: nval = ", nval
-        write(ui,*) "overlap_J_dagger: > nval_max = ",  nval_max
-        write(ui,*) "overlap_J_dagger: Aborting..."
+      allocate(PlaneW_RK(neq_PW,2), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "J_overlap_dagger: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (PlaneW_RK) = ", alloc_stat
+        write(*,*) "Aborting..."
         stop
       endif
-      if ( neq_PW .gt. PW_max ) then
-        write(ui,*) "overlap_J_dagger: neq_PW = ", neq_PW
-        write(ui,*) "overlap_J_dagger: > PW_max = ",  PW_max
-        write(ui,*) "overlap_J_dagger: Aborting..."
+      allocate(PlaneW_RE(neq_PW,2), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "J_overlap_dagger: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (PlaneW_RE) = ", alloc_stat
+        write(*,*) "Aborting..."
         stop
       endif
+      allocate(overlap_K(neq_PW,nval), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "J_overlap_dagger: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (overlap_K) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
+      allocate(overlap_E(neq_PW,nval), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "J_overlap_dagger: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (overlap_E) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
 C
       call quad_triangle(nquad,nquad_max,wq,xq,yq);
 C        
@@ -211,5 +236,15 @@ C
       close(32) 
       endif
 C
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      deallocate(PlaneW_RK)
+      deallocate(PlaneW_RE)
+      deallocate(overlap_K)
+      deallocate(overlap_E)
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
       return
       end

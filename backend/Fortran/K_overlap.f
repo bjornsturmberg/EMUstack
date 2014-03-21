@@ -42,17 +42,24 @@ C  variables for quadrature interpolation
       double precision xx(2), xx_g(2), ww, det
       double precision mat_B(2,2), mat_T(2,2), d
 C
-      integer*8 nval_max, PW_max
+      integer alloc_stat
+      complex*16, dimension(:,:), allocatable :: PlaneW_RK
+      complex*16, dimension(:,:), allocatable :: PlaneW_RE
+      complex*16, dimension(:,:), allocatable :: overlap_K
+      complex*16, dimension(:,:), allocatable :: overlap_E
+      complex*16, dimension(:,:,:), allocatable :: mat_scal
+C
+C      integer*8 nval_max, PW_max
+C      parameter (nval_max = 2000)
+C      parameter (PW_max = 1000)
+C      complex*16 PlaneW_RK(PW_max,2)
+C      complex*16 PlaneW_RE(PW_max,2)
+C      complex*16 overlap_K(PW_max,nval_max)
+C      complex*16 overlap_E(PW_max,nval_max)
+C      complex*16 mat_scal(PW_max,2*nnodes_0+10,2)
+      complex*16 K_overlap_mat(nval,2*neq_PW)
       double precision ZERO, ONE
       parameter ( ZERO = 0.0D0, ONE = 1.0D0)
-      parameter (nval_max = 3000)
-      parameter (PW_max = 1000)
-      complex*16 mat_scal(PW_max,2*nnodes_0+10,2)
-      complex*16 PlaneW_RK(PW_max,2)
-      complex*16 PlaneW_RE(PW_max,2)
-      complex*16 overlap_K(PW_max,nval_max)
-      complex*16 overlap_E(PW_max,nval_max)
-      complex*16 K_overlap_mat(nval,2*neq_PW)
       complex*16 ii
       integer*8 index_pw_inv(neq_PW)
       double precision r_tmp
@@ -69,7 +76,45 @@ C
         write(ui,*) "K_overlap: nnodes should be equal to 6!"
         write(ui,*) "K_overlap: Aborting..."
         stop
-      endif 
+      endif
+      allocate(PlaneW_RK(neq_PW,2), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "K_overlap: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (PlaneW_RK) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
+      allocate(PlaneW_RE(neq_PW,2), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "K_overlap: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (PlaneW_RE) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
+      allocate(overlap_K(neq_PW,nval), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "K_overlap: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (overlap_K) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
+      allocate(overlap_E(neq_PW,nval), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "K_overlap: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (overlap_E) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
+      allocate(mat_scal(neq_PW,2*nnodes_0+10,2), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "K_overlap: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (mat_scal) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
 C
       call quad_triangle(nquad,nquad_max,wq,xq,yq) 
 C
@@ -313,5 +358,16 @@ C
       close(32) 
       endif
 C
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      deallocate(PlaneW_RK)
+      deallocate(PlaneW_RE)
+      deallocate(overlap_K)
+      deallocate(overlap_E)
+      deallocate(mat_scal)
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
       return
       end 

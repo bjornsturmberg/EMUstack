@@ -63,9 +63,6 @@ C
         write(ui,*) "overlap_J: Aborting..."
         stop
       endif 
-c
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c
       allocate(PlaneW_RK(neq_PW,2), STAT=alloc_stat)
       if (alloc_stat /= 0) then
         write(*,*) "J_overlap: Mem. allocation is unseccesfull"
