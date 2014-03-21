@@ -46,7 +46,7 @@ C
       double precision ZERO, ONE
       parameter ( ZERO = 0.0D0, ONE = 1.0D0)
       parameter (nval_max = 3000)
-      parameter (PW_max = 200)
+      parameter (PW_max = 1000)
       complex*16 mat_scal(PW_max,2*nnodes_0+10,2)
       complex*16 PlaneW_RK(PW_max,2)
       complex*16 PlaneW_RE(PW_max,2)

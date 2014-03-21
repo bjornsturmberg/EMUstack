@@ -36,8 +36,8 @@ C  variables for quadrature interpolation
       double precision mat_B(2,2), mat_T(2,2), d
 C
       integer*8 nval_max, PW_max
-      parameter (nval_max = 3000)
-      parameter (PW_max = 200)
+      parameter (nval_max = 2000)
+      parameter (PW_max = 1000)
       complex*16 PlaneW_RK(PW_max,2)
       complex*16 PlaneW_RE(PW_max,2)
       complex*16 overlap_K(PW_max,nval_max)

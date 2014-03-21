@@ -22,6 +22,7 @@
 import numpy as np
 import sys
 from scipy import sqrt
+import os
 sys.path.append("../backend/")
 
 import materials
@@ -239,6 +240,14 @@ class Simmo(Modes):
         with open("../backend/Data/"+self.structure.mesh_file) as f:
             n_msh_pts, n_msh_el = [int(i) for i in f.readline().split()]
 
+        if self.structure.plot_modes == 1:
+            if not os.path.exists("Output/Fields"):
+                os.mkdir("Output/Fields")
+            if not os.path.exists("Output/FieldsPNG"):
+                os.mkdir("Output/FieldsPNG")
+            if not os.path.exists("Output/Fields_3d"):
+                os.mkdir("Output/Fields_3d")
+
         # Size of Fortran's complex superarray (scales with mesh)
         # In theory could do some python-based preprocessing
         # on the mesh file to work out RAM requirements
@@ -246,6 +255,11 @@ class Simmo(Modes):
 
         # Parameters that control how FEM routine runs
         FEM_debug = 0   # Fortran routine will print info to screen and save additional into to file
+        if FEM_debug == 1:
+            if not os.path.exists("Normed"):
+                os.mkdir("Normed")
+            if not os.path.exists("Matrices"):
+                os.mkdir("Matrices")
         E_H_field = 1   # Selected formulation (1=E-Field, 2=H-Field)
         i_cond    = 2   # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
         itermax   = 30  # Maximum number of iterations for convergence

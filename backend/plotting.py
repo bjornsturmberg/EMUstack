@@ -705,6 +705,7 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_p
 
 #######################################################################################
 def vis_scat_mats(scat_mat,nu_prop_PWs,wl=0,extra_title=''):
+# def vis_scat_mats(scat_mat,k_array,nu_prop_PWs,wl=0,extra_title=''):
     """ Plot given scattering matrix as grayscale images. """
     image = abs(np.real(scat_mat))
     plt.matshow(image,cmap=plt.cm.gray)
@@ -718,6 +719,11 @@ def vis_scat_mats(scat_mat,nu_prop_PWs,wl=0,extra_title=''):
     plt.axis([-0.5, scat_mat_dim_y-0.5, scat_mat_dim_x-0.5,  -0.5])
     plt.xticks([half_dim_y/2, scat_mat_dim_y-half_dim_y/2],['TE', 'TM'])
     plt.yticks([half_dim_x/2, scat_mat_dim_x-half_dim_x/2],['TE', 'TM'])
+    # proping = []
+    # half_k = k_array[0:len(k_array)/2]
+    # for i in range(len(half_k)):
+    #     if np.real(half_k[i])>0: proping.append(i)
+    # print max(proping)
     plt.plot([-0.5, scat_mat_dim_y-0.5],[nu_prop_PWs-0.5,nu_prop_PWs-0.5],'r', linewidth=1)
     plt.plot([nu_prop_PWs-0.5,nu_prop_PWs-0.5],[-0.5, scat_mat_dim_x-0.5],'r', linewidth=1)
     plt.plot([-0.5, scat_mat_dim_y-0.5],[half_dim_x+nu_prop_PWs,half_dim_x+nu_prop_PWs],'r', linewidth=1)
@@ -789,9 +795,13 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
             axis_indices = np.append(axis_indices, np.ravel(np.array(np.where(ix))))
         axis_indices = axis_indices.astype(int)
 
+        # print axis_indices
         # print stack.T_net[axis_indices]
         # print stack.trans_vector[0:n_PW_p_pols]
 
+
+        # specular_in = stack.layers[0].specular_order
+        # trans_k = np.abs(stack.T_net[0:n_PW_p_pols,specular_in]).reshape(-1,) # Outgoing TE polarisation 
         trans_k = np.abs(stack.trans_vector[0:n_PW_p_pols]).reshape(-1,) # Outgoing TE polarisation 
         # trans_k = np.abs(stack.trans_vector[n_PW_p_pols-1:-1]).reshape(-1,) # Outgoing TM polarisation
         # trans_k = np.abs(stack.trans_vector) # both polarisation in transmission
@@ -806,6 +816,7 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
     plot_k_trans = store_k_trans[sort_indices]
 
 
+    # ax1.plot(plot_alphas,plot_k_trans, 'o-')# linewidth=linesstrength)
     ax1.plot(plot_alphas,plot_k_trans, linewidth=linesstrength)
     # ax1.set_ylim((0, 7))
 

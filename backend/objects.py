@@ -100,7 +100,7 @@ class NanoStruct(object):
             you get epsilon*|E|^2 & either real/imag/abs of 
             x,y,z components, field vectors.
             NOTE: these plots are created in Output/Fields, 
-            and Output/FieldsPNG, which you must create.
+            and Output/FieldsPNG.
 
         - `plot_real'     : Plot the real part of modal fields.
         - `plot_imag'     : Plot the imaginary part of modal fields.

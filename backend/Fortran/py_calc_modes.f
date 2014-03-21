@@ -24,6 +24,7 @@ C
 C************************************************************************
 C
       implicit none
+
 C  Local parameters:
       integer*8 int_max, cmplx_max, int_used, cmplx_used
       integer*8 real_max, real_used, n_64
@@ -71,7 +72,7 @@ c     E_H_field = 2 => Magnetic field formulation (H-Field)
 C  Variable used by valpr
       integer*8 nval, nvect, itermax, ltrav
       integer*8 nval_max
-      parameter(nval_max=3000)
+      parameter(nval_max=2000)
       integer*8 n_conv, i_base
       double precision ls_data(10)
 c      integer*8 pointer_int(20), pointer_cmplx(20)
@@ -132,7 +133,8 @@ c     new breed of variables to prise out of a, b and c
       complex*16 overlap_J(2*neq_PW, nval)
       complex*16 overlap_J_dagger(nval, 2*neq_PW)
 C      complex*16 overlap_K(nval, 2*neq_PW)
-      complex*16 overlap_L(nval, nval)
+C      complex*16 overlap_L(nval, nval)
+      complex*16 overlap_L(nval_max, nval_max)
 
       complex*16, target :: beta1(nval), beta2(nval)
       complex*16, pointer :: beta(:)
@@ -145,8 +147,8 @@ Cf2py intent(out) sol1, sol2, mode_pol
       n_64 = 2
 C     !n_64**28 on Vayu, **27 before
 C      cmplx_max=n_64**25
-      real_max=n_64**22
-      int_max=n_64**22
+      real_max = n_64**22
+      int_max  = n_64**22
 c      3*npt+nel+nnodes*nel 
 
       !write(*,*) "cmplx_max = ", cmplx_max
@@ -688,6 +690,7 @@ C  Orthogonal integral
         write(ui,*) "MAIN: CPU time for orthogonal :",
      *  (time2_J-time1_J)
       endif     
+
 C    Save Original solution
       if (plot_modes .eq. 1) then
         dir_name = "Output/Fields"

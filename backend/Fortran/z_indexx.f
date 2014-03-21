@@ -2,7 +2,7 @@
 
       INTEGER*8 n,indx(n),M,NSTACK
       complex*16 arr(n)
-      PARAMETER (M=7,NSTACK=1000)
+      PARAMETER (M=7,NSTACK=2000)
       INTEGER*8 i,indxt,ir,itemp,j,jstack,k,l,istack(NSTACK)
       double precision a
       double precision arr_0(NSTACK), arr_max, r_tmp, tol
