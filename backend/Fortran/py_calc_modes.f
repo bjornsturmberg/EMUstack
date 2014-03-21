@@ -134,7 +134,8 @@ c     new breed of variables to prise out of a, b and c
       complex*16 overlap_J_dagger(nval, 2*neq_PW)
 C      complex*16 overlap_K(nval, 2*neq_PW)
 C      complex*16 overlap_L(nval, nval)
-      complex*16 overlap_L(nval_max, nval_max)
+C      complex*16 overlap_L(nval_max, nval_max)
+      complex*16, dimension(:,:), allocatable :: overlap_L
 
       complex*16, target :: beta1(nval), beta2(nval)
       complex*16, pointer :: beta(:)
@@ -198,6 +199,15 @@ C      Checks = 0 ! check completeness, energy conservation
         stop
       endif
 
+      allocate(overlap_L(nval,nval), STAT=allocate_status)
+      if (allocate_status /= 0) then
+        write(*,*) "The allocation is unsuccessful"
+        write(*,*) "allocate_status = ", allocate_status
+        write(*,*) "Not enough memory for overlap_L"
+        write(*,*) "nval = ", nval
+        write(*,*) "Aborting..."
+        stop
+      endif
 
 
 CCCCCCCCCCCCCCCCC POST F2PY CCCCCCCCCCCCCCCCCCCCCCCCC
@@ -920,4 +930,6 @@ C
         write(ui,*) "  and   we're  done!"
       endif
 C
+      deallocate(overlap_L)
+
       end subroutine calc_modes

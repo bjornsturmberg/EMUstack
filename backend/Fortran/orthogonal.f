@@ -15,7 +15,8 @@ c
       complex*16 soln_k2(3,nnodes+7,nval,nel)
       complex*16 pp(nb_typ_el), qq(nb_typ_el)
       complex*16 beta1(nval), beta2(nval)
-      complex*16 mat_overlap(nval,nval)
+C      complex*16 mat_overlap(nval,nval)
+      complex*16, dimension(nval,nval) :: mat_overlap
       character overlap_file*100
       double precision k_0
 c     Local variables

@@ -7,7 +7,8 @@ c
       integer*8 table_nod(nnodes,nel)
       complex*16 soln_k1(3,nnodes+7,nval,nel)
       complex*16 soln_k2(3,nnodes+7,nval,nel)
-      complex*16 mat_overlap(nval,nval)
+C      complex*16 mat_overlap(nval,nval)
+      complex*16, dimension(nval,nval) :: mat_overlap
 c     Local variables
       integer*8 i, j
       integer*8 iel, ival, jval
