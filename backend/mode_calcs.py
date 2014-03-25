@@ -217,15 +217,15 @@ class Simmo(Modes):
         st = self.structure
         wl = self.light.wl_nm
         if self.structure.diameter2 == 0:
-            nb_typ_el = 2
+            self.nb_typ_el = 2
         else:
-            nb_typ_el = 3
-        n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl), 
+            self.nb_typ_el = 3
+        self.n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl), 
             st.inclusion_b.n(wl)])
-        n_effs = n_effs[:nb_typ_el]
+        self.n_effs = self.n_effs[:self.nb_typ_el]
 
         if self.structure.loss == False:
-            n_effs = n_effs.real
+            self.n_effs = self.n_effs.real
 
         pxs, pys = self.calc_grating_orders(self.max_order_PWs)
         num_pw_per_pol = pxs.size
@@ -238,15 +238,15 @@ class Simmo(Modes):
 
         # Prepare for the mesh
         with open("../backend/Data/"+self.structure.mesh_file) as f:
-            n_msh_pts, n_msh_el = [int(i) for i in f.readline().split()]
+            self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
 
         if self.structure.plot_modes == 1:
+            if not os.path.exists("Output"):
+                os.mkdir("Output")
             if not os.path.exists("Output/Fields"):
                 os.mkdir("Output/Fields")
             if not os.path.exists("Output/FieldsPNG"):
                 os.mkdir("Output/FieldsPNG")
-            if not os.path.exists("Output/Fields_3d"):
-                os.mkdir("Output/Fields_3d")
 
         # Size of Fortran's complex superarray (scales with mesh)
         # In theory could do some python-based preprocessing
@@ -260,26 +260,27 @@ class Simmo(Modes):
                 os.mkdir("Normed")
             if not os.path.exists("Matrices"):
                 os.mkdir("Matrices")
-        E_H_field = 1   # Selected formulation (1=E-Field, 2=H-Field)
+        self.E_H_field = 1   # Selected formulation (1=E-Field, 2=H-Field)
         i_cond    = 2   # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
         itermax   = 30  # Maximum number of iterations for convergence
 
         resm = EMUstack.calc_modes(
             self.wl_norm(), self.num_BM, self.max_order_PWs, 
             self.structure.period, FEM_debug, 
-            self.structure.mesh_file, n_msh_pts, n_msh_el,
-            n_effs, self.k_pll_norm(),
-            E_H_field, i_cond, itermax, 
+            self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
+            self.n_effs, self.k_pll_norm(),
+            self.E_H_field, i_cond, itermax, 
             self.structure.plot_modes, self.structure.plot_real, 
             self.structure.plot_imag, self.structure.plot_abs,
-            num_pw_per_pol, cmplx_max, nb_typ_el)
+            num_pw_per_pol, cmplx_max, self.nb_typ_el)
 
-        self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol = resm
+        self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, self.table_nod, \
+        self.type_el, self.x_arr = resm
 
         self.J, self.J_dag = np.mat(J), np.mat(J_dag)
 
         if delete_working:
-            self.sol1 = None
+            # self.sol1 = None
             self.sol2 = None
             # self.mode_pol = None
 

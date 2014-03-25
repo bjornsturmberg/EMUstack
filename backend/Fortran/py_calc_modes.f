@@ -7,7 +7,8 @@ c     Explicit inputs
      *    plot_modes, plot_real, plot_imag, plot_abs,
      *    neq_PW, cmplx_max, nb_typ_el,
 c     Outputs
-     *    beta1, overlap_J, overlap_J_dagger, sol1, sol2, mode_pol)
+     *    beta1, overlap_J, overlap_J_dagger, sol1, sol2, mode_pol,
+     *    table_nod, type_el, x_arr)
 
 C************************************************************************
 C
@@ -142,7 +143,7 @@ C      complex*16 overlap_L(nval_max, nval_max)
       complex*16 mode_pol(4,nval)
  
 Cf2py intent(out) beta1, overlap_J, overlap_J_dagger
-Cf2py intent(out) sol1, sol2, mode_pol
+Cf2py intent(out) sol1, sol2, mode_pol, table_nod, type_el, x_arr
 
 
       n_64 = 2

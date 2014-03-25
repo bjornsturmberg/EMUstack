@@ -21,6 +21,7 @@
 
 import objects
 import mode_calcs
+from Fortran import EMUstack
 
 import numpy as np
 from scipy import sqrt
@@ -29,6 +30,7 @@ from matplotlib.mlab import griddata
 import matplotlib
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
+import os
 
 # font = {'family' : 'normal',
 #         'weight' : 'bold',
@@ -857,6 +859,9 @@ def single_order_T(stack_list, angles, chosen_PW_order):
             trans += np.abs(stack.trans_vector[n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
             store_trans = np.append(store_trans,trans)
 
+        print angles
+        print store_trans
+
         ax1.plot(angles,store_trans, label="m = %s" %str(pxs))#, linewidth=linesstrength)
 
     ax1.legend()
@@ -864,6 +869,58 @@ def single_order_T(stack_list, angles, chosen_PW_order):
     ax1.set_ylabel(r'$|E|_{trans}$')
     plt.savefig('t_order(theta)')
 #######################################################################################
+
+
+def fields_3d(pstack, wl, nnodes=6):
+    
+
+    dir_name = "Output"
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
+    dir_name = "Output/Fields_3d"
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
+
+
+    meat = pstack.layers[-2]
+    gmsh_file_pos = meat.structure.mesh_file
+
+    vec_coef = pstack.t_list[-2]
+    h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+    print repr(h_normed)
+
+    EMUstack.gmsh_plot_field_3d(meat.E_H_field, meat.num_BM, meat.n_msh_el, meat.n_msh_pts, 
+        nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod, meat.x_arr, 
+        meat.k_z, meat.sol1, vec_coef, h_normed, wl, gmsh_file_pos)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
