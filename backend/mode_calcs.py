@@ -27,7 +27,7 @@ sys.path.append("../backend/")
 
 import materials
 import objects
-from Fortran import EMUstack
+from fortran import EMUstack
 
 _interfaces_i_have_known = {}
 pi = np.pi
@@ -237,7 +237,7 @@ class Simmo(Modes):
         d = self.structure.period
 
         # Prepare for the mesh
-        with open("../backend/Data/"+self.structure.mesh_file) as f:
+        with open("../backend/data/"+self.structure.mesh_file) as f:
             self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
 
         if self.structure.plot_modes == 1:
@@ -265,8 +265,7 @@ class Simmo(Modes):
         itermax   = 30  # Maximum number of iterations for convergence
 
         resm = EMUstack.calc_modes(
-            self.wl_norm(), self.num_BM, self.max_order_PWs, 
-            self.structure.period, FEM_debug, 
+            self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
             self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
             self.n_effs, self.k_pll_norm(),
             self.E_H_field, i_cond, itermax, 

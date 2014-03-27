@@ -4,11 +4,11 @@ C
      *  nnodes, nb_typ_el, pp, qq, table_nod, 
      *  type_el, x, beta1, beta2,
      *  soln_k1, soln_k2, mat_overlap, overlap_file, PrintAll,
-     *  d_in_nm, pair_warning, k_0)
+     *  pair_warning, k_0)
 c
       implicit none
       integer*8 nval, nel, npt, nnodes, nb_typ_el
-      integer*8 type_el(nel), d_in_nm
+      integer*8 type_el(nel)
       integer*8 table_nod(nnodes,nel)
       complex*16 x(2,npt)
       complex*16 soln_k1(3,nnodes+7,nval,nel)

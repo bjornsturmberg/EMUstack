@@ -26,7 +26,7 @@ import random
 import materials
 from mode_calcs import Simmo, Anallo
 
-data_location = '../backend/Data/'
+data_location = '../backend/data/'
 
 # Acknowledgements
 print '\n#################################################################\n' + \

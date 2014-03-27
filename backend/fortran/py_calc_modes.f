@@ -1,6 +1,6 @@
       subroutine calc_modes(
 c     Explicit inputs
-     *    lambda, nval, ordre_ls, d_in_nm,
+     *    lambda, nval, ordre_ls,
      *    debug, mesh_file, npt, nel,
      *    n_eff, bloch_vec,
      *    E_H_field, i_cond, itermax,
@@ -109,7 +109,7 @@ C  Names and Controls
       character*100 tchar
       integer*8 namelength, PrintAll!, Checks
       integer*8 plot_modes
-      integer*8 d_in_nm, pair_warning
+      integer*8 pair_warning
       integer*8 q_average, plot_real, plot_imag, plot_abs
 
 c     Declare the pointers of the real super-vector
@@ -689,11 +689,10 @@ C  Orthogonal integral
      *  nb_typ_el, pp, qq, table_nod, 
      *  type_el, x_arr, beta1, beta2,
      *  sol1, sol2, overlap_L,
-     *  overlap_file, PrintAll, d_in_nm, pair_warning, k_0)
+     *  overlap_file, PrintAll, pair_warning, k_0)
 
       if (pair_warning .ne. 0) then
-        write(ui,*) "conjugate pair problem", pair_warning,
-     *      "times, for d = ", d_in_nm
+        write(ui,*) "conjugate pair problem", pair_warning, "times"
       endif
 
       call cpu_time(time2_J)
@@ -745,10 +744,9 @@ C  Orthonormal integral
      *    nb_typ_el, pp, qq, table_nod, 
      *    type_el, x_arr, beta1, beta2,
      *    sol1, sol2, overlap_L,
-     *    overlap_file, PrintAll, d_in_nm, pair_warning, k_0)
+     *    overlap_file, PrintAll, pair_warning, k_0)
         if (pair_warning .ne. 0) then
-          write(ui,*) "conjugate pair problem", pair_warning,
-     *      "times, for d = ", d_in_nm
+        write(ui,*) "conjugate pair problem", pair_warning, "times"
         endif
         call cpu_time(time2_J)
           write(ui,*) "MAIN: CPU time for orthogonal :",
@@ -916,8 +914,7 @@ c
         write(26,*) "eps_eff = ", (eps_eff(i),i=1,nb_typ_el)
         write(26,*) "n_eff = ", (n_eff(i),i=1,nb_typ_el)
         write(26,*)         
-        write(26,*) "conjugate pair problem", pair_warning,
-     *      "times, for d = ", d_in_nm
+        write(26,*) "conjugate pair problem", pair_warning, "times"
         write(26,*)
         write(26,*) "mesh_file = ", mesh_file
         write(26,*) "gmsh_file = ", gmsh_file
@@ -926,8 +923,7 @@ c
 C
         write(ui,*) "   .      .      ."
         write(ui,*) "   .      .      ."
-        write(ui,*) "   .      . (d=",d_in_nm,")"
-
+        write(ui,*) "   .      .      ."
         write(ui,*) "  and   we're  done!"
       endif
 C

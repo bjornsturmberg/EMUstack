@@ -5,9 +5,9 @@ a1 = 120.000000;
 radius1 = (a1/(2*d_in_nm))*d;
 ellipticity = 0.000000;
 square = 0;
-lc = 0.070000; // 0.501 0.201 0.0701;
-lc2 = lc/1.500000; // on cylinder surfaces
-lc3 = lc/2.000000; // cylinder1 centres
+lc = 0.100000; // 0.501 0.201 0.0701;
+lc2 = lc/3.000000; // on cylinder surfaces
+lc3 = lc/1.000000; // cylinder1 centres
 
 hy = d; // Thickness: Squre profile => hy=d
 hx = 0.;

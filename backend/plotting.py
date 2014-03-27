@@ -21,7 +21,7 @@
 
 import objects
 import mode_calcs
-from Fortran import EMUstack
+from fortran import EMUstack
 
 import numpy as np
 from scipy import sqrt
@@ -172,7 +172,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
     """
     # TODO make E_g a property of material, not just longest wl included.
 
-    Irrad_spec_file = '../backend/Data/ASTMG173'
+    Irrad_spec_file = '../backend/data/ASTMG173'
     #  Total solar irradiance - integral of I(lambda) from 310nm-4000nm
     #  intergral done in Mathematica (OtherCode/Silicon_ASTM/ASTMG173.nb)
     tot_irradiance = 900.084
@@ -887,33 +887,67 @@ def fields_3d(pstack, wl, nnodes=6):
 
     vec_coef = pstack.t_list[-2]
     h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-    print repr(h_normed)
+    wl_normed = pstack.layers[-2].wl_norm()
 
-    EMUstack.gmsh_plot_field_3d(meat.E_H_field, meat.num_BM, meat.n_msh_el, meat.n_msh_pts, 
-        nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod, meat.x_arr, 
-        meat.k_z, meat.sol1, vec_coef, h_normed, wl, gmsh_file_pos)
-
-
+    # EMUstack.gmsh_plot_field_3d(meat.E_H_field, meat.num_BM, meat.n_msh_el, meat.n_msh_pts, 
+    #     nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod, meat.x_arr, 
+    #     meat.k_z, meat.sol1, vec_coef, wl_normed, wl_normed, h_normed, gmsh_file_pos)
 
 
 
 
 
+def Fabry_Perot_res(stack_list, freq_list, kx_list, lay_interest=1):
+    """ 
+    'lay_interest' : specifies which layer in the stack to find F-P resonances of.
+    """
+    n_freqs = len(freq_list)
+    n_kxs   = len(kx_list)
+    height = stack_list[-1].heights_nm()[lay_interest-1] # assumes all stacks have equal height
+    period = stack_list[-1].period
+
+    num_BMs = stack_list[-1].layers[lay_interest].num_BM
+    I_mat = np.matrix(np.eye(num_BMs),dtype='D')
+
+    plot_mat = np.zeros(shape=(n_freqs,n_kxs),dtype='complex128')
+
+    for i in range(n_kxs):
+        kx_slice = stack_list[i*n_freqs:(i+1)*n_freqs]
+
+        # FP_res_list = []
+        j = 0
+        for stack in kx_slice:
+            P   = stack.layers[lay_interest].prop_fwd(height/period)
+            R21 = stack.layers[lay_interest].R21
+            FP_term = np.linalg.det(I_mat - R21*P*R21*P)
+            # FP_res_list.append(FP_term)
+            plot_mat[j,i] = FP_term
+            j += 1
+
+    image = np.abs(plot_mat)
 
 
+    # print plot_mat
 
+    # plt.figure(num=None, figsize=(12, 12), dpi=80, facecolor='w', edgecolor='k')
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1,1,1)
 
+    cax = ax1.matshow(image,cmap=plt.cm.gray_r)
+    xtikz = ['']+(kx_list/1e3).tolist()
+    ax1.set_xticklabels(xtikz)
+    ytikz = ['']+(freq_list/1e12).tolist()
+    ax1.set_yticklabels(ytikz)
 
-
-
-
-
-
-
-
-
-
-
+    cbar = fig.colorbar(cax)
+    # cbar = plt.colorbar(extend='neither')
+    cbar.set_label(r'$|I - R_{21}PR_{21}P|$',size=18)
+    ax1.set_xlabel(r'$k_x$')
+    ax1.set_ylabel(r'$f$ (THz)')
+    ax1.axis('image')
+    # plt.suptitle('%s Scattering Matrix' % extra_title,fontsize=title_font)
+    plt.savefig('Frownplot')
+#######################################################################################
 
 
 
