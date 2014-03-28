@@ -260,6 +260,21 @@ class Simmo(Modes):
                 os.mkdir("Normed")
             if not os.path.exists("Matrices"):
                 os.mkdir("Matrices")
+
+        # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
+        max_n = self.n_effs.max()
+        k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
+
+        if self.structure.hyperbolic == True:
+            shift = 1.01*max_n**2 * k_0**2
+        else:
+            shift = 1.01*max_n**2 * k_0**2  \
+            - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
+        print repr(shift)
+        print repr(self.n_effs)
+        # shift = np.array(shift)
+
+
         self.E_H_field = 1   # Selected formulation (1=E-Field, 2=H-Field)
         i_cond    = 2   # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
         itermax   = 30  # Maximum number of iterations for convergence
@@ -267,7 +282,7 @@ class Simmo(Modes):
         resm = EMUstack.calc_modes(
             self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
             self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-            self.n_effs, self.k_pll_norm(),
+            self.n_effs, self.k_pll_norm(), shift,
             self.E_H_field, i_cond, itermax, 
             self.structure.plot_modes, self.structure.plot_real, 
             self.structure.plot_imag, self.structure.plot_abs,

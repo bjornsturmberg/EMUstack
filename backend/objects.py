@@ -62,6 +62,9 @@ class NanoStruct(object):
 
         - 'loss'          : If False, Im(n) = 0, if True n as in :Material: instance.
 
+        - 'hyperbolic'    : If True FEM looks for Eigenvalues around n**2 * k_0**2
+            rather than the regular n**2 * k_0**2 - alpha**2 - beta**2.
+
         - 'ellipticity'   : If != 0, inclusion has given ellipticity, with b=diameter,
            a=diameter-ellipticity*diameter. NOTE: only implemented for 1 inclusion.
 
@@ -111,7 +114,7 @@ class NanoStruct(object):
     def __init__(self, geometry, period, diameter1, 
         height_nm=2330,
         inclusion_a = materials.Si_c, inclusion_b = materials.Air,
-        background = materials.Air, loss=True,
+        background = materials.Air, loss=True, hyperbolic=False,
         diameter2=0,  diameter3=0, diameter4=0, diameter5=0, diameter6=0, 
         diameter7=0, diameter8=0, diameter9=0, diameter10=0, diameter11=0, 
         diameter12=0, diameter13=0,diameter14=0, diameter15=0, diameter16=0, 
@@ -130,6 +133,7 @@ class NanoStruct(object):
         self.inclusion_b   = inclusion_b
         self.background    = background
         self.loss          = loss
+        self.hyperbolic    = hyperbolic
         self.diameter2     = diameter2
         self.diameter3     = diameter3
         self.diameter4     = diameter4

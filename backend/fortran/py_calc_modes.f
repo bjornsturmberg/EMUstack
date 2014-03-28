@@ -2,10 +2,10 @@
 c     Explicit inputs
      *    lambda, nval, ordre_ls,
      *    debug, mesh_file, npt, nel,
-     *    n_eff, bloch_vec,
+     *    n_eff, bloch_vec, shift,
      *    E_H_field, i_cond, itermax,
      *    plot_modes, plot_real, plot_imag, plot_abs,
-     *    neq_PW, cmplx_max, nb_typ_el,
+     *    neq_PW, cmplx_max, nb_typ_el, 
 c     Outputs
      *    beta1, overlap_J, overlap_J_dagger, sol1, sol2, mode_pol,
      *    table_nod, type_el, x_arr)
@@ -93,6 +93,7 @@ c     Wavelength lambda is in normalised units of d_in_nm
       double precision freq, lat_vecs(2,2), tol
       double precision k_0, pi, lx, ly, bloch_vec(2), bloch_vec_k(2)
       complex*16 shift
+Cf2py intent(in) shift
 C  Timing variables
       double precision time1, time2
       double precision time1_fact, time2_fact
@@ -530,8 +531,12 @@ C  Index number of the core materials (material with highest Re(eps_eff))
       endif
       n_core(2) = n_core(1)
 C Parameter for shift-and-invert method
+      write(*,*) shift
       shift = 1.01d0*Dble(n_eff(n_core(1)))**2 * k_0**2
      *    - bloch_vec(1)**2 - bloch_vec(2)**2
+
+      write(*,*) shift
+
       if(debug .eq. 1) then
         write(ui,*) "MAIN: n_core = ", n_core
         if(E_H_field .eq. 1) then
