@@ -21,7 +21,6 @@
 
 import objects
 import mode_calcs
-from fortran import EMUstack
 
 import numpy as np
 from scipy import sqrt
@@ -872,12 +871,17 @@ def single_order_T(stack_list, angles, chosen_PW_order):
 
 
 def fields_3d(pstack, wl, nnodes=6):
-    
+    """
+    """
+    from fortran import EMUstack
 
     dir_name = "Output"
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
     dir_name = "Output/Fields_3d"
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
+    dir_name = "Output/Fields_3d/Anim"
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
 
@@ -889,9 +893,11 @@ def fields_3d(pstack, wl, nnodes=6):
     h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
     wl_normed = pstack.layers[-2].wl_norm()
 
-    # EMUstack.gmsh_plot_field_3d(meat.E_H_field, meat.num_BM, meat.n_msh_el, meat.n_msh_pts, 
-    #     nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod, meat.x_arr, 
-    #     meat.k_z, meat.sol1, vec_coef, wl_normed, wl_normed, h_normed, gmsh_file_pos)
+    EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,   
+        meat.E_H_field, meat.n_msh_el, meat.n_msh_pts, 
+        nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod,
+        meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos)
+
 
 
 
