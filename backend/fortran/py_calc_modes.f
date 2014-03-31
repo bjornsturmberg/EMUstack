@@ -530,12 +530,10 @@ C  Index number of the core materials (material with highest Re(eps_eff))
           n_core(1) = 2
       endif
       n_core(2) = n_core(1)
-C Parameter for shift-and-invert method
-      write(*,*) shift
-      shift = 1.01d0*Dble(n_eff(n_core(1)))**2 * k_0**2
-     *    - bloch_vec(1)**2 - bloch_vec(2)**2
+C Parameter for shift-and-invert method - now given as input from python
+C      shift = 1.01d0*Dble(n_eff(n_core(1)))**2 * k_0**2
+C     *    - bloch_vec(1)**2 - bloch_vec(2)**2
 
-      write(*,*) shift
 
       if(debug .eq. 1) then
         write(ui,*) "MAIN: n_core = ", n_core

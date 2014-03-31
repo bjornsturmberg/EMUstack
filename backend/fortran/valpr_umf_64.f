@@ -72,11 +72,17 @@ c
       complex*16 vect1(neq), vect2(neq), trav(ltrav)
       complex*16 energ
       complex*16 d(nval+1), shift2, vp(neq,nval)
-      integer*8 max_nvect
-      parameter(max_nvect=3000) ! previously 1500
-      complex*16 workev(3*max_nvect), z_tmp0, z_tmp
 c
-      double precision rwork(max_nvect), tol
+      complex*16 z_tmp0, z_tmp
+      double precision tol
+c
+c      integer*8 max_nvect
+c      parameter(max_nvect=3000) ! previously 1500
+c
+      integer alloc_stat
+      complex*16, dimension(:), allocatable :: workev !  (3*max_nvect), 
+      double precision, dimension(:), allocatable :: rwork  !  (max_nvect)
+      logical , dimension(:), allocatable :: select  !  (max_nvect)
 
 
 c     Local variables
@@ -86,7 +92,7 @@ c     32-but integers for ARPACK
       integer*4 ipntr_32(14), ltrav_32
 
 c
-      logical rvec, select(max_nvect)
+      logical rvec
 
       character bmat*1, which*2
 
@@ -103,11 +109,28 @@ c     ------------------------------------------------------------------
 c
       ui = 6
 c
-      if(max_nvect .lt. nvect) then
-        write(ui,*) 'VALPR_64: max_nvect < nvect', max_nvect, nvect
-        write(ui,*) 'Aborting...'
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      alloc_stat = 0
+      allocate(workev(3*nvect), rwork(nvect), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "VALPR_64: Mem. allocation is unseccesfull"
+        write(*,*) "for the arrays workev, rwork"
+        write(*,*) "alloc_stat, nvect = ", alloc_stat, nvect
+        write(*,*) "Aborting..."
         stop
       endif
+
+      allocate(select(nvect), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "VALPR_64: Mem. allocation is unseccesfull"
+        write(*,*) "for the array select"
+        write(*,*) "alloc_stat, nvect = ", alloc_stat, nvect
+        write(*,*) "Aborting..."
+        stop
+      endif
+
 c
       shift2 = (0.0d0,0.0d0)
 c
@@ -481,6 +504,8 @@ c        do i=1,nval
 c          write (*,*) "i, d(i) = ", i, d(i)
 c        enddo
 c      endif
+c
+      deallocate(workev, rwork, STAT=alloc_stat)
 c
       return 
       end

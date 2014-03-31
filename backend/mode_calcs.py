@@ -262,7 +262,8 @@ class Simmo(Modes):
                 os.mkdir("Matrices")
 
         # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
-        max_n = self.n_effs.max()
+        max_n = np.real(self.n_effs.max()) # Take real part so that complex conjugate pair 
+        # Eigenvalues are equal distance from shift and invert point and therefore both found.
         k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
 
         if self.structure.hyperbolic == True:
