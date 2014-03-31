@@ -270,9 +270,6 @@ class Simmo(Modes):
         else:
             shift = 1.01*max_n**2 * k_0**2  \
             - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
-        print repr(shift)
-        print repr(self.n_effs)
-        # shift = np.array(shift)
 
 
         self.E_H_field = 1   # Selected formulation (1=E-Field, 2=H-Field)

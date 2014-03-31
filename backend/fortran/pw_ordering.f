@@ -13,10 +13,9 @@ C  input output parameters
 
 C  local parameters - purely internal
 C
-      integer*8 PW_max
-      parameter (PW_max = 200)
-      integer*8 index_pw(PW_max)
-      complex*16 beta_z_pw(PW_max)
+      integer alloc_stat
+      integer*8, dimension(:), allocatable :: index_pw
+      complex*16, dimension(:), allocatable :: beta_z_pw
       integer*8 ui
       integer*8 px, py, s, s2
       double precision vec_kx, vec_ky, d
@@ -26,6 +25,21 @@ C
 CCCCCCCCCCC Start Program CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
       ui = 6
+C
+      allocate(index_pw(neq_PW), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "pw_ordering: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (index_pw) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
+      allocate(beta_z_pw(neq_PW), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "pw_ordering: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (beta_z_pw) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
 C
       d = lat_vecs(1,1)  
       pi = 3.141592653589793d0
@@ -67,6 +81,8 @@ C
         enddo
       endif
 C
+      deallocate(index_pw)
+      deallocate(beta_z_pw)
 C
       return
       end 
