@@ -93,13 +93,13 @@ substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
 NW_diameter = 120
 NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
     inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
-    make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)
+    make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 2.0)
 
 # Find num_BM for each simulation (wl) as num decreases w decreasing index contrast.
-max_n = max([NWs.inclusion_a.n(wl).real for wl in wavelengths])
+max_n = max([NW_array.inclusion_a.n(wl).real for wl in wavelengths])
 
 def simulate_stack(light):
-    num_BM = round(max_num_BMs * NWs.inclusion_a.n(light.wl_nm).real/max_n)
+    num_BM = round(max_num_BMs * NW_array.inclusion_a.n(light.wl_nm).real/max_n)
     # num_BM = max_num_BMs
     
     ################ Evaluate each layer individually ##############
@@ -112,7 +112,7 @@ def simulate_stack(light):
     solar_cell list MUST be ordered from bottom to top!
     """
 
-    stack = Stack((sim_substrate sim_NWs, sim_superstrate))
+    stack = Stack((sim_substrate, sim_NWs, sim_superstrate))
     stack.calc_scat(pol = 'TE')
 
     return [stack] 

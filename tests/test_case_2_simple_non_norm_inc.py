@@ -40,7 +40,7 @@ def setup_module(module):
     num_BM = 20
     NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
         inclusion_a = materials.Si_c, background = materials.Air,
-        loss = True, make_mesh_now = False, mesh_file='600_120.mail')
+        loss = True, make_mesh_now = False, mesh_file='600_120-4testing.mail')
     sim_NW_array = NW_array.calc_modes(light, num_BM = num_BM)
 
     superstrate  = objects.ThinFilm(period = period, height_nm = 'semi_inf',

@@ -44,7 +44,7 @@ NW_diameter = 120
 num_BM = 40
 NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
     inclusion_a = materials.Si_c, background = materials.Air,
-    loss = True, make_mesh_now = False, mesh_file='600_120.mail')
+    loss = True, make_mesh_now = False, mesh_file='600_120-4testing.mail')
 
 superstrate  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)

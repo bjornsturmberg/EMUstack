@@ -939,16 +939,49 @@ def Fabry_Perot_res(stack_list, freq_list, kx_list, lay_interest=1):
     fig = plt.figure()
     ax1 = fig.add_subplot(1,1,1)
 
-    cax = ax1.matshow(image,cmap=plt.cm.gray_r)
-    xtikz = ['']+(kx_list/1e3).tolist()
-    ax1.set_xticklabels(xtikz)
-    ytikz = ['']+(freq_list/1e12).tolist()
-    ax1.set_yticklabels(ytikz)
+    cax = ax1.imshow(image,cmap=plt.cm.gray_r, interpolation='none')#, \
+
+
+    from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+    shape = np.shape(plot_mat)
+    # freq_spacing = (freq_list[-1]-freq_list[0])/1e12/3.0
+    # print freq_spacing
+    majorLocator   = MultipleLocator(shape[1]-1)
+    ax1.xaxis.set_major_locator(majorLocator)
+    majorLocator   = MultipleLocator(shape[0]-1)
+    ax1.yaxis.set_major_locator(majorLocator)
+    xlims = [kx_list[0]/1e3, kx_list[-1]/1e3]
+    ax1.set_xticklabels(xlims)
+    ylims = [freq_list[0]/1e12, freq_list[-1]/1e12]
+    ax1.set_yticklabels(ylims)
+
+    # majorFormatter = FormatStrFormatter('%d')
+    # ax1.xaxis.set_major_formatter(majorFormatter)
+    # #for the minor ticks, use no labels; default NullFormatter
+    # minorLocator   = MultipleLocator(5)
+    # ax1.xaxis.set_minor_locator(minorLocator)
+
+
+
+        # extent=[kx_list[0]/1e3,kx_list[-1]/1e3,freq_list[-1]/1e12,freq_list[0]/1e12],\
+        # aspect=kx_list[-1]/kx_list[0])
+    # cax = ax1.imshow(image,cmap=plt.cm.gray_r, interpolation='none', \
+    #     extent=[kx_list[0]/1e3,kx_list[-1]/1e3,freq_list[-1]/1e12,freq_list[0]/1e12])
+    # cax.set_aspect(2)
+    # cax = ax1.imshow(image,cmap=plt.cm.gray_r)
+    # start, end = ax1.get_xlim()
+    # ax1.xaxis.set_ticks(np.arange(start, end, 5))
+    # start, end = ax1.get_ylim()
+    # ax1.yaxis.set_ticks(np.arange(start, end, 5))
+    # ytikz = ['']+(freq_list/1e12).tolist()
+    # print "freq_list", freq_list
+    # print "ytikz", ytikz
+    # ax1.set_yticklabels(ytikz)
 
     cbar = fig.colorbar(cax)
     # cbar = plt.colorbar(extend='neither')
     cbar.set_label(r'$|I - R_{21}PR_{21}P|$',size=18)
-    ax1.set_xlabel(r'$k_x$')
+    ax1.set_xlabel(r'$k_x (\times 10^3$)')
     ax1.set_ylabel(r'$f$ (THz)')
     ax1.axis('image')
     # plt.suptitle('%s Scattering Matrix' % extra_title,fontsize=title_font)
