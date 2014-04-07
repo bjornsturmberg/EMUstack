@@ -212,7 +212,7 @@ class Simmo(Modes):
         self.prop_consts    = None
         self.mode_pol       = None
 
-    def calc_modes(self, num_BM, delete_working = True):
+    def calc_modes(self, num_BM, delete_working = True, plotting3d = False):
         """ Run the FEM in Fortran """
         st = self.structure
         wl = self.light.wl_nm
@@ -286,8 +286,8 @@ class Simmo(Modes):
             self.structure.plot_imag, self.structure.plot_abs,
             num_pw_per_pol, cmplx_max, self.nb_typ_el)
 
-        self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, self.table_nod, \
-        self.type_el, self.x_arr = resm
+        self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
+        self.table_nod, self.type_el, self.x_arr = resm
 
         self.J, self.J_dag = np.mat(J), np.mat(J_dag)
 
@@ -295,6 +295,17 @@ class Simmo(Modes):
             # self.sol1 = None
             self.sol2 = None
             # self.mode_pol = None
+
+        if not plotting3d:
+            del self.sol1
+            del self.table_nod
+            del self.type_el
+            del self.x_arr
+            del self.n_msh_pts
+            del self.n_msh_el
+            del self.n_effs
+            del self.E_H_field
+            del self.nb_typ_el
 
 def r_t_mat(lay1, lay2):
     """ Return R12, T12, R21, T21 at an interface between lay1

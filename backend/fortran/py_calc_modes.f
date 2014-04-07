@@ -930,6 +930,6 @@ C
         write(ui,*) "  and   we're  done!"
       endif
 C
-      deallocate(overlap_L)
+      deallocate(a,b,c,overlap_L)
 
       end subroutine calc_modes

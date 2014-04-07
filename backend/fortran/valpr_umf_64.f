@@ -506,6 +506,7 @@ c        enddo
 c      endif
 c
       deallocate(workev, rwork, STAT=alloc_stat)
+      deallocate(select)
 c
       return 
       end
