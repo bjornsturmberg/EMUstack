@@ -2,17 +2,10 @@
 
       INTEGER*8 n,indx(n),M,NSTACK
       complex*16 arr(n)
-      PARAMETER (M=7,NSTACK=2000)
+      PARAMETER (M=7,NSTACK=50)
       INTEGER*8 i,indxt,ir,itemp,j,jstack,k,l,istack(NSTACK)
       double precision a
       double precision arr_0(NSTACK), arr_max, r_tmp, tol
-c
-      if(n .gt. NSTACK) then
-        write(*,*) "z_indexx: npt > NSTACK : ",
-     *    n, NSTACK
-        write(*,*) "z_indexx: Aborting..."
-        stop
-      endif
 c
       do 11 j=1,n
         indx(j) = j
@@ -81,7 +74,12 @@ c
 5       indx(l+1)=indx(j)
         indx(j)=indxt
         jstack=jstack+2
-        if(jstack.gt.NSTACK)pause 'NSTACK too small in indexx'
+C        if(jstack.gt.NSTACK)pause 'NSTACK too small in indexx'
+        if(jstack.gt.NSTACK) then
+          write(*,*) 'NSTACK too small in indexx'
+          write(*,*) "z_indexx: Aborting..."
+          stop
+        endif
         if(ir-i+1.ge.j-l)then
           istack(jstack)=ir
           istack(jstack-1)=i

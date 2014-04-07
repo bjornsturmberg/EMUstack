@@ -72,12 +72,12 @@ c     E_H_field = 2 => Magnetic field formulation (H-Field)
       integer*8 npt_p3, numberprop_N
 C  Variable used by valpr
       integer*8 nval, nvect, itermax, ltrav
-      integer*8 nval_max
-      parameter(nval_max=2000)
       integer*8 n_conv, i_base
       double precision ls_data(10)
 c      integer*8 pointer_int(20), pointer_cmplx(20)
-      integer*8 index(nval_max), n_core(2)
+C      integer*8 index(2000), n_core(2)
+      integer*8, dimension(:), allocatable :: index
+      integer*8 n_core(2)
       complex*16 z_beta, z_tmp, z_tmp0
       integer*8 n_edge, n_face, n_ddl, n_ddl_max, n_k
 c     variable used by UMFPACK
@@ -206,6 +206,15 @@ C      Checks = 0 ! check completeness, energy conservation
         write(*,*) "The allocation is unsuccessful"
         write(*,*) "allocate_status = ", allocate_status
         write(*,*) "Not enough memory for overlap_L"
+        write(*,*) "nval = ", nval
+        write(*,*) "Aborting..."
+        stop
+      endif
+      allocate(index(nval), STAT=allocate_status)
+      if (allocate_status /= 0) then
+        write(*,*) "The allocation is unsuccessful"
+        write(*,*) "allocate_status = ", allocate_status
+        write(*,*) "Not enough memory for index"
         write(*,*) "nval = ", nval
         write(*,*) "Aborting..."
         stop
@@ -930,6 +939,6 @@ C
         write(ui,*) "  and   we're  done!"
       endif
 C
-      deallocate(a,b,c,overlap_L)
+      deallocate(a,b,c,index,overlap_L)
 
       end subroutine calc_modes
