@@ -40,7 +40,7 @@ font = {'size'   : 18}
 matplotlib.rc('font', **font)
 
 linesstrength = 2.5
-title_font = 14
+title_font = 10
 
 
 #######################################################################################
@@ -114,13 +114,15 @@ def tick_function(energies):
     return wls
 
 #######################################################################################
-def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, stack_label=1, add_name=''):
+def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, stack_label=1,\
+     add_name='', add_height=None):
     """ Plot t,r,a for each layer & total, then save each to text files. """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
     params_2_print += '\n'r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
 
+    if add_height!=0: add_name += zeros_int_str(add_height)
     stack_label = zeros_int_str(stack_label)
 
     # wavelengths = np.array([s.layers[0].light.wl_nm for s in stack_wl_list]) #look at first layer to find wls.
@@ -833,7 +835,7 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
 
 
 
-def single_order_T(stack_list, angles, chosen_PW_order):
+def single_order_T(stack_list, angles, chosen_PW_order,add_height=None,add_title=None):
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
 
@@ -858,15 +860,16 @@ def single_order_T(stack_list, angles, chosen_PW_order):
             trans += np.abs(stack.trans_vector[n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
             store_trans = np.append(store_trans,trans)
 
-        print angles
-        print store_trans
-
         ax1.plot(angles,store_trans, label="m = %s" %str(pxs))#, linewidth=linesstrength)
 
+    ax1.set_ylim((0, 2.5))
     ax1.legend()
-    ax1.set_xlabel(r'$\theta$')
     ax1.set_ylabel(r'$|E|_{trans}$')
-    plt.savefig('t_order(theta)')
+    plt.suptitle('h = %4.0f' % add_title)
+    ax1.set_xlabel(r'$\lambda$ (nm)')
+    plt.savefig('t_order_wl%s'% zeros_int_str(add_height))
+    # ax1.set_xlabel(r'$\theta$')
+    # plt.savefig('t_order(theta)'+add_height)
 #######################################################################################
 
 
