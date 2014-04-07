@@ -4,9 +4,21 @@
       complex*16 arr(n)
       PARAMETER (M=7,NSTACK=50)
       INTEGER*8 i,indxt,ir,itemp,j,jstack,k,l,istack(NSTACK)
-      double precision a
-      double precision arr_0(NSTACK), arr_max, r_tmp, tol
+      double precision a, arr_max, r_tmp, tol
+      integer :: allocate_status=0
+      double precision, dimension(:), allocatable :: arr_0
 c
+C
+      allocate(arr_0(n), STAT=allocate_status)
+      if (allocate_status /= 0) then
+        write(*,*) "The allocation is unsuccessful"
+        write(*,*) "allocate_status = ", allocate_status
+        write(*,*) "z_indexx: Not enough memory for arr_0"
+        write(*,*) "nval = ", n
+        write(*,*) "Aborting..."
+        stop
+      endif
+C
       do 11 j=1,n
         indx(j) = j
 11    continue
@@ -91,4 +103,6 @@ C        if(jstack.gt.NSTACK)pause 'NSTACK too small in indexx'
         endif
       endif
       goto 1
+C
+      deallocate(arr_0)
       END
