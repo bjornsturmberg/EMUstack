@@ -101,6 +101,11 @@ def gen_params_string(param_layer, light, max_num_BMs=0):
 
 def zeros_int_str(zero_int):
     """ Convert integer into string with '0' in place of ' ' """
+    # if zero_int == 0:
+    #     fmt_string = '0000'
+    # else:
+    #     string = '%4.0f' % zero_int
+    #     fmt_string = string.replace(' ','0')
     string = '%4.0f' % zero_int
     fmt_string = string.replace(' ','0')
     return fmt_string
@@ -115,7 +120,7 @@ def tick_function(energies):
 
 #######################################################################################
 def t_r_a_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, stack_label=1,\
-     add_name='', add_height=None):
+     add_name='', add_height=0):
     """ Plot t,r,a for each layer & total, then save each to text files. """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
@@ -856,13 +861,15 @@ def single_order_T(stack_list, angles, chosen_PW_order,add_height=None,add_title
             ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
             axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
 
-            trans = np.abs(stack.trans_vector[axis_indices]).reshape(-1,) # Outgoing TE polarisation
-            trans += np.abs(stack.trans_vector[n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+            trans = np.abs(stack.special_trans[axis_indices]).reshape(-1,) # Outgoing TE polarisation
+            trans += np.abs(stack.special_trans[n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+            # trans = np.abs(stack.trans_vector[axis_indices]).reshape(-1,) # Outgoing TE polarisation
+            # trans += np.abs(stack.trans_vector[n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
             store_trans = np.append(store_trans,trans)
 
         ax1.plot(angles,store_trans, label="m = %s" %str(pxs))#, linewidth=linesstrength)
 
-    ax1.set_ylim((0, 2.5))
+    ax1.set_ylim((0, 5.0))
     ax1.legend()
     ax1.set_ylabel(r'$|E|_{trans}$')
     plt.suptitle('h = %4.0f' % add_title)
@@ -993,12 +1000,32 @@ def Fabry_Perot_res(stack_list, freq_list, kx_list, lay_interest=1):
 
 
 
+def modal_t_r_a(stack_wl_list, wavelengths, params_2_print, \
+     mode=0, add_name='', add_height=None):
+    """ Plot t,r,a for each layer & total, then save each to text files. """
+
+    height_list = stack_wl_list[0].heights_nm()[::-1]
+    params_2_print += '\n'r'$h_t,...,h_b$ = '
+    params_2_print += ''.join('%4d, ' % num for num in height_list)
+
+    if add_height!=None: add_name += zeros_int_str(add_height)
 
 
+    for m in mode:
+        mode_abs = []
+        for i in range(len(wavelengths)): 
+            mode_abs.append(float(stack_wl_list[i].special_abs[m]))
 
+        fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+        ax1 = fig.add_subplot(1,1,1)
+        ax1.plot(wavelengths,mode_abs)#, linewidth=linesstrength)
 
-
-
+        # ax1.set_ylim((0, 3.0))
+        # ax1.legend()
+        # ax1.set_ylabel(r'$|E|_{trans}$')
+        # plt.suptitle('h = %4.0f' % add_title)
+        # ax1.set_xlabel(r'$\lambda$ (nm)')
+        plt.savefig(add_name+'-m%d'% m)
 
 
 
