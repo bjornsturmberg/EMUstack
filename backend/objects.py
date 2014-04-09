@@ -108,6 +108,7 @@ class NanoStruct(object):
         - `plot_real'     : Plot the real part of modal fields.
         - `plot_imag'     : Plot the imaginary part of modal fields.
         - `plot_abs'      : Plot the absolute value of modal fields.
+        - `plotting3d'    : Plot the fields in 3D.
     """
 
 
@@ -124,7 +125,8 @@ class NanoStruct(object):
         make_mesh_now=True, force_mesh=False, 
         mesh_file='NEED_FILE.mail', 
         lc_bkg=0.09, lc2=1.0, lc3=1.0, lc4=1.0, lc5=1.0, lc6=1.0,
-        plot_modes=False, plot_real=1, plot_imag=0, plot_abs=0):
+        plot_modes=False, plot_real=1, plot_imag=0, plot_abs=0,
+        plotting3d = False):
         self.geometry      = geometry
         self.period        = period
         self.diameter1     = diameter1
@@ -192,6 +194,7 @@ class NanoStruct(object):
         self.plot_real     = plot_real
         self.plot_imag     = plot_imag
         self.plot_abs      = plot_abs 
+        self.plotting3d    = plotting3d 
 
     def make_mesh(self):
         if self.geometry == '2D_array':

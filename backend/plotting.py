@@ -769,7 +769,7 @@ def t_func_k_plot(stack_list, light_object, n_H):
         print k0
         # k_array = [(light_object.k_pll + 2*np.pi*m/stack.period) for m in np.linspace(-n_PW_p_pols/2,n_PW_p_pols/2,n_PW_p_pols)]
 
-        trans_k = np.abs(stack.trans_vector[0:n_PW_p_pols]) # ASSUMES TE polarisation
+        trans_k = np.abs(stack.vec_coef_down[-1][0:n_PW_p_pols]) # ASSUMES TE polarisation
         trans_k_array = np.array(trans_k).reshape(-1,)
         tot_trans_k_array = trans_k_array#**2
         # print repr(trans_k)
@@ -805,14 +805,14 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
 
         # print axis_indices
         # print stack.T_net[axis_indices]
-        # print stack.trans_vector[0:n_PW_p_pols]
+        # print stack.vec_coef_down[-1][0:n_PW_p_pols]
 
 
         # specular_in = stack.layers[0].specular_order
         # trans_k = np.abs(stack.T_net[0:n_PW_p_pols,specular_in]).reshape(-1,) # Outgoing TE polarisation 
-        trans_k = np.abs(stack.trans_vector[0:n_PW_p_pols]).reshape(-1,) # Outgoing TE polarisation 
-        # trans_k = np.abs(stack.trans_vector[n_PW_p_pols-1:-1]).reshape(-1,) # Outgoing TM polarisation
-        # trans_k = np.abs(stack.trans_vector) # both polarisation in transmission
+        trans_k = np.abs(stack.vec_coef_down[-1][0:n_PW_p_pols]).reshape(-1,) # Outgoing TE polarisation 
+        # trans_k = np.abs(stack.vec_coef_down[-1][n_PW_p_pols-1:-1]).reshape(-1,) # Outgoing TM polarisation
+        # trans_k = np.abs(stack.vec_coef_down[-1]) # both polarisation in transmission
         trans_k_array = np.array(trans_k).reshape(-1,)
 
         select_trans = trans_k_array[axis_indices]
@@ -861,10 +861,8 @@ def single_order_T(stack_list, angles, chosen_PW_order,add_height=None,add_title
             ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
             axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
 
-            trans = np.abs(stack.special_trans[axis_indices]).reshape(-1,) # Outgoing TE polarisation
-            trans += np.abs(stack.special_trans[n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
-            # trans = np.abs(stack.trans_vector[axis_indices]).reshape(-1,) # Outgoing TE polarisation
-            # trans += np.abs(stack.trans_vector[n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+            trans = np.abs(stack.vec_coef_down[-1][axis_indices]).reshape(-1,) # Outgoing TE polarisation
+            trans += np.abs(stack.vec_coef_down[-1][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
             store_trans = np.append(store_trans,trans)
 
         ax1.plot(angles,store_trans, label="m = %s" %str(pxs))#, linewidth=linesstrength)
@@ -895,18 +893,20 @@ def fields_3d(pstack, wl, nnodes=6):
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
 
+    lay_ref = -2
 
-    meat = pstack.layers[-2]
+    meat = pstack.layers[lay_ref]
     gmsh_file_pos = meat.structure.mesh_file
 
-    vec_coef = pstack.t_list[-2]
+    vec_coef = np.concatenate((pstack.vec_coef_down[lay_ref],pstack.vec_coef_up[lay_ref+1]))
     h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-    wl_normed = pstack.layers[-2].wl_norm()
+    wl_normed = pstack.layers[lay_ref].wl_norm()
 
     EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,   
         meat.E_H_field, meat.n_msh_el, meat.n_msh_pts, 
         nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod,
         meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos)
+
 
 
 

@@ -212,7 +212,7 @@ class Simmo(Modes):
         self.prop_consts    = None
         self.mode_pol       = None
 
-    def calc_modes(self, num_BM, delete_working = True, plotting3d = False):
+    def calc_modes(self, num_BM, delete_working = True):
         """ Run the FEM in Fortran """
         st = self.structure
         wl = self.light.wl_nm
@@ -296,7 +296,7 @@ class Simmo(Modes):
             self.sol2 = None
             # self.mode_pol = None
 
-        if not plotting3d:
+        if not self.structure.plotting3d:
             del self.sol1
             del self.table_nod
             del self.type_el

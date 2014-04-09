@@ -249,6 +249,8 @@ class Stack(object):
 
         down_fluxes = []
         up_flux     = []
+        self.vec_coef_down = []
+        self.vec_coef_up = []
 
     # Start by composing U matrix which is same for all air layers.
     # diagonal with 1 for propagating, i for evanescent TE and -i for evanescent TM plane wave orders
@@ -279,6 +281,8 @@ class Stack(object):
 
     # up into semi-inf off top air gap
         d_plus  = rnet_list[-1]*d_minus
+        self.vec_coef_down.append(d_minus)
+        self.vec_coef_up.append(d_plus)
     # total reflected flux
         flux_TE = np.linalg.norm(d_plus[0:num_prop_in])**2
         flux_TM = np.linalg.norm(d_plus[neq_PW:neq_PW+num_prop_in])**2
@@ -296,6 +300,8 @@ class Stack(object):
 
             f2_minus = inv_t12_list[-i-1]*f1_minus
             f2_plus  = rnet_list[-2*i-3]*P_list[-i-1]*f2_minus
+            self.vec_coef_down.append(f2_minus)
+            self.vec_coef_up.append(f2_plus)
 
             f1_minus = inv_t21_list[-i-2]*P_list[-i-1]*f2_minus
 
@@ -303,7 +309,8 @@ class Stack(object):
         f1_plus  = rnet_list[0]*f1_minus
 
         f2_minus = tnet_list[0]*f1_minus
-        self.trans_vector = f2_minus
+        self.vec_coef_down.append(f2_minus)
+        # self.trans_vector = f2_minus
         flux_TE  = np.linalg.norm(f2_minus[0:num_prop_out])**2
         flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
         down_fluxes.append(flux_TE + flux_TM)
