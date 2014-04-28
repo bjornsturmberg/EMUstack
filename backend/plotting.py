@@ -840,7 +840,7 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
 
 
 
-def single_order_T(stack_list, angles, chosen_PW_order,add_height=None,add_title=None):
+def single_order_T(stack_list, angles, chosen_PW_order,lay_interest=-1, add_height=None,add_title=None):
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
 
@@ -861,8 +861,8 @@ def single_order_T(stack_list, angles, chosen_PW_order,add_height=None,add_title
             ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
             axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
 
-            trans = np.abs(stack.vec_coef_down[-1][axis_indices]).reshape(-1,) # Outgoing TE polarisation
-            trans += np.abs(stack.vec_coef_down[-1][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+            trans = np.abs(stack.vec_coef_down[lay_interest][axis_indices]).reshape(-1,) # Outgoing TE polarisation
+            trans += np.abs(stack.vec_coef_down[lay_interest][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
             store_trans = np.append(store_trans,trans)
 
         ax1.plot(angles,store_trans, label="m = %s" %str(pxs))#, linewidth=linesstrength)
@@ -870,9 +870,11 @@ def single_order_T(stack_list, angles, chosen_PW_order,add_height=None,add_title
     ax1.set_ylim((0, 5.0))
     ax1.legend()
     ax1.set_ylabel(r'$|E|_{trans}$')
-    plt.suptitle('h = %4.0f' % add_title)
     ax1.set_xlabel(r'$\lambda$ (nm)')
-    plt.savefig('t_order_wl%s'% zeros_int_str(add_height))
+    if add_title != None: plt.suptitle('h = %4.0f' % add_title)
+    if add_height!= None: add_title += zeros_int_str(add_height)
+    if add_title != None: plt.savefig('t_order_wl%s'% add_title)
+    else: plt.savefig('t_order_wl')
     # ax1.set_xlabel(r'$\theta$')
     # plt.savefig('t_order(theta)'+add_height)
 #######################################################################################
@@ -893,19 +895,21 @@ def fields_3d(pstack, wl, nnodes=6):
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
 
-    lay_ref = -2
+    for i in range(len(pstack.layers)-2): #remove -2 once semi inf TFs can be plotted
+        lay = -i -2
+        extra_name = ''
 
-    meat = pstack.layers[lay_ref]
-    gmsh_file_pos = meat.structure.mesh_file
+        meat = pstack.layers[lay]
+        gmsh_file_pos = meat.structure.mesh_file[0:-5]
 
-    vec_coef = np.concatenate((pstack.vec_coef_down[lay_ref],pstack.vec_coef_up[lay_ref+1]))
-    h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-    wl_normed = pstack.layers[lay_ref].wl_norm()
+        vec_coef = np.concatenate((pstack.vec_coef_down[lay],pstack.vec_coef_up[lay+1]))
+        h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+        wl_normed = pstack.layers[lay].wl_norm()
 
-    EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,   
-        meat.E_H_field, meat.n_msh_el, meat.n_msh_pts, 
-        nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod,
-        meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos)
+        EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,   
+            meat.E_H_field, meat.n_msh_el, meat.n_msh_pts, 
+            nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod,
+            meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos, extra_name)
 
 
 

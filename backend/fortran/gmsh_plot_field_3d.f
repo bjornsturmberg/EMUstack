@@ -3,8 +3,8 @@ c   evecs(i) : contains the values of the solution for all points
 
       subroutine gmsh_plot_field_3d (lambda, h, nval,   
      *     E_H_field, nel, npt, nnodes, 
-     *     type_el, nb_typ_el, n_eff, 
-     *     table_nod, beta, evecs, vec_coef, x, gmsh_file_pos)
+     *     type_el, nb_typ_el, n_eff, table_nod, beta,
+     *     evecs, vec_coef, x, gmsh_file_pos, extra_name)
 
 
       implicit none
@@ -14,11 +14,12 @@ c   evecs(i) : contains the values of the solution for all points
       complex*16 n_eff(nb_typ_el)
       complex*16 x(2,npt), beta(nval), vec_coef(2*nval)
       complex*16 evecs(3,nnodes+7,nval,nel)
-      character gmsh_file_pos
+      character(*) gmsh_file_pos
+      character(*) extra_name
 
 Cf2py intent(in) lambda, h, nval, E_H_field, nel, npt, nnodes, 
 Cf2py intent(in) type_el, nb_typ_el, table_nod, n_eff
-Cf2py intent(in) x, beta, vec_coef, evecs, gmsh_file_pos
+Cf2py intent(in) x, beta, vec_coef, evecs, gmsh_file_pos, extra_name
 
 Cf2py depend(type_el) nel
 Cf2py depend(table_nod) nnodes, nel
@@ -54,6 +55,7 @@ c     Local variables
       integer*8 npt_h, i_h, npt_3d_p1  ! Resolution: number of points over the thickness h
       integer*8 i1, i, j, iel, inod, ival, debug, ui
       integer*8 namelen_gmsh, namelen_dir, namelen_tchar
+      integer*8 namelen_extra
 
       integer*8 gmsh_type_prism, choice_type, typ_e
       integer*8 number_tags, physic_tag, list_tag(6)
@@ -167,11 +169,13 @@ c
 
       namelen_gmsh = len_trim(gmsh_file_pos)
       namelen_dir = len_trim(dir_name)
+      namelen_extra = len_trim(extra_name)
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           gmsh_file_pos(1:namelen_gmsh) //
+     *           extra_name(1:namelen_extra) 
      *           // '_field_' // tE_H // '_abs2_3d.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.IntervalsType = 3;"
@@ -179,7 +183,8 @@ c
      *     " "" {"
 
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           gmsh_file_pos(1:namelen_gmsh) //
+     *           extra_name(1:namelen_extra) 
      *           // '_field_' // tE_H // 'x_re_3d.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.IntervalsType = 3;"
@@ -187,7 +192,8 @@ c
      *     " "" {"
 
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           gmsh_file_pos(1:namelen_gmsh) //
+     *           extra_name(1:namelen_extra) 
      *           // '_field_' // tE_H // 'y_re_3d.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.IntervalsType = 3;"
@@ -195,7 +201,8 @@ c
      *     " "" {" 
 
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           gmsh_file_pos(1:namelen_gmsh) //
+     *           extra_name(1:namelen_extra) 
      *           // '_field_' // tE_H // 'z_re_3d.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.IntervalsType = 3;"
@@ -203,7 +210,8 @@ c
      *     " "" {"
 
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           gmsh_file_pos(1:namelen_gmsh) //
+     *           extra_name(1:namelen_extra) 
      *           // '_field_' // tE_H // 'v_re_3d.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.IntervalsType = 3;"
@@ -388,7 +396,8 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           gmsh_file_pos(1:namelen_gmsh) //
+     *           extra_name(1:namelen_extra) 
      *           // '_abs2_3d.msh'
       open (unit=26,file=tchar)
       write(26,'(a11)') "$MeshFormat"
