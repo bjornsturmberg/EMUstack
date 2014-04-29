@@ -3,10 +3,10 @@ c  P1-element is used to represent the  3D vector field.
 c  P2-element is used to represent each component of the 3D vector field.
 c
       subroutine gmsh_plot_field (plot_val, E_H_field, nval, 
-     *     nel, npt, nnodes, table_nod, type_el, eps_eff,
-     *     x, Beta, sol, sol_tmp, vec_coef, h, hz, 
-     *     gmsh_file_pos, dir_name, nb_typ_el, 
-     *       q_average, plot_real, plot_imag, plot_abs)
+     *     nel, npt, nnodes, nb_typ_el, table_nod, type_el, 
+     *     eps_eff, x, beta, sol, vec_coef, h, hz, 
+     *     gmsh_file_pos,  
+     *     q_average, plot_real, plot_imag, plot_abs)
 c
       implicit none
       integer*8 nval, nel, npt, nnodes, plot_val, E_H_field
@@ -15,16 +15,18 @@ c
       integer*8 table_nod(nnodes,nel), type_el(nel)
       complex*16 x(2,npt), eps_eff(nb_typ_el)
       complex*16 sol(3,nnodes+7,nval,nel)
-      complex*16 sol_tmp(3,nnodes,nel)
       complex*16 vec_coef(2*nval)
-      complex*16 Beta(nval)
-      character*(*) gmsh_file_pos, dir_name
+      complex*16 beta(nval)
+      character(*) gmsh_file_pos
 c
 c     Local variables
 
       integer*8 nnodes_0
       parameter (nnodes_0 = 6)
 
+      character*20 dir_name
+      integer alloc_stat
+      complex*16, dimension(:,:,:), allocatable :: sol_tmp
       double precision xel(3,nnodes_0), xel_p1(3,3)
       complex*16 sol_el(3,nnodes_0)
       double precision sol_el_abs2(nnodes_0), sol_max(4)
@@ -43,6 +45,24 @@ c      real v_im, v_re
       character tval*4, buf*3
       character*1 tE_H
       integer*8 namelength, charlength
+
+
+Cf2py intent(in) plot_val, E_H_field, nval
+Cf2py intent(in) nel, npt, nnodes nb_typ_el, table_nod, type_el
+Cf2py intent(in) eps_eff, x, beta, sol, vec_coef, h, hz
+Cf2py intent(in) gmsh_file_pos,
+Cf2py intent(in) q_average, plot_real, plot_imag, plot_abs
+
+Cf2py depend(table_nod) nnodes, nel
+Cf2py depend(type_el) nel
+Cf2py depend(x) npt
+Cf2py depend(eps_eff) nb_typ_el
+Cf2py depend(sol) nnodes, nval, nel
+Cf2py depend(vec_coef) nval
+Cf2py depend(beta) nval
+
+
+      dir_name = "Output/Fields"
 c
 c  ii = sqrt(-1)
       ii = cmplx(0.0d0, 1.0d0)
@@ -56,6 +76,18 @@ c
         write(ui,*) "gmsh_plot_field: Aborting..."
         stop
       endif
+C
+      alloc_stat = 0
+      allocate(sol_tmp(3,nnodes,nel), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "gmsh_plot_field: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (sol_tmp) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
 c
       if (hz .lt. 0 .or. hz .gt. h ) then
         write(ui,*)
@@ -153,8 +185,8 @@ c
       enddo
 c     
       do ival=1,nval
-        P_down = EXP(ii*Beta(ival)*hz)   !  Introduce Propagation in -z
-        P_up = EXP(ii*Beta(ival)*(h-hz)) !  Introduce Propagation in +z
+        P_down = EXP(ii*beta(ival)*hz)   !  Introduce Propagation in -z
+        P_up = EXP(ii*beta(ival)*(h-hz)) !  Introduce Propagation in +z
         coef_down = vec_coef(ival) * P_down
         coef_up = vec_coef(ival+nval) * P_up
 
@@ -162,7 +194,7 @@ c        coef_down = vec_coef(ival) * P_up
 c        coef_up = vec_coef(ival+nval) * P_down
 
         coef_t = coef_up + coef_down
-        coef_z = (coef_up - coef_down)/Beta(ival) ! Taking into accout the change of variable for Ez
+        coef_z = (coef_up - coef_down)/beta(ival) ! Taking into accout the change of variable for Ez
         do iel=1,nel
           do i=1,nnodes
             do j=1,2
@@ -385,6 +417,8 @@ c     *     g24.16,17(",",g24.16),"};")
         write(ui,*) "gmsh_plot_field: plot_val = ", plot_val
         write(ui,*) "gmsh_plot_field: sol_max = ", sol_max
       endif
-c
+C
+      deallocate(sol_tmp)
+C
       return
       end

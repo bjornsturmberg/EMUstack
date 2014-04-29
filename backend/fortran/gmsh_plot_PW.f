@@ -4,28 +4,30 @@ c  P2-element is used to represent each component of the 3D vector field.
 c
       subroutine gmsh_plot_PW (plot_val, E_H_field, 
      *     nel, npt, nnodes, neq_PW, bloch_vec, 
-     *  table_nod, x, lat_vecs, lambda, eps_eff_0,
-     *  sol_tmp, vec_coef_down, vec_coef_up, 
-     *  index_pw_inv, ordre_ls, h, hz, gmsh_file_pos, dir_name,
-     *       q_average, plot_real, plot_imag, plot_abs)
+     *     table_nod, x, lat_vecs, lambda, eps_eff_0,
+     *     vec_coef_down, vec_coef_up, 
+     *     index_pw_inv, ordre_ls, hz, gmsh_file_pos,
+     *     q_average, plot_real, plot_imag, plot_abs)
 c
       implicit none
       integer*8 nel, npt, nnodes, plot_val, E_H_field
       integer*8 neq_PW, ordre_ls
-      double precision h, hz, lat_vecs(2,2), bloch_vec(2)
+      double precision hz, lat_vecs(2,2), bloch_vec(2)
       integer*8 table_nod(nnodes,nel), index_pw_inv(neq_PW)
       complex*16 eps_eff_0 ! dielctric constand of the semi-infinite medium
       complex*16 x(2,npt)
-      complex*16 sol_tmp(3,nnodes,nel)
       complex*16 vec_coef_down(2*neq_PW)
       complex*16 vec_coef_up(2*neq_PW)
-      character*(*) gmsh_file_pos, dir_name
+      character(*) gmsh_file_pos
 c
 c     Local variables
 
       integer*8 nnodes_0
       parameter (nnodes_0 = 6)
 
+      character*20 dir_name
+      integer alloc_stat
+      complex*16, dimension(:,:,:), allocatable :: sol_tmp
       double precision xel(3,nnodes_0), xel_p1(3,3)
       complex*16 sol_el(3,nnodes_0)
       double precision sol_el_abs2(nnodes_0), sol_max(4)
@@ -53,6 +55,23 @@ c     Local variables
       character tval*4, buf*3
       character*1 tE_H
       integer*8 namelength, charlength
+
+
+Cf2py intent(in) plot_val, E_H_field
+Cf2py intent(in) nel, npt, nnodes, neq_PW, bloch_vec,
+Cf2py intent(in) table_nod, x, lat_vecs, lambda, eps_eff_0
+Cf2py intent(in) vec_coef_down, vec_coef_up,
+Cf2py intent(in) index_pw_inv, ordre_ls, hz, gmsh_file_pos
+Cf2py intent(in) q_average, plot_real, plot_imag, plot_abs
+
+Cf2py depend(table_nod) nnodes, nel
+Cf2py depend(index_pw_inv) neq_PW
+Cf2py depend(x) npt
+Cf2py depend(vec_coef_down) neq_PW
+Cf2py depend(vec_coef_up) neq_PW
+
+
+      dir_name = "Output/Fields"
 c
 c  ii = sqrt(-1)
       ii = cmplx(0.0d0, 1.0d0)
@@ -60,7 +79,7 @@ c
       ui = 6
       debug = 0
 c
-      d = lat_vecs(1,1)  
+      d = lat_vecs(1,1)
       pi = 3.141592653589793d0
       bloch1 = bloch_vec(1)
       bloch2 = bloch_vec(2)
@@ -77,6 +96,18 @@ c
         write(ui,*) "gmsh_plot_PW: Aborting..."
         stop
       endif
+C
+      alloc_stat = 0
+      allocate(sol_tmp(3,nnodes,nel), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "gmsh_plot_PW: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (sol_tmp) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
       if (hz .lt. 0) then
         write(ui,*)
         write(ui,*) "gmsh_plot_field: invalid value for hz"
@@ -188,16 +219,15 @@ C           Plane waves order s
 C  	  RE
             PlaneW_RE(1) = beta/norm   ! x component
             PlaneW_RE(2) = -alpha/norm ! y component
-            PlaneW_RE(3) = 0.0d0               ! z component
+            PlaneW_RE(3) = 0.0d0       ! z component
 C  	  RK
             PlaneW_RK(1) = alpha/norm  ! x component
             PlaneW_RK(2) = beta/norm   ! y component
-            PlaneW_RK(3) = -norm/gamma   ! z component
+            PlaneW_RK(3) = -norm/gamma ! z component
             s = s + 1
-c          endif
 
-            P_up = EXP(ii*gamma*hz)   !  Introduce Propagation in +z
-            P_down = 1.0d0 / P_up          !  Introduce Propagation in -z
+            P_up = EXP(ii*gamma*hz)    !  Introduce Propagation in +z
+            P_down = 1.0d0 / P_up      !  Introduce Propagation in -z
 c
             coef_RE_down = vec_coef_down(s2) * P_down / chi
             coef_RE_up = vec_coef_up(s2) * P_up / chi
@@ -441,6 +471,8 @@ c     *     g24.16,17(",",g24.16),"};")
         write(ui,*) "gmsh_plot_PW: plot_val = ", plot_val
         write(ui,*) "gmsh_plot_PW: sol_max = ", sol_max
       endif
-c
+C
+      deallocate(sol_tmp)
+C
       return
       end

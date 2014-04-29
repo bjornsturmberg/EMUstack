@@ -21,10 +21,10 @@ Cf2py intent(in) lambda, h, nval, E_H_field, nel, npt, nnodes,
 Cf2py intent(in) type_el, nb_typ_el, table_nod, n_eff
 Cf2py intent(in) x, beta, vec_coef, evecs, gmsh_file_pos, extra_name
 
-Cf2py depend(type_el) nel
 Cf2py depend(table_nod) nnodes, nel
-Cf2py depend(n_eff) nb_typ_el
+Cf2py depend(type_el) nel
 Cf2py depend(x) npt
+Cf2py depend(n_eff) nb_typ_el
 Cf2py depend(beta) nval
 Cf2py depend(vec_coef) nval
 Cf2py depend(evecs) nnodes, nval, nel
@@ -541,7 +541,6 @@ c     VI : Vector prism
 c
       deallocate(sol_3d, map_p1, inv_map_p1, type_data)
 c
-
       return
       end  subroutine gmsh_plot_field_3d
 

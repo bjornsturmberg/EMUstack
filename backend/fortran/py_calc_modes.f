@@ -131,7 +131,7 @@ c     new breed of variables to prise out of a, b and c
       complex*16, target :: sol1(3,nnodes+7,nval,nel)
       complex*16, target :: sol2(3,nnodes+7,nval,nel)
       complex*16, pointer :: sol(:,:,:,:)
-      complex*16 sol_avg(3, npt)
+C      complex*16 sol_avg(3, npt)
       complex*16 overlap_J(2*neq_PW, nval)
       complex*16 overlap_J_dagger(nval, 2*neq_PW)
 C      complex*16 overlap_K(nval, 2*neq_PW)
@@ -256,8 +256,8 @@ C
         write(ui,*)
         write(ui,*) "start_date = ", start_date
         write(ui,*) "start_time = ", start_time
-        write(ui,*) "MAIN: ord_PW = ", ordre_ls
-        write(ui,*) "MAIN: neq_PW = ", neq_PW
+        write(ui,*) "py_calc_modes.f: ord_PW = ", ordre_ls
+        write(ui,*) "py_calc_modes.f: neq_PW = ", neq_PW
         write(ui,*)
       endif
 C
@@ -272,17 +272,17 @@ C
       endif
 C
       if ((3*npt+nel+nnodes*nel) .gt. int_max) then
-         write(ui,*) "MAIN: (3*npt+nel+nnodes*nel) + npt > int_max : ",
-     *    (3*npt+nel+nnodes*nel), int_max
-         write(ui,*) "MAIN: increase the size of int_max"
-         write(ui,*) "MAIN: Aborting..."
+         write(ui,*) "py_calc_modes.f: (3*npt+nel+nnodes*nel) + npt",
+     *     " > int_max : ", (3*npt+nel+nnodes*nel), int_max
+         write(ui,*) "py_calc_modes.f: increase the size of int_max"
+         write(ui,*) "py_calc_modes.f: Aborting..."
          stop
       endif
       if ((7*npt) .gt. cmplx_max) then
-         write(ui,*) "MAIN: (7*npt) > cmplx_max : ",
+         write(ui,*) "py_calc_modes.f: (7*npt) > cmplx_max : ",
      *    (7*npt), cmplx_max
-         write(ui,*) "MAIN: increase the size of cmplx_max"
-         write(ui,*) "MAIN: Aborting..."
+         write(ui,*) "py_calc_modes.f: increase the size of cmplx_max"
+         write(ui,*) "py_calc_modes.f: Aborting..."
          stop
       endif
 C
@@ -320,14 +320,14 @@ C
       n_ddl = n_edge + n_face + npt_p3
 C
       if (debug .eq. 1) then
-        write(ui,*) "MAIN: npt, nel = ", npt, nel
-        write(ui,*) "MAIN: npt_p3 = ", npt_p3
-        write(ui,*) "MAIN: n_vertex, n_edge, n_face, nel = ", 
+        write(ui,*) "py_calc_modes.f: npt, nel = ", npt, nel
+        write(ui,*) "py_calc_modes.f: npt_p3 = ", npt_p3
+        write(ui,*) "py_calc_modes.f: n_vertex, n_edge, n_face, nel = ", 
      *    (npt - n_edge), n_edge, n_face, nel
-        write(ui,*) "MAIN: 2D case of the Euler characteristic : ",
-     *    "V-E+F=1-(number of holes)"
-        write(ui,*) "MAIN: Euler characteristic: V - E + F = ", 
-     *    (npt - n_edge) - n_edge + n_face
+        write(ui,*) "py_calc_modes.f: 2D case of the Euler characteristic:&
+     & V-E+F=1-(number of holes)"
+        write(ui,*) "py_calc_modes.f: Euler characteristic: V - E + F &
+     &= ", (npt - n_edge) - n_edge + n_face
       endif
 cC
 cC-----------
@@ -363,7 +363,7 @@ C
      *      x_arr, a(ip_period_N), a(ip_nperiod_N),
      *      table_nod, lat_vecs)
         if (debug .eq. 1) then
-          write(ui,*) "MAIN: ###### periodic_N_E_F"
+          write(ui,*) "py_calc_modes.f: ###### periodic_N_E_F"
         endif
         call periodic_N_E_F (n_ddl, a(ip_type_N_E_F), 
      *      b(jp_x_N_E_F), a(ip_period_N_E_F), 
@@ -371,13 +371,14 @@ C
         call periodic_cond (i_cond, n_ddl, neq, a(ip_type_N_E_F),
      *       a(ip_period_N_E_F), a(ip_eq), debug)
       else
-        write(ui,*) "MAIN: i_cond has invalid value : ", i_cond
-        write(ui,*) "MAIN: Aborting..."
+        write(ui,*) "py_calc_modes.f: i_cond has invalid value : ",
+     *       i_cond
+        write(ui,*) "py_calc_modes.f: Aborting..."
         stop
       endif
 C
       if (debug .eq. 1) then
-        write(ui,*) "MAIN: neq, n_ddl = ", neq, n_ddl
+        write(ui,*) "py_calc_modes.f: neq, n_ddl = ", neq, n_ddl
       endif
 C
 C=====calcul du vecteur de localisation des colonnes
@@ -411,11 +412,11 @@ c
 c      ip = ip_col_ptr + neq + 1 + nonz_max
       ip = ip_col_ptr + neq + 1
       if (ip .gt. int_max) then
-         write(ui,*) "main: ip > int_max : ",
+         write(ui,*) "py_calc_modes.f: ip > int_max : ",
      *    ip, int_max
-         write(ui,*) "main: nonz_max = ", nonz_max
-         write(ui,*) "main: increase the size of int_max"
-         write(ui,*) "main: Aborting..."
+         write(ui,*) "py_calc_modes.f: nonz_max = ", nonz_max
+         write(ui,*) "py_calc_modes.f: increase the size of int_max"
+         write(ui,*) "py_calc_modes.f: Aborting..."
          stop
       endif
 c
@@ -435,9 +436,9 @@ c     sorting csr ...
      *  a(ip_work_sort2))
 
       if (debug .eq. 1) then
-        write(ui,*) "main: nonz_max = ", nonz_max
-        write(ui,*) "main: nonz = ", nonz
-        write(ui,*) "main: cmplx_max/nonz = ", 
+        write(ui,*) "py_calc_modes.f: nonz_max = ", nonz_max
+        write(ui,*) "py_calc_modes.f: nonz = ", nonz
+        write(ui,*) "py_calc_modes.f: cmplx_max/nonz = ", 
      *    dble(cmplx_max)/dble(nonz)
       endif
 
@@ -545,11 +546,11 @@ C     *    - bloch_vec(1)**2 - bloch_vec(2)**2
 
 
       if(debug .eq. 1) then
-        write(ui,*) "MAIN: n_core = ", n_core
+        write(ui,*) "py_calc_modes.f: n_core = ", n_core
         if(E_H_field .eq. 1) then
-          write(ui,*) "MAIN: E-Field formulation"
+          write(ui,*) "py_calc_modes.f: E-Field formulation"
         else
-          write(ui,*) "MAIN: H-Field formulation"
+          write(ui,*) "py_calc_modes.f: H-Field formulation"
         endif
       endif
 C
@@ -565,7 +566,7 @@ C
           pp(i) = 1.0d0/eps_eff(i)
         enddo
       else
-        write(ui,*) "MAIN: action indef. avec E_H_field = ", 
+        write(ui,*) "py_calc_modes.f: action indef. avec E_H_field = ", 
      *                  E_H_field
         write(ui,*) "Aborting..."
         stop
@@ -588,7 +589,7 @@ C
 C     Assemble the coefficient matrix A and the right-hand side F of the
 C     finite element equations
       if (debug .eq. 1) then
-        write(ui,*) "MAIN: Asmbly: call to asmbly"
+        write(ui,*) "py_calc_modes.f: Asmbly: call to asmbly"
       endif
       call cpu_time(time1_asmbl)
       call asmbly (i_cond, i_base, nel, npt, n_ddl, neq, nnodes,
@@ -603,12 +604,12 @@ C     factorization of the globale matrice
 C     -----------------------------------
 C
       if (debug .eq. 1) then
-        write(ui,*) "MAIN:        Adjoint(1) / Prime(2)", n_k
-c        write(ui,*) "MAIN: factorisation: call to znsy"
+        write(ui,*) "py_calc_modes.f:        Adjoint(1) / Prime(2)", n_k
+c        write(ui,*) "py_calc_modes.f: factorisation: call to znsy"
       endif
 C
       if (debug .eq. 1) then
-        write(ui,*) "MAIN: call to valpr"
+        write(ui,*) "py_calc_modes.f: call to valpr"
       endif
       call valpr_64 (i_base, nvect, nval, neq, itermax, ltrav,
      *  tol, nonz, a(ip_row), a(ip_col_ptr), c(kp_mat1_re),
@@ -619,12 +620,13 @@ C
      *  numeric, filenum, status, control, info_umf, debug)
 c
       if (n_conv .ne. nval) then
-         write(ui,*) "MAIN: convergence problem with valpr_64"
-         write(ui,*) "MAIN: n_conv != nval : ",
+         write(ui,*) "py_calc_modes.f: convergence problem with &
+     &valpr_64"
+         write(ui,*) "py_calc_modes.f: n_conv != nval : ",
      *    n_conv, nval
          write(ui,*) "n_core(1), n_eff(n_core(1)) = ",
      *                n_core(1), n_eff(n_core(1))
-         write(ui,*) "MAIN: Aborting..."
+         write(ui,*) "py_calc_modes.f: Aborting..."
          stop
       endif
 c
@@ -689,11 +691,10 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCC  End Prime, Adjoint Loop  CCCCCCCCCCCCCCCCCCCCCC
 C
-
 C  Orthogonal integral
       pair_warning = 0
       if (debug .eq. 1) then 
-        write(ui,*) "MAIN: Field product"
+        write(ui,*) "py_calc_modes.f: Field product"
       endif
       overlap_file = "Normed/Orthogonal.txt"
       call cpu_time(time1_J)
@@ -703,16 +704,17 @@ C  Orthogonal integral
      *  sol1, sol2, overlap_L,
      *  overlap_file, PrintAll, pair_warning, k_0)
 
-      if (pair_warning .ne. 0) then
-        write(ui,*) "conjugate pair problem", pair_warning, "times"
+      if (pair_warning .ne. 0 .and. nval .le. 20) then
+        write(ui,*) "py_calc_modes.f: Warning found 1 BM of cmplx conj"
+        write(ui,*) "pair, increase num_BMs to include the other."
       endif
 
       call cpu_time(time2_J)
       if (debug .eq. 1) then
-        write(ui,*) "MAIN: CPU time for orthogonal :",
+        write(ui,*) "py_calc_modes.f: CPU time for orthogonal :",
      *  (time2_J-time1_J)
       endif     
-
+C
 C    Save Original solution
       if (plot_modes .eq. 1) then
         dir_name = "Output/Fields"
@@ -728,7 +730,7 @@ C     *       bloch_vec, dir_name)
           call gmsh_post_process (i, E_H_field, nval, nel, npt, 
      *       nnodes, table_nod, type_el, nb_typ_el,
      *       n_eff, x_arr, beta1, sol1,
-     *       sol_avg, a(ip_visite), gmsh_file_pos, dir_name, 
+     *       a(ip_visite), gmsh_file_pos, dir_name, 
      *       q_average, plot_real, plot_imag, plot_abs)
         enddo 
       close (unit=34)
@@ -736,20 +738,20 @@ C     *       bloch_vec, dir_name)
 C        
 C  Normalisation
       if(debug .eq. 1) then
-        write(ui,*) "MAIN: Field  Normalisation"
+        write(ui,*) "py_calc_modes.f: Field  Normalisation"
       endif 
       call cpu_time(time1_J)
       call normalisation (nval, nel, nnodes, table_nod,
      *  sol1, sol2, overlap_L)  
       call cpu_time(time2_J)
       if (debug .eq. 1) then
-        write(ui,*) "MAIN: CPU time for normalisation :",
+        write(ui,*) "py_calc_modes.f: CPU time for normalisation :",
      *  (time2_J-time1_J)
       endif  
 C
 C  Orthonormal integral
       if (PrintAll .eq. 1) then
-        write(ui,*) "MAIN: Product of normalised field"
+        write(ui,*) "py_calc_modes.f: Product of normalised field"
         overlap_file = "Normed/Orthogonal_n.txt"
         call cpu_time(time1_J)
         call orthogonal (nval, nel, npt, nnodes, 
@@ -757,21 +759,17 @@ C  Orthonormal integral
      *    type_el, x_arr, beta1, beta2,
      *    sol1, sol2, overlap_L,
      *    overlap_file, PrintAll, pair_warning, k_0)
-        if (pair_warning .ne. 0) then
-        write(ui,*) "conjugate pair problem", pair_warning, "times"
-        endif
         call cpu_time(time2_J)
-          write(ui,*) "MAIN: CPU time for orthogonal :",
+          write(ui,*) "py_calc_modes.f: CPU time for orthogonal :",
      *    (time2_J-time1_J)
       endif
-
-
+C
 C  Plane wave ordering
       call pw_ordering (neq_PW, lat_vecs, bloch_vec, 
      *  index_pw_inv, debug, ordre_ls, k_0)
 C  J_overlap
       if (debug .eq. 1) then
-        write(ui,*) "MAIN: J_overlap Integral"
+        write(ui,*) "py_calc_modes.f: J_overlap Integral"
       endif
       call cpu_time(time1_J)
       call J_overlap (nval, nel, npt, nnodes, 
@@ -781,13 +779,13 @@ C  J_overlap
      *  index_pw_inv, PrintAll, ordre_ls)
       call cpu_time(time2_J)
       if (debug .eq. 1) then
-        write(ui,*) "MAIN: CPU time for J_overlap :",
+        write(ui,*) "py_calc_modes.f: CPU time for J_overlap :",
      *  (time2_J-time1_J)
       endif
 C
 C  J_dagger_overlap
       if (debug .eq. 1) then
-        write(ui,*) "MAIN: J_dagger_overlap Integral"
+        write(ui,*) "py_calc_modes.f: J_dagger_overlap Integral"
       endif
       call cpu_time(time1_J)
       call J_dagger_overlap (nval, nel, npt, nnodes, 
@@ -797,10 +795,9 @@ C  J_dagger_overlap
      *  index_pw_inv, PrintAll, ordre_ls)
       call cpu_time(time2_J)
       if (debug .eq. 1) then
-        write(ui,*) "MAIN: CPU time for J_dagger_overlap :",
+        write(ui,*) "py_calc_modes.f: CPU time for J_dagger_overlap :",
      *  (time2_J-time1_J)
       endif
-
 C
 C
 C
@@ -808,13 +805,13 @@ CCCCCCCCCCCCCCCCCCCCC Calculation Checks CCCCCCCCCCCCCCCCCCCCC
 C
 C  Completeness Check
 C      if (Checks .eq. 1) then
-C        write(ui,*) "MAIN: K_overlap Integral"
+C        write(ui,*) "py_calc_modes.f: K_overlap Integral"
 C        call K_overlap(nval, nel, npt, nnodes, 
 C     *    nb_typ_el, type_el, table_nod, x_arr,   
 C     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
 C     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
 C     *    PrintAll, k_0, ordre_ls)
-C        write(ui,*) "MAIN: Completeness Test"
+C        write(ui,*) "py_calc_modes.f: Completeness Test"
 C        call Completeness (nval, neq_PW, 
 C     *    overlap_K, overlap_J)
 C      write(ui,*) "numberprop_N = ", numberprop_N
@@ -822,13 +819,13 @@ C      endif
 CC
 CC  Completeness Check
 C      if (Checks .eq. 1) then
-C        write(ui,*) "MAIN: K_overlap Integral"
+C        write(ui,*) "py_calc_modes.f: K_overlap Integral"
 C        call K_overlap(nval, nel, npt, nnodes, 
 C     *    nb_typ_el, type_el, table_nod, x_arr,   
 C     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
 C     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
 C     *    PrintAll, k_0, ordre_ls)
-C        write(ui,*) "MAIN: Completeness Test"
+C        write(ui,*) "py_calc_modes.f: Completeness Test"
 C        call Completeness (nval, neq_PW, 
 C     *    overlap_K, overlap_J)
 C  Search for number of propagating Bloch Modes

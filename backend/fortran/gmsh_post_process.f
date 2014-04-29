@@ -5,9 +5,9 @@ c
 
       subroutine gmsh_post_process (plot_val, E_H_field, nval, 
      *     nel, npt, nnodes, table_nod, type_el, nb_typ_el, 
-     *  n_eff, x, val_cmplx, sol, sol_avg, visite, 
-     *  gmsh_file_pos, dir_name, 
-     *  q_average, plot_real, plot_imag, plot_abs)
+     *     n_eff, x, val_cmplx, sol, visite, 
+     *     gmsh_file_pos, dir_name, 
+     *     q_average, plot_real, plot_imag, plot_abs)
 
       implicit none
       integer*8 nval, nel, npt, nnodes, plot_val, E_H_field
@@ -16,7 +16,8 @@ c
       integer*8 visite(npt)
       complex*16 x(2,npt), n_eff(nb_typ_el)
       complex*16 sol(3,nnodes+7,nval,nel)
-      complex*16 sol_avg(3,npt)
+      integer alloc_stat
+      complex*16, dimension(:,:), allocatable :: sol_avg
 
       complex*16 val_cmplx(nval)
 
@@ -58,6 +59,16 @@ c
         stop
       endif
 C
+      alloc_stat = 0
+      allocate(sol_avg(3,npt), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "gmsh_post_process: Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (sol_avg) = ", alloc_stat
+        write(*,*) "Aborting..."
+        stop
+      endif
+C
+
       if (plot_val .eq. 0) return
 c
       if (E_H_field .eq. 1) then
@@ -566,6 +577,8 @@ c     *     g24.16,17(",",g24.16),"};")
         write(ui,*) "gmsh_post_process: plot_val = ", plot_val
         write(ui,*) "gmsh_post_process: sol_max = ", sol_max
       endif
-c
+C
+      deallocate(sol_avg)
+C
       return
       end

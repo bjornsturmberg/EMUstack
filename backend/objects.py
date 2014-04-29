@@ -524,8 +524,8 @@ class Light(object):
                         [np.cos(phi), np.sin(phi)], dtype='float64')
 
         # Avoid the degeneracies that occur at normal incidence (FEM does not deal well with them)
-        if abs(self.k_pll).sum() < 1e-5:
-            self.k_pll[0] += 1e-5
+        if abs(self.k_pll).sum() < 1e-10:
+            self.k_pll[0] += 1e-10
 
     def _air_ref(self, period):
         """ Return a :Anallo: corresponding to this :Light: in free space.

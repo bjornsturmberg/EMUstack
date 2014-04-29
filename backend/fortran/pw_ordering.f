@@ -26,6 +26,7 @@ CCCCCCCCCCC Start Program CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
       ui = 6
 C
+      alloc_stat = 0
       allocate(index_pw(neq_PW), STAT=alloc_stat)
       if (alloc_stat /= 0) then
         write(*,*) "pw_ordering: Mem. allocation is unseccesfull"

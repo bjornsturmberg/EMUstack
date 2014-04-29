@@ -122,6 +122,7 @@ class Anallo(Modes):
             self.sort_order = s
         else:
             s = self.air_ref().sort_order
+            self.sort_order = s
             assert s.shape == k_z_unsrt.shape, (s.shape, 
                 k_z_unsrt.shape)
 
