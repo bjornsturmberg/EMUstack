@@ -904,10 +904,9 @@ def fields_3d(pstack, wl, nnodes=6):
     meat = pstack.layers[lay]
     gmsh_file_pos = meat.structure.mesh_file[0:-5]
 
-    # vec_coef = np.concatenate((pstack.vec_coef_down[lay],pstack.vec_coef_up[lay+1]))
-    # vec_coef = np.concatenate((pstack.vec_coef_down[1],pstack.vec_coef_up[1]))
-    vec_coef_up = np.zeros(shape=(np.shape(pstack.vec_coef_down[1])),dtype='complex128')
-    vec_coef = np.concatenate((pstack.vec_coef_down[1],vec_coef_up))
+    vec_coef = np.concatenate((pstack.vec_coef_down[1],pstack.vec_coef_up[1]))
+    # vec_coef_up = np.zeros(shape=(np.shape(pstack.vec_coef_down[1])),dtype='complex128')
+    # vec_coef = np.concatenate((pstack.vec_coef_down[1],vec_coef_up))
     # h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
     h_normed = 2.0
     wl_normed = pstack.layers[lay].wl_norm()
@@ -949,41 +948,34 @@ def fields_3d(pstack, wl, nnodes=6):
     bloch_vec = bun.k_pll_norm()
     ordre_ls = bun.max_order_PWs
     index_pw = bun.sort_order
-    index_pw_inv = [index_pw[i] for i in index_pw]
+    index_pw_inv = np.zeros(shape=(np.shape(index_pw)),dtype='int')
+    for s in range(len(index_pw)):
+        s2 = index_pw[s]
+        index_pw_inv[s2] = s
+    index_pw_inv += 1 # convert to fortran indices (starting from 1)
 
 
     eps_eff_0 = bun.n()**2
     # eps_eff_0 = bun.n()   # or should it be n!!!???
 
     vec_coef_up = pstack.vec_coef_up[0]
-    vec_coef_up = meat.R12[:,0]
-
     vec_coef_down = pstack.vec_coef_down[0]
+    
+# # Semi-inf case
+    # vec_coef_up = meat.R12[:,0] # TE polarisation
+    # vec_coef_up = meat.R12[:,neq_PW] # TM polarisation
+
     # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
-    # vec_coef_down[0] = 1.0
+    # vec_coef_down[neq_PW] = 1.0
 
     # print vec_coef_down
-    # print vec_coef_up
+    print vec_coef_up
     # print meat.R12
 
-# Inverse of index_pw
-    # index_pw_inv = [index_pw[i] for i in range(len(index_pw))]
 
-    index_pw_inv = np.zeros(shape=(np.shape(index_pw)),dtype='int')
 
-    for s in range(len(index_pw)):
-        s2 = index_pw[s]
-        index_pw_inv[s2] = s
-
-    index_pw_inv += 1
-    # print "index_pw", index_pw
-    print "index_pw_inv", index_pw_inv
-
-    # index_pw_inv = [26, 23, 15, 10, 14, 22, 17, 6, 2, 7, 16, 28, 12, 3, 1, 4, 11, 27, 19, 9, 5, 8, 18, 25, 21, 13, 20, 24, 29]
-    # print index_pw_inv
-
-    # index_pw_inv = [26, 22, 15, 11, 16, 23, 14, 6, 3, 7, 18, 27, 10, 2, 1, 5, 13, 28, 17, 8, 4, 9, 20, 24, 19, 12, 21, 25, 29]
     # print "index_pw_inv", index_pw_inv
+    # print vec_coef_up
 
 
     select_h = 0.0

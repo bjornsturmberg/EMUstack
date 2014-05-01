@@ -2,10 +2,10 @@
 c     Explicit inputs
      *    lambda, nval, ordre_ls,
      *    debug, mesh_file, npt, nel,
-     *    n_eff, bloch_vec, shift,
+     *    nb_typ_el, n_eff, bloch_vec, shift,
      *    E_H_field, i_cond, itermax,
      *    plot_modes, plot_real, plot_imag, plot_abs,
-     *    neq_PW, cmplx_max, nb_typ_el, 
+     *    neq_PW, cmplx_max,
 c     Outputs
      *    beta1, overlap_J, overlap_J_dagger, sol1, sol2, mode_pol,
      *    table_nod, type_el, x_arr)
@@ -93,7 +93,6 @@ c     Wavelength lambda is in normalised units of d_in_nm
       double precision freq, lat_vecs(2,2), tol
       double precision k_0, pi, lx, ly, bloch_vec(2), bloch_vec_k(2)
       complex*16 shift
-Cf2py intent(in) shift
 C  Timing variables
       double precision time1, time2
       double precision time1_fact, time2_fact
@@ -142,7 +141,17 @@ C      complex*16 overlap_L(nval_max, nval_max)
       complex*16, target :: beta1(nval), beta2(nval)
       complex*16, pointer :: beta(:)
       complex*16 mode_pol(4,nval)
- 
+
+Cf2py intent(in) lambda, nval, ordre_ls
+Cf2py intent(in) debug, mesh_file, npt, nel
+Cf2py intent(in) n_eff, bloch_vec, shift
+Cf2py intent(in) E_H_field, i_cond, itermax, neq_PW 
+Cf2py intent(in) plot_modes, plot_real, plot_imag, plot_abs
+Cf2py intent(in) cmplx_max, nb_typ_el
+
+Cf2py depend(n_eff) nb_typ_el
+Cf2py depend(index_pw_inv) neq_PW
+
 Cf2py intent(out) beta1, overlap_J, overlap_J_dagger
 Cf2py intent(out) sol1, sol2, mode_pol, table_nod, type_el, x_arr
 
@@ -798,16 +807,6 @@ C  J_dagger_overlap
         write(ui,*) "py_calc_modes.f: CPU time for J_dagger_overlap :",
      *  (time2_J-time1_J)
       endif
-
-
-
-
-C      write(ui,*) "index_pw_inv    ", index_pw_inv
-
-
-
-
-
 C
 C
 C

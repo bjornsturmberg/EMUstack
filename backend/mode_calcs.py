@@ -113,9 +113,9 @@ class Anallo(Modes):
         k_z_unsrt = sqrt(self.k()**2 - alphas**2 - betas**2)
         # print k_z_unsrt
         # print 'hisdf'
-        print "------------------"
-        print "k_z_unsrt", k_z_unsrt
-        print "------------------"
+        # print "------------------"
+        # print "k_z_unsrt", k_z_unsrt
+        # print "------------------"
 
 
 
@@ -133,10 +133,10 @@ class Anallo(Modes):
             assert s.shape == k_z_unsrt.shape, (s.shape, 
                 k_z_unsrt.shape)
 
-        print "------------------"
-        print "k_z_unsrt[s]", k_z_unsrt[s]
-        print "------------------"
-        
+        # print "------------------"
+        # print "k_z_unsrt[s]", k_z_unsrt[s]
+        # print "------------------"
+
         # Find element of k_z_unsrt corresponding to zeroth order
         self.specular_order = np.nonzero((pxs[s] == 0) * (pys[s] == 0))[0][0]
 
@@ -289,19 +289,24 @@ class Simmo(Modes):
         i_cond    = 2   # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
         itermax   = 30  # Maximum number of iterations for convergence
 
+        # index_pw_inv = [0, 6, 2, 7, 10, 3, 1, 4, 12, 8, 5, 9, 13]
+        # print 'BEFORE', index_pw_inv
+
         resm = EMUstack.calc_modes(
             self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
             self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-            self.n_effs, self.k_pll_norm(), shift,
+            self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
             self.E_H_field, i_cond, itermax, 
             self.structure.plot_modes, self.structure.plot_real, 
             self.structure.plot_imag, self.structure.plot_abs,
-            num_pw_per_pol, cmplx_max, self.nb_typ_el)
+            num_pw_per_pol, cmplx_max)
 
         self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
         self.table_nod, self.type_el, self.x_arr = resm
 
         self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+
+        # print 'AFTER', index_pw_inv
 
         if delete_working:
             # self.sol1 = None

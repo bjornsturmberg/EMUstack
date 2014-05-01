@@ -63,7 +63,6 @@ C     Ordering
           endif
         enddo
       enddo
-      write(ui,*), beta_z_pw
 C      
       call z_indexx (neq_PW, beta_z_pw, index_pw)
       if (debug .eq. 1) then
@@ -76,13 +75,12 @@ C       Inverse of index_pw
         index_pw_inv(s2) = s
       enddo
 C
-C      if (debug .eq. 1) then
+      if (debug .eq. 1) then
         do s=1,neq_PW
           s2 = index_pw(s)
           write(ui,*) beta_z_pw(s2)
         enddo
-        write(ui,*) "bOOOOOOOOOOO"
-C      endif
+      endif
 C
       deallocate(index_pw)
       deallocate(beta_z_pw)
