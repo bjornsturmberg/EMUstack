@@ -111,6 +111,13 @@ class Anallo(Modes):
         betas  = beta0 + pys * 2 * pi / d
 
         k_z_unsrt = sqrt(self.k()**2 - alphas**2 - betas**2)
+        # print k_z_unsrt
+        # print 'hisdf'
+        print "------------------"
+        print "k_z_unsrt", k_z_unsrt
+        print "------------------"
+
+
 
         if self.is_air_ref:
             assert not hasattr(self, 'sort_order'), \
@@ -126,6 +133,10 @@ class Anallo(Modes):
             assert s.shape == k_z_unsrt.shape, (s.shape, 
                 k_z_unsrt.shape)
 
+        print "------------------"
+        print "k_z_unsrt[s]", k_z_unsrt[s]
+        print "------------------"
+        
         # Find element of k_z_unsrt corresponding to zeroth order
         self.specular_order = np.nonzero((pxs[s] == 0) * (pys[s] == 0))[0][0]
 

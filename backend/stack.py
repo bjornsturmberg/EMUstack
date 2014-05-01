@@ -20,8 +20,8 @@
 """
 
 import numpy as np
-from objects import Anallo, Simmo
 from mode_calcs import r_t_mat
+from mode_calcs import Anallo
 from scipy import sqrt
 
 class Stack(object):
@@ -158,7 +158,7 @@ class Stack(object):
         self._check_periods_are_consistent()
 
         nu_intfaces     = 2*(len(self.layers)-1)
-        neq_PW          = self.layers[0].structure.num_pw_per_pol # assumes incident from homogeneous film
+        neq_PW          = self.layers[-1].structure.num_pw_per_pol # assumes incident from homogeneous film
         PW_pols         = 2*neq_PW
         I_air           = np.matrix(np.eye(PW_pols),dtype='D')
 
@@ -244,8 +244,6 @@ class Stack(object):
         self.a_list = []
         num_prop_air    = self.layers[-1].air_ref().num_prop_pw_per_pol
         num_prop_in     = self.layers[-1].num_prop_pw_per_pol
-        num_prop_out    = self.layers[0].num_prop_pw_per_pol
-        out             = self.layers[0].specular_order
 
         down_fluxes = []
         up_flux     = []
@@ -311,9 +309,13 @@ class Stack(object):
         f2_minus = tnet_list[0]*f1_minus
         self.vec_coef_down.append(f2_minus)
         # self.trans_vector = f2_minus
-        flux_TE  = np.linalg.norm(f2_minus[0:num_prop_out])**2
-        flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
-        down_fluxes.append(flux_TE + flux_TM)
+    # can only calculate the energy flux in homogeneous films
+        if isinstance(self.layers[0], Anallo):
+            num_prop_out    = self.layers[0].num_prop_pw_per_pol
+            # out             = self.layers[0].specular_order
+            flux_TE  = np.linalg.norm(f2_minus[0:num_prop_out])**2
+            flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
+            down_fluxes.append(flux_TE + flux_TM)
 
     # calculate absorptance in each layer
         for i in range(1,len(down_fluxes)-1):

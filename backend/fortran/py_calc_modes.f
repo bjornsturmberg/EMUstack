@@ -798,6 +798,16 @@ C  J_dagger_overlap
         write(ui,*) "py_calc_modes.f: CPU time for J_dagger_overlap :",
      *  (time2_J-time1_J)
       endif
+
+
+
+
+C      write(ui,*) "index_pw_inv    ", index_pw_inv
+
+
+
+
+
 C
 C
 C

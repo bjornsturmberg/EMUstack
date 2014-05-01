@@ -897,92 +897,105 @@ def fields_3d(pstack, wl, nnodes=6):
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
 
-    for i in range(len(pstack.layers)-2): #remove -2 once semi inf TFs can be plotted
-        lay = -i -2
-        extra_name = ''
+    # for i in range(len(pstack.layers)-1): #remove -2 once semi inf TFs can be plotted
+    lay = 1
+    extra_name = ''
 
-        meat = pstack.layers[lay]
-        gmsh_file_pos = meat.structure.mesh_file[0:-5]
+    meat = pstack.layers[lay]
+    gmsh_file_pos = meat.structure.mesh_file[0:-5]
 
-        vec_coef = np.concatenate((pstack.vec_coef_down[lay],pstack.vec_coef_up[lay+1]))
-        h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-        wl_normed = pstack.layers[lay].wl_norm()
+    # vec_coef = np.concatenate((pstack.vec_coef_down[lay],pstack.vec_coef_up[lay+1]))
+    # vec_coef = np.concatenate((pstack.vec_coef_down[1],pstack.vec_coef_up[1]))
+    vec_coef_up = np.zeros(shape=(np.shape(pstack.vec_coef_down[1])),dtype='complex128')
+    vec_coef = np.concatenate((pstack.vec_coef_down[1],vec_coef_up))
+    # h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+    h_normed = 2.0
+    wl_normed = pstack.layers[lay].wl_norm()
 
-        EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,   
-            meat.E_H_field, meat.n_msh_el, meat.n_msh_pts, 
-            nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod,
-            meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos, extra_name)
+    # EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,   
+    #     meat.E_H_field, meat.n_msh_el, meat.n_msh_pts, 
+    #     nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod,
+    #     meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos, extra_name)
+
+
 
 #
 # plot fields inside 
 #
-        eps_eff = meat.n_effs**2
-        # select_h = 0.0  # top interface
-        select_h = h_normed    # bottom interface
+    eps_eff = meat.n_effs**2
+    select_h = 0.0  # top interface
+    # select_h = h_normed    # bottom interface
 
-        tmp_name = 1
-        q_average = 0
+    tmp_name = 1
+    q_average = 0 # at a discontinuity, use average value if q_average = 1
 
-        dir_name = "Output/Fields"
-        if not os.path.exists(dir_name):
-            os.mkdir(dir_name)
-        EMUstack.gmsh_plot_field (tmp_name, meat.E_H_field, meat.num_BM, 
-            meat.n_msh_el, meat.n_msh_pts, nnodes, meat.nb_typ_el, meat.table_nod, meat.type_el,
-            eps_eff, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, select_h, 
-            gmsh_file_pos, q_average, meat.structure.plot_real, meat.structure.plot_imag,
-            meat.structure.plot_abs)
+    dir_name = "Output/Fields"
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
+    EMUstack.gmsh_plot_field (tmp_name, meat.E_H_field, meat.num_BM, 
+        meat.n_msh_el, meat.n_msh_pts, nnodes, meat.nb_typ_el, meat.table_nod, meat.type_el,
+        eps_eff, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, select_h, 
+        gmsh_file_pos, q_average, meat.structure.plot_real, 
+        meat.structure.plot_imag, meat.structure.plot_abs)
 
 
 #
 # plot fields in PWs
 #
 
-        lat_vec = [[1.0, 0.0], [0.0, 1.0]]
-        bun = pstack.layers[0] # substrate
-        neq_PW = bun.structure.num_pw_per_pol
-        bloch_vec = bun.k_pll_norm()
-        ordre_ls = bun.max_order_PWs
-        index_pw = bun.sort_order
-        index_pw_inv = [index_pw[i] for i in index_pw]
+    lat_vec = [[1.0, 0.0], [0.0, 1.0]]
+    bun = pstack.layers[-1] # superstrate # substrate
+    neq_PW = bun.structure.num_pw_per_pol
+    bloch_vec = bun.k_pll_norm()
+    ordre_ls = bun.max_order_PWs
+    index_pw = bun.sort_order
+    index_pw_inv = [index_pw[i] for i in index_pw]
 
 
-        eps_eff_0 = bun.n()**2
-        vec_coef_down = pstack.vec_coef_down[-1]
-        vec_coef_up = np.zeros(shape=(np.shape(vec_coef_down)),dtype='complex128')
+    eps_eff_0 = bun.n()**2
+    # eps_eff_0 = bun.n()   # or should it be n!!!???
 
-        # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_down)),dtype='complex128')
-        # vec_coef_down[0] = 1.0
+    vec_coef_up = pstack.vec_coef_up[0]
+    vec_coef_up = meat.R12[:,0]
 
-        select_h = 0.0
-        tmp_name = 1
-        EMUstack.gmsh_plot_pw(tmp_name, meat.E_H_field, 
-            meat.n_msh_el, meat.n_msh_pts, nnodes, neq_PW, bloch_vec, 
-            meat.table_nod, meat.x_arr, lat_vec, wl_normed, eps_eff_0,
-            vec_coef_down, vec_coef_up, 
-            index_pw_inv, ordre_ls, select_h,
-            gmsh_file_pos, q_average, meat.structure.plot_real, meat.structure.plot_imag,
-            meat.structure.plot_abs)
+    vec_coef_down = pstack.vec_coef_down[0]
+    # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
+    # vec_coef_down[0] = 1.0
+
+    # print vec_coef_down
+    # print vec_coef_up
+    # print meat.R12
+
+# Inverse of index_pw
+    # index_pw_inv = [index_pw[i] for i in range(len(index_pw))]
+
+    index_pw_inv = np.zeros(shape=(np.shape(index_pw)),dtype='int')
+
+    for s in range(len(index_pw)):
+        s2 = index_pw[s]
+        index_pw_inv[s2] = s
+
+    index_pw_inv += 1
+    # print "index_pw", index_pw
+    print "index_pw_inv", index_pw_inv
+
+    # index_pw_inv = [26, 23, 15, 10, 14, 22, 17, 6, 2, 7, 16, 28, 12, 3, 1, 4, 11, 27, 19, 9, 5, 8, 18, 25, 21, 13, 20, 24, 29]
+    # print index_pw_inv
+
+    # index_pw_inv = [26, 22, 15, 11, 16, 23, 14, 6, 3, 7, 18, 27, 10, 2, 1, 5, 13, 28, 17, 8, 4, 9, 20, 24, 19, 12, 21, 25, 29]
+    # print "index_pw_inv", index_pw_inv
 
 
+    select_h = 0.0
+    tmp_name = 1
+    EMUstack.gmsh_plot_pw(tmp_name, meat.E_H_field, 
+        meat.n_msh_el, meat.n_msh_pts, nnodes, neq_PW, bloch_vec, 
+        meat.table_nod, meat.x_arr, lat_vec, wl_normed, eps_eff_0,
+        vec_coef_down, vec_coef_up, 
+        index_pw_inv, ordre_ls, select_h,
+        gmsh_file_pos, q_average, meat.structure.plot_real, meat.structure.plot_imag,
+        meat.structure.plot_abs)
 
-        # bun = pstack.layers[-1] # superstrate
-        # neq_PW = bun.structure.num_pw_per_pol
-        # bloch_vec = bun.k_pll_norm()
-
-        # eps_eff_0 = bun.n()**2
-        # vec_coef_down = pstack.vec_coef_down[0]
-        # vec_coef_up   = pstack.vec_coef_up[0]
-
-
-        # select_h = 0.0
-        # tmp_name = 3
-        # EMUstack.gmsh_plot_pw(tmp_name, meat.E_H_field, 
-        #     meat.n_msh_el, meat.n_msh_pts, nnodes, neq_PW, bloch_vec, 
-        #     meat.table_nod, meat.x_arr, lat_vec, wl_normed, eps_eff_0,
-        #     vec_coef_down, vec_coef_up, 
-        #     index_pw_inv, ordre_ls, select_h,
-        #     gmsh_file_pos, q_average, meat.structure.plot_real, meat.structure.plot_imag,
-        #     meat.structure.plot_abs)
 
 
 def Fabry_Perot_res(stack_list, freq_list, kx_list, lay_interest=1):
