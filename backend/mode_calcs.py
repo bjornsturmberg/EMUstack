@@ -21,7 +21,7 @@
 
 import numpy as np
 import sys
-from scipy import sqrt
+# from scipy import sqrt
 import os
 sys.path.append("../backend/")
 
@@ -110,11 +110,13 @@ class Anallo(Modes):
         alphas = alpha0 + pxs * 2 * pi / d
         betas  = beta0 + pys * 2 * pi / d
 
-        k_z_unsrt = sqrt(self.k()**2 - alphas**2 - betas**2)
-        # print k_z_unsrt
-        # print 'hisdf'
+        k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
+
         # print "------------------"
         # print "k_z_unsrt", k_z_unsrt
+        # print "------------------"
+        # for blah in k_z_unsrt:
+        #     print repr(blah)
         # print "------------------"
 
 
@@ -134,8 +136,10 @@ class Anallo(Modes):
                 k_z_unsrt.shape)
 
         # print "------------------"
-        # print "k_z_unsrt[s]", k_z_unsrt[s]
+        # for blah in k_z_unsrt[s]:
+        #     print "k_z_unsrt[s]", repr(blah)
         # print "------------------"
+
 
         # Find element of k_z_unsrt corresponding to zeroth order
         self.specular_order = np.nonzero((pxs[s] == 0) * (pys[s] == 0))[0][0]
@@ -154,7 +158,7 @@ class Anallo(Modes):
 
     def k(self):
         """ Return the normalised wavenumber in the background material"""
-        return 2 * pi * self.n() / self.wl_norm()
+        return np.complex128(2 * pi * self.n() / self.wl_norm())
 
     def Z(self):
         """ Return the wave impedance as a 1D array."""
@@ -195,11 +199,11 @@ class Anallo(Modes):
         elif 'TM' == pol:
             inc_amp[spec_TM] = 1
         elif 'R Circ' == pol:
-            inc_amp[spec_TE] = 1/sqrt(2.)
-            inc_amp[spec_TM] = +1j/sqrt(2.)
+            inc_amp[spec_TE] = 1/np.sqrt(2.)
+            inc_amp[spec_TM] = +1j/np.sqrt(2.)
         elif 'L Circ' == pol:
-            inc_amp[spec_TE] = 1/sqrt(2.)
-            inc_amp[spec_TM] = -1j/sqrt(2.)
+            inc_amp[spec_TE] = 1/np.sqrt(2.)
+            inc_amp[spec_TM] = -1j/np.sqrt(2.)
         else:
             raise NotImplementedError, \
             "Must select from the currently implemented polarisations; \
@@ -381,7 +385,7 @@ def r_t_mat_anallo(an1, an2):
     # $chi^{\pm 1/2} = sqrt(k_z/k)^{\pm 1} = sqrt(Z/Zc)^{\pm 1}$
     # The choice of branch in those square roots must be the same as the
     # choice in the related square roots that we are about to take:
-    T12 = np.mat(np.diag(2.*sqrt(Z2)*sqrt(Z1)/(Z2+Z1)))
+    T12 = np.mat(np.diag(2.*np.sqrt(Z2)*np.sqrt(Z1)/(Z2+Z1)))
     R21 = -R12
     T21 = T12
 
@@ -397,7 +401,7 @@ def r_t_mat_tf_ns(an1, sim2):
         But we use Zw = 1/(Zcr X) instead of X, so that an1 does not 
         have to be free space.
     """
-    Z1_sqrt_inv = sqrt(1/an1.Z()).reshape((1,-1))
+    Z1_sqrt_inv = np.sqrt(1/an1.Z()).reshape((1,-1))
 
     # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
     # Same difference.

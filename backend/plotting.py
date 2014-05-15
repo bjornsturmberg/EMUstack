@@ -970,7 +970,7 @@ def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
         index_pw_inv[s2] = s
     index_pw_inv += 1 # convert to fortran indices (starting from 1)
 
-    print index_pw_inv
+    # print "index_pw_inv", index_pw_inv
 
     # vec_coef sorted from top of stack, everything else is sorted from bottom
     vec_index = len(pstack.layers) - TF_lay - 1

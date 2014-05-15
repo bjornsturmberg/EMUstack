@@ -520,13 +520,18 @@ class Light(object):
             k = 2 * np.pi * np.real(n_inc) / self.wl_nm
             theta *= np.pi / 180
             phi *= np.pi / 180
+            # self.k_pll = k*np.sin(theta) * np.array(
+            #             [np.cos(phi), np.sin(phi)], dtype='float64')
+
+        # Avoid the degeneracies that occur at normal incidence (FEM does not deal well with them)
+        if (abs(theta)+abs(phi)) < 2e-6:
+            # self.k_pll[0] += 1e-15
+            # self.k_pll[1] += 5e-15
+            theta += 1e-6
+            phi   += 1e-6
             self.k_pll = k*np.sin(theta) * np.array(
                         [np.cos(phi), np.sin(phi)], dtype='float64')
 
-        # Avoid the degeneracies that occur at normal incidence (FEM does not deal well with them)
-        if abs(self.k_pll).sum() < 5e-15:
-            self.k_pll[0] += 5e-15
-            # self.k_pll[1] += 5e-15
 
     def _air_ref(self, period):
         """ Return a :Anallo: corresponding to this :Light: in free space.

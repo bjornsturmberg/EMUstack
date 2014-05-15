@@ -64,6 +64,7 @@ C     Ordering
         enddo
       enddo
 C      
+
       call z_indexx (neq_PW, beta_z_pw, index_pw)
       if (debug .eq. 1) then
         write(ui,*) "index_pw = ", (index_pw(s),s=1,neq_PW)
