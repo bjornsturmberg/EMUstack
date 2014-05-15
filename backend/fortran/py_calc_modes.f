@@ -776,6 +776,7 @@ C
 C  Plane wave ordering
       call pw_ordering (neq_PW, lat_vecs, bloch_vec, 
      *  index_pw_inv, debug, ordre_ls, k_0)
+      write(*,*) index_pw_inv
 C  J_overlap
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes.f: J_overlap Integral"

@@ -880,13 +880,11 @@ def single_order_T(stack_list, angles, chosen_PW_order,lay_interest=-1, add_heig
 #######################################################################################
 
 
-def fields_3d(pstack, wl, nnodes=6):
+def fields_3d(pstack, wl):
     """
     """
     from fortran import EMUstack
-    import subprocess
 
-    subprocess.call('rm Output -r', shell = True)
     dir_name = "Output"
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
@@ -898,6 +896,7 @@ def fields_3d(pstack, wl, nnodes=6):
         os.mkdir(dir_name)
 
     # for i in range(len(pstack.layers)-1): #remove -2 once semi inf TFs can be plotted
+    nnodes=6
     lay = 1
     extra_name = ''
 
@@ -907,7 +906,6 @@ def fields_3d(pstack, wl, nnodes=6):
     vec_coef = np.concatenate((pstack.vec_coef_down[1],pstack.vec_coef_up[1]))
     # vec_coef_up = np.zeros(shape=(np.shape(pstack.vec_coef_down[1])),dtype='complex128')
     # vec_coef = np.concatenate((pstack.vec_coef_down[1],vec_coef_up))
-    # h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
     h_normed = 2.0
     wl_normed = pstack.layers[lay].wl_norm()
 
@@ -918,19 +916,38 @@ def fields_3d(pstack, wl, nnodes=6):
 
 
 
-#
-# plot fields inside 
-#
-    eps_eff = meat.n_effs**2
-    select_h = 0.0  # top interface
-    # select_h = h_normed    # bottom interface
+def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
+    """
+    """
+    from fortran import EMUstack
 
-    tmp_name = 1
-    q_average = 0 # at a discontinuity, use average value if q_average = 1
-
+    dir_name = "Output"
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
     dir_name = "Output/Fields"
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
+
+#
+# plot fields inside nanostructure (Bloch Mode Basis)
+#
+    meat = pstack.layers[Struc_lay]
+    gmsh_file_pos = meat.structure.mesh_file[0:-5]
+    eps_eff = meat.n_effs**2
+    h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+    wl_normed = pstack.layers[Struc_lay].wl_norm()
+
+    if Struc_lay < TF_lay: select_h = 0.0   # top interface
+    else: select_h = h_normed               # bottom interface
+
+    # vec_coef sorted from top of stack, everything else is sorted from bottom
+    vec_index = len(pstack.layers) - Struc_lay - 1
+    vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+
+    nnodes=6
+    tmp_name = 1
+    q_average = 0 # at a discontinuity, use average value if q_average = 1
+
     EMUstack.gmsh_plot_field (tmp_name, meat.E_H_field, meat.num_BM, 
         meat.n_msh_el, meat.n_msh_pts, nnodes, meat.nb_typ_el, meat.table_nod, meat.type_el,
         eps_eff, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, select_h, 
@@ -939,11 +956,10 @@ def fields_3d(pstack, wl, nnodes=6):
 
 
 #
-# plot fields in PWs
+# plot fields in Thin Film (Plane Wave Basis)
 #
-
-    lat_vec = [[1.0, 0.0], [0.0, 1.0]]
-    bun = pstack.layers[-1] # superstrate # substrate
+    bun = pstack.layers[TF_lay] # superstrate # substrate
+    n_eff_0 = bun.n()
     neq_PW = bun.structure.num_pw_per_pol
     bloch_vec = bun.k_pll_norm()
     ordre_ls = bun.max_order_PWs
@@ -954,40 +970,35 @@ def fields_3d(pstack, wl, nnodes=6):
         index_pw_inv[s2] = s
     index_pw_inv += 1 # convert to fortran indices (starting from 1)
 
+    print index_pw_inv
 
-    eps_eff_0 = bun.n()**2
-    # eps_eff_0 = bun.n()   # or should it be n!!!???
+    # vec_coef sorted from top of stack, everything else is sorted from bottom
+    vec_index = len(pstack.layers) - TF_lay - 1
+    vec_coef_down = pstack.vec_coef_down[vec_index]
+    if TF_lay == 0: vec_coef_up = np.zeros(shape=(np.shape(vec_coef_down)),dtype='complex128')
+    else: vec_coef_up = pstack.vec_coef_up[vec_index]
+    # vec_coef_up = meat.R12[:,0] # TE polarisation
+    # vec_coef_down[neq_PW] = 1.0
+    # vec_coef_up = meat.R12[:,neq_PW] # TM polarisation
 
-    vec_coef_up = pstack.vec_coef_up[0]
-    vec_coef_down = pstack.vec_coef_down[0]
-    
+    select_h = 0.0
+    tmp_name = 1
+    lat_vec = [[1.0, 0.0], [0.0, 1.0]]
+
+    EMUstack.gmsh_plot_pw(tmp_name, meat.E_H_field, 
+        meat.n_msh_el, meat.n_msh_pts, nnodes, neq_PW, bloch_vec, 
+        meat.table_nod, meat.x_arr, lat_vec, wl_normed, n_eff_0,
+        vec_coef_down, vec_coef_up, 
+        index_pw_inv, ordre_ls, select_h,
+        gmsh_file_pos, q_average, meat.structure.plot_real, meat.structure.plot_imag,
+        meat.structure.plot_abs)
+
 # # Semi-inf case
     # vec_coef_up = meat.R12[:,0] # TE polarisation
     # vec_coef_up = meat.R12[:,neq_PW] # TM polarisation
 
     # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
     # vec_coef_down[neq_PW] = 1.0
-
-    # print vec_coef_down
-    print vec_coef_up
-    # print meat.R12
-
-
-
-    # print "index_pw_inv", index_pw_inv
-    # print vec_coef_up
-
-
-    select_h = 0.0
-    tmp_name = 1
-    EMUstack.gmsh_plot_pw(tmp_name, meat.E_H_field, 
-        meat.n_msh_el, meat.n_msh_pts, nnodes, neq_PW, bloch_vec, 
-        meat.table_nod, meat.x_arr, lat_vec, wl_normed, eps_eff_0,
-        vec_coef_down, vec_coef_up, 
-        index_pw_inv, ordre_ls, select_h,
-        gmsh_file_pos, q_average, meat.structure.plot_real, meat.structure.plot_imag,
-        meat.structure.plot_abs)
-
 
 
 def Fabry_Perot_res(stack_list, freq_list, kx_list, lay_interest=1):

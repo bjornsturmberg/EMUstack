@@ -36,9 +36,9 @@ c     Local variables
       integer*8 px, py, s, s2
 
       double precision d, r_tmp, xx_g(3)
-      double precision k, vec_kx, vec_ky, lambda, freq
+      double precision k_0, k, vec_kx, vec_ky, lambda, freq
       double precision bloch1, bloch2, pi, alpha, beta, norm
-      complex*16 chi, gamma, val_exp
+      complex*16 chi_TE, chi_TM, gamma, val_exp
 
       complex*16 P_down, P_up, coef_RE_down, coef_RE_up
       complex*16 coef_RK_down, coef_RK_up
@@ -83,7 +83,8 @@ c
       pi = 3.141592653589793d0
       bloch1 = bloch_vec(1)
       bloch2 = bloch_vec(2)
-      k = (2.0d0*eps_eff_0*pi)/lambda
+      k_0 = (2.0d0*pi)/lambda
+      k = eps_eff_0*k_0
       vec_kx = 2.0d0*pi/d
       vec_ky = 2.0d0*pi/d
       if (debug .eq. 1) then
@@ -211,7 +212,13 @@ c
             beta  = bloch2 + vec_ky*py	! Bloch vector along y
             z_tmp1 = k**2 - alpha**2 - beta**2
             gamma = SQRT(z_tmp1)
-            chi = SQRT(gamma/k)
+C            chi = SQRT(gamma/k)
+            chi_TE = SQRT(gamma/k)
+            chi_TM = SQRT(gamma/k)
+
+C            chi_TE = SQRT(gamma/k_0)
+C            chi_TE = SQRT((eps_eff_0*k)/gamma)
+C            chi_TE = SQRT((k)/gamma)
             norm = SQRT(alpha**2 + beta**2)	! sqrt term    
             s2 = index_pw_inv(s)
 C
@@ -229,14 +236,14 @@ C  	  RK
             P_up = EXP(ii*gamma*hz)    !  Introduce Propagation in +z
             P_down = 1.0d0 / P_up      !  Introduce Propagation in -z
 c
-            coef_RE_down = vec_coef_down(s2) * P_down / chi
-            coef_RE_up = vec_coef_up(s2) * P_up / chi
+            coef_RE_down = vec_coef_down(s2) * P_down / chi_TE
+            coef_RE_up = vec_coef_up(s2) * P_up / chi_TE
 c
             coef_RE_t = coef_RE_up + coef_RE_down  ! Superposition of the counter-porpagating wave
             coef_RE_z = coef_RE_up - coef_RE_down
 c
-            coef_RK_down = vec_coef_down(s2+neq_PW) * P_down * chi
-            coef_RK_up = vec_coef_up(s2+neq_PW) * P_up * chi
+            coef_RK_down = vec_coef_down(s2+neq_PW) * P_down * chi_TM
+            coef_RK_up = vec_coef_up(s2+neq_PW) * P_up * chi_TM
 c
             coef_RK_t = coef_RK_up + coef_RK_down
             coef_RK_z = coef_RK_up - coef_RK_down
