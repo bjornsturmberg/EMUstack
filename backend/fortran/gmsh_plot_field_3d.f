@@ -72,7 +72,7 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c
-      dir_name = "Output/Fields_3d"
+      dir_name = "3D_Fields"
 C
 c  ii = sqrt(-1)
       ii = cmplx(0.0d0, 1.0d0)
@@ -174,45 +174,45 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) //
-     *           extra_name(1:namelen_extra) 
-     *           // '_field_' // tE_H // '_abs2_3d.pos'
+     *           extra_name(1:namelen_extra) //
+     *           tE_H // '_abs2_3d_' //
+     *           gmsh_file_pos(1:namelen_gmsh) // '.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.IntervalsType = 3;"
         write(26,*) "View ""|",tE_H,"_t|^2 ", 
      *     " "" {"
 
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) //
-     *           extra_name(1:namelen_extra) 
-     *           // '_field_' // tE_H // 'x_re_3d.pos'
+     *           extra_name(1:namelen_extra) //
+     *           tE_H // 'x_re_3d_' //
+     *           gmsh_file_pos(1:namelen_gmsh) // '.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "View ""Re ",tE_H,"x ", 
      *     " "" {"
 
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) //
-     *           extra_name(1:namelen_extra) 
-     *           // '_field_' // tE_H // 'y_re_3d.pos'
+     *           extra_name(1:namelen_extra) //
+     *           tE_H // 'y_re_3d_' //
+     *           gmsh_file_pos(1:namelen_gmsh) // '.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "View ""Re ",tE_H,"y ", 
      *     " "" {" 
 
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) //
-     *           extra_name(1:namelen_extra) 
-     *           // '_field_' // tE_H // 'z_re_3d.pos'
+     *           extra_name(1:namelen_extra) //
+     *           tE_H // 'z_re_3d_' //
+     *           gmsh_file_pos(1:namelen_gmsh) // '.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "View ""Re ",tE_H,"z ", 
      *     " "" {"
 
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) //
-     *           extra_name(1:namelen_extra) 
-     *           // '_field_' // tE_H // 'v_re_3d.pos'
+     *           extra_name(1:namelen_extra) //
+     *           tE_H // 'v_re_3d_' // 
+     *           gmsh_file_pos(1:namelen_gmsh) // '.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.IntervalsType = 3;"
         write(30,*) "View.Axes = 2;"
@@ -396,9 +396,9 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           gmsh_file_pos(1:namelen_gmsh) //
-     *           extra_name(1:namelen_extra) 
-     *           // '_abs2_3d.msh'
+     *           extra_name(1:namelen_extra) //
+     *           '_abs2_3d_' //
+     *           gmsh_file_pos(1:namelen_gmsh) // '.msh'
       open (unit=26,file=tchar)
       write(26,'(a11)') "$MeshFormat"
       write(26,'(3(I1,1x))') 2, 0, 8

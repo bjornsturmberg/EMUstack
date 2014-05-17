@@ -71,7 +71,7 @@ c     Determination of the cylinder radius
 c
 ccccccccccccccccccccccccccccccccccccc
 c
-      open (unit=26,file="Output/Fields/interface_cyl.geo")
+      open (unit=26,file="Bloch_Fields/interface_cyl.geo")
           write(26,*) "lc = 0.101;"
           write(26,*) "radius = ",  rad_cyl, ";"
           write(26,*) "x_cent = ",  centre(1), ";"

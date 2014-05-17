@@ -2,15 +2,15 @@ c  Write an ASCII file that can be read into GMSH.
 c  P1-element is used to represent the  3D vector field.
 c  P2-element is used to represent each component of the 3D vector field.
 c
-      subroutine gmsh_plot_PW (plot_val, E_H_field, 
+      subroutine gmsh_plot_PW ( 
      *     nel, npt, nnodes, neq_PW, bloch_vec, 
      *     table_nod, x, lat_vecs, lambda, eps_eff_0,
      *     vec_coef_down, vec_coef_up, 
      *     index_pw_inv, ordre_ls, hz, gmsh_file_pos,
-     *     q_average, plot_real, plot_imag, plot_abs)
+     *     q_average, plot_real, plot_imag, plot_abs, extra_name)
 c
       implicit none
-      integer*8 nel, npt, nnodes, plot_val, E_H_field
+      integer*8 nel, npt, nnodes
       integer*8 neq_PW, ordre_ls
       double precision hz, lat_vecs(2,2), bloch_vec(2)
       integer*8 table_nod(nnodes,nel), index_pw_inv(neq_PW)
@@ -19,6 +19,7 @@ c
       complex*16 vec_coef_down(2*neq_PW)
       complex*16 vec_coef_up(2*neq_PW)
       character(*) gmsh_file_pos
+      character(*) extra_name
 c
 c     Local variables
 
@@ -52,16 +53,14 @@ c     Local variables
       complex*16 z_tmp1
       complex*16 ii
       character*100 tchar
-      character tval*4, buf*3
-      character*1 tE_H
       integer*8 namelength, charlength
 
 
-Cf2py intent(in) plot_val, E_H_field
 Cf2py intent(in) nel, npt, nnodes, neq_PW, bloch_vec,
 Cf2py intent(in) table_nod, x, lat_vecs, lambda, eps_eff_0
 Cf2py intent(in) vec_coef_down, vec_coef_up,
-Cf2py intent(in) index_pw_inv, ordre_ls, hz, gmsh_file_pos
+Cf2py intent(in) index_pw_inv, ordre_ls, hz, 
+Cf2py intent(in) gmsh_file_pos, extra_name
 Cf2py intent(in) q_average, plot_real, plot_imag, plot_abs
 
 Cf2py depend(table_nod) nnodes, nel
@@ -71,7 +70,7 @@ Cf2py depend(vec_coef_down) neq_PW
 Cf2py depend(vec_coef_up) neq_PW
 
 
-      dir_name = "Output/Fields"
+      dir_name = "2D_Fields"
 c
 c  ii = sqrt(-1)
       ii = cmplx(0.0d0, 1.0d0)
@@ -123,26 +122,6 @@ c      plot_real = 1  ! plot real part if plot_real = 1
 c      plot_imag = 1  ! plot real part if plot_imag = 1
 c      plot_abs = 1  ! plot absolute value if plot_abs = 1
 c
-      if (plot_val .eq. 0) return
-c
-      if (E_H_field .eq. 1) then
-        tE_H = "E"
-      elseif(E_H_field .eq. 2) then
-        tE_H = "H"
-      else
-        write(ui,*) "gmsh_plot_PW: E_H_field has invalid value: ", 
-     *    E_H_field
-        write(ui,*) "Aborting..."
-        stop
-      endif
-c
-      if (plot_val .lt. 1000) then
-        write(buf,'(i3.3)') plot_val
-      else
-        buf = "nnn"
-      endif
-      tval=tE_H//buf
-
       namelen = len_trim(gmsh_file_pos)
       namelength = len_trim(dir_name)
 c
@@ -150,50 +129,50 @@ c###############################################
 c
       if (plot_real .eq. 1) then
 
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
-     *           // '_PW_' // tval // '_abs2.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name //'_PW_abs2_'
+     *           // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.AdaptVisualizationGrid =1;"
         write(26,*) "View.IntervalsType = 3;"
         write(26,*) "View.Light = 0;"
-        write(26,*) "View ""|",tE_H,"_t|^2: n = ", plot_val,
+        write(26,*) "View ""|",extra_name(1:2),"_t|^2:",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
-     *            // '_PW_' // tval // 'x_re.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name // '_PWx_re_'
+     * // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.AdaptVisualizationGrid =1;"
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "View.Light = 0;"
 c        write(27,*) "View ""Re Ex: n = ", plot_val, 
-        write(27,*) "View ""Re ",tE_H,"x: n = ", plot_val, 
+        write(27,*) "View ""Re ",extra_name(1:2),"x:",  
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
-     *           // '_PW_' // tval // 'y_re.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name // '_PWy_re_'
+     * // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.AdaptVisualizationGrid =1;"
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "View.Light = 0;"
-        write(28,*) "View ""Re ",tE_H,"y: n = ", plot_val, 
+        write(28,*) "View ""Re ",extra_name(1:2),"y:",  
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
-     *           // '_PW_' // tval // 'z_re.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name // '_PWz_re_'
+     * // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.AdaptVisualizationGrid =1;"
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "View.Light = 0;"
-        write(29,*) "View ""Re ",tE_H,"z: n = ", plot_val, 
+        write(29,*) "View ""Re ",extra_name(1:2),"z:",  
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
-     *           // '_PW_' // tval // 'v_re.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name // '_PWv_re_'
+     * // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.AdaptVisualizationGrid =1;"
         write(30,*) "View.IntervalsType = 3;"
         write(30,*) "View.Light = 0;"
-        write(30,*) "View ""Re ",tE_H,": n = ", plot_val, 
+        write(30,*) "View ""Re ",extra_name(1:2),":",  
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
       do iel=1,nel
@@ -328,40 +307,40 @@ c###############################################
 c
       if (plot_imag .eq. 1) then
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
-     *           // '_PW_' // tval // 'x_im.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_x_im_'
+     * // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.AdaptVisualizationGrid =1;"
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "View.Light = 0;"
-        write(27,*) "View ""Im ",tE_H,"x: n = ", plot_val, 
+        write(27,*) "View ""Im ",extra_name(1:2),"x:", 
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
-     *           // '_PW_' // tval // 'y_im.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_y_im_'
+     * // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.AdaptVisualizationGrid =1;"
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "View.Light = 0;"
-        write(28,*) "View ""Im ",tE_H,"y: n = ", plot_val, 
+        write(28,*) "View ""Im ",extra_name(1:2),"y:", 
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
-     *           // '_PW_' // tval // 'z_im.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_z_im_'
+     * // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.AdaptVisualizationGrid =1;"
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "View.Light = 0;"
-        write(29,*) "View ""Im ",tE_H,"z: n = ", plot_val, 
+        write(29,*) "View ""Im ",extra_name(1:2),"z:", 
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
-     *           // '_PW_' // tval // 'v_im.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_v_im_'
+     * // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.AdaptVisualizationGrid =1;"
         write(30,*) "View.IntervalsType = 3;"
         write(30,*) "View.Light = 0;"
-        write(30,*) "View ""Im ",tE_H,": n = ", plot_val, 
+        write(30,*) "View ""Im ",extra_name(1:2),":", 
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
         sol_max(4) = 0.0d0
@@ -407,31 +386,31 @@ c###############################################
 c
       if (plot_abs .eq. 1) then
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
-     *           // '_PW_' // tval // 'x_abs.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_x_abs_'
+     * // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.AdaptVisualizationGrid =1;"
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "View.Light = 0;"
-        write(27,*) "View ""|",tE_H,"x|: n = ", plot_val, 
+        write(27,*) "View ""|",extra_name(1:2),"x|:", 
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
-     *           // '_PW_' // tval // 'y_abs.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_y_abs_'
+     * // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.AdaptVisualizationGrid =1;"
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "View.Light = 0;"
-        write(28,*) "View ""|",tE_H,"y|: n = ", plot_val, 
+        write(28,*) "View ""|",extra_name(1:2),"y|:", 
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
-     *           // '_PW_' // tval // 'z_abs.pos'
+      tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_z_abs_'
+     * // gmsh_file_pos(1:namelen) // '.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.AdaptVisualizationGrid =1;"
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "View.Light = 0;"
-        write(29,*) "View ""|",tE_H,"z|: n = ", plot_val, 
+        write(29,*) "View ""|",extra_name(1:2),"z|:", 
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
         sol_max(4) = 0.0d0
@@ -475,7 +454,6 @@ c 11    format("VT2(",f10.6,17(",",f10.6),"){",
 c     *     g24.16,17(",",g24.16),"};")
       if (debug .eq. 1) then
         write(ui,*)
-        write(ui,*) "gmsh_plot_PW: plot_val = ", plot_val
         write(ui,*) "gmsh_plot_PW: sol_max = ", sol_max
       endif
 C

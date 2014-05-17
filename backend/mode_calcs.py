@@ -256,14 +256,6 @@ class Simmo(Modes):
         with open("../backend/data/"+self.structure.mesh_file) as f:
             self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
 
-        if self.structure.plot_modes == 1:
-            if not os.path.exists("Output"):
-                os.mkdir("Output")
-            if not os.path.exists("Output/Fields"):
-                os.mkdir("Output/Fields")
-            if not os.path.exists("Output/FieldsPNG"):
-                os.mkdir("Output/FieldsPNG")
-
         # Size of Fortran's complex superarray (scales with mesh)
         # In theory could do some python-based preprocessing
         # on the mesh file to work out RAM requirements
@@ -276,6 +268,8 @@ class Simmo(Modes):
                 os.mkdir("Normed")
             if not os.path.exists("Matrices"):
                 os.mkdir("Matrices")
+            if not os.path.exists("Output"):
+                os.mkdir("Output")
 
         # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
         max_n = np.real(self.n_effs.max()) # Take real part so that complex conjugate pair 

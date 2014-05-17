@@ -102,8 +102,6 @@ class NanoStruct(object):
         - `plot_modes'    : Plot modes (ie. FEM solutions) in gmsh format, 
             you get epsilon*|E|^2 & either real/imag/abs of 
             x,y,z components, field vectors.
-            NOTE: these plots are created in Output/Fields, 
-            and Output/FieldsPNG.
 
         - `plot_real'     : Plot the real part of modal fields.
         - `plot_imag'     : Plot the imaginary part of modal fields.
@@ -190,6 +188,8 @@ class NanoStruct(object):
             self.mesh_file = mesh_file
         if plot_modes == True:
             self.plot_modes = 1
+            if not os.path.exists("Bloch_Fields"): os.mkdir("Bloch_Fields")
+            if not os.path.exists("Bloch_Fields/PNG"): os.mkdir("Bloch_Fields/PNG")
         else: self.plot_modes = 0
         self.plot_real     = plot_real
         self.plot_imag     = plot_imag
