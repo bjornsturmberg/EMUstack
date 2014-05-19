@@ -509,28 +509,32 @@ class Light(object):
         self._air_anallos = {}
         self.max_order_PWs  = max_order_PWs
 
+        if None == theta and [0,0] == k_parallel:
+            raise ValueError, "Specify incident angle either by \n\
+            k_parallel OR by theta, phi and n_inc."
+
         if None == theta:
             self.k_pll = np.array(k_parallel, dtype='float64')
         else:
             # Check for inconsistent input
             if [0,0] != k_parallel or phi == None:
-                raise ValueError, "Specify incident angle either by \
-                k_parallel or by theta, phi and n_inc."
+                raise ValueError, "Specify incident angle either by \n\
+            k_parallel OR by theta, phi and n_inc."
             # Calculate k_parallel from incident angles
             k = 2 * np.pi * np.real(n_inc) / self.wl_nm
             theta *= np.pi / 180
             phi *= np.pi / 180
-            # self.k_pll = k*np.sin(theta) * np.array(
-            #             [np.cos(phi), np.sin(phi)], dtype='float64')
-
-        # Avoid the degeneracies that occur at normal incidence (FEM does not deal well with them)
-        if (abs(theta)+abs(phi)) < 2e-6:
-            # self.k_pll[0] += 1e-15
-            # self.k_pll[1] += 5e-15
-            theta += 1e-6
-            phi   += 1e-6
             self.k_pll = k*np.sin(theta) * np.array(
                         [np.cos(phi), np.sin(phi)], dtype='float64')
+
+            # Avoid the degeneracies that occur at normal incidence (FEM does not deal well with them)
+            if (abs(theta)+abs(phi)) < 2e-6:
+                # self.k_pll[0] += 5e-15
+                # self.k_pll[1] += 5e-15
+                theta += 1e-6
+                phi   += 1e-6
+                self.k_pll = k*np.sin(theta) * np.array(
+                            [np.cos(phi), np.sin(phi)], dtype='float64')
 
 
     def _air_ref(self, period):

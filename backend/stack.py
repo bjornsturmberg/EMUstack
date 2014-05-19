@@ -182,7 +182,6 @@ class Stack(object):
             # Save the reflection matrices to the layers
             # (for easier introspection/testing)
             st1.R12, st1.T12, st1.R21, st1.T21 = R12, T12, R21, T21
-
     # initiate (r)tnet as substrate top interface
         tnet_list = []
         rnet_list = []

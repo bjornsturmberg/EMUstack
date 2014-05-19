@@ -28,7 +28,7 @@ wl_1     = 400
 wl_2     = 1000
 no_wl_1  = 3
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 1) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0) for wl in wavelengths]
 
 
 ################ Scattering matrices (for distinct layers) ##############
@@ -93,7 +93,7 @@ def setup_module(module):
     # Plot total transmission, reflection, absorption & that of each layer. 
     # Also calculate efficiency of active layer.
     Efficiency = plotting.t_r_a_plots(stack_list, wavelengths, params_string, 
-        active_layer_nu=active_layer_nu) 
+        active_layer_nu=active_layer_nu)
 
 
 

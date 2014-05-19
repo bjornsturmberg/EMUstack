@@ -23,7 +23,7 @@ def setup_module(module):
     # Set up light objects
     wl_super =  500.0
     wavelengths = np.array([wl_super])
-    light_list  = [objects.Light(wl, theta = 20, phi = 40, max_order_PWs = 1) for wl in wavelengths]
+    light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 20, phi = 40) for wl in wavelengths]
     light = light_list[0]
 
 
@@ -40,7 +40,7 @@ def setup_module(module):
     num_BM = 20
     NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
         inclusion_a = materials.Si_c, background = materials.Air,
-        loss = True, make_mesh_now = False, mesh_file='600_120-4testing.mail')
+        loss = True, make_mesh_now = False, mesh_file='4testing-600_120.mail')
     sim_NW_array = NW_array.calc_modes(light, num_BM = num_BM)
 
     superstrate  = objects.ThinFilm(period = period, height_nm = 'semi_inf',

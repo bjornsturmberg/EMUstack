@@ -27,7 +27,7 @@ plotting.clear_previous('.pdf')
 
 # Set up light objects
 wavelengths = np.array([500, 1000])
-light_list  = [objects.Light(wl, max_order_PWs = 2) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 2, theta = 0.0, phi = 0.0) for wl in wavelengths]
 
 
 
@@ -44,7 +44,7 @@ NW_diameter = 120
 num_BM = 40
 NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
     inclusion_a = materials.Si_c, background = materials.Air,
-    loss = True, make_mesh_now = False, mesh_file='600_120-4testing.mail')
+    loss = True, make_mesh_now = False, mesh_file='4testing-600_120.mail')
 
 superstrate  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
@@ -65,7 +65,7 @@ def simulate_stack(light):
 
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
-    solar_cell list MUST be ordered from bottom to top!
+    stack list MUST be ordered from bottom to top!
     """
     stack = Stack((sim_substrate, sim_NW_array, sim_superstrate))
     stack.calc_scat(pol = 'TE')

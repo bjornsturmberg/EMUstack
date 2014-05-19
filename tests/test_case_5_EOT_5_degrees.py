@@ -37,7 +37,7 @@ def setup_module(module):
     diameter = 266
     NHs = objects.NanoStruct('2D_array', period, diameter, height_nm = 200, 
         inclusion_a = materials.Air, background = materials.Au, loss = True,
-        square = True, make_mesh_now = False, mesh_file='940_266_sq.mail')
+        square = True, make_mesh_now = False, mesh_file='4testing-940_266_sq.mail')
 
     superstrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
         material = materials.Air, loss = False)
