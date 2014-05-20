@@ -4,7 +4,7 @@ c  P2-element is used to represent each component of the 3D vector field.
 c
       subroutine gmsh_plot_PW ( 
      *     nel, npt, nnodes, neq_PW, bloch_vec, 
-     *     table_nod, x, lat_vecs, lambda, eps_eff_0,
+     *     table_nod, x, lat_vecs, lambda, n_eff_0,
      *     vec_coef_down, vec_coef_up, 
      *     index_pw_inv, ordre_ls, hz, gmsh_file_pos,
      *     q_average, plot_real, plot_imag, plot_abs, extra_name)
@@ -14,7 +14,7 @@ c
       integer*8 neq_PW, ordre_ls
       double precision hz, lat_vecs(2,2), bloch_vec(2)
       integer*8 table_nod(nnodes,nel), index_pw_inv(neq_PW)
-      complex*16 eps_eff_0 ! dielctric constand of the semi-infinite medium
+      complex*16 n_eff_0 ! dielctric constand of the semi-infinite medium
       complex*16 x(2,npt)
       complex*16 vec_coef_down(2*neq_PW)
       complex*16 vec_coef_up(2*neq_PW)
@@ -57,7 +57,7 @@ c     Local variables
 
 
 Cf2py intent(in) nel, npt, nnodes, neq_PW, bloch_vec,
-Cf2py intent(in) table_nod, x, lat_vecs, lambda, eps_eff_0
+Cf2py intent(in) table_nod, x, lat_vecs, lambda, n_eff_0
 Cf2py intent(in) vec_coef_down, vec_coef_up,
 Cf2py intent(in) index_pw_inv, ordre_ls, hz, 
 Cf2py intent(in) gmsh_file_pos, extra_name
@@ -83,11 +83,11 @@ c
       bloch1 = bloch_vec(1)
       bloch2 = bloch_vec(2)
       k_0 = (2.0d0*pi)/lambda
-      k = eps_eff_0*k_0
+      k = n_eff_0*k_0
       vec_kx = 2.0d0*pi/d
       vec_ky = 2.0d0*pi/d
       if (debug .eq. 1) then
-        write(ui,*) "gmsh_plot_PW: ", lambda, eps_eff_0, bloch_vec
+        write(ui,*) "gmsh_plot_PW: ", lambda, n_eff_0, bloch_vec
       endif
 c
       if ( nnodes .ne. 6 ) then
@@ -191,13 +191,10 @@ c
             beta  = bloch2 + vec_ky*py	! Bloch vector along y
             z_tmp1 = k**2 - alpha**2 - beta**2
             gamma = SQRT(z_tmp1)
-C            chi = SQRT(gamma/k)
-            chi_TE = SQRT(gamma/k)
-            chi_TM = SQRT(gamma/k)
-
-C            chi_TE = SQRT(gamma/k_0)
-C            chi_TE = SQRT((eps_eff_0*k)/gamma)
-C            chi_TE = SQRT((k)/gamma)
+            chi_TE = SQRT(gamma/k_0)
+            chi_TM = SQRT(gamma/(n_eff_0*k))
+C            chi_TE = SQRT(gamma/k)
+C            chi_TM = SQRT(gamma/k)
             norm = SQRT(alpha**2 + beta**2)	! sqrt term    
             s2 = index_pw_inv(s)
 C

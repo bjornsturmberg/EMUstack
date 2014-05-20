@@ -865,9 +865,9 @@ def single_order_T(stack_list, angles, chosen_PW_order,lay_interest=-1, add_heig
             trans += np.abs(stack.vec_coef_down[lay_interest][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
             store_trans = np.append(store_trans,trans)
 
-        ax1.plot(angles,store_trans, label="m = %s" %str(pxs))#, linewidth=linesstrength)
+        ax1.plot(angles,np.abs(store_trans), label="m = %s" %str(pxs))#, linewidth=linesstrength)
 
-    ax1.set_ylim((0, 5.0))
+    ax1.set_ylim((0, 1.0))
     ax1.legend()
     ax1.set_ylabel(r'$|E|_{trans}$')
     ax1.set_xlabel(r'$\lambda$ (nm)')
@@ -992,6 +992,148 @@ def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
 
     # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
     # vec_coef_down[neq_PW] = 1.0
+
+def E_substrate2(stack_wl_list, wavelengths,period,r_a,pw,bm):
+    alpha_unsrt = np.array(stack_wl_list[0].layers[0].alphas)
+    beta_unsrt = np.array(stack_wl_list[0].layers[0].betas)
+    gamma_unsrt = np.array(stack_wl_list[0].layers[0].k_z_unsrt)
+    k_array = np.column_stack((alpha_unsrt,beta_unsrt,gamma_unsrt))
+    k_sort = k_array [np.argsort(-1*np.real(k_array [:,2])+np.imag(k_array [:,2]))]
+    alpha = np.array(k_sort[:,0])
+    beta = np.array(k_sort[:,1])
+    gamma = np.array(k_sort[:,2])
+    n = stack_wl_list[0].layers[0].n()
+    PWordtot = stack_wl_list[0].layers[0].structure.num_pw_per_pol
+    Tnet = stack_wl_list[0].T_net*stack_wl_list[0].layers[-1].specular_incidence(pol='TE')
+    Tnet_TE = np.array(Tnet[0:PWordtot]).flatten()
+    Tnet_TM = np.array(Tnet[PWordtot::]).flatten()
+    nu_calc_pts = 50
+    xrange = np.linspace(0,1.0,nu_calc_pts)
+    yrange = np.linspace(0,1.0,nu_calc_pts)
+    zrange = np.array([0])
+    norm = np.sqrt(alpha**2+beta**2)
+    k = np.sqrt(alpha**2+beta**2+gamma**2)
+    chi_TE = np.sqrt((n*gamma)/k)
+    chi_TM = np.sqrt((n*k)/gamma)
+    E_TE_x = beta/norm
+    E_TE_y = -1*alpha/norm
+    E_TE_z = np.array(np.zeros(np.size(E_TE_x)))
+    E_TM_x = alpha/norm
+    E_TM_y = beta/norm
+    E_TM_z = -1*norm/gamma
+    eta_TE_x = (Tnet_TE*E_TE_x)/chi_TE
+    eta_TE_y = (Tnet_TE*E_TE_y)/chi_TE
+    eta_TE_z = (Tnet_TE*E_TE_z)/chi_TE
+    eta_TM_x = (Tnet_TM*E_TM_x)/chi_TM
+    eta_TM_y = (Tnet_TM*E_TM_y)/chi_TM
+    eta_TM_z = (Tnet_TM*E_TM_z)/chi_TM
+    prop = 2*np.count_nonzero(np.real(gamma))
+    evan = 2*PWordtot - prop
+    s = range(2*PWordtot)
+
+    E_TE_x_array = np.zeros((nu_calc_pts**2,np.size(zrange)), dtype = 'complex')
+    E_TE_y_array = np.zeros((nu_calc_pts**2,np.size(zrange)), dtype = 'complex')
+    E_TE_z_array = np.zeros((nu_calc_pts**2,np.size(zrange)), dtype = 'complex')
+    E_TM_x_array = np.zeros((nu_calc_pts**2,np.size(zrange)), dtype = 'complex')
+    E_TM_y_array = np.zeros((nu_calc_pts**2,np.size(zrange)), dtype = 'complex')
+    E_TM_z_array = np.zeros((nu_calc_pts**2,np.size(zrange)), dtype = 'complex')
+    
+    xpos = []
+    ypos = []
+
+    for z in range(len(zrange)):
+        xy = 0
+        for y in range(nu_calc_pts):
+            for x in range(nu_calc_pts):
+                expo = np.exp(1j*(alpha*xrange[x]+beta*yrange[y]-gamma*zrange[z]))
+                E_TE_x = np.sum(eta_TE_x*expo)
+                E_TE_y = np.sum(eta_TE_y*expo)
+                E_TE_z = np.sum(eta_TE_z*expo)
+                E_TM_x = np.sum(eta_TM_x*expo)
+                E_TM_y = np.sum(eta_TM_y*expo)
+                E_TM_z = np.sum(eta_TM_z*expo)
+                E_TE_x_array[xy,z] = E_TE_x 
+                E_TE_y_array[xy,z] = E_TE_y
+                E_TE_z_array[xy,z] = E_TE_z
+                E_TM_x_array[xy,z] = E_TM_x 
+                E_TM_y_array[xy,z] = E_TM_y
+                E_TM_z_array[xy,z] = E_TM_z
+                xpos.append(xrange[x])
+                ypos.append(yrange[y])
+                xy += 1
+    E_x_array = E_TE_x_array + E_TM_x_array
+    E_y_array = E_TE_y_array + E_TM_y_array
+    E_z_array = E_TE_z_array + E_TM_z_array
+    Etot = np.sqrt(E_x_array*np.conj(E_x_array) + E_y_array*np.conj(E_y_array) + E_z_array*np.conj(E_z_array))
+
+    # np.savetxt('sub2_eta_re.txt',np.real(eta),fmt = '%18.11f')
+    # np.savetxt('sub2_eta_imag.txt',np.imag(eta),fmt = '%18.11f')
+    # np.savetxt('sub2_k.txt',np.column_stack((np.real(k_sort),np.imag(gamma))),fmt = '%18.11f')
+    # np.savetxt('sub2_Tnet_re.txt',np.real(np.column_stack((Tnet_TE,Tnet_TM))),fmt = '%18.11f')
+    # np.savetxt('sub2_Tnet_imag.txt',np.imag(np.column_stack((Tnet_TE,Tnet_TM))),fmt = '%18.11f')
+    # np.savetxt('sub2_Ecoeff_re.txt', np.real(E),fmt = '%18.11f')
+    # np.savetxt('sub2_Ecoeff_imag.txt', np.imag(E),fmt = '%18.11f')
+    # np.savetxt('sub2_chi_re.txt',np.real(chi),fmt = '%18.11f')
+    # np.savetxt('sub2_chi_imag.txt',np.imag(chi),fmt = '%18.11f')
+
+    
+    fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig1.add_subplot(2,1,1)
+    # xpos = np.tile(xrange,np.size(yrange))
+    # ypos = np.repeat(yrange,np.size(xrange))
+    Ex = np.real(E_x_array[:,0])
+    x_min = xrange[0]
+    x_max = xrange[-1]
+    y_min = yrange[0]
+    y_max = yrange[-1]
+    int_x,int_y = np.mgrid[x_min:x_max:nu_calc_pts*1j, y_min:y_max:nu_calc_pts*1j]
+    int_Ex = griddata(xpos, ypos, Ex, int_x, int_y)
+    cmap = plt.get_cmap('jet')
+    CS = plt.contourf(int_x,int_y,int_Ex,15,cmap=cmap)
+    circle = plt.Circle((0.5,0.5), radius=r_a/period, fc='none', ec = 'w',fill = False)
+    ax1.add_artist(circle)
+    plt.axis([x_min,x_max,y_min,y_max])
+    cbar = plt.colorbar()
+    cbar.ax.set_ylabel(r'Real E_x')
+    ax1.set_xlabel('x (normalised period)')
+    ax1.set_ylabel('y (normalised period)')
+    ax1.axis('scaled')
+
+    ax1 = fig1.add_subplot(2,1,2)
+    # xpos = np.tile(xrange,np.size(yrange))
+    # ypos = np.repeat(yrange,np.size(xrange))
+    Ex = np.real(E_y_array[:,0])
+    x_min = xrange[0]
+    x_max = xrange[-1]
+    y_min = yrange[0]
+    y_max = yrange[-1]
+    int_Ex = griddata(xpos, ypos, Ex, int_x, int_y)
+    cmap = plt.get_cmap('jet')
+    CS = plt.contourf(int_x,int_y,int_Ex,15,cmap=cmap)
+    circle = plt.Circle((0.5,0.5), radius=r_a/period, fc='none', ec = 'w',fill = False)
+    ax1.add_artist(circle)
+    plt.axis([x_min,x_max,y_min,y_max])
+    cbar = plt.colorbar()
+    cbar.ax.set_ylabel(r'Real E_y')
+    ax1.set_xlabel('x (normalised period)')
+    ax1.set_ylabel('y (normalised period)')
+    ax1.axis('scaled')
+
+
+
+    plt.suptitle('E = E_TE+E_TM \n wavelength = %(wl)s ,period = %(d)s, PW = %(pw)s, # BM = %(bm)s,' % {'wl' : wavelengths[0], 'd' : period, 'pw' : pw, 'bm' : bm} + '\n' + 
+                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , refractive index = %(n)s' % {'evan' : evan, 'prop' : prop, 'n' : n})
+    plt.savefig('sub2_E_interface%(wl)s_contour.pdf'% {'wl' : wavelengths[0]})
+
+
+
+
+
+
+
+
+
+
 
 
 def Fabry_Perot_res(stack_list, freq_list, kx_list, lay_interest=1):
