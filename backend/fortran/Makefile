@@ -1,7 +1,7 @@
 # Makefile for EMUstack. Requires some adjustment to reflect your installation.
 
-# COMPILER_VENDOR = gnu95
-COMPILER_VENDOR = intelem
+COMPILER_VENDOR = gnu95
+# COMPILER_VENDOR = intelem
 
 SUBROUTINES_FOR_PYTHON = py_calc_modes.f gmsh_plot_field_3d.f gmsh_plot_field.f gmsh_plot_PW.f
 
@@ -15,7 +15,7 @@ UMFPACK_NAME = umf4_f77zwrapper64.o
 #------------------------------------------------------------------
 # IF using Ubuntu SuiteSparse and full ARPACK install
 EMUstack.so: EMUstack.pyf Lib/umf4_f77zwrapper64.o *.f
-	f2py -c EMUstack.pyf *.f $(LIB_LOCATION)/$(UMFPACK_NAME) -larpack \
+	f2py -c EMUstack.pyf *.f $(LIB_LOCATION)/$(UMFPACK_NAME) \
 	--link-lapack_opt --link-umfpack --link-blas_opt --fcompiler=$(COMPILER_VENDOR)
 # With installed libsuitesparse v. < 4.0.0
 Lib/umf4_f77zwrapper64.o: Lib/umf4_f77zwrapper_SS_3.7.1.c
@@ -34,6 +34,31 @@ purge:
 clean:
 	-rm EMUstack.so
 #------------------------------------------------------------------
+
+
+
+# #------------------------------------------------------------------
+# # IF using Ubuntu SuiteSparse and full ARPACK install
+# EMUstack.so: EMUstack.pyf Lib/umf4_f77zwrapper64.o *.f
+# 	f2py -c EMUstack.pyf *.f $(LIB_LOCATION)/$(UMFPACK_NAME) -larpack \
+# 	--link-lapack_opt --link-umfpack --link-blas_opt --fcompiler=$(COMPILER_VENDOR)
+# # With installed libsuitesparse v. < 4.0.0
+# Lib/umf4_f77zwrapper64.o: Lib/umf4_f77zwrapper_SS_3.7.1.c
+# 	gcc -O5 -DZLONG -I/usr/include/suitesparse -c Lib/umf4_f77zwrapper_SS_3.7.1.c \
+# 		-fPIC -o Lib/umf4_f77zwrapper64.o
+# # With installed libsuitesparse v. >= 4.0.0
+# # Lib/umf4_f77zwrapper64.o: Lib/umf4_f77zwrapper_SS_4.2.0.c
+# # 	gcc -DZLONG -I/usr/include/suitesparse -c Lib/umf4_f77zwrapper_SS_4.2.0.c \
+# # 		-fPIC -o umf4_f77zwrapper64.o
+# EMUstack.pyf: $(SUBROUTINES_FOR_PYTHON)
+# 	f2py -m EMUstack -h EMUstack.pyf $(SUBROUTINES_FOR_PYTHON) --overwrite-signature
+# purge:
+# 	-rm EMUstack.pyf
+# 	-rm EMUstack.so
+# 	-rm Lib/umf4_f77zwrapper64.o
+# clean:
+# 	-rm EMUstack.so
+# #------------------------------------------------------------------
 
 
 
