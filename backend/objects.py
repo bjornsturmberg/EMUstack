@@ -521,8 +521,8 @@ class Light(object):
                 raise ValueError, "Specify incident angle either by \n\
             k_parallel OR by theta, phi and n_inc."
             # Avoid the degeneracies that occur at normal incidence (FEM does not deal well with them)
-            if abs(theta) < 1e-4: theta += 1e-4
-            if abs(phi) < 1e-4: phi += 1e-4
+            if abs(theta) < 1e-5: theta += 1e-5
+            if abs(phi) < 1e-5: phi += 1e-5
             # Calculate k_parallel from incident angles
             k = 2 * np.pi * np.real(n_inc) / self.wl_nm
             theta *= np.pi / 180
