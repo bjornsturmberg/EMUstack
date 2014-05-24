@@ -1,4 +1,23 @@
 """
+    test_case_simple_mk_msh.py is a simulation example for EMUstack.
+
+    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+"""
 Test simulation of a relatively simple structure;
 a dilute InP nanowire array.
 Tests the creation of new .mail file via Gmsh.
@@ -105,3 +124,7 @@ def test_stack_list_matches_saved(casefile_name = 'case_3'):
             #TODO: yield assert_ac, lay.sol1, rlay['sol1']
         yield assert_ac, stack.R_net, rstack['R_net'], rtol, atol, lbl_s + 'R_net'
         yield assert_ac, stack.T_net, rstack['T_net'], rtol, atol, lbl_s + 'T_net'
+        
+
+plotting.clear_previous('.txt')
+plotting.clear_previous('.pdf')

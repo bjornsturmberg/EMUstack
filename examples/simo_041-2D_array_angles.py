@@ -1,7 +1,7 @@
 """
-    simmo_single_interface.py is a simulation example for EMUstack.
+    simmo_NW_array.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2013  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,33 @@
 """
 
 """
-Calculating transmission, and reflection of a simple interface between 2 homogeneous media. 
+Template python script file to execute a simulation. To start, open a terminal and change
+directory to the directory containing this file (which must be in the same directory as 
+the EMUstack directory). Run this script file by executing the following in the command line
+
+$ python simmo_NW_array.py
+
+This will use num_cores worth of your CPUs, and by default return you in the command
+line, having printed results and saved plots to file as specified towards the end of 
+this file. If instead you wish to have direct access to the simulation results (for 
+further manipulation, debugging etc.) run this script with
+
+$ python -i simmo_NW_array.py
+
+which, after the calculations are complete, will return you into an interactive session 
+of python, in which all simulation objects are accessible. In this session you can access
+the docstrings of objects/classes/methods by typing
+
+>>> from pydoc import help
+>>> help(objects.Light)
+
+where we have accessed the docstring of the Light class from objects.py
+
+
+In real simulation scripts replace this docstring with a brief description of the 
+simulation, eg.
+`Simulating NW array with period 600 nm and NW diameter 120 nm, placed ontop of 
+different substrates.'
 """
 
 import time
@@ -56,30 +82,48 @@ light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
 
 # period must be consistent throughout simulation!!!
 period = 600
+max_num_BMs = 200
 
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Air, loss = True)
-substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Si_c, loss = False)
+    material = materials.Air, loss = False)
 
-def simulate_stack(light):    
+substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
+    material = materials.SiO2_a, loss = False)
+
+NW_diameter = 120
+NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
+    inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
+    make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 2.0)
+
+# Find num_BM for each simulation (wl) as num decreases w decreasing index contrast.
+max_n = max([NW_array.inclusion_a.n(wl).real for wl in wavelengths])
+
+def simulate_stack(light):
+    num_BM = round(max_num_BMs * NW_array.inclusion_a.n(light.wl_nm).real/max_n)
+    # num_BM = max_num_BMs
+    
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
+    sim_NWs         = NW_array.calc_modes(light, num_BM = num_BM)
+
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
     solar_cell list MUST be ordered from bottom to top!
     """
 
-    stack0 = Stack((sim_substrate, sim_superstrate))
-    stack0.calc_scat(pol = 'TE')
+    stack = Stack((sim_substrate, sim_NWs, sim_superstrate))
+    stack.calc_scat(pol = 'TE')
 
-    return [stack0]
+    return [stack] 
 
 
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
 stacks_wl_list = pool.map(simulate_stack, light_list)
+# Run one at a time
+# stacks_wl_list = map(simulate_stack, light_list)
+
 
 
 # Pull apart simultaneously simulated stakes into single stack, all wls arrays.
@@ -91,16 +135,21 @@ np.array(stacks_wl_list)
 last_light_object = light_list.pop()
 
 
-param_layer = substrate # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object)
+
+param_layer = NW_array # Specify the layer for which the parameters should be printed on figures.
+params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=max_num_BMs)
+
+#### Example 1: simple multilayered stack.
 stack_label = 0 # Specify which stack you are dealing with.
 stack_wl_list = []
 for i in range(len(wavelengths)):
     stack_wl_list.append(stacks_wl_list[i][stack_label])
-# Plot total transmission, reflection, absorption & that of each layer.
-Efficiency = plotting.t_r_a_plots(stack_wl_list, wavelengths, params_string, 
-    stack_label=stack_label) 
+active_layer_nu = 1
 
+Efficiency = plotting.t_r_a_plots(stack_wl_list, wavelengths, params_string, 
+    active_layer_nu=active_layer_nu, stack_label=stack_label) 
+# Dispersion
+plotting.omega_plot(stack_wl_list, wavelengths, params_string, stack_label=stack_label) 
 
 
 ######################## Wrapping up ########################
