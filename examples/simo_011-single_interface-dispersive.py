@@ -59,7 +59,7 @@ period = 300
 # Define each layer of the structure, now with dispersive media.
 # The refractive indices are interpolated from tabulated data.
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Air) 
+    material = materials.Air)
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.SiO2_a) # Amorphous silica
 
@@ -82,6 +82,15 @@ pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 
 ######################## Post Processing ########################
+# This time let's visualise the net Transmission scattering matrix,
+# which describes the propagation of light all the way from the superstrate into 
+# the substrate. When studying diffractive layers it is useful to know how many of the
+# plane waves of the substrate are propagating, so lets include this.
+wl_num = -1
+T_net = stacks_list[wl_num].T_net
+nu_prop = stacks_list[wl_num].layers[0].num_prop_pw_per_pol
+plotting.vis_scat_mats(T_net, nu_prop_PWs=nu_prop)
+
 # Let's just plot the spectra and see the effect of changing refractive indices.
 plotting.t_r_a_plots(stacks_list, wavelengths)
 

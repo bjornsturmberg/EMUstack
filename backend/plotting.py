@@ -750,39 +750,49 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_p
 
 #######################################################################################
 def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
-# def vis_scat_mats(scat_mat,k_array,nu_prop_PWs,wl=0,extra_title=''):
     """ Plot given scattering matrix as greyscale images. """
-    image = abs(np.real(scat_mat))
-    plt.matshow(image,cmap=plt.cm.gray)
-    # print np.shape(scat_mat)
-    scat_mat_dim_x = np.shape(scat_mat)[0]
-    scat_mat_dim_y = np.shape(scat_mat)[1]
-    half_dim_x = scat_mat_dim_x/2-0.5
-    half_dim_y = scat_mat_dim_y/2-0.5
-    plt.plot([-0.5, scat_mat_dim_y-0.5],[half_dim_x,half_dim_x],'w', linewidth=2)
-    plt.plot([half_dim_y,half_dim_y],[-0.5, scat_mat_dim_x-0.5],'w', linewidth=2)
-    plt.axis([-0.5, scat_mat_dim_y-0.5, scat_mat_dim_x-0.5,  -0.5])
-    plt.xticks([half_dim_y/2, scat_mat_dim_y-half_dim_y/2],['TE', 'TM'])
-    plt.yticks([half_dim_x/2, scat_mat_dim_x-half_dim_x/2],['TE', 'TM'])
-    # proping = []
-    # half_k = k_array[0:len(k_array)/2]
-    # for i in range(len(half_k)):
-    #     if np.real(half_k[i])>0: proping.append(i)
-    # print max(proping)
-    plt.plot([-0.5, scat_mat_dim_y-0.5],[nu_prop_PWs-0.5,nu_prop_PWs-0.5],'r', linewidth=1)
-    plt.plot([nu_prop_PWs-0.5,nu_prop_PWs-0.5],[-0.5, scat_mat_dim_x-0.5],'r', linewidth=1)
-    plt.plot([-0.5, scat_mat_dim_y-0.5],[half_dim_x+nu_prop_PWs,half_dim_x+nu_prop_PWs],'r', linewidth=1)
-    plt.plot([half_dim_y+nu_prop_PWs,half_dim_y+nu_prop_PWs],[-0.5, scat_mat_dim_x-0.5],'r', linewidth=1)
-    cbar = plt.colorbar(extend='neither')
-    cbar.ax.set_ylabel('|Re(matrix)|')
-    plt.xlabel('Incoming Orders')
-    plt.ylabel('Outgoing Orders')
-    plt.suptitle('%s Scattering Matrix' % extra_title,fontsize=title_font)
-    if wl != None and extra_title == None: title = 'Scat_mat-wl%(wl)i' % {'wl' : wl}
-    elif wl == None and extra_title != None: title = 'Scat_mat-%(ti)s' % {'ti' : extra_title}
-    elif wl != None and extra_title != None: title = 'Scat_mat-wl%(wl)i-%(ti)s' % {'wl' : wl, 'ti' : extra_title}
-    else: title = 'Scat_mat'
-    plt.savefig(title)
+    fig = plt.figure(num=None, figsize=(14, 6), dpi=80, facecolor='w', edgecolor='k')
+    if wl != None and extra_title == None: title = '-wl%(wl)i' % {'wl' : wl}
+    elif wl == None and extra_title != None: title = '-%(ti)s' % {'ti' : extra_title}
+    elif wl != None and extra_title != None: title = '-wl%(wl)i-%(ti)s' % {'wl' : wl, 'ti' : extra_title}
+    else: title = ''
+
+    for i in [1,2]:
+        ax1 = fig.add_subplot(1,2,i)
+        if i==0: image = abs(np.abs(scat_mat))
+        if i==1: image = abs(np.real(scat_mat))
+        mat = ax1.matshow(image,cmap=plt.cm.gray)
+        scat_mat_dim_x = np.shape(scat_mat)[0]
+        scat_mat_dim_y = np.shape(scat_mat)[1]
+        half_dim_x = scat_mat_dim_x/2-0.5
+        half_dim_y = scat_mat_dim_y/2-0.5
+        ax1.plot([-0.5, scat_mat_dim_y-0.5],[half_dim_x,half_dim_x],'w', linewidth=2)
+        ax1.plot([half_dim_y,half_dim_y],[-0.5, scat_mat_dim_x-0.5],'w', linewidth=2)
+        ax1.axis([-0.5, scat_mat_dim_y-0.5, scat_mat_dim_x-0.5,  -0.5])
+        ax1.set_xticks([half_dim_y/2, scat_mat_dim_y-half_dim_y/2],['TE', 'TM'])
+        ax1.set_yticks([half_dim_x/2, scat_mat_dim_x-half_dim_x/2],['TE', 'TM'])
+        # proping = []
+        # half_k = k_array[0:len(k_array)/2]
+        # for i in range(len(half_k)):
+        #     if np.real(half_k[i])>0: proping.append(i)
+        # print max(proping)
+        ax1.plot([-0.5, scat_mat_dim_y-0.5],[nu_prop_PWs-0.5,nu_prop_PWs-0.5],'r', linewidth=1)
+        ax1.plot([nu_prop_PWs-0.5,nu_prop_PWs-0.5],[-0.5, scat_mat_dim_x-0.5],'r', linewidth=1)
+        ax1.plot([-0.5, scat_mat_dim_y-0.5],[half_dim_x+nu_prop_PWs,half_dim_x+nu_prop_PWs],'r', linewidth=1)
+        ax1.plot([half_dim_y+nu_prop_PWs,half_dim_y+nu_prop_PWs],[-0.5, scat_mat_dim_x-0.5],'r', linewidth=1)
+        cbar = fig.colorbar(mat,extend='neither')
+        # if i==1: cbar.ax.set_ylabel('|Re(matrix)|')
+        # if i==2: cbar.ax.set_ylabel('|Imag(matrix)|')
+        if i==1: ax1.set_title('|Re(matrix)|')
+        if i==2: ax1.set_title('|Imag(matrix)|')
+        ax1.set_xticklabels('')
+        ax1.set_yticklabels('')
+        ax1.set_xlabel('Incoming Orders')
+        ax1.set_ylabel('Outgoing Orders')
+        
+
+    plt.suptitle('Scattering Matrices' + title)
+    plt.savefig('Scat_mat' + title)
 #######################################################################################
 
 
