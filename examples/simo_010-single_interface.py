@@ -87,6 +87,13 @@ stacks_list = map(simulate_stack, light_list)
 # have access to all simulation objects and results for further
 # manipulation. In this case you run this file as
 # $ python -i simo_010-single_interface.py 
+# In this session the docstrings of objects/classes/methods 
+# can be accessed by typing
+
+# >>> from pydoc import help
+# >>> help(objects.Light)
+
+# where we have accessed the docstring of the Light class from objects.py
 
 
 ######################## Post Processing ########################

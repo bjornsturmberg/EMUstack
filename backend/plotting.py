@@ -42,23 +42,38 @@ matplotlib.rc('font', **font)
 linesstrength = 2.5
 title_font = 10
 
-# Natural constants
-ASTM15_tot_I   = 900.084 # Integral of ASTM 1.5 solar irradiance in W/m**2
-Plancks_h      = 6.62606957*1e-34     # Planck's constant
-speed_c        = 299792458            # Speed of light in vacuum
-charge_e       = 1.602176565*1e-19    # Charge of an electron
 
+####Natural constants##################################################################
+ASTM15_tot_I   = 900.084            # Integral of ASTM 1.5 solar irradiance in W/m**2
+Plancks_h      = 6.62606957*1e-34   # Planck's constant
+speed_c        = 299792458          # Speed of light in vacuum
+charge_e       = 1.602176565*1e-19  # Charge of an electron
 #######################################################################################
+
+
+####Short utility functions############################################################
 def clear_previous(file_type):
     """ Delete all files of specified type 'file_type', eg '.txt' """
 
     files_rm = 'rm *%s'% file_type
     subprocess.call(files_rm, shell = True)
-#######################################################################################
 
+def zeros_int_str(zero_int):
+    """ Convert integer into string with '0' in place of ' ' """
+    # if zero_int == 0:
+    #     fmt_string = '0000'
+    # else:
+    #     string = '%4.0f' % zero_int
+    #     fmt_string = string.replace(' ','0')
+    string = '%4.0f' % zero_int
+    fmt_string = string.replace(' ','0')
+    return fmt_string
 
+def tick_function(energies):
+    """ Convert energy in eV into wavelengths in nm """
+    wls = Plancks_h*speed_c/(energies*charge_e)*1e9
+    return wls
 
-#######################################################################################
 def gen_params_string(param_layer, light, max_num_BMs=0):
     """ Generate the string of simulation info that is to be printed at the top of plots. """
 
@@ -103,26 +118,10 @@ def gen_params_string(param_layer, light, max_num_BMs=0):
 #######################################################################################
 
 
-
-def zeros_int_str(zero_int):
-    """ Convert integer into string with '0' in place of ' ' """
-    # if zero_int == 0:
-    #     fmt_string = '0000'
-    # else:
-    #     string = '%4.0f' % zero_int
-    #     fmt_string = string.replace(' ','0')
-    string = '%4.0f' % zero_int
-    fmt_string = string.replace(' ','0')
-    return fmt_string
-
-def tick_function(energies):
-    """ Convert energy in eV into wavelengths in nm """
-    wls = Plancks_h*speed_c/(energies*charge_e)*1e9
-    return wls
-    
-#######################################################################################
-def t_r_a_plots(stack_wl_list, xvalues, params_2_print='', active_layer_nu=0, stack_label=1,\
-    ult_eta=False, J_sc=False, weight_spec=False, extinct=False, add_height=0, add_name=''):
+####Standard plotting of spectra#######################################################
+def t_r_a_plots(stack_wl_list, xvalues, params_2_print='', active_layer_nu=0,\
+    stack_label=1, ult_eta=False, J_sc=False, weight_spec=False, extinct=False,\
+    add_height=0, add_name=''):
     """ Plot t,r,a for each layer & total, then save each to text files. """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
@@ -181,59 +180,15 @@ def t_r_a_plots(stack_wl_list, xvalues, params_2_print='', active_layer_nu=0, st
         t_weighted = t_tot*weighting
         r_weighted = r_tot*weighting
         plot_name = 'Weighted_Total_Spectra'
-        total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, xvalues, params_2_print, stack_label, add_name)
+        total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, xvalues, 
+            params_2_print, stack_label, add_name)
 
     if  extinct == True:
         extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
     return
 
-
-def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_name):
-    """ Calculate the short circuit current J_sc under ASTM 1.5 illumination.
-        Assuming every absorbed photon produces a pair of charge carriers.
-    """
-
-    Irrad_spec_file = '../backend/data/ASTMG173'
-    i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
-    i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
-    expression   = i_spec*active_abs*wavelengths
-    integral_tmp = np.trapz(expression, x=wavelengths)
-    J = (charge_e/(Plancks_h*speed_c)) * integral_tmp *1e-1 # in mA/cm^2  
-    nums_2_print = params_2_print.split()
-    if len(nums_2_print) >= 8:
-        eta_string   = '%8.6f \n'% J + nums_2_print[5].replace(',','\n') + \
-          nums_2_print[8].replace(',','\n') #save params in easy to read in fmt
-    else:
-        eta_string   = '%8.6f \n'% J
-    np.savetxt('J_sc_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, np.array([eta_string]), fmt = '%s')
-    return J, i_spec
-
-
-def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name):
-    """ Calculate the photovoltaic ultimate efficiency achieved in the specified active layer. 
-        For definition see Sturmberg et al., Optics Express, Vol. 19, Issue S5, pp. A1067-A1081 (2011)
-        http://dx.doi.org/10.1364/OE.19.0A1067
-    """
-    # TODO make E_g a property of material, not just longest wl included.
-
-    Irrad_spec_file = '../backend/data/ASTMG173'
-    i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
-    i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
-    bandgap_wl   = wavelengths[-1] #have as property of material.
-    expression   = i_spec*active_abs*wavelengths
-    integral_tmp = np.trapz(expression, x=wavelengths)
-    Efficiency   = integral_tmp/(bandgap_wl*ASTM15_tot_I)   
-    nums_2_print = params_2_print.split()
-    if len(nums_2_print) >= 8:
-        eta_string   = '%8.6f \n'% Efficiency + nums_2_print[5].replace(',','\n') + \
-          nums_2_print[8].replace(',','\n') #save params in easy to read in fmt
-    else:
-        eta_string   = '%8.6f \n'% Efficiency
-    np.savetxt('Efficiency_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, np.array([eta_string]), fmt = '%s')
-    return Efficiency, i_spec
-
-
-def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, stack_label, add_name):
+def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print,\
+    stack_label, add_name):
     """ The plotting function for one type of spectrum across all layers. """
 
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
@@ -302,8 +257,8 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print, s
 
         plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : spectra_name, 'bon' : stack_label,'add' : add_name})
 
-
-def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label, add_name):
+def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print,\
+    stack_label, add_name):
     """ The plotting function for total t,r,a spectra on one plot. """
 
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
@@ -346,11 +301,15 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
     plt.suptitle(params_2_print,fontsize=title_font)
     # plt.suptitle(plot_name+add_name+'\n'+params_2_print)
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+#######################################################################################
 
 
-
-def t_r_a_plots_subs(stack_wl_list, wavelengths, params_2_print, period, sub_n, active_layer_nu=0, stack_label=1, add_name=''):
-    """ Plot t,r,a for each layer & total, then save each to text files. """
+####Plot spectra indicating Wood anomalies in substrate################################
+def t_r_a_plots_subs(stack_wl_list, xvalues, period, sub_n, params_2_print='', \
+    active_layer_nu=0, stack_label=1, ult_eta=False, J_sc=False, weight_spec=False,\
+    extinct=False, add_height=0, add_name=''):
+    """ Plot t,r,a indicating Wood anomalies in substrate for each layer & total,
+        then save each to text files. """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
     params_2_print += '\n'r'$h_t,...,h_b$ = '
@@ -358,7 +317,6 @@ def t_r_a_plots_subs(stack_wl_list, wavelengths, params_2_print, period, sub_n, 
 
     stack_label = zeros_int_str(stack_label)
 
-    # wavelengths = np.array([s.layers[0].light.wl_nm for s in stack_wl_list]) #look at first layer to find wls.
     a_list = []
     t_list = []
     r_list = []
@@ -372,34 +330,47 @@ def t_r_a_plots_subs(stack_wl_list, wavelengths, params_2_print, period, sub_n, 
     a_tot      = []
     t_tot      = []
     r_tot      = []
-    for i in range(len(wavelengths)): 
+    for i in range(len(xvalues)): 
         active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
-    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label)
-    params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
-    params_2_print += ' %'
 
-    total_h = sum(stack_wl_list[0].heights_nm()) #look at first wl result to find h.
-    layers_plot('Lay_Absorb', a_list, wavelengths, total_h, params_2_print, stack_label, add_name)
-    layers_plot('Lay_Trans',  t_list, wavelengths, total_h, params_2_print, stack_label, add_name)
-    layers_plot('Lay_Reflec', r_list, wavelengths, total_h, params_2_print, stack_label, add_name)
-    # Also plot total t,r,a on a single plot
-    plot_name = 'Total_Spectra'
-    total_tra_plot_subs(plot_name, a_tot, t_tot, r_tot, wavelengths, params_2_print,
+    # Plot total t,r,a on a single plot indicating Wood anomalies
+    plot_name = 'Total_Spectra_subs'
+    total_tra_plot_subs(plot_name, a_tot, t_tot, r_tot, xvalues, params_2_print,
       stack_label, add_name, period, sub_n)
-    # Also plot totals weighted by solar irradiance
-    weighting = Irradiance/Irradiance.max()
-    a_weighted = a_tot*weighting
-    t_weighted = t_tot*weighting
-    r_weighted = r_tot*weighting
-    plot_name = 'Weighted_Total_Spectra'
-    total_tra_plot_subs(plot_name, a_weighted, t_weighted, r_weighted, wavelengths, params_2_print,
-      stack_label, add_name, period, sub_n)
-    return Efficiency
 
-def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print, stack_label, add_name, period, sub_n):
+    if ult_eta == True:
+        Efficiency = ult_efficiency(active_abs, xvalues, params_2_print, stack_label,add_name)
+        params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
+        params_2_print += ' %'
+
+    if J_sc == True:
+        J = J_short_circuit(active_abs, xvalues, params_2_print, stack_label,add_name)
+        params_2_print += r'$J_{sc}$ = %(J)6.2f'% {'J' : J, }
+        params_2_print += r' mA/cm$^2$'
+
+    if weight_spec == True:
+        # Also plot totals weighted by solar irradiance
+        Irrad_spec_file = '../backend/data/ASTMG173'
+        i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
+        i_spec       = np.interp(xvalues, i_data[:,0], i_data[:,3])
+        bandgap_wl   = xvalues[-1]
+        weighting = i_spec/i_spec.max()*(xvalues/bandgap_wl)
+        a_weighted = a_tot*weighting
+        t_weighted = t_tot*weighting
+        r_weighted = r_tot*weighting
+        plot_name = 'Weighted_Total_Spectra_subs'
+        total_tra_plot_subs(plot_name, a_weighted, t_weighted, r_weighted, xvalues, 
+            params_2_print, stack_label, add_name, period, sub_n)
+
+    if  extinct == True:
+        extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
+    return
+
+def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
+    params_2_print, stack_label, add_name, period, sub_n):
     """ The plotting function for total t,r,a spectra on one plot. """
 
     t_WA_01 = sub_n * period
@@ -499,11 +470,13 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2
     plt.suptitle(params_2_print,fontsize=title_font)
     # plt.suptitle(plot_name+add_name+'\n'+params_2_print)
     plt.savefig('%(s)s_stack%(bon)s__%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+#######################################################################################
 
 
-
-def t_r_a_NO_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0, stack_label=1, add_name=''):
-    """ Calculate efficiency but do not save or plot spectra. """
+####Save J_sc & ult efficiency w/o spectra#############################################
+def J_sc_eta_NO_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0,\
+    stack_label=1, add_name=''):
+    """ Calculate J_sc & efficiency but do not save or plot spectra. """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
     params_2_print += '\n'r'$h_t,...,h_b$ = '
@@ -519,12 +492,18 @@ def t_r_a_NO_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0
     active_abs = []
     for i in range(len(wavelengths)): 
         active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
-    Efficiency, Irradiance = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name)
-    return Efficiency
+
+    Efficiency = ult_efficiency(active_abs, xvalues, params_2_print, stack_label,add_name)
+
+    J = J_short_circuit(active_abs, xvalues, params_2_print, stack_label,add_name)
+    return
+#######################################################################################
 
 
-def layers_print(spectra_name, spec_list, wavelengths, total_h, stack_label=1, add_name=''):
-    """ The plotting function for one type of spectrum across all layers. """
+####Saving spectra to files############################################################
+def layers_print(spectra_name, spec_list, wavelengths, total_h, stack_label=1,\
+    add_name=''):
+    """ Save spectra to text files. """
 
     nu_layers = len(spec_list)/len(wavelengths)
     h_array = np.ones(len(wavelengths))*total_h
@@ -553,7 +532,6 @@ def layers_print(spectra_name, spec_list, wavelengths, total_h, stack_label=1, a
             np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
                 'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
 
-
 def t_r_a_write_files(stack_wl_list, wavelengths, stack_label=1, add_name=''):
     """ Save t,r,a for each layer & total in text files. """
     stack_label = zeros_int_str(stack_label)
@@ -579,9 +557,10 @@ def t_r_a_write_files(stack_wl_list, wavelengths, stack_label=1, add_name=''):
     layers_print('Lay_Absorb', a_list, wavelengths, total_h, stack_label)
     layers_print('Lay_Trans',  t_list, wavelengths, total_h, stack_label)
     layers_print('Lay_Reflec', r_list, wavelengths, total_h, stack_label)
+#######################################################################################
 
 
-
+####Plot spectra on other scales#######################################################
 def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
     """ Plot extinction ratio in transmission extinct = log_10(1/t). """
 
@@ -594,9 +573,6 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
     plot_name = 'Extinction'
     plt.suptitle(plot_name+add_name+'\n'+params_2_print,fontsize=title_font)
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
-
-
-
 
 def EOT_plot(stack_wl_list, wavelengths, params_2_print, num_pw_per_pol=0, add_name=''):
     """ Plot T_{00} as in Martin-Moreno PRL 86 2001. 
@@ -637,17 +613,56 @@ def EOT_plot(stack_wl_list, wavelengths, params_2_print, num_pw_per_pol=0, add_n
     plot_name = 'EOT'
     plt.suptitle(params_2_print,fontsize=title_font)
     plt.savefig('%(s)s_%(add)s'% {'s' : plot_name, 'add' : add_name})
-
-
-
-
-
-
 #######################################################################################
 
 
+####Calculate short circuit current and ultimate efficiency############################
+def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_name):
+    """ Calculate the short circuit current J_sc under ASTM 1.5 illumination.
+        Assuming every absorbed photon produces a pair of charge carriers.
+    """
 
+    Irrad_spec_file = '../backend/data/ASTMG173'
+    i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
+    i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
+    expression   = i_spec*active_abs*wavelengths
+    integral_tmp = np.trapz(expression, x=wavelengths)
+    J = (charge_e/(Plancks_h*speed_c)) * integral_tmp *1e-1 # in mA/cm^2  
+    nums_2_print = params_2_print.split()
+    if len(nums_2_print) >= 8:
+        eta_string   = '%8.6f \n'% J + nums_2_print[5].replace(',','\n') + \
+          nums_2_print[8].replace(',','\n') #save params in easy to read in fmt
+    else:
+        eta_string   = '%8.6f \n'% J
+    np.savetxt('J_sc_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, np.array([eta_string]), fmt = '%s')
+    return J, i_spec
+
+def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name):
+    """ Calculate the photovoltaic ultimate efficiency achieved in the specified active layer. 
+        For definition see Sturmberg et al., Optics Express, Vol. 19, Issue S5, pp. A1067-A1081 (2011)
+        http://dx.doi.org/10.1364/OE.19.0A1067
+    """
+    # TODO make E_g a property of material, not just longest wl included.
+
+    Irrad_spec_file = '../backend/data/ASTMG173'
+    i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
+    i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
+    bandgap_wl   = wavelengths[-1] #have as property of material.
+    expression   = i_spec*active_abs*wavelengths
+    integral_tmp = np.trapz(expression, x=wavelengths)
+    Efficiency   = integral_tmp/(bandgap_wl*ASTM15_tot_I)   
+    nums_2_print = params_2_print.split()
+    if len(nums_2_print) >= 8:
+        eta_string   = '%8.6f \n'% Efficiency + nums_2_print[5].replace(',','\n') + \
+          nums_2_print[8].replace(',','\n') #save params in easy to read in fmt
+    else:
+        eta_string   = '%8.6f \n'% Efficiency
+    np.savetxt('Efficiency_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, np.array([eta_string]), fmt = '%s')
+    return Efficiency, i_spec
 #######################################################################################
+
+
+####Plot dispersion diagrams & field concentrations as function of wavelength##########
 def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
     """ Plots the dispersion diagram of each layer in one plot. """
 
@@ -713,7 +728,8 @@ def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
     # Uncomment if you wish to save the dispersion data of a simulation to file.
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
-def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_print, stack_label=1):
+def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_print,\
+    stack_label=1):
     """ Plots the energy concentration (epsilon |E_{cyl}| / epsilon |E_{cell}|) of given layer. """
 
     stack_label = zeros_int_str(stack_label)
@@ -744,11 +760,7 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_p
 #######################################################################################
 
 
-
-
-
-
-#######################################################################################
+####Visualise scattering matrices######################################################
 def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
     """ Plot given scattering matrix as greyscale images. """
     fig = plt.figure(num=None, figsize=(14, 6), dpi=80, facecolor='w', edgecolor='k')
@@ -796,39 +808,9 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
 #######################################################################################
 
 
-
-
-
-
-#######################################################################################
-def k_plot(t_func_k,n_PW_p_pols):
-    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-    ax1 = fig.add_subplot(1,1,1)
-    ks = range(n_PW_p_pols)
-    np.savetxt('%(s)s.txt'% {'s' : 't_func_k',}, t_func_k, fmt = '%18.12f')
-    ax1.plot(ks,t_func_k, linewidth=linesstrength)
-    ax1.set_xlabel('k vector')
-    ax1.set_ylabel(r'$|E|_{trans}$')
-    plt.savefig('t_func_k')
-
-def t_func_k_plot(stack_list, light_object, n_H):
-    for stack in stack_list:
-        # print stack.T_net[0,:]
-        n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
-        print n_PW_p_pols
-        k0 = 2*np.pi/light_object.wl_nm
-        print k0
-        # k_array = [(light_object.k_pll + 2*np.pi*m/stack.period) for m in np.linspace(-n_PW_p_pols/2,n_PW_p_pols/2,n_PW_p_pols)]
-
-        trans_k = np.abs(stack.vec_coef_down[-1][0:n_PW_p_pols]) # ASSUMES TE polarisation
-        trans_k_array = np.array(trans_k).reshape(-1,)
-        tot_trans_k_array = trans_k_array#**2
-        # print repr(trans_k)
-        # print repr(tot_trans_k_array)
-        k_plot(tot_trans_k_array,n_PW_p_pols)
-
-
-def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
+####Plot PW amplitudes function k-vector ##############################################
+def t_func_k_plot_1D(stack_list, light_object, n_H, pol='TM'):
+    """ Plot PW amplitudes as a function of their in-plane k-vector. """
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
 
@@ -840,12 +822,12 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
     for stack in stack_list:
         k0 = stack.layers[0].k()
         n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
-        # Calculate k_x that correspond to k_y=0 (in normalized units)
+        # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
         alpha0, beta0 = stack.layers[0].k_pll_norm()
         alphas = alpha0 + pxs * 2 * np.pi
-        on_axis_kzs = sqrt(k0**2 - alphas**2)
+        on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
         full_k_space = stack.layers[0].k_z
-        # consider only transmission into singular polarization
+        # consider singular polarization
         one_pol_k_space = full_k_space[0:n_PW_p_pols]
 
         axis_indices = []
@@ -854,44 +836,42 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, min_k_label):
             axis_indices = np.append(axis_indices, np.ravel(np.array(np.where(ix))))
         axis_indices = axis_indices.astype(int)
 
-        # print axis_indices
-        # print stack.T_net[axis_indices]
-        # print stack.vec_coef_down[-1][0:n_PW_p_pols]
-
-
-        # specular_in = stack.layers[0].specular_order
-        # trans_k = np.abs(stack.T_net[0:n_PW_p_pols,specular_in]).reshape(-1,) # Outgoing TE polarisation 
-        trans_k = np.abs(stack.vec_coef_down[-1][0:n_PW_p_pols]).reshape(-1,) # Outgoing TE polarisation 
-        # trans_k = np.abs(stack.vec_coef_down[-1][n_PW_p_pols-1:-1]).reshape(-1,) # Outgoing TM polarisation
-        # trans_k = np.abs(stack.vec_coef_down[-1]) # both polarisation in transmission
+        # Outgoing TE polarisation 
+        if pol=='TE': trans_k = np.abs(stack.vec_coef_down[-1][0:n_PW_p_pols]).reshape(-1,)
+        # Outgoing TM polarisation
+        if pol=='TM': trans_k = np.abs(stack.vec_coef_down[-1][n_PW_p_pols-1:-1]).reshape(-1,) 
         trans_k_array = np.array(trans_k).reshape(-1,)
 
         select_trans = trans_k_array[axis_indices]
         store_alphas = np.append(store_alphas,alphas)
         store_k_trans = np.append(store_k_trans,select_trans)
 
+
     sort_indices = np.argsort(store_alphas)
     plot_alphas = store_alphas[sort_indices]
     plot_k_trans = store_k_trans[sort_indices]
 
-
-    # ax1.plot(plot_alphas,plot_k_trans, 'o-')# linewidth=linesstrength)
     ax1.plot(plot_alphas,plot_k_trans, linewidth=linesstrength)
-    # ax1.set_ylim((0, 7))
 
-    new_tick_values = [-min_k_label*k0, -n_H*k0, -k0, 0, k0, n_H*k0, min_k_label*k0]
-    new_tick_labels = [r"$-%ik_0$"%min_k_label,r'$-n_Hk_0$',r'$-k_0$',r'0',r'$k_0$',r'$n_Hk_0$',r"$%ik_0$"%min_k_label]
+    min_k_label = np.max(np.abs(plot_alphas))
+    k0 = abs(k0)
+    min_k_l_k0  = np.max(np.abs(plot_alphas))/k0
+    new_tick_values = [-min_k_label, -n_H*k0, -k0, 0, k0, n_H*k0, min_k_label]
+    new_tick_labels = [r"$-%ik_0$"%min_k_l_k0,r'$-n_Hk_0$',r'$-k_0$',r'0',
+        r'$k_0$',r'$n_Hk_0$',r"$%ik_0$"%min_k_l_k0]
     ax1.set_xticks(new_tick_values)
     ax1.set_xticklabels(new_tick_labels)
+    ax1.set_xlim(-min_k_label,min_k_label)
 
     ax1.set_xlabel(r'$k_\parallel$')
     ax1.set_ylabel(r'$|E|_{trans}$')
     plt.savefig('t_func_k')
+#######################################################################################
 
 
-
-
-def single_order_T(stack_list, angles, chosen_PW_order,lay_interest=-1, add_height=None,add_title=None):
+#######################################################################################
+def single_order_T(stack_list, angles, chosen_PW_order,lay_interest=-1, \
+    add_height=None, add_title=None):
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
 
@@ -931,40 +911,7 @@ def single_order_T(stack_list, angles, chosen_PW_order,lay_interest=-1, add_heig
 #######################################################################################
 
 
-def fields_3d(pstack, wl):
-    """
-    """
-    from fortran import EMUstack
-    import subprocess
-
-    nnodes=6
-    dir_name = "3D_Fields"
-    if os.path.exists(dir_name):
-        subprocess.call('rm %s -r' %dir_name, shell = True)
-    os.mkdir(dir_name)
-    dir_name = "3D_Fields/Anim"
-    os.mkdir(dir_name)
-
-    for lay in range(len(pstack.layers)-2): #remove -2 once semi inf TFs can be plotted
-        lay+=1
-        layer_name = 'Lay' + zeros_int_str(lay)
-
-        meat = pstack.layers[lay]
-        gmsh_file_pos = meat.structure.mesh_file[0:-5]
-
-        vec_coef = np.concatenate((pstack.vec_coef_down[1],pstack.vec_coef_up[1]))
-        # vec_coef_up = np.zeros(shape=(np.shape(pstack.vec_coef_down[1])),dtype='complex128')
-        # vec_coef = np.concatenate((pstack.vec_coef_down[1],vec_coef_up))
-        h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-        wl_normed = pstack.layers[lay].wl_norm()
-
-        EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,   
-            meat.E_H_field, meat.n_msh_el, meat.n_msh_pts, 
-            nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod,
-            meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos, layer_name)
-
-
-
+#######################################################################################
 def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
     """
     """
@@ -975,9 +922,9 @@ def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
         subprocess.call('rm %s -r' %dir_name, shell = True)
     os.mkdir(dir_name)
 
-#
-# plot fields inside nanostructure (Bloch Mode Basis)
-#
+    #
+    # plot fields inside nanostructure (Bloch Mode Basis)
+    #
     meat = pstack.layers[Struc_lay]
     gmsh_file_pos = meat.structure.mesh_file[0:-5]
     eps_eff = meat.n_effs**2
@@ -1006,9 +953,9 @@ def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
         meat.structure.plot_imag, meat.structure.plot_abs, extra_name)
 
 
-#
-# plot fields in Thin Film (Plane Wave Basis)
-#
+    #
+    # plot fields in Thin Film (Plane Wave Basis)
+    #
     extra_name = EH_name + "Lay" + zeros_int_str(TF_lay)
     select_h = 0.0
     lat_vec = [[1.0, 0.0], [0.0, 1.0]]
@@ -1037,7 +984,7 @@ def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
         gmsh_file_pos, q_average, meat.structure.plot_real, meat.structure.plot_imag,
         meat.structure.plot_abs, extra_name)
 
-# # Semi-inf case
+    # # Semi-inf case
     # vec_coef_up = meat.R12[:,0] # TE polarisation
     # vec_coef_up = meat.R12[:,neq_PW] # TM polarisation
 
@@ -1171,22 +1118,45 @@ def E_substrate2(stack_wl_list, wavelengths,period,r_a,pw,bm):
     ax1.axis('scaled')
 
 
-
     plt.suptitle('E = E_TE+E_TM \n wavelength = %(wl)s ,period = %(d)s, PW = %(pw)s, # BM = %(bm)s,' % {'wl' : wavelengths[0], 'd' : period, 'pw' : pw, 'bm' : bm} + '\n' + 
                  '# prop. ords = %(prop)s, # evan. ords = %(evan)s , refractive index = %(n)s' % {'evan' : evan, 'prop' : prop, 'n' : n})
     plt.savefig('sub2_E_interface%(wl)s_contour.pdf'% {'wl' : wavelengths[0]})
 
+def fields_3d(pstack, wl):
+    """
+    """
+    from fortran import EMUstack
+    import subprocess
+
+    nnodes=6
+    dir_name = "3D_Fields"
+    if os.path.exists(dir_name):
+        subprocess.call('rm %s -r' %dir_name, shell = True)
+    os.mkdir(dir_name)
+    dir_name = "3D_Fields/Anim"
+    os.mkdir(dir_name)
+
+    for lay in range(len(pstack.layers)-2): #remove -2 once semi inf TFs can be plotted
+        lay+=1
+        layer_name = 'Lay' + zeros_int_str(lay)
+
+        meat = pstack.layers[lay]
+        gmsh_file_pos = meat.structure.mesh_file[0:-5]
+
+        vec_coef = np.concatenate((pstack.vec_coef_down[1],pstack.vec_coef_up[1]))
+        # vec_coef_up = np.zeros(shape=(np.shape(pstack.vec_coef_down[1])),dtype='complex128')
+        # vec_coef = np.concatenate((pstack.vec_coef_down[1],vec_coef_up))
+        h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+        wl_normed = pstack.layers[lay].wl_norm()
+
+        EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,   
+            meat.E_H_field, meat.n_msh_el, meat.n_msh_pts, 
+            nnodes, meat.type_el, meat.nb_typ_el, meat.n_effs, meat.table_nod,
+            meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos, layer_name)
+#######################################################################################
 
 
-
-
-
-
-
-
-
-
-
+#######################################################################################
 def Fabry_Perot_res(stack_list, freq_list, kx_list, lay_interest=1):
     """ 
     'lay_interest' : specifies which layer in the stack to find F-P resonances of.
@@ -1271,162 +1241,3 @@ def Fabry_Perot_res(stack_list, freq_list, kx_list, lay_interest=1):
     # plt.suptitle('%s Scattering Matrix' % extra_title,fontsize=title_font)
     plt.savefig('Frownplot')
 #######################################################################################
-
-
-
-def modal_t_r_a(stack_wl_list, wavelengths, params_2_print, \
-     mode=0, add_name='', add_height=None):
-    """ Plot t,r,a for each layer & total, then save each to text files. """
-
-    height_list = stack_wl_list[0].heights_nm()[::-1]
-    params_2_print += '\n'r'$h_t,...,h_b$ = '
-    params_2_print += ''.join('%4d, ' % num for num in height_list)
-
-    if add_height!=None: add_name += zeros_int_str(add_height)
-
-
-    for m in mode:
-        mode_abs = []
-        for i in range(len(wavelengths)): 
-            mode_abs.append(float(stack_wl_list[i].special_abs[m]))
-
-        fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-        ax1 = fig.add_subplot(1,1,1)
-        ax1.plot(wavelengths,mode_abs)#, linewidth=linesstrength)
-
-        # ax1.set_ylim((0, 3.0))
-        # ax1.legend()
-        # ax1.set_ylabel(r'$|E|_{trans}$')
-        # plt.suptitle('h = %4.0f' % add_title)
-        # ax1.set_xlabel(r'$\lambda$ (nm)')
-        plt.savefig(add_name+'-m%d'% m)
-
-
-
-
-
-
-
-# np.genfromtxt can deal with incomplete data!
-#     num_BMs     = np.genfromtxt(file_name, usecols=(1))
-
-
-
-
-# def efficiency_h(spec_name,h_spec_name,wavelengths,num_wl,num_h, Animate):
-#     data   = np.loadtxt('%s.txt' % spec_name)
-#     spec   = data[:,1]
-#     i_data = np.loadtxt('%s.txt' % Irrad_spec_file)
-#     i_spec = np.interp(wavelengths, i_data[:,0], i_data[:,2])
-#     h_Efficiency = []
-#     h_data       = []
-#     for i in np.linspace(0,num_h-1,num_h):
-#         h_wl = []
-#         h = data[i,2]
-#         for j in np.linspace(0,num_wl-1,num_wl):
-#             tmp  = spec[i + j*(num_h)]
-#             h_wl = np.append(h_wl,tmp)
-#         eta_calc = efficiency(wavelengths,i_spec,h_wl)
-#         h_Efficiency = np.append(h_Efficiency,eta_calc)
-#         h_data       = np.append(h_data,data[i,2])
-#         if Animate == True:
-#             spectra_h(wavelengths,h_wl, h, eta_calc, i)
-#     h_array = zip(h_Efficiency, h_data)
-#     np.savetxt('%s.txt' % h_spec_name, h_array, fmt = '%18.12f')
-#     if Animate == True:
-#         ps = os.system("convert -delay 3 +dither -layers Optimize -colors 16 Animated/*.pdf Animated/Abs_Spectra.gif")
-#         p  = os.system("gifsicle -O2 Animated/Abs_Spectra.gif -o Animated/Abs_Spectra-opt.gif")
-
-
-# def height_plot(name_out, name_in, layer, light, max_num_BMs, max_order_PWs, Efficiency_h,
-#     Efficiency,num_h):
-#     fig   = plt.figure(num=None, figsize=(12, 9), dpi=80, facecolor='w', edgecolor='k')
-#     ax1   = fig.add_subplot(111)
-
-#     data    = np.loadtxt('%s.txt' % name_in)
-#     wl_data = data[:,0]
-#     s_data  = data[:,1]
-#     h_data  = data[:,2]
-
-#     wl_1    = wl_data[0]
-#     wl_2    = wl_data[-1]
-#     d_wl    = 1
-#     h_1     = h_data[0]
-#     h_2     = h_data[-1]
-#     h_int   = (h_2-h_1)/(num_h-1)
-
-#     # Interpolate the data
-#     int_wl,int_h = np.mgrid[wl_1:wl_2+d_wl:d_wl, h_1:h_2+h_int:h_int]
-#     int_Eff    = griddata(wl_data, h_data, s_data, int_wl, int_h)
-#     int_Eff_t  = int_Eff.T
-
-#     # CS = plt.contourf(int_wl,int_h,int_Eff,100,cmap=plt.cm.jet)
-#     CS = plt.imshow(int_Eff_t, cmap=plt.cm.hot, norm=None, aspect='auto', interpolation=None,
-#       vmin=0, vmax=s_data.max(), origin='lower', extent=(wl_1, wl_2, h_1, h_2))
-#     ax1.set_xlabel('Wavelength (nm)')
-#     ax1.set_ylabel('Height (nm)')
-#     tick_array = []
-#     for i in range(0,10,1):
-#         tick = float(i)/10
-#         if tick < s_data.max():
-#             tick_array.append(tick)
-#     tick_array.append(round(s_data.max(),4))
-#     cbar = plt.colorbar(extend='neither',ticks=tick_array)
-#     cbar.set_ticklabels(tick_array)
-#     cbar.ax.set_ylabel('Absorptance')
-
-
-
-# # Plot efficiency vs height
-#     fig2= plt.figure(num=None, figsize=(12, 9), dpi=80, facecolor='w', edgecolor='k')
-#     ax2 = fig2.add_subplot(153)
-#     data = np.loadtxt('%s.txt' % Efficiency_h)
-#     es = data[:,0]*100
-#     hs = data[:,1]
-#     ax2.plot(es, hs,'r')
-#     ax2.set_xlabel(r'$\eta$' ' (%)')
-#     ax2.set_ylabel('Height (nm)')
-#     plt.axis([es[-1], 0, hs[0], hs[-1]])
-#     plt.xticks([round(es.max(),1), 0])
-#     plt.fill_betweenx(hs,es,color='blue', alpha=0.5)
-#     plt.suptitle(imp_facts)
-#     plt.savefig('%s_eta_bar' % name_out)
-
-
-
-
-
-
-
-
-
-# ================    ===============================
-# character           description
-# ================    ===============================
-# ``'-'``             solid line style
-# ``'--'``            dashed line style
-# ``'-.'``            dash-dot line style
-# ``':'``             dotted line style
-# ``'.'``             point marker
-# ``','``             pixel marker
-# ``'o'``             circle marker
-# ``'v'``             triangle_down marker
-# ``'^'``             triangle_up marker
-# ``'<'``             triangle_left marker
-# ``'>'``             triangle_right marker
-# ``'1'``             tri_down marker
-# ``'2'``             tri_up marker
-# ``'3'``             tri_left marker
-# ``'4'``             tri_right marker
-# ``'s'``             square marker
-# ``'p'``             pentagon marker
-# ``'*'``             star marker
-# ``'h'``             hexagon1 marker
-# ``'H'``             hexagon2 marker
-# ``'+'``             plus marker
-# ``'x'``             x marker
-# ``'D'``             diamond marker
-# ``'d'``             thin_diamond marker
-# ``'|'``             vline marker
-# ``'_'``             hline marker
-# ================    ===============================
