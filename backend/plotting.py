@@ -721,10 +721,10 @@ def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
     fig2.suptitle(r'Imaginary $k_z$'+params_2_print+'\n',fontsize=title_font)
     fig3.suptitle(r'Real $k_z$'+params_2_print+'\n',fontsize=title_font)
     fig4.suptitle(r'Imaginary $k_z$'+params_2_print+'\n',fontsize=title_font)
-    fig1.savefig('Disp_Diagram_Re_stack%(bon)s'% {'bon' : stack_label})
-    fig2.savefig('Disp_Diagram_Im_stack%(bon)s'% {'bon' : stack_label})
-    fig3.savefig('Disp_Diagram_w(k)_Re_stack%(bon)s'% {'bon' : stack_label})
-    fig4.savefig('Disp_Diagram_w(k)_Im_stack%(bon)s'% {'bon' : stack_label})
+    fig1.savefig('Disp_Diagram_Re_stack%(bon)s'% {'bon' : stack_label}, bbox_inches='tight')
+    fig2.savefig('Disp_Diagram_Im_stack%(bon)s'% {'bon' : stack_label}, bbox_inches='tight')
+    fig3.savefig('Disp_Diagram_w(k)_Re_stack%(bon)s'% {'bon' : stack_label}, bbox_inches='tight')
+    fig4.savefig('Disp_Diagram_w(k)_Im_stack%(bon)s'% {'bon' : stack_label}, bbox_inches='tight')
     # Uncomment if you wish to save the dispersion data of a simulation to file.
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
@@ -753,7 +753,7 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_p
         # ax2.set_xlabel('Wavelength (nm)')
         # ax2.set_ylabel(r'$E_{cyl} / E_{cell}$')
         fig1.suptitle('Energy Concentration = '+r'$E_{cyl} / E_{cell}$'+'\n'+params_2_print,fontsize=title_font)
-        fig1.savefig('Energy_Concentration_stack%(bon)s'% {'bon' : stack_label})
+        fig1.savefig('Energy_Concentration_stack%(bon)s'% {'bon' : stack_label}, bbox_inches='tight')
     else:
         print "\n ERROR: plotting.E_conc_plot; \n Can only calculate energy concentration in NanoStruct layers."
         print repr(stack_wl_list[0].layers[which_layer])
@@ -808,10 +808,10 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
 #######################################################################################
 
 
-####Plot PW amplitudes function k-vector ##############################################
+####Plot PW amplitudes function k-vector###############################################
 def t_func_k_plot_1D(stack_list, light_object, n_H, pol='TM'):
     """ Plot PW amplitudes as a function of their in-plane k-vector. """
-    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+    fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
 
     # Create arrays of grating order indexes (-p, ..., p)
@@ -864,27 +864,32 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, pol='TM'):
     ax1.set_xlim(-min_k_label,min_k_label)
 
     ax1.set_xlabel(r'$k_\parallel$')
-    ax1.set_ylabel(r'$|E|_{trans}$')
-    plt.savefig('t_func_k')
+    ax1.set_ylabel(r'$|E|$')
+    plt.savefig('k_vector_excitation', bbox_inches='tight')
 #######################################################################################
 
 
-#######################################################################################
-def single_order_T(stack_list, angles, chosen_PW_order,lay_interest=-1, \
-    add_height=None, add_title=None):
-    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+####Plot amplitudes of PW orders#######################################################
+def amps_of_orders(stack_list, xvalues,  light_object, chosen_PW_order=None,\
+    lay_interest=0, add_height=None, add_title=None):
+    """ Plot the amplitudes of plane wave orders in given layer. """
+    fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
+    # vec_coef sorted from top of stack, everything else is sorted from bottom
+    vec_index = len(stack_list[-1].layers) - lay_interest - 1
+    if chosen_PW_order == None:
+        # Create arrays of grating order indexes (-p, ..., p)
+        chosen_PW_order = np.arange(-light_object.max_order_PWs, light_object.max_order_PWs + 1)
 
     for pxs in chosen_PW_order:
-
         store_trans = []
         for stack in stack_list:
             k0 = stack.layers[0].k()
             n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
-            # Calculate k_x that correspond to k_y=0 (in normalized units)
+            # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
             alpha0, beta0 = stack.layers[0].k_pll_norm()
             alphas = alpha0 + pxs * 2 * np.pi
-            on_axis_kzs = sqrt(k0**2 - alphas**2)
+            on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
             full_k_space = stack.layers[0].k_z
             # consider only transmission into singular polarization
             one_pol_k_space = full_k_space[0:n_PW_p_pols]
@@ -892,26 +897,70 @@ def single_order_T(stack_list, angles, chosen_PW_order,lay_interest=-1, \
             ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
             axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
 
-            trans = np.abs(stack.vec_coef_down[lay_interest][axis_indices]).reshape(-1,) # Outgoing TE polarisation
-            trans += np.abs(stack.vec_coef_down[lay_interest][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+            trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
+            trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
             store_trans = np.append(store_trans,trans)
 
-        ax1.plot(angles,np.abs(store_trans), label="m = %s" %str(pxs))#, linewidth=linesstrength)
+        ax1.plot(xvalues,store_trans, label="m = %s" %str(pxs))#, linewidth=linesstrength)
 
-    ax1.set_ylim((0, 1.0))
-    ax1.legend()
+    handles, labels = ax1.get_legend_handles_labels()
+    lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
+
+
     ax1.set_ylabel(r'$|E|_{trans}$')
-    ax1.set_xlabel(r'$\lambda$ (nm)')
+    if np.max(xvalues) < 90: ax1.set_xlabel(r'$\theta$') # hack way to tell what plotting against
+    else: ax1.set_xlabel(r'$\lambda$ (nm)')
     if add_title != None: plt.suptitle('h = %4.0f' % add_title)
     if add_height!= None: add_title += zeros_int_str(add_height)
-    if add_title != None: plt.savefig('t_order_wl%s'% add_title)
-    else: plt.savefig('t_order_wl')
-    # ax1.set_xlabel(r'$\theta$')
-    # plt.savefig('t_order(theta)'+add_height)
+    if add_title != None: plt.savefig('PW_orders%s'% add_title, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    else: plt.savefig('PW_orders', bbox_extra_artists=(lgd,), bbox_inches='tight')
+
+def evanescent_merit(stack_list, xvalues, light_object, chosen_PW_order=None,\
+    lay_interest=0, add_height=None, add_title=None):
+    """ Create a figure of merit for the 'evanescent-ness' of excited fields. """
+    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(1,1,1)
+    # vec_coef sorted from top of stack, everything else is sorted from bottom
+    vec_index = len(stack_list[-1].layers) - lay_interest - 1
+    if chosen_PW_order == None:
+        # Create arrays of grating order indexes (-p, ..., p)
+        chosen_PW_order = np.arange(-light_object.max_order_PWs, light_object.max_order_PWs + 1)
+
+    store_trans = []
+    for stack in stack_list:
+        merit = 0.0
+        for pxs in chosen_PW_order:
+            k0 = stack.layers[0].k()
+            n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
+            # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
+            alpha0, beta0 = stack.layers[0].k_pll_norm()
+            alphas = alpha0 + pxs * 2 * np.pi
+            on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
+            full_k_space = stack.layers[0].k_z
+            # consider only transmission into singular polarization
+            one_pol_k_space = full_k_space[0:n_PW_p_pols]
+
+            ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
+            axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
+
+            trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
+            trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+            merit += np.abs(pxs) * trans
+        store_trans = np.append(store_trans,merit)
+
+    ax1.plot(xvalues,store_trans)
+
+    ax1.set_ylabel('Ev FoM')
+    if np.max(xvalues) < 90: ax1.set_xlabel(r'$\theta$') # hack way to tell what plotting against
+    else: ax1.set_xlabel(r'$\lambda$ (nm)')
+    if add_title != None: plt.suptitle('h = %4.0f' % add_title)
+    if add_height!= None: add_title += zeros_int_str(add_height)
+    if add_title != None: plt.savefig('evanescent_merit%s'% add_title, bbox_inches='tight')
+    else: plt.savefig('evanescent_merit', bbox_inches='tight')
 #######################################################################################
 
 
-#######################################################################################
+####Field plotting routines############################################################
 def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
     """
     """
@@ -1156,88 +1205,49 @@ def fields_3d(pstack, wl):
 #######################################################################################
 
 
-#######################################################################################
-def Fabry_Perot_res(stack_list, freq_list, kx_list, lay_interest=1):
-    """ 
+####Fabry-Perot resonances#############################################################
+def Fabry_Perot_res(stack_list, freq_list, kx_list, f_0, k_0, lay_interest=1):
+    """ Calculate the Fabry-Perot resonance condition for a resonances within a layer.
     'lay_interest' : specifies which layer in the stack to find F-P resonances of.
     """
     n_freqs = len(freq_list)
     n_kxs   = len(kx_list)
     height = stack_list[-1].heights_nm()[lay_interest-1] # assumes all stacks have equal height
     period = stack_list[-1].period
-
     num_BMs = stack_list[-1].layers[lay_interest].num_BM
     I_mat = np.matrix(np.eye(num_BMs),dtype='D')
 
     plot_mat = np.zeros(shape=(n_freqs,n_kxs),dtype='complex128')
-
     for i in range(n_kxs):
         kx_slice = stack_list[i*n_freqs:(i+1)*n_freqs]
-
-        # FP_res_list = []
         j = 0
         for stack in kx_slice:
             P   = stack.layers[lay_interest].prop_fwd(height/period)
             R21 = stack.layers[lay_interest].R21
             FP_term = np.linalg.det(I_mat - R21*P*R21*P)
-            # FP_res_list.append(FP_term)
             plot_mat[j,i] = FP_term
             j += 1
+    image = np.log(np.abs(plot_mat))
 
-    image = np.abs(plot_mat)
-
-
-    # print plot_mat
-
-    # plt.figure(num=None, figsize=(12, 12), dpi=80, facecolor='w', edgecolor='k')
     fig = plt.figure()
     ax1 = fig.add_subplot(1,1,1)
-
-    cax = ax1.imshow(image,cmap=plt.cm.gray_r, interpolation='none')#, \
-
+    cax = ax1.imshow(image,cmap=plt.cm.gray_r, interpolation='none')
 
     from matplotlib.ticker import MultipleLocator, FormatStrFormatter
     shape = np.shape(plot_mat)
-    # freq_spacing = (freq_list[-1]-freq_list[0])/1e12/3.0
-    # print freq_spacing
     majorLocator   = MultipleLocator(shape[1]-1)
     ax1.xaxis.set_major_locator(majorLocator)
     majorLocator   = MultipleLocator(shape[0]-1)
     ax1.yaxis.set_major_locator(majorLocator)
-    xlims = [kx_list[0]/1e3, kx_list[-1]/1e3]
+    xlims = [kx_list[0]/k_0, kx_list[-1]/k_0]
     ax1.set_xticklabels(xlims)
-    ylims = [freq_list[0]/1e12, freq_list[-1]/1e12]
+    ylims = [freq_list[0]/f_0, freq_list[-1]/f_0]
     ax1.set_yticklabels(ylims)
 
-    # majorFormatter = FormatStrFormatter('%d')
-    # ax1.xaxis.set_major_formatter(majorFormatter)
-    # #for the minor ticks, use no labels; default NullFormatter
-    # minorLocator   = MultipleLocator(5)
-    # ax1.xaxis.set_minor_locator(minorLocator)
-
-
-
-        # extent=[kx_list[0]/1e3,kx_list[-1]/1e3,freq_list[-1]/1e12,freq_list[0]/1e12],\
-        # aspect=kx_list[-1]/kx_list[0])
-    # cax = ax1.imshow(image,cmap=plt.cm.gray_r, interpolation='none', \
-    #     extent=[kx_list[0]/1e3,kx_list[-1]/1e3,freq_list[-1]/1e12,freq_list[0]/1e12])
-    # cax.set_aspect(2)
-    # cax = ax1.imshow(image,cmap=plt.cm.gray_r)
-    # start, end = ax1.get_xlim()
-    # ax1.xaxis.set_ticks(np.arange(start, end, 5))
-    # start, end = ax1.get_ylim()
-    # ax1.yaxis.set_ticks(np.arange(start, end, 5))
-    # ytikz = ['']+(freq_list/1e12).tolist()
-    # print "freq_list", freq_list
-    # print "ytikz", ytikz
-    # ax1.set_yticklabels(ytikz)
-
     cbar = fig.colorbar(cax)
-    # cbar = plt.colorbar(extend='neither')
-    cbar.set_label(r'$|I - R_{21}PR_{21}P|$',size=18)
-    ax1.set_xlabel(r'$k_x (\times 10^3$)')
-    ax1.set_ylabel(r'$f$ (THz)')
+    cbar.set_label(r'$ln(|I - R_{21}PR_{21}P|)$',size=18)
+    ax1.set_xlabel(r'$k_\perp/k_0$')
+    ax1.set_ylabel(r'$f/f_0$')
     ax1.axis('image')
-    # plt.suptitle('%s Scattering Matrix' % extra_title,fontsize=title_font)
-    plt.savefig('Frownplot')
+    plt.savefig('Fabry-Perot_resonances', bbox_inches='tight')
 #######################################################################################

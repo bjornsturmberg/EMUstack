@@ -311,31 +311,65 @@ class Stack(object):
     # can only calculate the energy flux in homogeneous films
         if isinstance(self.layers[0], Anallo):
             num_prop_out    = self.layers[0].num_prop_pw_per_pol
-            # out             = self.layers[0].specular_order
-            flux_TE  = np.linalg.norm(f2_minus[0:num_prop_out])**2
-            flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
-            down_fluxes.append(flux_TE + flux_TM)
+            if num_prop_out != 0:
+                # out             = self.layers[0].specular_order
+                flux_TE  = np.linalg.norm(f2_minus[0:num_prop_out])**2
+                flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
+                down_fluxes.append(flux_TE + flux_TM)
+            else: print "Warning: there are no propagating modes in the semi-inf substrate\n \
+            therefore cannot calculate energy fluxes here."
 
-    # calculate absorptance in each layer
-        for i in range(1,len(down_fluxes)-1):
-            a_layer = abs(abs(down_fluxes[i])-abs(down_fluxes[i+1]))
+            num_prop_in    = self.layers[-1].num_prop_pw_per_pol
+            if num_prop_out != 0:
+            # calculate absorptance in each layer
+                for i in range(1,len(down_fluxes)-1):
+                    a_layer = abs(abs(down_fluxes[i])-abs(down_fluxes[i+1]))
+                    self.a_list.append(a_layer)
+                a_layer = abs(down_fluxes[0]-down_fluxes[-1]-up_flux[0])
+                self.a_list.append(a_layer)
+
+            # calculate reflectance in each layer
+                for i in range(1,len(up_flux)-1):
+                    r_layer = abs(abs(up_flux[i])/abs(down_flux[i]))
+                    self.r_list.append(r_layer)
+                r_layer = abs(up_flux[0]/down_fluxes[0])
+                self.r_list.append(r_layer)
+
+            # calculate transmittance in each layer
+                for i in range(0,len(down_fluxes)-2):
+                    t_layer = abs(abs(down_fluxes[i+2])/abs(down_fluxes[i]))
+                    self.t_list.append(t_layer)
+                t_layer = abs(down_fluxes[-1]/down_fluxes[0])
+                self.t_list.append(t_layer)
+
+            else: 
+                self.a_list = np.zeros(len(self.layers)-2)
+                self.r_list = np.zeros(len(self.layers)-2)
+                self.t_list = np.zeros(len(self.layers)-2)
+                print "Warning: there are no propagating modes in the semi-inf superstrate\n \
+                therefore CANNOT CALCULATE ENERGY FLUXES ANYWHERE."
+
+        else:
+        # calculate absorptance in each layer
+            for i in range(1,len(down_fluxes)-1):
+                a_layer = abs(abs(down_fluxes[i])-abs(down_fluxes[i+1]))
+                self.a_list.append(a_layer)
+            a_layer = abs(down_fluxes[0]-down_fluxes[-1]-up_flux[0])
             self.a_list.append(a_layer)
-        a_layer = abs(down_fluxes[0]-down_fluxes[-1]-up_flux[0])
-        self.a_list.append(a_layer)
 
-    # calculate reflectance in each layer
-        for i in range(1,len(up_flux)-1):
-            r_layer = abs(abs(up_flux[i])/abs(down_flux[i]))
+        # calculate reflectance in each layer
+            for i in range(1,len(up_flux)-1):
+                r_layer = abs(abs(up_flux[i])/abs(down_flux[i]))
+                self.r_list.append(r_layer)
+            r_layer = abs(up_flux[0]/down_fluxes[0])
             self.r_list.append(r_layer)
-        r_layer = abs(up_flux[0]/down_fluxes[0])
-        self.r_list.append(r_layer)
 
-    # calculate transmittance in each layer
-        for i in range(0,len(down_fluxes)-2):
-            t_layer = abs(abs(down_fluxes[i+2])/abs(down_fluxes[i]))
+        # calculate transmittance in each layer
+            for i in range(0,len(down_fluxes)-2):
+                t_layer = abs(abs(down_fluxes[i+2])/abs(down_fluxes[i]))
+                self.t_list.append(t_layer)
+            t_layer = abs(down_fluxes[-1]/down_fluxes[0])
             self.t_list.append(t_layer)
-        t_layer = abs(down_fluxes[-1]/down_fluxes[0])
-        self.t_list.append(t_layer)
 
 
     def _check_periods_are_consistent(self):

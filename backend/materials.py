@@ -126,6 +126,7 @@ Au       = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Default - 
 Au_Palik = Material(np.loadtxt('%sAu_Palik.txt'% data_location))    # Palik
 Ag       = Material(np.loadtxt('%sAg_JC.txt'% data_location))       # Default - Johnson and Christy
 Ag_Palik = Material(np.loadtxt('%sAg_Palik.txt'% data_location))    # Palik
+Cu       = Material(np.loadtxt('%sCu_Palik.txt'% data_location))    # Palik
 # Drude model - need to give [omega_plasma, omega_gamma, eplison_infinity]
 Au_drude = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
 
