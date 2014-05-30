@@ -809,7 +809,7 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
 
 
 ####Plot PW amplitudes function k-vector###############################################
-def t_func_k_plot_1D(stack_list, light_object, n_H, pol='TM'):
+def t_func_k_plot_1D(stack_list, light_object, n_H, pol='TE'):
     """ Plot PW amplitudes as a function of their in-plane k-vector. """
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
@@ -905,8 +905,6 @@ def amps_of_orders(stack_list, xvalues,  light_object, chosen_PW_order=None,\
 
     handles, labels = ax1.get_legend_handles_labels()
     lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
-
-
     ax1.set_ylabel(r'$|E|_{trans}$')
     if np.max(xvalues) < 90: ax1.set_xlabel(r'$\theta$') # hack way to tell what plotting against
     else: ax1.set_xlabel(r'$\lambda$ (nm)')
@@ -915,7 +913,7 @@ def amps_of_orders(stack_list, xvalues,  light_object, chosen_PW_order=None,\
     if add_title != None: plt.savefig('PW_orders%s'% add_title, bbox_extra_artists=(lgd,), bbox_inches='tight')
     else: plt.savefig('PW_orders', bbox_extra_artists=(lgd,), bbox_inches='tight')
 
-def evanescent_merit(stack_list, xvalues, light_object, chosen_PW_order=None,\
+def evanescent_merit(stack_list, xvalues, light_object, n_H, chosen_PW_order=None,\
     lay_interest=0, add_height=None, add_title=None):
     """ Create a figure of merit for the 'evanescent-ness' of excited fields. """
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
@@ -926,17 +924,26 @@ def evanescent_merit(stack_list, xvalues, light_object, chosen_PW_order=None,\
         # Create arrays of grating order indexes (-p, ..., p)
         chosen_PW_order = np.arange(-light_object.max_order_PWs, light_object.max_order_PWs + 1)
 
-    store_trans = []
+    store_m_p  = []
+    store_m_ne = []
+    store_m_fe = []
+    store_x_p  = []
+    store_x_ne = []
+    store_x_fe = []
+    s = 0
     for stack in stack_list:
-        merit = 0.0
+        merit_prop    = 0.0
+        merit_near_ev = 0.0
+        merit_far_ev  = 0.0
         for pxs in chosen_PW_order:
-            k0 = stack.layers[0].k()
-            n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
+            k0 = stack.layers[lay_interest].k()
+            n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
             # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
-            alpha0, beta0 = stack.layers[0].k_pll_norm()
+            alpha0, beta0 = stack.layers[lay_interest].k_pll_norm()
             alphas = alpha0 + pxs * 2 * np.pi
+            this_k_pll2 = alphas**2 + beta0**2
             on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
-            full_k_space = stack.layers[0].k_z
+            full_k_space = stack.layers[lay_interest].k_z
             # consider only transmission into singular polarization
             one_pol_k_space = full_k_space[0:n_PW_p_pols]
 
@@ -945,18 +952,35 @@ def evanescent_merit(stack_list, xvalues, light_object, chosen_PW_order=None,\
 
             trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
             trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
-            merit += np.abs(pxs) * trans
-        store_trans = np.append(store_trans,merit)
 
-    ax1.plot(xvalues,store_trans)
+            if this_k_pll2 < k0**2: merit_prop += trans
+            if k0**2 < this_k_pll2 < (n_H*k0)**2: merit_near_ev += trans
+            if this_k_pll2 > (n_H*k0)**2: merit_far_ev += trans
 
+        if merit_prop != 0.0:
+            store_m_p = np.append(store_m_p,merit_prop)
+            store_x_p = np.append(store_x_p,xvalues[s])
+        if merit_near_ev != 0.0:
+            store_m_ne = np.append(store_m_ne,merit_near_ev)
+            store_x_ne = np.append(store_x_ne,xvalues[s])
+        if merit_far_ev != 0.0:
+            store_m_fe = np.append(store_m_fe,merit_far_ev)
+            store_x_fe = np.append(store_x_fe,xvalues[s])
+        s+=1
+
+    if len(store_m_p)  != 0: ax1.plot(store_x_p,store_m_p, label="prop")
+    if len(store_m_ne) != 0: ax1.plot(store_x_ne,store_m_ne, label="near ev")
+    if len(store_m_fe) != 0: ax1.plot(store_x_fe,store_m_fe, label="far ev")
+
+    handles, labels = ax1.get_legend_handles_labels()
+    lgd = ax1.legend(handles, labels, ncol=3, loc='upper center', bbox_to_anchor=(0.5,1.2))
     ax1.set_ylabel('Ev FoM')
     if np.max(xvalues) < 90: ax1.set_xlabel(r'$\theta$') # hack way to tell what plotting against
     else: ax1.set_xlabel(r'$\lambda$ (nm)')
     if add_title != None: plt.suptitle('h = %4.0f' % add_title)
     if add_height!= None: add_title += zeros_int_str(add_height)
-    if add_title != None: plt.savefig('evanescent_merit%s'% add_title, bbox_inches='tight')
-    else: plt.savefig('evanescent_merit', bbox_inches='tight')
+    if add_title != None: plt.savefig('evanescent_merit%s'% add_title, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    else: plt.savefig('evanescent_merit', bbox_extra_artists=(lgd,), bbox_inches='tight')
 #######################################################################################
 
 
