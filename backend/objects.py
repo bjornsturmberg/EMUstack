@@ -124,7 +124,7 @@ class NanoStruct(object):
         mesh_file='NEED_FILE.mail', 
         lc_bkg=0.09, lc2=1.0, lc3=1.0, lc4=1.0, lc5=1.0, lc6=1.0,
         plot_modes=False, plot_real=1, plot_imag=0, plot_abs=0,
-        plotting3d = False):
+        plotting3d = False, plot_field_conc=False):
         self.geometry      = geometry
         self.period        = period
         self.diameter1     = diameter1
@@ -191,10 +191,11 @@ class NanoStruct(object):
             if not os.path.exists("Bloch_Fields"): os.mkdir("Bloch_Fields")
             if not os.path.exists("Bloch_Fields/PNG"): os.mkdir("Bloch_Fields/PNG")
         else: self.plot_modes = 0
-        self.plot_real     = plot_real
-        self.plot_imag     = plot_imag
-        self.plot_abs      = plot_abs 
-        self.plotting3d    = plotting3d 
+        self.plot_real       = plot_real
+        self.plot_imag       = plot_imag
+        self.plot_abs        = plot_abs 
+        self.plotting3d      = plotting3d
+        self.plot_field_conc = plot_field_conc
 
     def make_mesh(self):
         if self.geometry == '2D_array':

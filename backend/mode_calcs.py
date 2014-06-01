@@ -287,9 +287,6 @@ class Simmo(Modes):
         i_cond    = 2   # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
         itermax   = 30  # Maximum number of iterations for convergence
 
-        # index_pw_inv = [0, 6, 2, 7, 10, 3, 1, 4, 12, 8, 5, 9, 13]
-        # print 'BEFORE', index_pw_inv
-
         resm = EMUstack.calc_modes(
             self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
             self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
@@ -304,12 +301,11 @@ class Simmo(Modes):
 
         self.J, self.J_dag = np.mat(J), np.mat(J_dag)
 
-        # print 'AFTER', index_pw_inv
-
         if delete_working:
-            # self.sol1 = None
             self.sol2 = None
-            # self.mode_pol = None
+
+        if not self.structure.plot_field_conc:
+            self.mode_pol = None
 
         if not self.structure.plotting3d:
             del self.sol1
