@@ -809,13 +809,16 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
 
 
 ####Plot PW amplitudes function k-vector###############################################
-def t_func_k_plot_1D(stack_list, light_object, n_H, pol='TE'):
+def t_func_k_plot_1D(stack_list, light_object, n_H, lay_interest=0, pol='TE'):
     """ Plot PW amplitudes as a function of their in-plane k-vector. """
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
 
     # Create arrays of grating order indexes (-p, ..., p)
     pxs = np.arange(-light_object.max_order_PWs, light_object.max_order_PWs + 1)
+
+    # vec_coef sorted from top of stack, everything else is sorted from bottom
+    vec_index = len(stack_list[0].layers) - lay_interest - 1
 
     store_alphas = []
     store_k_trans = []
@@ -837,15 +840,14 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, pol='TE'):
         axis_indices = axis_indices.astype(int)
 
         # Outgoing TE polarisation 
-        if pol=='TE': trans_k = np.abs(stack.vec_coef_down[-1][0:n_PW_p_pols]).reshape(-1,)
+        if pol=='TE': trans_k = np.abs(stack.vec_coef_down[vec_index][0:n_PW_p_pols]).reshape(-1,)
         # Outgoing TM polarisation
-        if pol=='TM': trans_k = np.abs(stack.vec_coef_down[-1][n_PW_p_pols-1:-1]).reshape(-1,) 
+        if pol=='TM': trans_k = np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols-1:-1]).reshape(-1,) 
         trans_k_array = np.array(trans_k).reshape(-1,)
 
         select_trans = trans_k_array[axis_indices]
         store_alphas = np.append(store_alphas,alphas)
         store_k_trans = np.append(store_k_trans,select_trans)
-
 
     sort_indices = np.argsort(store_alphas)
     plot_alphas = store_alphas[sort_indices]
@@ -865,7 +867,7 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, pol='TE'):
 
     ax1.set_xlabel(r'$k_\parallel$')
     ax1.set_ylabel(r'$|E|$')
-    plt.savefig('k_vector_excitation', bbox_inches='tight')
+    plt.savefig('k_vector_excitation-lay_%s' % lay_interest, bbox_inches='tight')
 #######################################################################################
 
 
@@ -908,10 +910,12 @@ def amps_of_orders(stack_list, xvalues,  light_object, chosen_PW_order=None,\
     ax1.set_ylabel(r'$|E|_{trans}$')
     if np.max(xvalues) < 90: ax1.set_xlabel(r'$\theta$') # hack way to tell what plotting against
     else: ax1.set_xlabel(r'$\lambda$ (nm)')
-    if add_title != None: plt.suptitle('h = %4.0f' % add_title)
+    if add_title != None: plt.suptitle('%s' % add_title)
     if add_height!= None: add_title += zeros_int_str(add_height)
-    if add_title != None: plt.savefig('PW_orders%s'% add_title, bbox_extra_artists=(lgd,), bbox_inches='tight')
-    else: plt.savefig('PW_orders', bbox_extra_artists=(lgd,), bbox_inches='tight')
+    if add_title != None: plt.savefig('PW_orders-lay_%s' % lay_interest + add_title, \
+        bbox_extra_artists=(lgd,), bbox_inches='tight')
+    else: plt.savefig('PW_orders-lay_%s' % lay_interest, bbox_extra_artists=(lgd,), \
+        bbox_inches='tight')
 
 def evanescent_merit(stack_list, xvalues, light_object, n_H, chosen_PW_order=None,\
     lay_interest=0, add_height=None, add_title=None):
@@ -977,10 +981,12 @@ def evanescent_merit(stack_list, xvalues, light_object, n_H, chosen_PW_order=Non
     ax1.set_ylabel('Ev FoM')
     if np.max(xvalues) < 90: ax1.set_xlabel(r'$\theta$') # hack way to tell what plotting against
     else: ax1.set_xlabel(r'$\lambda$ (nm)')
-    if add_title != None: plt.suptitle('h = %4.0f' % add_title)
+    if add_title != None: plt.suptitle('%s' % add_title)
     if add_height!= None: add_title += zeros_int_str(add_height)
-    if add_title != None: plt.savefig('evanescent_merit%s'% add_title, bbox_extra_artists=(lgd,), bbox_inches='tight')
-    else: plt.savefig('evanescent_merit', bbox_extra_artists=(lgd,), bbox_inches='tight')
+    if add_title != None: plt.savefig('evanescent_merit-lay_%s' % lay_interest + add_title, \
+        bbox_extra_artists=(lgd,), bbox_inches='tight')
+    else: plt.savefig('evanescent_merit-lay_%s' % lay_interest, bbox_extra_artists=(lgd,),\
+     bbox_inches='tight')
 #######################################################################################
 
 
