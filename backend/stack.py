@@ -40,9 +40,10 @@ class Stack(object):
             :NanoStruct: objects.
 
     """
-    def __init__(self, layers, heights_nm = None):
+    def __init__(self, layers, heights_nm = None, shears = None):
         self.layers = tuple(layers)
         self._heights_nm = heights_nm
+        self._shears = shears
         self.period = float(layers[0].structure.period)
         self._check_periods_are_consistent()
 
@@ -57,6 +58,12 @@ class Stack(object):
 
     def total_height(self):
         return sum(self.heights())
+
+    def shears(self):
+        if None != self._shears:
+            return np.asarray(self._shears)
+        else:
+            return np.array([[0.0, 0.0] for lay in self.layers[0:-1]])
 
     def structures(self):
         return (lay.structure for lay in self.layers)
@@ -172,17 +179,18 @@ class Stack(object):
         t12_list = []
         t21_list = []
         P_list   = []
+
         for st1 in self.layers:
             R12, T12, R21, T21 = r_t_mat(st1.air_ref(), st1)
             r12_list.append(R12)
             r21_list.append(R21)
             t12_list.append(T12)
             t21_list.append(T21)
-
             # Save the reflection matrices to the layers
             # (for easier introspection/testing)
             st1.R12, st1.T12, st1.R21, st1.T21 = R12, T12, R21, T21
-    # initiate (r)tnet as substrate top interface
+ 
+    # initiate (r)tnet as top interface of substrate 
         tnet_list = []
         rnet_list = []
         tnet      = t12_list[0]
@@ -190,19 +198,29 @@ class Stack(object):
         tnet_list.append(tnet)
         rnet_list.append(rnet)
 
+        if self.shears != None: shears_list = self.shears()
         inv_t21_list   = []
         inv_t12_list   = []
         for i in range(1, len(self.layers) - 1):
             lay = self.layers[i]
-    # through air layer at bottom of TF
-            to_invert      = (I_air - r12_list[i]*rnet)
-            inverted_t21   = np.linalg.solve(to_invert,t21_list[i])
-            tnet           = tnet*inverted_t21
-            rnet           = r21_list[i] + t12_list[i]*rnet*inverted_t21
+    # through air layer at bottom of layer
+            if self.shears == None:
+                to_invert      = (I_air - r12_list[i]*rnet)
+                inverted_t21   = np.linalg.solve(to_invert,t21_list[i])
+                tnet           = tnet*inverted_t21
+                rnet           = r21_list[i] + t12_list[i]*rnet*inverted_t21
+            else:
+                coord_diff = shears_list[i-1] - shears_list[i]
+                Q = st1.shear_transform(coord_diff)
+                Q_inv = st1.shear_transform(-1*coord_diff)
+                to_invert      = (I_air - r12_list[i]*Q_inv*rnet*Q)
+                inverted_t21   = np.linalg.solve(to_invert,t21_list[i])
+                tnet           = tnet*Q*inverted_t21
+                rnet           = r21_list[i] + t12_list[i]*Q_inv*rnet*Q*inverted_t21
             inv_t21_list.append(inverted_t21)
             tnet_list.append(tnet)
             rnet_list.append(rnet)
-    # through TF layer
+    # through layer
             P = lay.prop_fwd(self.heights_nm()[i-1]/self.period)
             I_TF           = np.matrix(np.eye(len(P)),dtype='D')
             to_invert      = (I_TF - r21_list[i]*P*rnet*P)
@@ -211,20 +229,25 @@ class Stack(object):
             tnet           = tnet*P_inverted_t12
             rnet           = r12_list[i] + t21_list[i]*P*rnet*P_inverted_t12
 
-            to_invert_hat      = (I_TF - r21_list[i]*P*r21_list[i]*P)
-            inverted_t12_hat   = np.linalg.solve(to_invert_hat,t12_list[i])
-            P_inverted_t12_hat = P*inverted_t12_hat
-
             P_list.append(P)
             inv_t12_list.append(inverted_t12)
             tnet_list.append(tnet)
             rnet_list.append(rnet)
 
     # into top semi-infinite medium
-        to_invert    = (I_air - r12_list[-1]*rnet)
-        inverted_t21 = np.linalg.solve(to_invert,t21_list[-1])
-        tnet         = tnet*inverted_t21
-        rnet         = r21_list[-1] + t12_list[-1]*rnet*inverted_t21
+        if self.shears == None:
+            to_invert    = (I_air - r12_list[-1]*rnet)
+            inverted_t21 = np.linalg.solve(to_invert,t21_list[-1])
+            tnet         = tnet*inverted_t21
+            rnet         = r21_list[-1] + t12_list[-1]*rnet*inverted_t21
+        else:
+            coord_diff = shears_list[-1]
+            Q = st1.shear_transform(coord_diff)
+            Q_inv = st1.shear_transform(-1*coord_diff)
+            to_invert    = (I_air - r12_list[-1]*Q_inv*rnet*Q)
+            inverted_t21 = np.linalg.solve(to_invert,t21_list[-1])
+            tnet         = tnet*Q*inverted_t21
+            rnet         = r21_list[-1] + t12_list[-1]*Q_inv*rnet*Q*inverted_t21
         inv_t21_list.append(inverted_t21)
         tnet_list.append(tnet)
         rnet_list.append(rnet)

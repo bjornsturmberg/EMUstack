@@ -33,7 +33,7 @@ _interfaces_i_have_known = {}
 pi = np.pi
 
 class Modes(object):
-    """ Super-class from which Simmo and Anallo inherit common functionality"""
+    """ Super-class from which Simmo and Anallo inherit common functionality."""
     def k_pll_norm(self):
         return self.light.k_pll * self.structure.period
 
@@ -57,12 +57,17 @@ class Modes(object):
         # Which elements of pys_mesh and pxs_mesh correspond to
         # orders low enough that we're interested in?
         low_ord = (pxs_mesh**2 + pys_mesh**2 <= max_order**2)
-
         return pxs_mesh[low_ord], pys_mesh[low_ord]
 
     def prop_fwd(self, height_norm):
-        """ Return the matrix P corresponding to forward propagation/decay"""
+        """ Return the matrix P corresponding to forward propagation/decay."""
         return np.mat(np.diag(np.exp(1j * self.k_z * height_norm)))
+
+    def shear_transform(self, coords):
+        """ Return the matrix Q corresponding to a shear transformation to coordinats coords."""
+        alphas = np.append(self.air_ref().alphas,self.air_ref().alphas)
+        betas  = np.append(self.air_ref().betas,self.air_ref().betas)
+        return np.mat(np.diag(np.exp(1j * (alphas * coords[0] + betas * coords[1]))))
 
     def __del__(self):
         # Clean up _interfaces_i_have_known to avoid memory leak
@@ -109,17 +114,10 @@ class Anallo(Modes):
         alpha0, beta0 = self.k_pll_norm()
         alphas = alpha0 + pxs * 2 * pi / d
         betas  = beta0 + pys * 2 * pi / d
+        self.alphas = alphas
+        self.betas = betas
 
         k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
-
-        # print "------------------"
-        # print "k_z_unsrt", k_z_unsrt
-        # print "------------------"
-        # for blah in k_z_unsrt:
-        #     print repr(blah)
-        # print "------------------"
-
-
 
         if self.is_air_ref:
             assert not hasattr(self, 'sort_order'), \
@@ -134,12 +132,6 @@ class Anallo(Modes):
             self.sort_order = s
             assert s.shape == k_z_unsrt.shape, (s.shape, 
                 k_z_unsrt.shape)
-
-        # print "------------------"
-        # for blah in k_z_unsrt[s]:
-        #     print "k_z_unsrt[s]", repr(blah)
-        # print "------------------"
-
 
         # Find element of k_z_unsrt corresponding to zeroth order
         self.specular_order = np.nonzero((pxs[s] == 0) * (pys[s] == 0))[0][0]
