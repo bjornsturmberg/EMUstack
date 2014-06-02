@@ -94,25 +94,23 @@ pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 
 ######################## Post Processing ########################
-# We will need to know properties about the light so take the last light object.
-last_light_object = light_list.pop()
-# We also wish to know how evanescent orders are so we note the high refractive 
+# We wish to know how evanescent orders are so we note the high refractive 
 # index of grating.
 n_H = 3.61
 
 # We can plot the amplitudes of each transmitted plane wave order as a function of angle.
-plotting.amps_of_orders(stacks_list, azi_angles, last_light_object, add_title='-default_substrate')
+plotting.amps_of_orders(stacks_list, azi_angles, add_title='-default_substrate')
 # By default this will plot the amplitudes in the substrate, however we can also give
 # the index in the stack of a different homogeneous layer and calculate them here.
-plotting.amps_of_orders(stacks_list, azi_angles, last_light_object, lay_interest=1)
+plotting.amps_of_orders(stacks_list, azi_angles, lay_interest=1)
 
 # When many plane wave orders are included these last plots can become confusing,
 # so instead one may wish to sum together the amplitudes of all propagating orders,
 # of all evanescent orders, and all far-evanescent orders (which have in plane k>n_H * k0).
-plotting.evanescent_merit(stacks_list, azi_angles, last_light_object, n_H, lay_interest=0)
+plotting.evanescent_merit(stacks_list, azi_angles, n_H, lay_interest=0)
 
 # We can represent the strength with which different orders are excited in k-space.
-plotting.t_func_k_plot_1D(stacks_list, last_light_object, n_H)
+plotting.t_func_k_plot_1D(stacks_list, n_H)
 # This corresponds to Fig 2 of Handmer et al. Optics Lett. 35, 2010.
 # (The amps_of_orders plots correspond to Fig 1 of this paper).
 

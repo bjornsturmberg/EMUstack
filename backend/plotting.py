@@ -811,13 +811,14 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
 
 
 ####Plot PW amplitudes function k-vector###############################################
-def t_func_k_plot_1D(stack_list, light_object, n_H, lay_interest=0, pol='TE'):
+def t_func_k_plot_1D(stack_list, n_H, lay_interest=0, pol='TE'):
     """ Plot PW amplitudes as a function of their in-plane k-vector. """
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
 
     # Create arrays of grating order indexes (-p, ..., p)
-    pxs = np.arange(-light_object.max_order_PWs, light_object.max_order_PWs + 1)
+    max_ords = stack_list[0].layers[-1].max_order_PWs
+    pxs = np.arange(-max_ords, max_ords + 1)
 
     # vec_coef sorted from top of stack, everything else is sorted from bottom
     vec_index = len(stack_list[0].layers) - lay_interest - 1
@@ -874,7 +875,7 @@ def t_func_k_plot_1D(stack_list, light_object, n_H, lay_interest=0, pol='TE'):
 
 
 ####Plot amplitudes of PW orders#######################################################
-def amps_of_orders(stack_list, xvalues,  light_object, chosen_PW_order=None,\
+def amps_of_orders(stack_list, xvalues, chosen_PW_order=None,\
     lay_interest=0, add_height=None, add_title=None):
     """ Plot the amplitudes of plane wave orders in given layer. """
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
@@ -883,7 +884,8 @@ def amps_of_orders(stack_list, xvalues,  light_object, chosen_PW_order=None,\
     vec_index = len(stack_list[-1].layers) - lay_interest - 1
     if chosen_PW_order == None:
         # Create arrays of grating order indexes (-p, ..., p)
-        chosen_PW_order = np.arange(-light_object.max_order_PWs, light_object.max_order_PWs + 1)
+        max_ords = stack_list[0].layers[-1].max_order_PWs
+        chosen_PW_order = np.arange(-max_ords, max_ords + 1)
 
     for pxs in chosen_PW_order:
         store_trans = []
@@ -919,7 +921,7 @@ def amps_of_orders(stack_list, xvalues,  light_object, chosen_PW_order=None,\
     else: plt.savefig('PW_orders-lay_%s' % lay_interest, bbox_extra_artists=(lgd,), \
         bbox_inches='tight')
 
-def evanescent_merit(stack_list, xvalues, light_object, n_H, chosen_PW_order=None,\
+def evanescent_merit(stack_list, xvalues, n_H, chosen_PW_order=None,\
     lay_interest=0, add_height=None, add_title=None):
     """ Create a figure of merit for the 'evanescent-ness' of excited fields. """
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
@@ -928,7 +930,8 @@ def evanescent_merit(stack_list, xvalues, light_object, n_H, chosen_PW_order=Non
     vec_index = len(stack_list[-1].layers) - lay_interest - 1
     if chosen_PW_order == None:
         # Create arrays of grating order indexes (-p, ..., p)
-        chosen_PW_order = np.arange(-light_object.max_order_PWs, light_object.max_order_PWs + 1)
+        max_ords = stack_list[0].layers[-1].max_order_PWs
+        chosen_PW_order = np.arange(-max_ords, max_ords + 1)
 
     store_m_p  = []
     store_m_ne = []
@@ -993,11 +996,6 @@ def evanescent_merit(stack_list, xvalues, light_object, n_H, chosen_PW_order=Non
 
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
-    # vec_coef sorted from top of stack, everything else is sorted from bottom
-    vec_index = len(stack_list[-1].layers) - lay_interest - 1
-    if chosen_PW_order == None:
-        # Create arrays of grating order indexes (-p, ..., p)
-        chosen_PW_order = np.arange(-light_object.max_order_PWs, light_object.max_order_PWs + 1)
 
     store_m_p  = []
     store_m_ne = []
@@ -1057,7 +1055,7 @@ def evanescent_merit(stack_list, xvalues, light_object, n_H, chosen_PW_order=Non
 
     ax1.plot(xvalues,store_m_p, label=r'$\Sigma |p| |a_p|$')
     ax1.plot(xvalues,store_m_ne, label=r'$\Sigma|p| |a_p| / |a_p|$')
-    ax1.plot(xvalues,store_m_fe, label=r'$\Sigma||p| - |p_{bar}||^2 |a_p|$')
+    ax1.plot(xvalues,store_m_fe, label=r'$\Sigma||p| - |\overline{p}||^2 |a_p|$')
 
     handles, labels = ax1.get_legend_handles_labels()
     lgd = ax1.legend(handles, labels, ncol=3, loc='upper center', bbox_to_anchor=(0.5,1.2))
@@ -1070,10 +1068,6 @@ def evanescent_merit(stack_list, xvalues, light_object, n_H, chosen_PW_order=Non
         bbox_extra_artists=(lgd,), bbox_inches='tight')
     else: plt.savefig('evanescent_merit-2-lay_%s' % lay_interest, bbox_extra_artists=(lgd,),\
      bbox_inches='tight')
-
-
-
-
 #######################################################################################
 
 
