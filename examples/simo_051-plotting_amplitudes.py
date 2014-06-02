@@ -117,10 +117,7 @@ plotting.t_func_k_plot_1D(stacks_list, last_light_object, n_H)
 # (The amps_of_orders plots correspond to Fig 1 of this paper).
 
 # Lastly we also plot the transmission, reflection and absorption of each layer and the stack.
-param_layer = grating_1 # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
-
-plotting.t_r_a_plots(stacks_list, azi_angles, params_string)
+plotting.t_r_a_plots(stacks_list, azi_angles)
 
 
 ######################## Wrapping up ########################

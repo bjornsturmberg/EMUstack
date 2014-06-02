@@ -72,9 +72,9 @@ def tick_function(energies):
     wls = Plancks_h*speed_c/(energies*charge_e)*1e9
     return wls
 
-def gen_params_string(param_layer, light, max_num_BMs=0):
+def gen_params_string(stack, layer=1):
     """ Generate the string of simulation info that is to be printed at the top of plots. """
-
+    param_layer = stack[0].layers[layer].structure
     # Plot t,r,a for each layer & total, then save each to text files
     if isinstance(param_layer,objects.NanoStruct):
         params_2_print = 'ff = %5.3f, '% param_layer.ff
@@ -100,11 +100,10 @@ def gen_params_string(param_layer, light, max_num_BMs=0):
             if param_layer.ellipticity == True: params_2_print += '\nEllipticity = %(rad)5.3f '% {'rad' : param_layer.ellipticity,}
         elif param_layer.geometry == '1D_array':
             params_2_print += ''
-        params_2_print += 'max_BMs = %(max_num_BMs)d, max_PW_order = %(max_order_PWs)d, '% {
-        'max_num_BMs'   : max_num_BMs,'max_order_PWs' : light.max_order_PWs, }
+        params_2_print += '%(BMs)dBMs, PW_radius = %(PWs)d, '% {
+        'BMs' : stack[0].layers[layer].num_BM,'PWs' : stack[0].layers[layer].max_order_PWs, }
     else:
-        params_2_print = 'max_PW_order = %(max_order_PWs)d, '% {'max_order_PWs' : light.max_order_PWs, }
-
+        params_2_print = 'PW_radius = %(PWs)d, '% {'PWs' : stack[0].layers[layer].max_order_PWs, }
 
     # k_pll = light.k_pll * param_layer.period
     # params_2_print += r'$k_\parallel d$ = '
@@ -117,12 +116,13 @@ def gen_params_string(param_layer, light, max_num_BMs=0):
 
 
 ####Standard plotting of spectra#######################################################
-def t_r_a_plots(stack_wl_list, xvalues, params_2_print='', active_layer_nu=0,\
+def t_r_a_plots(stack_wl_list, xvalues, params_layer=1, active_layer_nu=0,\
     stack_label=1, ult_eta=False, J_sc=False, weight_spec=False, extinct=False,\
     add_height=0, add_name=''):
     """ Plot t,r,a for each layer & total, then save each to text files. """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
+    params_2_print = gen_params_string(stack_wl_list, params_layer)
     params_2_print += '\n'r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
 
@@ -303,13 +303,14 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
 
 
 ####Plot spectra indicating Wood anomalies in substrate################################
-def t_r_a_plots_subs(stack_wl_list, xvalues, period, sub_n, params_2_print='', \
+def t_r_a_plots_subs(stack_wl_list, xvalues, period, sub_n, params_layer=1, \
     active_layer_nu=0, stack_label=1, ult_eta=False, J_sc=False, weight_spec=False,\
     extinct=False, add_height=0, add_name=''):
     """ Plot t,r,a indicating Wood anomalies in substrate for each layer & total,
         then save each to text files. """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
+    params_2_print = gen_params_string(stack_wl_list, params_layer)
     params_2_print += '\n'r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
 
@@ -472,11 +473,12 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
 
 
 ####Save J_sc & ult efficiency w/o spectra#############################################
-def J_sc_eta_NO_plots(stack_wl_list, wavelengths, params_2_print, active_layer_nu=0,\
+def J_sc_eta_NO_plots(stack_wl_list, wavelengths, params_layer=1, active_layer_nu=0,\
     stack_label=1, add_name=''):
     """ Calculate J_sc & efficiency but do not save or plot spectra. """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
+    params_2_print = gen_params_string(stack_wl_list, params_layer)
     params_2_print += '\n'r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
 
@@ -572,12 +574,13 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
     plt.suptitle(plot_name+add_name+'\n'+params_2_print,fontsize=title_font)
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
-def EOT_plot(stack_wl_list, wavelengths, params_2_print, num_pw_per_pol=0, add_name=''):
+def EOT_plot(stack_wl_list, wavelengths, params_layer=1, num_pw_per_pol=0, add_name=''):
     """ Plot T_{00} as in Martin-Moreno PRL 86 2001. 
         To plot {9,0} component of TM polarisation set num_pw_per_pol = num_pw_per_pol.
     """
 
     height_list = stack_wl_list[0].heights_nm()[::-1]
+    params_2_print = gen_params_string(stack_wl_list, params_layer)
     params_2_print += r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
 
@@ -594,7 +597,6 @@ def EOT_plot(stack_wl_list, wavelengths, params_2_print, num_pw_per_pol=0, add_n
     ax1.set_xlabel(r'$\lambda/a$')
     ax1.set_ylabel(r'T$_{00}$')
     # plt.ylim((0, 0.3))
-
 
     R_00 = []
     for i in range(len(wavelengths)): 
@@ -661,9 +663,10 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
 
 
 ####Plot dispersion diagrams & field concentrations as function of wavelength##########
-def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
+def omega_plot(stack_wl_list, wavelengths, params_layer=1, stack_label=1):
     """ Plots the dispersion diagram of each layer in one plot. """
 
+    params_2_print = gen_params_string(stack_wl_list, params_layer)
     stack_label = zeros_int_str(stack_label)
     period = np.array(stack_wl_list[0].layers[0].structure.period)
     normed_omegas = 1/wavelengths*period
@@ -726,10 +729,11 @@ def omega_plot(stack_wl_list, wavelengths, params_2_print, stack_label=1):
     # Uncomment if you wish to save the dispersion data of a simulation to file.
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
-def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_2_print,\
+def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_layer=1,\
     stack_label=1):
     """ Plots the energy concentration (epsilon |E_{cyl}| / epsilon |E_{cell}|) of given layer. """
 
+    params_2_print = gen_params_string(stack_wl_list, params_layer)
     stack_label = zeros_int_str(stack_label)
     if isinstance(stack_wl_list[0].layers[which_layer], mode_calcs.Simmo):
         num_layers = len(stack_wl_list[0].layers)

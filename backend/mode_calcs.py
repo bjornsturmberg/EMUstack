@@ -220,7 +220,7 @@ class Simmo(Modes):
         self.prop_consts    = None
         self.mode_pol       = None
 
-    def calc_modes(self, num_BM, delete_working = True):
+    def calc_modes(self, num_BM = None, delete_working = True):
         """ Run the FEM in Fortran """
         st = self.structure
         wl = self.light.wl_nm
@@ -237,10 +237,11 @@ class Simmo(Modes):
 
         pxs, pys = self.calc_grating_orders(self.max_order_PWs)
         num_pw_per_pol = pxs.size
-        self.num_BM = num_BM
-        assert num_BM > num_pw_per_pol * 2, "You must include at least as many BMs as PWs. \n" + \
+        if num_BM == None: self.num_BM = num_pw_per_pol * 2 + 20
+        else: self.num_BM = num_BM
+        assert self.num_BM > num_pw_per_pol * 2, "You must include at least as many BMs as PWs. \n" + \
         "Currently you have %(bm)i BMs < %(np)i PWs." % {
-            'bm': num_BM, 'np': num_pw_per_pol * 2} 
+            'bm': self.num_BM, 'np': num_pw_per_pol * 2} 
 
         d = self.structure.period
 

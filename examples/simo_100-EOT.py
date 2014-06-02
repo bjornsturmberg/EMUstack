@@ -70,17 +70,14 @@ superstrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
 substrate   = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
-max_num_BMs = 50
-
 NH_heights = [200]
 # num_h = 21
 # NH_heights = np.linspace(50,3000,num_h)
 
-def simulate_stack(light):  
-    num_BM = max_num_BMs
+def simulate_stack(light):
 
     ################ Evaluate each layer individually ##############
-    sim_NHs          = NHs.calc_modes(light, num_BM = num_BM)
+    sim_NHs          = NHs.calc_modes(light)
     sim_superstrate  = superstrate.calc_modes(light)
     sim_substrate    = substrate.calc_modes(light)
 
@@ -103,10 +100,6 @@ stacks_wl_list = pool.map(simulate_stack, light_list)
 ######################## Plotting ########################
 last_light_object = light_list.pop()
 
-
-param_layer = NHs # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=max_num_BMs)
-
 wls_normed = wavelengths/period
 
 for h in range(len(NH_heights)):
@@ -116,9 +109,9 @@ for h in range(len(NH_heights)):
     for wl in range(len(wavelengths)):
         wl_list.append(stacks_wl_list[wl][stack_label][h])
     mess_name = '_h%(h)i'% {'h'   : h, }
-    plotting.EOT_plot(wl_list, wls_normed, params_string, add_name = mess_name) 
+    plotting.EOT_plot(wl_list, wls_normed, add_name = mess_name) 
 # Dispersion
-plotting.omega_plot(wl_list, wavelengths, params_string) 
+plotting.omega_plot(wl_list, wavelengths) 
 
 
 # Calculate and record the (real) time taken for simulation

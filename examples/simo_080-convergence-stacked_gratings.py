@@ -84,17 +84,12 @@ for PWs in np.linspace(1,10,10):
     stacks_list = pool.map(simulate_stack, light_list)
 
 
-    last_light_object = light_list.pop()
-    param_layer = grating_1
-    params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
-    active_layer_nu = 1
-
     additional_name = str(int(PWs))
     stack_hs_wl_list = []
     for i in range(len(wavelengths)):
         stack_hs_wl_list.append(stacks_list[i])
-    Efficiency = plotting.t_r_a_plots(stack_hs_wl_list, wavelengths, params_string, 
-        active_layer_nu=active_layer_nu, add_name = additional_name)
+    Efficiency = plotting.t_r_a_plots(stack_hs_wl_list, wavelengths, 
+        add_name = additional_name)
 
 
 

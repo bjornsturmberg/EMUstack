@@ -132,24 +132,15 @@ np.array(stacks_wl_list)
 
 
 ######################## Plotting ########################
-last_light_object = light_list.pop()
-
-
-
-param_layer = NW_array # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=max_num_BMs)
-
 #### Example 1: simple multilayered stack.
 stack_label = 0 # Specify which stack you are dealing with.
 stack_wl_list = []
 for i in range(len(wavelengths)):
     stack_wl_list.append(stacks_wl_list[i][stack_label])
-active_layer_nu = 1
 
-Efficiency = plotting.t_r_a_plots(stack_wl_list, wavelengths, params_string, 
-    active_layer_nu=active_layer_nu, stack_label=stack_label) 
+Efficiency = plotting.t_r_a_plots(stack_wl_list, wavelengths, stack_label=stack_label) 
 # Dispersion
-plotting.omega_plot(stack_wl_list, wavelengths, params_string, stack_label=stack_label) 
+plotting.omega_plot(stack_wl_list, wavelengths, stack_label=stack_label) 
 
 
 ######################## Wrapping up ########################
