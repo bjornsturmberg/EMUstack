@@ -76,6 +76,9 @@ def simulate_stack(light):
     return stack
 
 stacks_list = map(simulate_stack, light_list)
+# Save full simo data to .npz file for safe keeping!
+simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
 # Calculation of the modes and scattering matrices of each layer
 # as well as the scattering matrices of the interfaces of the stack

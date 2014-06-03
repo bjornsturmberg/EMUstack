@@ -82,14 +82,13 @@ for PWs in np.linspace(1,10,10):
     # Run in parallel across wavelengths.
     pool = Pool(num_cores)
     stacks_list = pool.map(simulate_stack, light_list)
+    # Save full simo data to .npz file for safe keeping!
+    simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+    np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
 
     additional_name = str(int(PWs))
-    stack_hs_wl_list = []
-    for i in range(len(wavelengths)):
-        stack_hs_wl_list.append(stacks_list[i])
-    Efficiency = plotting.t_r_a_plots(stack_hs_wl_list, wavelengths, 
-        add_name = additional_name)
+    plotting.t_r_a_plots(stacks_list, add_name = additional_name)
 
 
 

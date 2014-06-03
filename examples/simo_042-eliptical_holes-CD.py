@@ -111,16 +111,13 @@ def simulate_stack(light):
 
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
-stacks_wl_list = pool.map(simulate_stack, light_list)
-# Run one at a time
-# stacks_wl_list = map(simulate_stack, light_list)
+stacks_list = pool.map(simulate_stack, light_list)
+# Save full simo data to .npz file for safe keeping!
+simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
 ######################## Plotting ########################
 last_light_object = light_list.pop()
-
-
-param_layer = Au_NHs # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
 
 
 #### Individual spectra of multilayered stack where one layer has many heights.
@@ -133,9 +130,8 @@ h_name = str(h)
 additional_name = gen_name+h_name # You can add an arbitry string onto the end of the spectra filenames.
 stack3_hs_wl_list = []
 for i in range(len(wavelengths)):
-    stack3_hs_wl_list.append(stacks_wl_list[i][h])
-Efficiency = plotting.t_r_a_plots(stack3_hs_wl_list, wavelengths, params_string, 
-    active_layer_nu=active_layer_nu, stack_label=stack_label, add_name = additional_name)
+    stack3_hs_wl_list.append(stacks_list[i][h])
+plotting.t_r_a_plots(stack3_hs_wl_list, stack_label=stack_label, add_name = additional_name)
 
 
 # Calculate and record the (real) time taken for simulation

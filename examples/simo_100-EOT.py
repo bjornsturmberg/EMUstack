@@ -93,9 +93,12 @@ def simulate_stack(light):
 
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
-stacks_wl_list = pool.map(simulate_stack, light_list)
-# Run one at a time
-# stacks_wl_list = map(simulate_stack, light_list)
+stacks_list = pool.map(simulate_stack, light_list)
+# Save full simo data to .npz file for safe keeping!
+simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+np.savez('Simo_results'+simotime, stacks_list=stacks_list)
+    
+
 
 ######################## Plotting ########################
 last_light_object = light_list.pop()
@@ -107,7 +110,7 @@ for h in range(len(NH_heights)):
     wl_list = []
     stack_label = 0
     for wl in range(len(wavelengths)):
-        wl_list.append(stacks_wl_list[wl][stack_label][h])
+        wl_list.append(stacks_list[wl][stack_label][h])
     mess_name = '_h%(h)i'% {'h'   : h, }
     plotting.EOT_plot(wl_list, wls_normed, add_name = mess_name) 
 # Dispersion

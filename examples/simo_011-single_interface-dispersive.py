@@ -80,6 +80,9 @@ def simulate_stack(light):
 # Run wavelengths in parallel across num_cores CPUs using multiprocessing package.
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
+# Save full simo data to .npz file for safe keeping!
+simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
 ######################## Post Processing ########################
 # This time let's visualise the net Transmission scattering matrix,
@@ -92,7 +95,7 @@ nu_prop = stacks_list[wl_num].layers[0].num_prop_pw_per_pol
 plotting.vis_scat_mats(T_net, nu_prop_PWs=nu_prop)
 
 # Let's just plot the spectra and see the effect of changing refractive indices.
-plotting.t_r_a_plots(stacks_list, wavelengths)
+plotting.t_r_a_plots(stacks_list)
 
 ######################## Wrapping up ########################
 print '\n*******************************************'

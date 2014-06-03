@@ -125,7 +125,10 @@ def simulate_stack(light):
 
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
-stack_list = pool.map(simulate_stack, light_list)
+stacks_list = pool.map(simulate_stack, light_list)
+# Save full simo data to .npz file for safe keeping!
+simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+np.savez('Simo_results'+simotime, stacks_list=stacks_list)
     
 
 ######################## Plotting ########################
@@ -137,27 +140,27 @@ params_string = plotting.gen_params_string(param_layer, last_light_object, max_n
 active_layer_nu = 3 # Specify which layer is the active one (where absorption generates charge carriers).
 # Plot total transmission, reflection, absorption & that of each layer. 
 # Also calculate efficiency of active layer.
-Efficiency = plotting.t_r_a_plots(stack_list, wavelengths, params_string, active_layer_nu=active_layer_nu) 
+Efficiency = plotting.t_r_a_plots(stacks_list, wavelengths, params_string, active_layer_nu=active_layer_nu) 
 # Dispersion
-# plotting.omega_plot(stack_list, wavelengths, params_string) 
+# plotting.omega_plot(stacks_list, wavelengths, params_string) 
 # # Energy Concentration
 # which_layer = 2
 # which_modes = [1,2] # can be a single mode or multiple
-# plotting.E_conc_plot(stack_list, which_layer, which_modes, wavelengths, 
+# plotting.E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, 
 #     params_string)
 
 
 ######################## Single Wavelength Plotting ########################
 # Plot transmission as a function of k vector.
-# plotting.t_func_k_plot(stack_list)
+# plotting.t_func_k_plot(stacks_list)
 
 
 # # Visualise the Scattering Matrices
 # for i in range(len(wavelengths)):
 #     extra_title = 'R_net'
-#     plotting.vis_scat_mats(stack_list[i].R_net, i, extra_title)
+#     plotting.vis_scat_mats(stacks_list[i].R_net, i, extra_title)
 #     extra_title = 'R_12'
-#     plotting.vis_scat_mats(stack_list[i].layers[2].T21, i, extra_title)
+#     plotting.vis_scat_mats(stacks_list[i].layers[2].T21, i, extra_title)
 
 
 

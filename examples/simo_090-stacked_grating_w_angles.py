@@ -77,35 +77,18 @@ def simulate_stack(light):
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
+# Save full simo data to .npz file for safe keeping!
+simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
 
 # ### Plot as in Handmer Fig2
-# # require phi == 0.0
-last_light_object = light_list.pop()
-n_H = 3.61 # high refractive index
-min_k_label = 15
-plotting.t_func_k_plot_1D(stacks_list, last_light_object, n_H, min_k_label)
-
+plotting.t_func_k_plot_1D(stacks_list)
 
 ### Plot as in Handmer Fig1
-chosen_PW_order = [-1,0,1,2]
-plotting.single_order_T(stacks_list, azi_angles, chosen_PW_order)
+plotting.single_order_T(stacks_list)
 
-
-param_layer = grating_1 # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
-
-stack_wl_list = []
-for i in range(len(azi_angles)):
-# for i in range(len(wavelengths)):
-    stack_wl_list.append(stacks_list[i])
-active_layer_nu = 1
-
-Efficiency = plotting.t_r_a_plots(stack_wl_list, azi_angles, params_string, 
-    active_layer_nu=active_layer_nu) 
-# Efficiency = plotting.t_r_a_plots(stack_wl_list, wavelengths, params_string, 
-#     active_layer_nu=active_layer_nu) 
-
+plotting.t_r_a_plots(stack_wl_list) 
 
 # select_stack = stacks_list[-1]
 # plot_mat = select_stack.T_net

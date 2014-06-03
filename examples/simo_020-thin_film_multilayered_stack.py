@@ -89,10 +89,13 @@ def simulate_stack(light):
 # Run wavelengths in parallel across num_cores CPUs using multiprocessing package.
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
+# Save full simo data to .npz file for safe keeping!
+simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
 ######################## Post Processing ########################
 # We will now see the absorption in each individual layer as well as of the stack.
-plotting.t_r_a_plots(stacks_list, wavelengths)
+plotting.t_r_a_plots(stacks_list)
 
 ######################## Wrapping up ########################
 print '\n*******************************************'

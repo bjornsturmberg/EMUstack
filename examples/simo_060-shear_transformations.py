@@ -94,12 +94,11 @@ def simulate_stack(light):
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
+# Save full simo data to .npz file for safe keeping!
+simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
-last_light_object = light_list.pop()
-param_layer = grating_1 # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
-
-plotting.t_r_a_plots(stacks_list, azi_angles, params_string)
+plotting.t_r_a_plots(stacks_list)
 
 ######################## Wrapping up ########################
 # Calculate and record the (real) time taken for simulation

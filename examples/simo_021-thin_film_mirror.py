@@ -86,12 +86,15 @@ def simulate_stack(light):
 
     return stack
 
-pool = Pool(num_cores)
+pool = Pool(num_cores)  
 stacks_list = pool.map(simulate_stack, light_list)
+# Save full simo data to .npz file for safe keeping!
+simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
 ######################## Post Processing ########################
 # The total transmission should be zero.
-plotting.t_r_a_plots(stacks_list, wavelengths)
+plotting.t_r_a_plots(stacks_list)
 
 ######################## Wrapping up ########################
 print '\n*******************************************'

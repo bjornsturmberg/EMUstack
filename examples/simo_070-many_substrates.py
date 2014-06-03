@@ -135,15 +135,18 @@ def simulate_stack(light):
 
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
-stacks_wl_list = pool.map(simulate_stack, light_list)
-# Run one at a time
-# stacks_wl_list = map(simulate_stack, light_list)
+stacks_list = pool.map(simulate_stack, light_list)
+# Save full simo data to .npz file for safe keeping!
+simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+np.savez('Simo_results'+simotime, stacks_list=stacks_list)
+    
+
 
 
 
 # Pull apart simultaneously simulated stakes into single stack, all wls arrays.
 # Unnecissary if just returning a single stack
-np.array(stacks_wl_list)
+np.array(stacks_list)
 
 
 ######################## Plotting ########################
@@ -160,7 +163,7 @@ params_string = plotting.gen_params_string(param_layer, last_light_object, max_n
 stack_label = 1 # Specify which stack you are dealing with.
 stack1_wl_list = []
 for i in range(len(wavelengths)):
-    stack1_wl_list.append(stacks_wl_list[i][stack_label])
+    stack1_wl_list.append(stacks_list[i][stack_label])
 active_layer_nu = 1
 
 Efficiency = plotting.t_r_a_plots(stack1_wl_list, wavelengths, params_string, 
@@ -187,7 +190,7 @@ plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stac
 # stack_label = 0 # Specify which stack you are dealing with.
 # stack0_wl_list = []
 # for i in range(len(wavelengths)):
-#     stack0_wl_list.append(stacks_wl_list[i][stack_label])
+#     stack0_wl_list.append(stacks_list[i][stack_label])
 # # Plot total transmission, reflection, absorption & that of each layer.
 # Efficiency = plotting.t_r_a_plots(stack0_wl_list, wavelengths, params_string, 
 #     stack_label=stack_label) 
@@ -202,7 +205,7 @@ plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stac
 # stack_label = 1 # Specify which stack you are dealing with.
 # stack1_wl_list = []
 # for i in range(len(wavelengths)):
-#     stack1_wl_list.append(stacks_wl_list[i][stack_label])
+#     stack1_wl_list.append(stacks_list[i][stack_label])
 # active_layer_nu = 2 # Specify which layer is the active one (where absorption generates charge carriers).
 # # Plot total transmission, reflection, absorption & that of each layer. 
 # # Also calculate efficiency of active layer.
@@ -225,7 +228,7 @@ plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stac
 # active_layer_nu = 2
 # stack2_wl_list = []
 # for i in range(len(wavelengths)):
-#     stack2_wl_list.append(stacks_wl_list[i][stack_label])
+#     stack2_wl_list.append(stacks_list[i][stack_label])
 # Efficiency = plotting.t_r_a_plots(stack2_wl_list, wavelengths, params_string, 
 #     active_layer_nu=active_layer_nu, stack_label=stack_label)
 
@@ -234,14 +237,14 @@ plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stac
 # #### Example 3: individual spectra of multilayered stack where one layer has many heights.
 # stack_label = 3
 # active_layer_nu = 2
-# number_of_hs = len(stacks_wl_list[0][stack_label])
+# number_of_hs = len(stacks_list[0][stack_label])
 # for h in range(number_of_hs):
 #     gen_name = '_h-'
 #     h_name = str(h)
 #     additional_name = gen_name+h_name # You can add an arbitry string onto the end of the spectra filenames.
 #     stack3_hs_wl_list = []
 #     for i in range(len(wavelengths)):
-#         stack3_hs_wl_list.append(stacks_wl_list[i][stack_label][h])
+#         stack3_hs_wl_list.append(stacks_list[i][stack_label][h])
 #     Efficiency = plotting.t_r_a_plots(stack3_hs_wl_list, wavelengths, params_string, 
 #         active_layer_nu=active_layer_nu, stack_label=stack_label, add_name = additional_name)
 # # Animate spectra as a function of heights.

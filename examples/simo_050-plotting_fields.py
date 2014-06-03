@@ -115,48 +115,27 @@ def simulate_stack(light):
     stack = Stack((sim_substrate, sim_NWs, sim_superstrate))
     stack.calc_scat(pol = 'TE')
 
-    return [stack] 
+    return stack
 
 
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
-stacks_wl_list = pool.map(simulate_stack, light_list)
-# Run one at a time
-# stacks_wl_list = map(simulate_stack, light_list)
-
-
-
-# Pull apart simultaneously simulated stakes into single stack, all wls arrays.
-# Unnecissary if just returning a single stack
-np.array(stacks_wl_list)
+stacks_list = pool.map(simulate_stack, light_list)
+# Save full simo data to .npz file for safe keeping!
+simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
+np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
 
 ######################## Plotting ########################
-last_light_object = light_list.pop()
-
-
-
-param_layer = NW_array # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=max_num_BMs)
-
 #### Example 1: simple multilayered stack.
-stack_label = 0 # Specify which stack you are dealing with.
-stack_wl_list = []
-for i in range(len(wavelengths)):
-    stack_wl_list.append(stacks_wl_list[i][stack_label])
-active_layer_nu = 1
 
-Efficiency = plotting.t_r_a_plots(stack_wl_list, wavelengths, params_string, 
-    active_layer_nu=active_layer_nu, stack_label=stack_label) 
+plotting.t_r_a_plots(stack_wl_list) 
+
 # Dispersion
-plotting.omega_plot(stack_wl_list, wavelengths, params_string, stack_label=stack_label) 
+plotting.omega_plot(stack_wl_list, wavelengths) 
 
 
 ######################## Wrapping up ########################
-print '\n*******************************************'
-print 'The ultimate efficiency is %12.8f' % Efficiency
-print '-------------------------------------------'
-
 # Calculate and record the (real) time taken for simulation
 elapsed = (time.time() - start)
 hms     = str(datetime.timedelta(seconds=elapsed))
