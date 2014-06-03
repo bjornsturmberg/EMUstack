@@ -811,7 +811,20 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
 
 
 ####Plot PW amplitudes function k-vector###############################################
-def t_func_k_plot_1D(stack_list, n_H, lay_interest=0, pol='TE'):
+def max_n(stack_list):
+    ns = []
+    for s in stack_list:
+        for l in s.layers:
+            if isinstance(l,objects.Anallo):
+                ns.append(l.n())
+            if isinstance(l,objects.Simmo):
+                wl = l.light.wl_nm
+                ns.append(l.structure.background.n(wl))
+                ns.append(l.structure.inclusion_a.n(wl))
+                ns.append(l.structure.inclusion_b.n(wl))
+    return np.real(np.max(ns))
+
+def t_func_k_plot_1D(stack_list, lay_interest=0, pol='TE'):
     """ Plot PW amplitudes as a function of their in-plane k-vector. """
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
@@ -861,6 +874,8 @@ def t_func_k_plot_1D(stack_list, n_H, lay_interest=0, pol='TE'):
     min_k_label = np.max(np.abs(plot_alphas))
     k0 = abs(k0)
     min_k_l_k0  = np.max(np.abs(plot_alphas))/k0
+
+    n_H = max_n(stack_list)
     new_tick_values = [-min_k_label, -n_H*k0, -k0, 0, k0, n_H*k0, min_k_label]
     new_tick_labels = [r"$-%ik_0$"%min_k_l_k0,r'$-n_Hk_0$',r'$-k_0$',r'0',
         r'$k_0$',r'$n_Hk_0$',r"$%ik_0$"%min_k_l_k0]
@@ -890,6 +905,8 @@ def amps_of_orders(stack_list, xvalues, chosen_PW_order=None,\
     for pxs in chosen_PW_order:
         store_trans = []
         for stack in stack_list:
+            assert isinstance(stack.layers[lay_interest],objects.Anallo), \
+            "amps_of_orders only works in ThinFilm layers, change lay_interest input."
             k0 = stack.layers[0].k()
             n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
             # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
@@ -921,7 +938,7 @@ def amps_of_orders(stack_list, xvalues, chosen_PW_order=None,\
     else: plt.savefig('PW_orders-lay_%s' % lay_interest, bbox_extra_artists=(lgd,), \
         bbox_inches='tight')
 
-def evanescent_merit(stack_list, xvalues, n_H, chosen_PW_order=None,\
+def evanescent_merit(stack_list, xvalues, chosen_PW_order=None,\
     lay_interest=0, add_height=None, add_title=None):
     """ Create a figure of merit for the 'evanescent-ness' of excited fields. """
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
@@ -932,6 +949,7 @@ def evanescent_merit(stack_list, xvalues, n_H, chosen_PW_order=None,\
         # Create arrays of grating order indexes (-p, ..., p)
         max_ords = stack_list[0].layers[-1].max_order_PWs
         chosen_PW_order = np.arange(-max_ords, max_ords + 1)
+    n_H = max_n(stack_list)
 
     store_m_p  = []
     store_m_ne = []
@@ -941,6 +959,8 @@ def evanescent_merit(stack_list, xvalues, n_H, chosen_PW_order=None,\
     store_x_fe = []
     s = 0
     for stack in stack_list:
+        assert isinstance(stack.layers[lay_interest],objects.Anallo), \
+        "evanescent_merit only works in ThinFilm layers, change lay_interest input."
         merit_prop    = 0.0
         merit_near_ev = 0.0
         merit_far_ev  = 0.0
