@@ -72,6 +72,19 @@ def tick_function(energies):
     wls = Plancks_h*speed_c/(energies*charge_e)*1e9
     return wls
 
+def max_n(stacks_list):
+    ns = []
+    for s in stacks_list:
+        for l in s.layers:
+            if isinstance(l,objects.Anallo):
+                ns.append(l.n())
+            if isinstance(l,objects.Simmo):
+                wl = l.light.wl_nm
+                ns.append(l.structure.background.n(wl))
+                ns.append(l.structure.inclusion_a.n(wl))
+                ns.append(l.structure.inclusion_b.n(wl))
+    return np.real(np.max(ns))
+
 def gen_params_string(stack, layer=1):
     """ Generate the string of simulation info that is to be printed at the top of plots. """
     param_layer = stack[0].layers[layer].structure
@@ -105,6 +118,7 @@ def gen_params_string(stack, layer=1):
     else:
         params_2_print = 'PW_radius = %(PWs)d, '% {'PWs' : stack[0].layers[layer].max_order_PWs, }
 
+    # light = stack[0].layers[layer].light
     # k_pll = light.k_pll * param_layer.period
     # params_2_print += r'$k_\parallel d$ = '
     # tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}
@@ -116,15 +130,26 @@ def gen_params_string(stack, layer=1):
 
 
 ####Standard plotting of spectra#######################################################
-def t_r_a_plots(stack_wl_list, xvalues, params_layer=1, active_layer_nu=0,\
+def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=0,\
     stack_label=1, ult_eta=False, J_sc=False, weight_spec=False, extinct=False,\
-    add_height=0, add_name=''):
+    add_height=0, add_name='', force_txt_save=False):
     """ Plot t,r,a for each layer & total, then save each to text files. """
 
-    height_list = stack_wl_list[0].heights_nm()[::-1]
-    params_2_print = gen_params_string(stack_wl_list, params_layer)
+    height_list = stacks_list[0].heights_nm()[::-1]
+    params_2_print = gen_params_string(stacks_list, params_layer)
     params_2_print += '\n'r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
+
+    if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
+        xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
+        xlabel = r'$\lambda$ (nm)'
+    elif set(stacks_list[0].layers[0].light.k_pll) != set(stacks_list[-1].layers[0].light.k_pll):
+        xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
+        xlabel = r'$|k_\parallel|$'
+    elif xvalues==None: 
+        "t_r_a_plots cannot guess what to plot on x-axis, specify with xvalues input."
+        return
+
 
     if add_height!=0: add_name += zeros_int_str(add_height)
     stack_label = zeros_int_str(stack_label)
@@ -132,12 +157,12 @@ def t_r_a_plots(stack_wl_list, xvalues, params_layer=1, active_layer_nu=0,\
     a_list = []
     t_list = []
     r_list = []
-    for stack in stack_wl_list:
+    for stack in stacks_list:
         a_list.extend(stack.a_list)
         t_list.extend(stack.t_list)
         r_list.extend(stack.r_list)
 
-    layers_steps = len(stack_wl_list[0].layers) - 1
+    layers_steps = len(stacks_list[0].layers) - 1
     active_abs = []
     a_tot      = []
     t_tot      = []
@@ -148,14 +173,14 @@ def t_r_a_plots(stack_wl_list, xvalues, params_layer=1, active_layer_nu=0,\
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
 
-    total_h = sum(stack_wl_list[0].heights_nm()) # look at first wl result to find h.
+    total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
     # Plot t,r,a for each layer
-    layers_plot('Lay_Absorb', a_list, xvalues, total_h, params_2_print, stack_label, add_name)
-    layers_plot('Lay_Trans',  t_list, xvalues, total_h, params_2_print, stack_label, add_name)
-    layers_plot('Lay_Reflec', r_list, xvalues, total_h, params_2_print, stack_label, add_name)
+    layers_plot('Lay_Absorb', a_list, xvalues, xlabel,total_h,params_2_print,stack_label,add_name,force_txt_save)
+    layers_plot('Lay_Trans',  t_list, xvalues, xlabel,total_h,params_2_print,stack_label,add_name,force_txt_save)
+    layers_plot('Lay_Reflec', r_list, xvalues, xlabel,total_h,params_2_print,stack_label,add_name,force_txt_save)
     # Also plot total t,r,a on a single plot
     plot_name = 'Total_Spectra'
-    total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, params_2_print, stack_label, add_name)
+    total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel, params_2_print, stack_label, add_name)
     
     if ult_eta == True:
         Efficiency = ult_efficiency(active_abs, xvalues, params_2_print, stack_label,add_name)
@@ -163,7 +188,7 @@ def t_r_a_plots(stack_wl_list, xvalues, params_layer=1, active_layer_nu=0,\
         params_2_print += ' %'
 
     if J_sc == True:
-        J = J_short_circuit(active_abs, xvalues, params_2_print, stack_label,add_name)
+        J = J_short_circuit(active_abs, xvalues, params_2_print,stack_label,add_name,force_txt_save)
         params_2_print += r'$J_{sc}$ = %(J)6.2f'% {'J' : J, }
         params_2_print += r' mA/cm$^2$'
 
@@ -179,36 +204,36 @@ def t_r_a_plots(stack_wl_list, xvalues, params_layer=1, active_layer_nu=0,\
         r_weighted = r_tot*weighting
         plot_name = 'Weighted_Total_Spectra'
         total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, xvalues, 
-            params_2_print, stack_label, add_name)
+            xlabel, params_2_print, stack_label, add_name)
 
     if  extinct == True:
         extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
     return
 
-def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print,\
-    stack_label, add_name):
+def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_print,\
+    stack_label, add_name, force_txt_save):
     """ The plotting function for one type of spectrum across all layers. """
 
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-    nu_layers = len(spec_list)/len(wavelengths)
-    h_array = np.ones(len(wavelengths))*total_h
+    nu_layers = len(spec_list)/len(xvalues)
+    h_array = np.ones(len(xvalues))*total_h
     for i in range(nu_layers):
         layer_spec = []
-        for wl in range(len(wavelengths)):
+        for wl in range(len(xvalues)):
             layer_spec = np.append(layer_spec,spec_list[wl*nu_layers + i])
         ax1 = fig.add_subplot(nu_layers,1,i+1)
-        ax1.plot(wavelengths, layer_spec, linewidth=linesstrength)
+        ax1.plot(xvalues, layer_spec, linewidth=linesstrength)
         ax2 = ax1.twiny()
         new_tick_values = np.linspace(10,0.5,20)
         new_tick_locations = tick_function(new_tick_values)
         new_tick_labels = ["%.1f" % z for z in new_tick_values]
         ax2.set_xticks(new_tick_locations)
         ax2.set_xticklabels(new_tick_labels)
-        ax2.set_xlim((wavelengths[0], wavelengths[-1]))  
+        ax2.set_xlim((xvalues[0], xvalues[-1]))  
         if i == 0:
-            ax2.set_xlabel('Energy (eV)')
+            if xlabel == r'$\lambda$ (nm)': ax2.set_xlabel('Energy (eV)')
         elif i == nu_layers-1:
-            ax1.set_xlabel('Wavelength (nm)')
+            ax1.set_xlabel(xlabel)
             ax1.set_ylabel('Total')
         if i != 0:
             ax2.set_xticklabels( () )
@@ -242,58 +267,60 @@ def layers_plot(spectra_name, spec_list, wavelengths, total_h, params_2_print,\
             if i == nu_layers-1: 
                 ax1.set_ylabel('Total')
                 lay_spec_name = 'Reflectance'
-        av_array = zip(wavelengths, layer_spec, h_array)
-        ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+        av_array = zip(xvalues, layer_spec, h_array)
+        ax1.set_xlim((xvalues[0], xvalues[-1]))
         plt.ylim((0, 1))
 
-        if i != nu_layers-1: 
-            np.savetxt('%(s)s_%(i)i_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 'i' : i, 
-                'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
-        else:
-            np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
-                'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
+        if force_txt_save == True:
+            if i != nu_layers-1: 
+                np.savetxt('%(s)s_%(i)i_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 'i' : i, 
+                    'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
+            else:
+                np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
+                    'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
 
-        plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : spectra_name, 'bon' : stack_label,'add' : add_name})
+        plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s': spectra_name, 'bon': stack_label,\
+            'add' : add_name})
 
-def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_print,\
+def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, params_2_print,\
     stack_label, add_name):
     """ The plotting function for total t,r,a spectra on one plot. """
 
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     
     ax1 = fig.add_subplot(3,1,1)
-    ax1.plot(wavelengths, a_spec, linewidth=linesstrength)
+    ax1.plot(xvalues, a_spec, linewidth=linesstrength)
     ax1.set_ylabel('Absorptance')
-    ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+    ax1.set_xlim((xvalues[0], xvalues[-1]))
     ax2 = ax1.twiny()
     new_tick_values = np.linspace(10,0.5,20)
     new_tick_locations = tick_function(new_tick_values)
     new_tick_labels = ["%.1f" % z for z in new_tick_values]
     ax2.set_xticks(new_tick_locations)
     ax2.set_xticklabels(new_tick_labels)
-    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
-    ax2.set_xlabel('Energy (eV)')
+    ax2.set_xlim((xvalues[0], xvalues[-1])) 
+    if xlabel == r'$\lambda$ (nm)': ax2.set_xlabel('Energy (eV)')
     plt.ylim((0, 1))
 
     ax1 = fig.add_subplot(3,1,2)
-    ax1.plot(wavelengths, t_spec, linewidth=linesstrength)
+    ax1.plot(xvalues, t_spec, linewidth=linesstrength)
     ax1.set_ylabel('Transmittance')
-    ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+    ax1.set_xlim((xvalues[0], xvalues[-1]))
     ax2 = ax1.twiny()
     ax2.set_xticklabels( () )
     ax2.set_xticks(new_tick_locations)
-    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
+    ax2.set_xlim((xvalues[0], xvalues[-1])) 
     plt.ylim((0, 1))
 
     ax1 = fig.add_subplot(3,1,3)
-    ax1.plot(wavelengths, r_spec, linewidth=linesstrength)
-    ax1.set_xlabel('Wavelength (nm)')
+    ax1.plot(xvalues, r_spec, linewidth=linesstrength)
+    ax1.set_xlabel(xlabel)
     ax1.set_ylabel('Reflectance')
-    ax1.set_xlim((wavelengths[0], wavelengths[-1]))
+    ax1.set_xlim((xvalues[0], xvalues[-1]))
     ax2 = ax1.twiny()
     ax2.set_xticklabels( () )
     ax2.set_xticks(new_tick_locations)
-    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
+    ax2.set_xlim((xvalues[0], xvalues[-1])) 
     plt.ylim((0, 1))
 
     plt.suptitle(params_2_print,fontsize=title_font)
@@ -303,14 +330,14 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, wavelengths, params_2_prin
 
 
 ####Plot spectra indicating Wood anomalies in substrate################################
-def t_r_a_plots_subs(stack_wl_list, xvalues, period, sub_n, params_layer=1, \
+def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
     active_layer_nu=0, stack_label=1, ult_eta=False, J_sc=False, weight_spec=False,\
     extinct=False, add_height=0, add_name=''):
     """ Plot t,r,a indicating Wood anomalies in substrate for each layer & total,
         then save each to text files. """
 
-    height_list = stack_wl_list[0].heights_nm()[::-1]
-    params_2_print = gen_params_string(stack_wl_list, params_layer)
+    height_list = stacks_list[0].heights_nm()[::-1]
+    params_2_print = gen_params_string(stacks_list, params_layer)
     params_2_print += '\n'r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
 
@@ -319,17 +346,17 @@ def t_r_a_plots_subs(stack_wl_list, xvalues, period, sub_n, params_layer=1, \
     a_list = []
     t_list = []
     r_list = []
-    for stack in stack_wl_list:
+    for stack in stacks_list:
         a_list.extend(stack.a_list)
         t_list.extend(stack.t_list)
         r_list.extend(stack.r_list)
 
-    layers_steps = len(stack_wl_list[0].layers) - 1
+    layers_steps = len(stacks_list[0].layers) - 1
     active_abs = []
     a_tot      = []
     t_tot      = []
     r_tot      = []
-    for i in range(len(xvalues)): 
+    for i in range(len(wavelengths)): 
         active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
@@ -337,16 +364,16 @@ def t_r_a_plots_subs(stack_wl_list, xvalues, period, sub_n, params_layer=1, \
 
     # Plot total t,r,a on a single plot indicating Wood anomalies
     plot_name = 'Total_Spectra_subs'
-    total_tra_plot_subs(plot_name, a_tot, t_tot, r_tot, xvalues, params_2_print,
+    total_tra_plot_subs(plot_name, a_tot, t_tot, r_tot, wavelengths, params_2_print,
       stack_label, add_name, period, sub_n)
 
     if ult_eta == True:
-        Efficiency = ult_efficiency(active_abs, xvalues, params_2_print, stack_label,add_name)
+        Efficiency = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name)
         params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
         params_2_print += ' %'
 
     if J_sc == True:
-        J = J_short_circuit(active_abs, xvalues, params_2_print, stack_label,add_name)
+        J = J_short_circuit(active_abs, wavelengths, params_2_print, stack_label,add_name)
         params_2_print += r'$J_{sc}$ = %(J)6.2f'% {'J' : J, }
         params_2_print += r' mA/cm$^2$'
 
@@ -354,18 +381,18 @@ def t_r_a_plots_subs(stack_wl_list, xvalues, period, sub_n, params_layer=1, \
         # Also plot totals weighted by solar irradiance
         Irrad_spec_file = '../backend/data/ASTMG173'
         i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
-        i_spec       = np.interp(xvalues, i_data[:,0], i_data[:,3])
-        bandgap_wl   = xvalues[-1]
-        weighting = i_spec/i_spec.max()*(xvalues/bandgap_wl)
+        i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
+        bandgap_wl   = wavelengths[-1]
+        weighting = i_spec/i_spec.max()*(wavelengths/bandgap_wl)
         a_weighted = a_tot*weighting
         t_weighted = t_tot*weighting
         r_weighted = r_tot*weighting
         plot_name = 'Weighted_Total_Spectra_subs'
-        total_tra_plot_subs(plot_name, a_weighted, t_weighted, r_weighted, xvalues, 
+        total_tra_plot_subs(plot_name, a_weighted, t_weighted, r_weighted, wavelengths, 
             params_2_print, stack_label, add_name, period, sub_n)
 
     if  extinct == True:
-        extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
+        extinction_plot(t_tot, wavelengths, params_2_print, stack_label, add_name)
     return
 
 def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
@@ -473,29 +500,29 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
 
 
 ####Save J_sc & ult efficiency w/o spectra#############################################
-def J_sc_eta_NO_plots(stack_wl_list, wavelengths, params_layer=1, active_layer_nu=0,\
+def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, active_layer_nu=0,\
     stack_label=1, add_name=''):
     """ Calculate J_sc & efficiency but do not save or plot spectra. """
 
-    height_list = stack_wl_list[0].heights_nm()[::-1]
-    params_2_print = gen_params_string(stack_wl_list, params_layer)
+    height_list = stacks_list[0].heights_nm()[::-1]
+    params_2_print = gen_params_string(stacks_list, params_layer)
     params_2_print += '\n'r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
 
     stack_label = zeros_int_str(stack_label)
 
     a_list = []
-    for stack in stack_wl_list:
+    for stack in stacks_list:
         a_list.extend(stack.a_list)
 
-    layers_steps = len(stack_wl_list[0].layers) - 1
+    layers_steps = len(stacks_list[0].layers) - 1
     active_abs = []
     for i in range(len(wavelengths)): 
         active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
 
-    Efficiency = ult_efficiency(active_abs, xvalues, params_2_print, stack_label,add_name)
+    Efficiency = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name)
 
-    J = J_short_circuit(active_abs, xvalues, params_2_print, stack_label,add_name)
+    J = J_short_circuit(active_abs, wavelengths, params_2_print, stack_label,add_name)
     return
 #######################################################################################
 
@@ -532,19 +559,19 @@ def layers_print(spectra_name, spec_list, wavelengths, total_h, stack_label=1,\
             np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
                 'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
 
-def t_r_a_write_files(stack_wl_list, wavelengths, stack_label=1, add_name=''):
+def t_r_a_write_files(stacks_list, wavelengths, stack_label=1, add_name=''):
     """ Save t,r,a for each layer & total in text files. """
     stack_label = zeros_int_str(stack_label)
 
     a_list = []
     t_list = []
     r_list = []
-    for stack in stack_wl_list:
+    for stack in stacks_list:
         a_list.extend(stack.a_list)
         t_list.extend(stack.t_list)
         r_list.extend(stack.r_list)
 
-    layers_steps = len(stack_wl_list[0].layers) - 1
+    layers_steps = len(stacks_list[0].layers) - 1
     a_tot      = []
     t_tot      = []
     r_tot      = []
@@ -553,7 +580,7 @@ def t_r_a_write_files(stack_wl_list, wavelengths, stack_label=1, add_name=''):
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
 
-    total_h = sum(stack_wl_list[0].heights_nm()) #look at first wl result to find h.
+    total_h = sum(stacks_list[0].heights_nm()) #look at first wl result to find h.
     layers_print('Lay_Absorb', a_list, wavelengths, total_h, stack_label)
     layers_print('Lay_Trans',  t_list, wavelengths, total_h, stack_label)
     layers_print('Lay_Reflec', r_list, wavelengths, total_h, stack_label)
@@ -574,19 +601,19 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
     plt.suptitle(plot_name+add_name+'\n'+params_2_print,fontsize=title_font)
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
-def EOT_plot(stack_wl_list, wavelengths, params_layer=1, num_pw_per_pol=0, add_name=''):
+def EOT_plot(stacks_list, wavelengths, params_layer=1, num_pw_per_pol=0, add_name=''):
     """ Plot T_{00} as in Martin-Moreno PRL 86 2001. 
         To plot {9,0} component of TM polarisation set num_pw_per_pol = num_pw_per_pol.
     """
 
-    height_list = stack_wl_list[0].heights_nm()[::-1]
-    params_2_print = gen_params_string(stack_wl_list, params_layer)
+    height_list = stacks_list[0].heights_nm()[::-1]
+    params_2_print = gen_params_string(stacks_list, params_layer)
     params_2_print += r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
 
     T_00 = []
     for i in range(len(wavelengths)): 
-        t00  = stack_wl_list[i].T_net[num_pw_per_pol,num_pw_per_pol]
+        t00  = stacks_list[i].T_net[num_pw_per_pol,num_pw_per_pol]
         t00c = t00.conjugate()
         T_00.append(np.real(t00*t00c))
 
@@ -600,7 +627,7 @@ def EOT_plot(stack_wl_list, wavelengths, params_layer=1, num_pw_per_pol=0, add_n
 
     R_00 = []
     for i in range(len(wavelengths)): 
-        r00  = stack_wl_list[i].R_net[num_pw_per_pol,num_pw_per_pol]
+        r00  = stacks_list[i].R_net[num_pw_per_pol,num_pw_per_pol]
         r00c = r00.conjugate()
         R_00.append(np.real(r00*r00c))
 
@@ -663,15 +690,15 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
 
 
 ####Plot dispersion diagrams & field concentrations as function of wavelength##########
-def omega_plot(stack_wl_list, wavelengths, params_layer=1, stack_label=1):
+def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
     """ Plots the dispersion diagram of each layer in one plot. """
 
-    params_2_print = gen_params_string(stack_wl_list, params_layer)
+    params_2_print = gen_params_string(stacks_list, params_layer)
     stack_label = zeros_int_str(stack_label)
-    period = np.array(stack_wl_list[0].layers[0].structure.period)
+    period = np.array(stacks_list[0].layers[0].structure.period)
     normed_omegas = 1/wavelengths*period
 
-    num_layers = len(stack_wl_list[0].layers)
+    num_layers = len(stacks_list[0].layers)
     fig1 = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     fig2 = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     fig3 = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
@@ -682,7 +709,7 @@ def omega_plot(stack_wl_list, wavelengths, params_layer=1, stack_label=1):
         ax3 = fig3.add_subplot(num_layers,1,num_layers-l)
         ax4 = fig4.add_subplot(num_layers,1,num_layers-l)
         for i in range(len(wavelengths)):
-            k_zs = stack_wl_list[i].layers[l].k_z
+            k_zs = stacks_list[i].layers[l].k_z
             real_k_zs = []
             imag_k_zs = []
             for k in k_zs:
@@ -715,8 +742,8 @@ def omega_plot(stack_wl_list, wavelengths, params_layer=1, stack_label=1):
         ax2.set_xlim((wavelengths[0], wavelengths[-1]))
         ax1.set_xlim((wavelengths[0], wavelengths[-1]))
         # Plot the (dispersive) light line in homogeneous layers.
-        if isinstance(stack_wl_list[0].layers[l], mode_calcs.Anallo):
-            ns = [stack_wl_list[i].layers[l].n() for i in range(len(wavelengths))]
+        if isinstance(stacks_list[0].layers[l], mode_calcs.Anallo):
+            ns = [stacks_list[i].layers[l].n() for i in range(len(wavelengths))]
             ax3.plot(np.real(ns)*normed_omegas, normed_omegas,'k', linewidth=linesstrength)
     fig1.suptitle(r'Real $k_z$'+params_2_print+'\n',fontsize=title_font)
     fig2.suptitle(r'Imaginary $k_z$'+params_2_print+'\n',fontsize=title_font)
@@ -729,14 +756,14 @@ def omega_plot(stack_wl_list, wavelengths, params_layer=1, stack_label=1):
     # Uncomment if you wish to save the dispersion data of a simulation to file.
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
-def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_layer=1,\
+def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, params_layer=1,\
     stack_label=1):
     """ Plots the energy concentration (epsilon |E_{cyl}| / epsilon |E_{cell}|) of given layer. """
 
-    params_2_print = gen_params_string(stack_wl_list, params_layer)
+    params_2_print = gen_params_string(stacks_list, params_layer)
     stack_label = zeros_int_str(stack_label)
-    if isinstance(stack_wl_list[0].layers[which_layer], mode_calcs.Simmo):
-        num_layers = len(stack_wl_list[0].layers)
+    if isinstance(stacks_list[0].layers[which_layer], mode_calcs.Simmo):
+        num_layers = len(stacks_list[0].layers)
         fig1 = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
         ax1 = fig1.add_subplot(1,1,1)
         # Uncomment if you wish to have a continuous curve plotted.
@@ -745,7 +772,7 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_lay
         # E_conc = []
         for i in range(len(wavelengths)):
             for mode in which_modes:
-                E_conc_tmp = np.real(stack_wl_list[i].layers[which_layer].mode_pol[3,mode])
+                E_conc_tmp = np.real(stacks_list[i].layers[which_layer].mode_pol[3,mode])
                 # E_conc.append(E_conc_tmp)
                 ax1.plot(wavelengths[i],E_conc_tmp,'bo', linewidth=linesstrength)
         plt.xlim((wavelengths[0], wavelengths[-1]))
@@ -758,7 +785,7 @@ def E_conc_plot(stack_wl_list, which_layer, which_modes, wavelengths, params_lay
         fig1.savefig('Energy_Concentration_stack%(bon)s'% {'bon' : stack_label}, bbox_inches='tight')
     else:
         print "\n ERROR: plotting.E_conc_plot; \n Can only calculate energy concentration in NanoStruct layers."
-        print repr(stack_wl_list[0].layers[which_layer])
+        print repr(stacks_list[0].layers[which_layer])
 #######################################################################################
 
 
@@ -811,34 +838,21 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
 
 
 ####Plot PW amplitudes function k-vector###############################################
-def max_n(stack_list):
-    ns = []
-    for s in stack_list:
-        for l in s.layers:
-            if isinstance(l,objects.Anallo):
-                ns.append(l.n())
-            if isinstance(l,objects.Simmo):
-                wl = l.light.wl_nm
-                ns.append(l.structure.background.n(wl))
-                ns.append(l.structure.inclusion_a.n(wl))
-                ns.append(l.structure.inclusion_b.n(wl))
-    return np.real(np.max(ns))
-
-def t_func_k_plot_1D(stack_list, lay_interest=0, pol='TE'):
+def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
     """ Plot PW amplitudes as a function of their in-plane k-vector. """
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
 
     # Create arrays of grating order indexes (-p, ..., p)
-    max_ords = stack_list[0].layers[-1].max_order_PWs
+    max_ords = stacks_list[0].layers[-1].max_order_PWs
     pxs = np.arange(-max_ords, max_ords + 1)
 
     # vec_coef sorted from top of stack, everything else is sorted from bottom
-    vec_index = len(stack_list[0].layers) - lay_interest - 1
+    vec_index = len(stacks_list[0].layers) - lay_interest - 1
 
     store_alphas = []
     store_k_trans = []
-    for stack in stack_list:
+    for stack in stacks_list:
         k0 = stack.layers[0].k()
         n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
         # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
@@ -875,7 +889,7 @@ def t_func_k_plot_1D(stack_list, lay_interest=0, pol='TE'):
     k0 = abs(k0)
     min_k_l_k0  = np.max(np.abs(plot_alphas))/k0
 
-    n_H = max_n(stack_list)
+    n_H = max_n(stacks_list)
     new_tick_values = [-min_k_label, -n_H*k0, -k0, 0, k0, n_H*k0, min_k_label]
     new_tick_labels = [r"$-%ik_0$"%min_k_l_k0,r'$-n_Hk_0$',r'$-k_0$',r'0',
         r'$k_0$',r'$n_Hk_0$',r"$%ik_0$"%min_k_l_k0]
@@ -890,21 +904,31 @@ def t_func_k_plot_1D(stack_list, lay_interest=0, pol='TE'):
 
 
 ####Plot amplitudes of PW orders#######################################################
-def amps_of_orders(stack_list, xvalues, chosen_PW_order=None,\
+def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
     lay_interest=0, add_height=None, add_title=None):
     """ Plot the amplitudes of plane wave orders in given layer. """
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
     # vec_coef sorted from top of stack, everything else is sorted from bottom
-    vec_index = len(stack_list[-1].layers) - lay_interest - 1
+    vec_index = len(stacks_list[-1].layers) - lay_interest - 1
     if chosen_PW_order == None:
         # Create arrays of grating order indexes (-p, ..., p)
-        max_ords = stack_list[0].layers[-1].max_order_PWs
+        max_ords = stacks_list[0].layers[-1].max_order_PWs
         chosen_PW_order = np.arange(-max_ords, max_ords + 1)
+
+    if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
+        xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
+        xlabel = r'$\lambda$ (nm)'
+    elif set(stacks_list[0].layers[0].light.k_pll) != set(stacks_list[-1].layers[0].light.k_pll):
+        xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
+        xlabel = r'$|k_\parallel|$'
+    elif xvalues==None: 
+        "amps_of_orders cannot guess what to plot on x-axis, specify with xvalues input."
+        return
 
     for pxs in chosen_PW_order:
         store_trans = []
-        for stack in stack_list:
+        for stack in stacks_list:
             assert isinstance(stack.layers[lay_interest],objects.Anallo), \
             "amps_of_orders only works in ThinFilm layers, change lay_interest input."
             k0 = stack.layers[0].k()
@@ -929,8 +953,7 @@ def amps_of_orders(stack_list, xvalues, chosen_PW_order=None,\
     handles, labels = ax1.get_legend_handles_labels()
     lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
     ax1.set_ylabel(r'$|E|_{trans}$')
-    if np.max(xvalues) < 90: ax1.set_xlabel(r'$\theta$') # hack way to tell what plotting against
-    else: ax1.set_xlabel(r'$\lambda$ (nm)')
+    ax1.set_xlabel(xlabel)
     if add_title != None: plt.suptitle('%s' % add_title)
     if add_height!= None: add_title += zeros_int_str(add_height)
     if add_title != None: plt.savefig('PW_orders-lay_%s' % lay_interest + add_title, \
@@ -938,18 +961,28 @@ def amps_of_orders(stack_list, xvalues, chosen_PW_order=None,\
     else: plt.savefig('PW_orders-lay_%s' % lay_interest, bbox_extra_artists=(lgd,), \
         bbox_inches='tight')
 
-def evanescent_merit(stack_list, xvalues, chosen_PW_order=None,\
+def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
     lay_interest=0, add_height=None, add_title=None):
     """ Create a figure of merit for the 'evanescent-ness' of excited fields. """
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
     # vec_coef sorted from top of stack, everything else is sorted from bottom
-    vec_index = len(stack_list[-1].layers) - lay_interest - 1
+    vec_index = len(stacks_list[-1].layers) - lay_interest - 1
     if chosen_PW_order == None:
         # Create arrays of grating order indexes (-p, ..., p)
-        max_ords = stack_list[0].layers[-1].max_order_PWs
+        max_ords = stacks_list[0].layers[-1].max_order_PWs
         chosen_PW_order = np.arange(-max_ords, max_ords + 1)
-    n_H = max_n(stack_list)
+    n_H = max_n(stacks_list)
+
+    if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
+        xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
+        xlabel = r'$\lambda$ (nm)'
+    elif set(stacks_list[0].layers[0].light.k_pll) != set(stacks_list[-1].layers[0].light.k_pll):
+        xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
+        xlabel = r'$|k_\parallel|$'
+    elif xvalues==None: 
+        "evanescent_merit cannot guess what to plot on x-axis, specify with xvalues input."
+        return
 
     store_m_p  = []
     store_m_ne = []
@@ -958,7 +991,7 @@ def evanescent_merit(stack_list, xvalues, chosen_PW_order=None,\
     store_x_ne = []
     store_x_fe = []
     s = 0
-    for stack in stack_list:
+    for stack in stacks_list:
         assert isinstance(stack.layers[lay_interest],objects.Anallo), \
         "evanescent_merit only works in ThinFilm layers, change lay_interest input."
         merit_prop    = 0.0
@@ -1004,8 +1037,7 @@ def evanescent_merit(stack_list, xvalues, chosen_PW_order=None,\
     handles, labels = ax1.get_legend_handles_labels()
     lgd = ax1.legend(handles, labels, ncol=3, loc='upper center', bbox_to_anchor=(0.5,1.2))
     ax1.set_ylabel('Ev FoM')
-    if np.max(xvalues) < 90: ax1.set_xlabel(r'$\theta$') # hack way to tell what plotting against
-    else: ax1.set_xlabel(r'$\lambda$ (nm)')
+    ax1.set_xlabel(xlabel)
     if add_title != None: plt.suptitle('%s' % add_title)
     if add_height!= None: add_title += zeros_int_str(add_height)
     if add_title != None: plt.savefig('evanescent_merit-lay_%s' % lay_interest + add_title, \
@@ -1020,7 +1052,7 @@ def evanescent_merit(stack_list, xvalues, chosen_PW_order=None,\
     store_m_p  = []
     store_m_ne = []
     store_m_fe = []
-    for stack in stack_list:
+    for stack in stacks_list:
         merit_prop    = 0.0
         merit_near_ev = 0.0
         for pxs in chosen_PW_order:
@@ -1048,7 +1080,7 @@ def evanescent_merit(stack_list, xvalues, chosen_PW_order=None,\
         store_m_ne = np.append(store_m_ne,merit_prop/merit_near_ev)
 
     s = 0
-    for stack in stack_list:
+    for stack in stacks_list:
         merit_far_ev  = 0.0
         for pxs in chosen_PW_order:
             k0 = stack.layers[lay_interest].k()
@@ -1171,18 +1203,18 @@ def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
     # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
     # vec_coef_down[neq_PW] = 1.0
 
-def E_substrate2(stack_wl_list, wavelengths,period,r_a,pw,bm):
-    alpha_unsrt = np.array(stack_wl_list[0].layers[0].alphas)
-    beta_unsrt = np.array(stack_wl_list[0].layers[0].betas)
-    gamma_unsrt = np.array(stack_wl_list[0].layers[0].k_z_unsrt)
+def E_substrate2(stacks_list, wavelengths, period, r_a, pw, bm):
+    alpha_unsrt = np.array(stacks_list[0].layers[0].alphas)
+    beta_unsrt = np.array(stacks_list[0].layers[0].betas)
+    gamma_unsrt = np.array(stacks_list[0].layers[0].k_z_unsrt)
     k_array = np.column_stack((alpha_unsrt,beta_unsrt,gamma_unsrt))
     k_sort = k_array [np.argsort(-1*np.real(k_array [:,2])+np.imag(k_array [:,2]))]
     alpha = np.array(k_sort[:,0])
     beta = np.array(k_sort[:,1])
     gamma = np.array(k_sort[:,2])
-    n = stack_wl_list[0].layers[0].n()
-    PWordtot = stack_wl_list[0].layers[0].structure.num_pw_per_pol
-    Tnet = stack_wl_list[0].T_net*stack_wl_list[0].layers[-1].specular_incidence(pol='TE')
+    n = stacks_list[0].layers[0].n()
+    PWordtot = stacks_list[0].layers[0].structure.num_pw_per_pol
+    Tnet = stacks_list[0].T_net*stacks_list[0].layers[-1].specular_incidence(pol='TE')
     Tnet_TE = np.array(Tnet[0:PWordtot]).flatten()
     Tnet_TM = np.array(Tnet[PWordtot::]).flatten()
     nu_calc_pts = 50
@@ -1337,20 +1369,20 @@ def fields_3d(pstack, wl):
 
 
 ####Fabry-Perot resonances#############################################################
-def Fabry_Perot_res(stack_list, freq_list, kx_list, f_0, k_0, lay_interest=1):
+def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0, lay_interests=1):
     """ Calculate the Fabry-Perot resonance condition for a resonances within a layer.
     'lay_interest' : specifies which layer in the stack to find F-P resonances of.
     """
     n_freqs = len(freq_list)
     n_kxs   = len(kx_list)
-    height = stack_list[-1].heights_nm()[lay_interest-1] # assumes all stacks have equal height
-    period = stack_list[-1].period
-    num_BMs = stack_list[-1].layers[lay_interest].num_BM
+    height = stacks_list[-1].heights_nm()[lay_interest-1] # assumes all stacks have equal height
+    period = stacks_list[-1].period
+    num_BMs = stacks_list[-1].layers[lay_interest].num_BM
     I_mat = np.matrix(np.eye(num_BMs),dtype='D')
 
     plot_mat = np.zeros(shape=(n_freqs,n_kxs),dtype='complex128')
     for i in range(n_kxs):
-        kx_slice = stack_list[i*n_freqs:(i+1)*n_freqs]
+        kx_slice = stacks_list[i*n_freqs:(i+1)*n_freqs]
         j = 0
         for stack in kx_slice:
             P   = stack.layers[lay_interest].prop_fwd(height/period)

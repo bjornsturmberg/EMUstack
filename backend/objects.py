@@ -35,9 +35,6 @@ print '\n#################################################################\n' + 
       'Starting EMUstack calculation ...\n' + \
       '#################################################################\n'
 
-
-
-
 class NanoStruct(object):
     """ Represents a structured layer.
 
@@ -425,14 +422,6 @@ class NanoStruct(object):
 
 
 
-
-
-
-
-
-
-
-
 class ThinFilm(object):
     """ Represents an unstructured homogeneous film.
 
@@ -464,18 +453,6 @@ class ThinFilm(object):
         an = Anallo(self, light)
         an.calc_modes()
         return an
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -553,15 +530,6 @@ class Light(object):
             # Save this for future reference (we'll be back)
             self._air_anallos[(period)] = an
             return an
-
-
-
-
-
-
-
-
-
 
 
 
