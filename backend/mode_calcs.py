@@ -39,8 +39,8 @@ class Modes(object):
 
     def wl_norm(self):
         wl = float(self.light.wl_nm) / self.structure.period
-        if self.light.wl_nm % self.structure.period == 0:
-            wl += 1e-15
+        if self.light.wl_nm % self.structure.period == 0: # Avoid Wood Anomalies
+            wl += 1e-10
         return wl
 
     def air_ref(self):
