@@ -656,7 +656,7 @@ def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_na
     integral_tmp = np.trapz(expression, x=wavelengths)
     J = (charge_e/(Plancks_h*speed_c)) * integral_tmp *1e-10 # in mA/cm^2  
     nums_2_print = params_2_print.split()
-    if len(nums_2_print) >= 8:
+    if len(nums_2_print) >= 9:
         eta_string   = '%8.6f \n'% J + nums_2_print[5].replace(',','\n') + \
           nums_2_print[8].replace(',','\n') #save params in easy to read in fmt
     else:
