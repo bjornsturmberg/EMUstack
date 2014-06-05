@@ -128,7 +128,7 @@ np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
 ######################## Plotting ########################
 
-plotting.t_r_a_plots(stacks_list) 
+plotting.t_r_a_plots(stacks_list, active_layer_nu=1, J_sc=True) 
 # Dispersion
 plotting.omega_plot(stacks_list, wavelengths, params_string, stack_label=stack_label) 
 

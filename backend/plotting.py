@@ -172,6 +172,16 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=0,\
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
+    
+    if ult_eta == True:
+        Efficiency = ult_efficiency(active_abs, xvalues, params_2_print, stack_label, add_name)
+        params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
+        params_2_print += ' %'
+
+    if J_sc == True:
+        J = J_short_circuit(active_abs, xvalues, params_2_print, stack_label, add_name)
+        params_2_print += r'$J_{sc}$ = %(J)6.2f'% {'J' : J, }
+        params_2_print += r' mA/cm$^2$'
 
     total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
     # Plot t,r,a for each layer
@@ -181,16 +191,6 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=0,\
     # Also plot total t,r,a on a single plot
     plot_name = 'Total_Spectra'
     total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel, params_2_print, stack_label, add_name)
-    
-    if ult_eta == True:
-        Efficiency = ult_efficiency(active_abs, xvalues, params_2_print, stack_label,add_name)
-        params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
-        params_2_print += ' %'
-
-    if J_sc == True:
-        J = J_short_circuit(active_abs, xvalues, params_2_print,stack_label,add_name,force_txt_save)
-        params_2_print += r'$J_{sc}$ = %(J)6.2f'% {'J' : J, }
-        params_2_print += r' mA/cm$^2$'
 
     if weight_spec == True:
         # Also plot totals weighted by solar irradiance
@@ -362,20 +362,20 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
 
-    # Plot total t,r,a on a single plot indicating Wood anomalies
-    plot_name = 'Total_Spectra_subs'
-    total_tra_plot_subs(plot_name, a_tot, t_tot, r_tot, wavelengths, params_2_print,
-      stack_label, add_name, period, sub_n)
-
     if ult_eta == True:
         Efficiency = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name)
         params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
         params_2_print += ' %'
 
     if J_sc == True:
-        J = J_short_circuit(active_abs, wavelengths, params_2_print, stack_label,add_name)
+        J = J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_name)
         params_2_print += r'$J_{sc}$ = %(J)6.2f'% {'J' : J, }
         params_2_print += r' mA/cm$^2$'
+
+    # Plot total t,r,a on a single plot indicating Wood anomalies
+    plot_name = 'Total_Spectra_subs'
+    total_tra_plot_subs(plot_name, a_tot, t_tot, r_tot, wavelengths, params_2_print,
+      stack_label, add_name, period, sub_n)
 
     if weight_spec == True:
         # Also plot totals weighted by solar irradiance
@@ -520,9 +520,9 @@ def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, active_layer_nu=
     for i in range(len(wavelengths)): 
         active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
 
-    Efficiency = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name)
+    Efficiency = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label, add_name)
 
-    J = J_short_circuit(active_abs, wavelengths, params_2_print, stack_label,add_name)
+    J = J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_name)
     return
 #######################################################################################
 
@@ -654,7 +654,7 @@ def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_na
     i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
     expression   = i_spec*active_abs*wavelengths
     integral_tmp = np.trapz(expression, x=wavelengths)
-    J = (charge_e/(Plancks_h*speed_c)) * integral_tmp *1e-1 # in mA/cm^2  
+    J = (charge_e/(Plancks_h*speed_c)) * integral_tmp *1e-10 # in mA/cm^2  
     nums_2_print = params_2_print.split()
     if len(nums_2_print) >= 8:
         eta_string   = '%8.6f \n'% J + nums_2_print[5].replace(',','\n') + \
@@ -662,7 +662,7 @@ def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_na
     else:
         eta_string   = '%8.6f \n'% J
     np.savetxt('J_sc_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, np.array([eta_string]), fmt = '%s')
-    return J, i_spec
+    return J
 
 def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name):
     """ Calculate the photovoltaic ultimate efficiency achieved in the specified active layer. 
@@ -685,7 +685,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
     else:
         eta_string   = '%8.6f \n'% Efficiency
     np.savetxt('Efficiency_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, np.array([eta_string]), fmt = '%s')
-    return Efficiency, i_spec
+    return Efficiency
 #######################################################################################
 
 
