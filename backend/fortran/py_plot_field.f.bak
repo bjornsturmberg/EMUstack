@@ -289,16 +289,14 @@ C  Export the mesh to gmsh format
      *    nb_typ_el, n_eff, x_arr, gmsh_file)
 C
 C        call gmsh_interface_cyl (nel, npt, nnodes, type_el, 
-C     *    type_nod, table_nod, 
-C     *    nb_typ_el, x_arr)
+C     *    table_nod, nb_typ_el, x_arr)
       endif
 C
       call lattice_vec (npt, x_arr, lat_vecs)
 C
 C     if (PrintSupModes + plot_modes .ge. 1) then
 C        call gmsh_interface_c4 (nel, npt, nnodes, type_el, 
-C     *    type_nod, table_nod, 
-C     *    nb_typ_el, x_arr, lat_vecs)
+C     *    table_nod, x_arr, lat_vecs)
 C      endif
 C
 C      V = number of vertices

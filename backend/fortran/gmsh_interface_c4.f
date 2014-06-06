@@ -9,12 +9,12 @@ c
 c*******************************************************
 c
       subroutine gmsh_interface_c4 (nel, npt, nnodes, type_el, 
-     *  type_nod, table_nod, nb_typ_el, x, lat_vecs)
+     *  table_nod, x, lat_vecs)
 
 c
       implicit none
-      integer*8 nel, npt, nnodes, nb_typ_el
-      integer*8 type_el(nel), type_nod(npt)
+      integer*8 nel, npt, nnodes
+      integer*8 type_el(nel)
       integer*8 table_nod(nnodes,nel)
       double precision lat_vecs(2,2)
       complex*16 x(2,npt)
@@ -23,12 +23,11 @@ c
       double precision x_max, y_max, y_r
 c
       integer*8 i, j, k, j1, iel, type_cyl
-      integer*8 i2, j2
       integer*8 ui, debug
 
       double precision centre(2,4), rad_cyl(4), r_tmp1
 
-      double precision xx(2), zz
+      double precision xx(2)
       double precision period, xx_0(2), ss1, ss2
       double precision xyz(3,5)
 c

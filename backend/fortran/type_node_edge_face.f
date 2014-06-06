@@ -16,7 +16,7 @@ c
 c     Local variables
 
       integer*8 i, j, j1
-      integer*8 type_n(10), i_boundary
+      integer*8 type_n(10)
 c      integer*8 list_point_F(6,4)
       integer*8 nddl_0
       parameter (nddl_0 = 14)
