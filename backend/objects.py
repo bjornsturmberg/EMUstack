@@ -25,6 +25,7 @@ import numpy as np
 import random
 import materials
 from mode_calcs import Simmo, Anallo
+from fortran import EMUstack
 
 data_location = '../backend/data/'
 
@@ -338,9 +339,7 @@ class NanoStruct(object):
                     geo = geo.replace('a16 = 0;', "a16 = %f;" % self.diameter16)
 
                 open(data_location + msh_name + '.geo', "w").write(geo)
-                
-                gmsh_cmd = './'+data_location+'gmsh_conversion/'+"conv_gmsh_py.exe "+data_location+msh_name
-                os.system(gmsh_cmd)
+                EMUstack.conv_gmsh(data_location+msh_name)
 
             # Automatically show created mesh in gmsh.
                 # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
@@ -393,10 +392,8 @@ class NanoStruct(object):
                 #     geo = geo.replace('lc5 = lc/1;', "lc5 = lc/%f;" % self.lc5)
 
 
-                open(data_location + msh_name + '.geo', "w").write(geo)
-                
-                gmsh_cmd = './'+ data_location + 'gmsh_conversion/' + "conv_gmsh_py.exe "+ data_location + msh_name
-                os.system(gmsh_cmd)
+                open(data_location + msh_name + '.geo', "w").write(geo)              
+                EMUstack.conv_gmsh(data_location+msh_name)
                 # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
                 # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
                 # os.system(gmsh_cmd)

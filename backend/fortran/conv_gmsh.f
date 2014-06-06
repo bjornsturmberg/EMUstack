@@ -4,15 +4,14 @@ c     conv_gmsh: covert the GMSH mesh format to the FEM mesh format
 c
 c*******************************************************
 c
-      program conv_gmsh
+      subroutine conv_gmsh(geoname)
 c
       implicit none
 c
       integer i_sym
       integer gmsh_version
-      character file0_mesh*100, geoname*100!, filename*20
+      character file0_mesh*100, geoname*100
       character file1_mesh*100, file2_mesh*100
-
       integer i_mesh(3)
       integer max_ne, max_npt, i_err
       parameter(max_npt=250000, max_ne=120000)
@@ -42,38 +41,30 @@ c
       character objet*5, cc*20
       character file_ui*100
       character*200 com_line
-      character*100 get_char
+C
+Cf2py intent(in) geoname
 c
 ccccccccccccccccccccccccc
 c
       debug = 1
       ui = 6
+      gmsh_version = 2
 
-      CALL GETARG(1, get_char)
-      read (get_char,'(a100)') geoname
-C      open (unit=3, file='Mesh_Name.txt', status='old')
-C        read(3,*) geoname
-C        read(3,*) filename
-C      close(3)
-C      namelength1 = len_trim(filename)
-C      if (namelength1 .ge. 20) then
-C      write(ui,*) "Name of output file too long, extend in conv_gmsh.f"
-C      endif
       namelength2 = len_trim(geoname)
       if (namelength2 .ge. 100) then
-      write(ui,*) "Name of .geo file is too long extend in conv_gmsh.f"
+        write(ui,*) "Name of .geo file is too long extend in ",
+     *  "conv_gmsh_py.f"
       endif
 C
       file0_mesh = geoname(1:namelength2)//".geo"
-      file1_mesh = geoname(1:namelength2)//".msh"!filename(1:namelength1)//".msh"
-      file2_mesh = geoname(1:namelength2)//".mail"!filename(1:namelength1)//".mail"
-      file_ui = geoname(1:namelength2)//".log"!filename(1:namelength1)//".log"
-
-        com_line = "gmsh -0 -2  -order 2 -v 0 -o " // 
+      file1_mesh = geoname(1:namelength2)//".msh"
+      file2_mesh = geoname(1:namelength2)//".mail"
+      file_ui    = geoname(1:namelength2)//".log"
+C
+      com_line = "gmsh -0 -2  -order 2 -v 0 -o " // 
      *    file1_mesh // " " // file0_mesh
-C         write(ui,*) "com_line = ", com_line
-
-        call system(com_line)
+C
+      call system(com_line)
 c
       i_sym = 0
 c
@@ -82,22 +73,19 @@ c
       gmsh_type_line = 8
       gmsh_type_el = 9
 
-      gmsh_version = 2
-
-        if(gmsh_version .eq. 2) then
-          number_tags = 5 !formerly 6 on windows gmsh 2.5.0
-          physic_tag = 4
-        else
-          number_tags = 5
-          physic_tag = 3
-        endif
+      if(gmsh_version .eq. 2) then
+        number_tags = 5 !formerly 6 on windows gmsh 2.5.0
+        physic_tag = 4
+      else
+        number_tags = 5
+        physic_tag = 3
+      endif
 c
 c   Initialisation
       i_mesh(1) = -1
       i_mesh(2) = -1
       i_mesh(3) = -1
 c
-
       i_err = 0
       open (unit=24,file=file1_mesh)
         if(gmsh_version .eq. 2) then
@@ -155,7 +143,7 @@ c
 c
       open (unit=25,file=file1_mesh)
 c
-
+c
 c     On saute les lignes deja traitees
         if(gmsh_version .eq. 2) then
           read(25,'(a1)') objet
@@ -281,7 +269,8 @@ c     *                                   dble(time2-time1)/100.0
       i_mesh(2) = ne_d2
       i_mesh(3) = gmsh_version
 
-      stop
+C      stop
+      return
       end
 
 

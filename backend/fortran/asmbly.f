@@ -25,7 +25,7 @@ c     NQUAD: The number of quadrature points used in each element.
       integer*8 nquad, nquad_max
       parameter (nquad_max = 25)
       double precision wq(nquad_max)
-      double precision xq(nquad_max), yq(nquad_max), zq(nquad_max)
+      double precision xq(nquad_max), yq(nquad_max)
       double precision xx(2), xx_g(2), ww, det
       double precision mat_B(2,2), mat_T(2,2)
       double precision grad_i(2), grad_j(2)
@@ -62,7 +62,6 @@ c     NQUAD: The number of quadrature points used in each element.
       double precision ddot
       complex*16 M_tt, M_zz, M_tz, M_zt
       complex*16 K_tt, K_zz, K_tz, K_zt
-      complex*16 zh_scal
       complex*16 ii
       real r1, r2
 c

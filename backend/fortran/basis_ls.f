@@ -20,7 +20,6 @@ c
       integer*8 nod_el(nnodes), basis_list(4,3,nddl_t)
 c     Local variables
       integer*8 i, j, j1, j2, j3, list_end(2,3)
-      integer*8 ls_e(3), ls_e_sorted(3)
       integer*8 ls_n(3), ls_n_sorted(3)
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccc

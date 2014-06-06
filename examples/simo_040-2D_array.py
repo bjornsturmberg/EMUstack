@@ -77,11 +77,11 @@ wl_2     = 1127
 no_wl_1  = 3
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 2, theta = 0.0, phi = 0.0) for wl in wavelengths]
 
 
 # period must be consistent throughout simulation!!!
-period = 600
+period = 600.65
 max_num_BMs = 200
 
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
@@ -95,17 +95,12 @@ NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
     inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 2.0)
 
-# Find num_BM for each simulation (wl) as num decreases w decreasing index contrast.
-max_n = max([NW_array.inclusion_a.n(wl).real for wl in wavelengths])
-
 def simulate_stack(light):
-    num_BM = round(max_num_BMs * NW_array.inclusion_a.n(light.wl_nm).real/max_n)
-    # num_BM = max_num_BMs
     
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
-    sim_NWs         = NW_array.calc_modes(light, num_BM = num_BM)
+    sim_NWs         = NW_array.calc_modes(light)
 
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
@@ -130,7 +125,7 @@ np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
 plotting.t_r_a_plots(stacks_list, active_layer_nu=1, J_sc=True) 
 # Dispersion
-plotting.omega_plot(stacks_list, wavelengths, params_string, stack_label=stack_label) 
+plotting.omega_plot(stacks_list, wavelengths) 
 
 
 #Accessing scattering matrices of individual layers, and interfaces.
@@ -153,10 +148,6 @@ plotting.omega_plot(stacks_list, wavelengths, params_string, stack_label=stack_l
 
 
 ######################## Wrapping up ########################
-print '\n*******************************************'
-print 'The ultimate efficiency is %12.8f' % Efficiency
-print '-------------------------------------------'
-
 # Calculate and record the (real) time taken for simulation
 elapsed = (time.time() - start)
 hms     = str(datetime.timedelta(seconds=elapsed))

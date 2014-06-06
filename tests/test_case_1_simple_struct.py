@@ -99,12 +99,7 @@ def setup_module(module):
     pool = Pool(2)
     module.stack_list = pool.map(simulate_stack, light_list)
 
-    last_light_object = light_list.pop()
-    param_layer = NW_array # Specify the layer for which the parameters should be printed on figures.
-    params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
-    active_layer_nu = 1
-    Efficiency = plotting.t_r_a_plots(stack_list, wavelengths, params_string, 
-        active_layer_nu=active_layer_nu)
+    plotting.t_r_a_plots(stack_list, force_txt_save=True)
 
 
     # # SAVE DATA AS REFERENCE

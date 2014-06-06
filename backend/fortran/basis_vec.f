@@ -26,7 +26,7 @@ c
       double precision grad_p1_mat(dim,3), grad_p2_mat(dim,nnodes)
       double precision vec_phi(dim), curl_t_phi
 c     Local variables
-      integer*8 i, j, k, m, n1, n2
+      integer*8 i, k, m, n1, n2
       double precision grad_p1(dim), grad_p2(dim), phi
 c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccc

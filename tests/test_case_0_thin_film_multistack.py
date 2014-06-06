@@ -100,20 +100,9 @@ def setup_module(module):
     # This has to be in a setup_module otherwise nosetests will crash :(
     pool = Pool(3)
     module.stack_list = pool.map(simulate_stack, light_list)
-    # # Run one at a time
-    # module.stack_list = map(simulate_stack, light_list)
-
-
-    last_light_object = light_list.pop()
-    param_layer = homo_film2 # Specify the layer for which the parameters should be printed on figures.
-    params_string = plotting.gen_params_string(param_layer, last_light_object)
 
     active_layer_nu = 3 # Specify which layer is the active one (where absorption generates charge carriers).
-    # Plot total transmission, reflection, absorption & that of each layer. 
-    # Also calculate efficiency of active layer.
-    Efficiency = plotting.t_r_a_plots(stack_list, wavelengths, params_string, 
-        active_layer_nu=active_layer_nu)
-
+    plotting.t_r_a_plots(stack_list, active_layer_nu=active_layer_nu, force_txt_save=True)
 
 
     # # SAVE DATA AS REFERENCE

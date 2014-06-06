@@ -72,11 +72,6 @@ def setup_module(module):
     stack.calc_scat(pol = 'TE')
     module.stack_list = [stack]
 
-
-    last_light_object = light_list.pop()
-    param_layer = NW_array # Specify the layer for which the parameters should be printed on figures.
-    params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
-    active_layer_nu = 1
     plotting.t_r_a_write_files(stack_list, wavelengths)
 
 

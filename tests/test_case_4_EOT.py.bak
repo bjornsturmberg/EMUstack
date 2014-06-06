@@ -57,7 +57,7 @@ def setup_module(module):
     no_wl_1  = 1
     # Set up light objects
     wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-    light_list  = [objects.Light(wl, max_order_PWs = 4) for wl in wavelengths]
+    light_list  = [objects.Light(wl, max_order_PWs = 4, theta = 0.0, phi = 0.0) for wl in wavelengths]
     light = light_list[0]
 
 
