@@ -17,7 +17,7 @@ c
       integer*8 n_period(npt)
       integer*8 table_nod(nnodes,nel)
       double precision lat_vecs(2,2)
-      complex*16 x(2,npt)
+      double precision x(2,npt)
       integer*8 i, j, i1, j1, i_not_periodic
       double precision period_x, period_y
       double precision x_min, y_min
@@ -29,17 +29,17 @@ c
       integer*8 nel, list_end(2,3), j2, k, debug
 c
       debug = 0
-      x_min = dble(x(1,1))
-      x_max = dble(x(1,1))
+      x_min = x(1,1)
+      x_max = x(1,1)
       do i=1,npt
-        x_r = dble(x(1,i))
+        x_r = x(1,i)
         if(x_r .lt. x_min) x_min = x_r
         if(x_r .gt. x_max) x_max = x_r
       enddo
       y_min = x(2,1)
       y_max = x(2,1)
       do i=1,npt
-        y_r = dble(x(2,i))
+        y_r = x(2,i)
         if(y_r .lt. y_min) y_min = y_r
         if(y_r .gt. y_max) y_max = y_r
       enddo
@@ -131,7 +131,7 @@ c
         open (unit = 10, file="ip_period.txt",status='unknown')
           do i=1,npt
             write(10,*) i, type_nod(i), ip_period(i), n_period(i), 
-     *      "     ", (dble(x(j,i)),j=1,2)
+     *      "     ", (x(j,i),j=1,2)
           enddo
         close ( unit = 10)
       endif

@@ -16,7 +16,8 @@ c
       integer*8 nval, nel, npt, nnodes
       integer*8 nb_typ_el, n_core(2), type_el(nel)
       integer*8 table_nod(nnodes,nel)
-      complex*16 x(2,npt), sol(3,nnodes+7,nval,nel)
+      double precision x(2,npt)
+      complex*16 sol(3,nnodes+7,nval,nel)
       complex*16 eps_eff(nb_typ_el), mode_pol(4,nval)
       complex*16 beta1(nval)
 c
@@ -89,7 +90,7 @@ c
               vec_phi(trans) = 0.0d0
             enddo
             do inode=1,nnodes
-              do trans=1,3		! transverse field components
+              do trans=1,3      ! transverse field components
                 vec_phi(trans) = vec_phi(trans) + 
      *            sol(trans,inode,ival,iel) * phi2_list(inode)
               enddo

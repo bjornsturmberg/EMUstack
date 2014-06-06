@@ -64,16 +64,12 @@ c
       double precision control (20), info_umf (90)
       integer*8 numeric, symbolic, status, sys, filenum
 c
-      integer*8 itermax, nvect, nval, i, j, ltrav, col1, col2
+      integer*8 itermax, nvect, nval, i, j, ltrav
       integer*8 compteur
-
-
       complex*16 resid(neq), v(neq,nvect), workd(3*neq)
       complex*16 vect1(neq), vect2(neq), trav(ltrav)
-      complex*16 energ
       complex*16 d(nval+1), shift2, vp(neq,nval)
 c
-      complex*16 z_tmp0, z_tmp
       double precision tol
 c
 c      integer*8 max_nvect
@@ -82,18 +78,16 @@ c
       integer alloc_stat
       complex*16, dimension(:), allocatable :: workev !  (3*max_nvect), 
       double precision, dimension(:), allocatable :: rwork  !  (max_nvect)
-      logical , dimension(:), allocatable :: select  !  (max_nvect)
+      logical, dimension(:), allocatable :: select  !  (max_nvect)
 
 
 c     Local variables
-c     32-but integers for ARPACK
+c     32-bit integers for ARPACK
       integer*4 neq_32, nval_32, nvect_32
       integer*4 ido_32, info_32, ierr_32, iparam_32(11)
       integer*4 ipntr_32(14), ltrav_32
-
 c
       logical rvec
-
       character bmat*1, which*2
 
 c      data bmat/'G'/

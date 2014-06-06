@@ -16,16 +16,14 @@ c
       integer*8 nel, npt, nnodes
       integer*8 type_el(nel)
       integer*8 table_nod(nnodes,nel)
-      complex*16 x(2,npt)
+      double precision x(2,npt)
 c
       double precision x_min, y_min, x_r
       double precision x_max, y_max, y_r
 c
       integer*8 i, j, j1, iel, type_cyl
       integer*8 ui, debug
-
       double precision centre(2), rad_cyl, r_tmp1
-
       double precision xx(2)
 c
 ccccccccccccccccccccccccccccccccccccc
@@ -34,17 +32,17 @@ c
       debug = 1
       type_cyl = 4 ! Cylinder type
 c
-      x_min = dble(x(1,1))
-      x_max = dble(x(1,1))
+      x_min = x(1,1)
+      x_max = x(1,1)
       do i=1,npt
-        x_r = dble(x(1,i))
+        x_r = x(1,i)
         if(x_r .lt. x_min) x_min = x_r
         if(x_r .gt. x_max) x_max = x_r
       enddo
       y_min = x(2,1)
       y_max = x(2,1)
       do i=1,npt
-        y_r = dble(x(2,i))
+        y_r = x(2,i)
         if(y_r .lt. y_min) y_min = y_r
         if(y_r .gt. y_max) y_max = y_r
       enddo

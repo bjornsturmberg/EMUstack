@@ -12,7 +12,7 @@ c
       integer*8 type_nod(npt)
       integer*8 table_nod(nnodes,nel), table_N_E_F(14,nel)
       integer*8 visite(n_ddl), type_N_E_F(2,n_ddl)
-      complex*16 x(2,npt), x_E_F(2,n_ddl)
+      double precision x(2,npt), x_E_F(2,n_ddl)
 c     Local variables
 
       integer*8 i, j, j1

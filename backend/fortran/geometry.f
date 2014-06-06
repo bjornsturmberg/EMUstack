@@ -15,8 +15,7 @@ c
       integer*8 table_nod(nnodes,nel), nb_typ_el2
       double precision lx, ly
       parameter (max_typ_el=10)
-      complex*16 x(2,npt)
-      double precision xx(2)
+      double precision x(2,npt), xx(2)
 
       character mesh_file*100
 

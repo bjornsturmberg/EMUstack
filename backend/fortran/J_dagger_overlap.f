@@ -10,7 +10,8 @@ C  input output parameters
       integer*8 nval, nel, npt, nnodes
       integer*8 type_el(nel)
       integer*8 table_nod(nnodes,nel)
-      complex*16 x(2,npt), sol(3,nnodes+7,nval,nel)
+      double precision x(2,npt)
+      complex*16 sol(3,nnodes+7,nval,nel)
       double precision lat_vecs(2,2)
       integer*8 neq_PW, PrintAll
       double precision bloch_vec(2)

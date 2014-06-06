@@ -17,8 +17,8 @@ c     NQUAD: The number of quadrature points used in each element.
       integer*8 table_nod(nnodes,nel), ineq(3,n_ddl)
       integer*8 table_N_E_F(14,nel)
       integer*8 i_work(3*n_ddl)
-      complex*16 x(2,npt), x_N_E_F(2,n_ddl), shift
-      complex*16 pp(nb_typ_el), qq(nb_typ_el)
+      double precision x(2,npt), x_N_E_F(2,n_ddl)
+      complex*16 pp(nb_typ_el), qq(nb_typ_el), shift
       complex*16 mat2(nonz)
       double precision mat1_re(nonz), mat1_im(nonz)
 

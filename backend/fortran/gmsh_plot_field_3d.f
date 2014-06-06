@@ -12,7 +12,8 @@ c   evecs(i) : contains the values of the solution for all points
       integer*8 nval, nel, npt, nnodes, E_H_field, nb_typ_el
       integer*8 table_nod(nnodes,nel), type_el(nel)
       complex*16 n_eff(nb_typ_el)
-      complex*16 x(2,npt), beta(nval), vec_coef(2*nval)
+      double precision x(2,npt)
+      complex*16 beta(nval), vec_coef(2*nval)
       complex*16 evecs(3,nnodes+7,nval,nel)
       character(*) gmsh_file_pos
       character(*) extra_name
@@ -31,8 +32,6 @@ Cf2py depend(evecs) nnodes, nval, nel
 
 c
 c     Local variables
-
-
       character*20 dir_name
       integer alloc_stat
       complex*16, dimension(:,:,:,:), allocatable :: sol_3d
@@ -47,8 +46,8 @@ c     Local variables
       integer*8 table_nod_el_p1(n_prism_p1)
 
       complex*16 P_down, P_up, coef_down, coef_up, coef_t, coef_z
-      complex*16 ii, z_tmp1, r_index
-      double precision hz, dz, zz, r_tmp
+      complex*16 ii, z_tmp1
+      double precision hz, dz, zz, r_tmp, r_index
 
       integer*8 nel_3d, npt_3d  ! prism elements
       integer*8 npt_p1  ! Number of vertices of the 2D FEM mesh
@@ -58,8 +57,9 @@ c     Local variables
       integer*8 namelen_extra
 
       integer*8 gmsh_type_prism, choice_type, typ_e
-      integer*8 number_tags, physic_tag, list_tag(6)
-      integer*8, dimension(:), allocatable :: type_data
+      integer*8 number_tags, physic_tag
+      double precision list_tag(6)
+      double precision, dimension(:), allocatable :: type_data
 
       character*100 tchar
       character*1 tE_H
@@ -80,7 +80,7 @@ c
       ui = 6
       debug = 0
 
-      npt_h = 10 * (h/lambda + 1) ! At least 10 nodes per wavelength
+      npt_h = 10 * CEILING((h/lambda + 1)) ! At least 10 nodes per wavelength
       npt_3d = npt * npt_h
       nel_3d = nel * (npt_h - 1)
 
@@ -372,7 +372,7 @@ c     For choice_type = 3, the user provide a map for the types
       else
         do i=1,nb_typ_el
           r_tmp = (dble(i-1)/dble(nb_typ_el-1))
-          type_data(i) = 1 + 18.0d0*r_tmp
+          type_data(i) = 1.0 + 18.0d0*r_tmp
         enddo
       endif
 
@@ -426,7 +426,7 @@ c
             list_tag(physic_tag+1) = type_el(iel)
           elseif (choice_type .eq. 2) then
             typ_e = type_el(iel)
-            r_index = n_eff(typ_e)
+            r_index = real(n_eff(typ_e))
             list_tag(physic_tag) = r_index
             list_tag(physic_tag+1) = r_index
           elseif (choice_type .eq. 3) then

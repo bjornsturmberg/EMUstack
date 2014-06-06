@@ -69,7 +69,7 @@ c     E_H_field = 1 => Electric field formulation (E-Field)
 c     E_H_field = 2 => Magnetic field formulation (H-Field)
       integer*8 E_H_field
       integer*8 neq, debug
-      integer*8 npt_p3, numberprop_N
+      integer*8 npt_p3!, numberprop_N
 C  Variable used by valpr
       integer*8 nval, nvect, itermax, ltrav
       integer*8 n_conv, i_base
@@ -126,7 +126,7 @@ c     Declare the pointers of for sparse matrix storage
       integer i_32
 
 c     new breed of variables to prise out of a, b and c
-      complex*16 x_arr(2,npt)
+      double precision x_arr(2,npt)
       complex*16, target :: sol1(3,nnodes+7,nval,nel)
       complex*16, target :: sol2(3,nnodes+7,nval,nel)
       complex*16, pointer :: sol(:,:,:,:)

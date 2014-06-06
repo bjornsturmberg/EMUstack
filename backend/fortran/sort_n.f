@@ -70,7 +70,10 @@ c     Sort an array in increasing order
 5       indx(l+1)=indx(j)
         indx(j)=indxt
         jstack=jstack+2
-        if(jstack.gt.NSTACK)pause 'NSTACK too small in sort_n'
+        if(jstack.gt.NSTACK) then
+          write(*,*) 'NSTACK too small in sort_n'
+          stop
+        endif
         if(ir-i+1.ge.j-l)then
           istack(jstack)=ir
           istack(jstack-1)=i

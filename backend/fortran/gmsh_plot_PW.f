@@ -15,7 +15,7 @@ c
       double precision hz, lat_vecs(2,2), bloch_vec(2)
       integer*8 table_nod(nnodes,nel), index_pw_inv(neq_PW)
       complex*16 n_eff_0 ! dielctric constand of the semi-infinite medium
-      complex*16 x(2,npt)
+      double precision x(2,npt)
       complex*16 vec_coef_down(2*neq_PW)
       complex*16 vec_coef_up(2*neq_PW)
       character(*) gmsh_file_pos
@@ -30,8 +30,8 @@ c     Local variables
       integer alloc_stat
       complex*16, dimension(:,:,:), allocatable :: sol_tmp
       double precision xel(3,nnodes_0), xel_p1(3,3)
-      complex*16 sol_el(3,nnodes_0)
-      double precision sol_el_abs2(nnodes_0), sol_max(4)
+      complex*16 sol_el(3,nnodes_0), sol_max(4)
+      double precision sol_el_abs2(nnodes_0)
       double precision zz
 
       integer*8 px, py, s, s2
@@ -83,7 +83,7 @@ c
       bloch1 = bloch_vec(1)
       bloch2 = bloch_vec(2)
       k_0 = (2.0d0*pi)/lambda
-      k = n_eff_0*k_0
+      k = real(n_eff_0*k_0)
       vec_kx = 2.0d0*pi/d
       vec_ky = 2.0d0*pi/d
       if (debug .eq. 1) then
@@ -186,15 +186,15 @@ c
       do px = -ordre_ls, ordre_ls
         do py = -ordre_ls, ordre_ls
           if (px**2 + py**2 .le. ordre_ls**2) then
-            alpha = bloch1 + vec_kx*px	! Bloch vector along x
-            beta  = bloch2 + vec_ky*py	! Bloch vector along y
+            alpha = bloch1 + vec_kx*px  ! Bloch vector along x
+            beta  = bloch2 + vec_ky*py  ! Bloch vector along y
             z_tmp1 = k**2 - alpha**2 - beta**2
             gamma = SQRT(z_tmp1)
             chi_TE = SQRT(gamma/k_0)
             chi_TM = SQRT(gamma/(n_eff_0*k))
 C            chi_TE = SQRT(gamma/k)
 C            chi_TM = SQRT(gamma/k)
-            norm = SQRT(alpha**2 + beta**2)	! sqrt term    
+            norm = SQRT(alpha**2 + beta**2) !sqrt term    
             s2 = index_pw_inv(s)
 C
 C           Plane waves order s
@@ -273,7 +273,7 @@ c
             j=3
               z_tmp1 = sol_tmp(j,i,iel)
               sol_el(j,i) = z_tmp1
-            if (sol_max(4) .lt. sol_el_abs2(i)) then
+            if (dble(sol_max(4)) .lt. sol_el_abs2(i)) then
               sol_max(1) = sol_el(1,i)
               sol_max(2) = sol_el(2,i)
               sol_max(3) = sol_el(3,i)

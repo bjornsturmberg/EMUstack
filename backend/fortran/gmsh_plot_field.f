@@ -13,7 +13,8 @@ c
       integer*8 nb_typ_el
       double precision h, hz
       integer*8 table_nod(nnodes,nel), type_el(nel)
-      complex*16 x(2,npt), eps_eff(nb_typ_el)
+      double precision x(2,npt)
+      complex*16 eps_eff(nb_typ_el)
       complex*16 sol(3,nnodes+7,nval,nel)
       complex*16 vec_coef(2*nval)
       complex*16 beta(nval)
@@ -29,8 +30,8 @@ c     Local variables
       integer alloc_stat
       complex*16, dimension(:,:,:), allocatable :: sol_tmp
       double precision xel(3,nnodes_0), xel_p1(3,3)
-      complex*16 sol_el(3,nnodes_0)
-      double precision sol_el_abs2(nnodes_0), sol_max(4)
+      complex*16 sol_el(3,nnodes_0), sol_max(4)
+      double precision sol_el_abs2(nnodes_0)
       double precision ls_index(nnodes_0), r_index, zz
 
       complex*16 P_down, P_up, coef_down, coef_up, coef_t, coef_z
@@ -190,7 +191,7 @@ c
         do iel=1,nel
           zz = hz
           typ_e = type_el(iel)
-          r_index = (eps_eff(typ_e))
+          r_index = real(eps_eff(typ_e))
           do i=1,nnodes
             i1 = table_nod(i,iel)
             xel(1,i) = x(1,i1)
@@ -215,7 +216,7 @@ c
             j=3
               z_tmp1 = sol_tmp(j,i,iel)
               sol_el(j,i) = z_tmp1
-            if (sol_max(4) .lt. sol_el_abs2(i)) then
+            if (dble(sol_max(4)) .lt. sol_el_abs2(i)) then
               sol_max(1) = sol_el(1,i)
               sol_max(2) = sol_el(2,i)
               sol_max(3) = sol_el(3,i)

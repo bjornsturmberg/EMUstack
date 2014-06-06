@@ -14,8 +14,8 @@ c
       integer*8 nb_typ_el
       integer*8 table_nod(nnodes,nel), type_el(nel)
       integer*8 visite(npt)
-      complex*16 x(2,npt), n_eff(nb_typ_el)
-      complex*16 sol(3,nnodes+7,nval,nel)
+      double precision x(2,npt)
+      complex*16 sol(3,nnodes+7,nval,nel), n_eff(nb_typ_el)
       integer alloc_stat
       complex*16, dimension(:,:), allocatable :: sol_avg
 
@@ -25,15 +25,14 @@ c
       parameter (nnodes_0 = 6)
 
       double precision xel(3,nnodes_0), xel_p1(3,3)
-      complex*16 sol_el(3,nnodes_0)
-      double precision sol_el_abs2(nnodes_0), sol_max(4)
+      complex*16 sol_el(3,nnodes_0), sol_max(4)
+      double precision sol_el_abs2(nnodes_0)
       double precision sol_el_abs2_eE(nnodes_0)
 C      double precision sol_el_abs2_iD(nnodes_0)
       double precision ls_index(nnodes_0), r_index, zz
 C      double precision ls_im_index(nnodes_0), im_index
 C      double precision ls_abs_index(nnodes_0), abs_index
-
-      real v_im, v_re
+      double precision v_im, v_re
 
       integer*8 i, j, i1, iel, namelen, namelen2, typ_e
       integer*8 q_average, plot_imag, plot_real, plot_abs
@@ -289,7 +288,7 @@ C
         sol_max(4) = 0.0d0
         do iel=1,nel
           typ_e = type_el(iel)
-          r_index = n_eff(typ_e)
+          r_index = real(n_eff(typ_e))
 C          im_index = imag(sqrt(eps_eff(typ_e)))
 C          abs_index = abs(sqrt(eps_eff(typ_e)))
           zz = 0.0d0
@@ -334,7 +333,7 @@ C                sol_el_abs2_iD(i) = sol_el_abs2_iD(i) +
 C     *               ls_im_index(i)**2 * abs(z_tmp1)**2
               enddo
             endif
-            if (sol_max(4) .lt. sol_el_abs2(i)) then
+            if (dble(sol_max(4)) .lt. sol_el_abs2(i)) then
               sol_max(1) = sol_el(1,i)
               sol_max(2) = sol_el(2,i)
               sol_max(3) = sol_el(3,i)

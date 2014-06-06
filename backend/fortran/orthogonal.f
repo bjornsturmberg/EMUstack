@@ -10,7 +10,7 @@ c
       integer*8 nval, nel, npt, nnodes, nb_typ_el
       integer*8 type_el(nel)
       integer*8 table_nod(nnodes,nel)
-      complex*16 x(2,npt)
+      double precision x(2,npt)
       complex*16 soln_k1(3,nnodes+7,nval,nel)
       complex*16 soln_k2(3,nnodes+7,nval,nel)
       complex*16 pp(nb_typ_el)
@@ -39,14 +39,14 @@ c     Local variables
       double precision vec_phi_j(2), vec_phi_i(2)
       double precision ZERO, ONE, r_tmp1
       parameter ( ZERO = 0.0D0, ONE = 1.0D0)
-      complex*16 z_tmp1, z_tmp2, z_beta_1
+      complex*16 z_tmp1, z_tmp2, z_beta_1, coeff_1
 c
 c     NQUAD: The number of quadrature points used in each element.
       integer*8 nquad, nquad_max, iq
       parameter (nquad_max = 25)
       double precision wq(nquad_max)
       double precision xq(nquad_max), yq(nquad_max)
-      double precision xx(2), xx_g(2), ww, det, coeff_1
+      double precision xx(2), xx_g(2), ww, det
       double precision mat_B(2,2), mat_T(2,2)
       double precision pi
 C     Mode ordering

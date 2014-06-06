@@ -19,7 +19,7 @@ c
       integer*8 type_N_E_F(2,n_ddl), ip_period_N_E_F(n_ddl)
       integer*8 n_period_N_E_F(n_ddl)
       double precision lat_vecs(2,2)
-      complex*16 x_N_E_F(2,n_ddl)
+      double precision x_N_E_F(2,n_ddl)
       integer*8 i, j, i1, j1, i_not_periodic
       integer*8 i_boundary1, i_dim1, i_boundary2, i_dim2
       double precision tmp1, tmp2, tol
@@ -120,7 +120,7 @@ c
           i_boundary1 = type_N_E_F(1,i)
           i_dim1 = type_N_E_F(2,i)
           write(10,*) i, i_boundary1, i_dim1, ip_period_N_E_F(i), 
-     *       n_period_N_E_F(i), "     ", (dble(x_N_E_F(j,i)),j=1,2)
+     *       n_period_N_E_F(i), "     ", (x_N_E_F(j,i),j=1,2)
         enddo
       close ( unit = 10)
       endif

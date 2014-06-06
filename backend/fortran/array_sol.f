@@ -18,8 +18,8 @@ c
       integer*8 ineq(3,n_ddl), index(*)
       integer*8 ip_period_N(npt), ip_period_N_E_F(n_ddl)
       integer*8 table_nod(nnodes,nel), table_N_E_F(14,nel)
-      double precision bloch_vec(2)
-      complex*16 x(2,npt), x_N_E_F(2,n_ddl), sol_0(neq,nval)
+      double precision bloch_vec(2), x(2,npt), x_N_E_F(2,n_ddl)
+      complex*16 sol_0(neq,nval)
 c     sol(3, 1..nnodes,nval, nel)          contains the values of the 3 components at P2 interpolation nodes
 c     sol(3, nnodes+1..nnodes+7,nval, nel) contains the values of Ez component at P3 interpolation nodes (per element: 6 edge-nodes and 1 interior node)
       complex*16 sol(3,nnodes+7,nval,nel)
@@ -240,8 +240,7 @@ c           Contribution to the longitudinal component
             enddo
 c           Contribution of the element iel to the mode component 
             do j=1,3
-              z_tmp2 = abs(sol_el(j,inod))**2
-              mode_comp(j) = mode_comp(j) + z_tmp2
+              mode_comp(j) = mode_comp(j) + abs(sol_el(j,inod))**2
             enddo
           enddo
 cccccccccc

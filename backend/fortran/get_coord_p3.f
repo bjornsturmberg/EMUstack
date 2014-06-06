@@ -21,7 +21,7 @@ c
       integer*8 type_nod(npt), type_N_E_F(2,n_ddl)
       integer*8 visite(n_ddl)
 
-      complex*16 x(2,npt), x_N_E_F(2,n_ddl)
+      double precision x(2,npt), x_N_E_F(2,n_ddl)
 
 c     Variable local
       integer*8 nddl_0
@@ -95,11 +95,11 @@ c
             visite(k) = iel
 c           Endpoints of the edge
             k1 = nut0(inod-3)
-            xx1 = dble(x(1,k1))
-            yy1 = dble(x(2,k1))
+            xx1 = x(1,k1)
+            yy1 = x(2,k1)
             k1 = nut0(ip(1,inod-3))
-            xx2 = dble(x(1,k1))
-            yy2 = dble(x(2,k1))
+            xx2 = x(1,k1)
+            yy2 = x(2,k1)
             dx1 = (xx2-xx1)/3.0d0
             dy1 = (yy2-yy1)/3.0d0
             ind = type_nod(nut0(inod))  ! type of the mid-edge node of the initial P2 mesh
@@ -114,14 +114,14 @@ c           Endpoints of the edge
         enddo
 c       Coordonate of the vertices
         k1 = nut0(1)
-        xx1 = dble(x(1,k1))
-        yy1 = dble(x(2,k1))
+        xx1 = x(1,k1)
+        yy1 = x(2,k1)
         k1 = nut0(2)
-        xx2 = dble(x(1,k1))
-        yy2 = dble(x(2,k1))
+        xx2 = x(1,k1)
+        yy2 = x(2,k1)
         k1 = nut0(3)
-        xx3 = dble(x(1,k1))
-        yy3 = dble(x(2,k1))
+        xx3 = x(1,k1)
+        yy3 = x(2,k1)
 c       The tenth node is a at the center of the triangle
         n = 10 ! dimension(P3) = 10
         k1 = nut_N_E_F(n) ! this node is an interior node of the triangle ############

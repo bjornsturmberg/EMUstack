@@ -16,7 +16,6 @@ c     Local variables
 
       integer*8 i, k, iel, ind_ip, ip
       integer*8 k_copy1, k_copy2
-      integer*8 left_half_bw
 c
       if ( nnodes .ne. 6 ) then
         write(*,*) "csr_max_length: problem nnodes = ", nnodes

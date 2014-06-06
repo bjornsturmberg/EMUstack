@@ -4,7 +4,7 @@
       complex*16 arr(n)
       PARAMETER (M=7,NSTACK=50)
       INTEGER*8 i,indxt,ir,itemp,j,jstack,k,l,istack(NSTACK)
-      double precision a, r_tmp
+      double precision a
       integer :: allocate_status=0
       double precision, dimension(:), allocatable :: arr_0
 c
@@ -24,9 +24,7 @@ C
 11    continue
 c
       do j=1,n
-c        r_tmp = abs(arr(j))
-        r_tmp = -arr(j)**2
-        arr_0(j) = r_tmp
+        arr_0(j) = -1*dble(arr(j)**2)
       enddo
 
 c
