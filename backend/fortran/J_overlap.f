@@ -15,7 +15,7 @@ C  input output parameters
       double precision lat_vecs(2,2)
       integer*8 neq_PW, PrintAll, ordre_ls
       double precision bloch_vec(2)
-! index_pw(neq_PW), 
+C index_pw(neq_PW)
       integer*8 index_pw_inv(neq_PW)
 C  local parameters - purely internal
       integer*8 iel, inode, n, i, j, global

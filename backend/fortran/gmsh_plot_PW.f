@@ -7,7 +7,7 @@ c
      *     table_nod, x, lat_vecs, lambda, n_eff_0,
      *     vec_coef_down, vec_coef_up, 
      *     index_pw_inv, ordre_ls, hz, gmsh_file_pos,
-     *     q_average, plot_real, plot_imag, plot_abs, extra_name)
+     *     plot_real, plot_imag, plot_abs, extra_name)
 c
       implicit none
       integer*8 nel, npt, nnodes
@@ -32,12 +32,12 @@ c     Local variables
       double precision xel(3,nnodes_0), xel_p1(3,3)
       complex*16 sol_el(3,nnodes_0)
       double precision sol_el_abs2(nnodes_0), sol_max(4)
-      double precision ls_index(nnodes_0), r_index, zz
+      double precision zz
 
       integer*8 px, py, s, s2
 
       double precision d, r_tmp, xx_g(3)
-      double precision k_0, k, vec_kx, vec_ky, lambda, freq
+      double precision k_0, k, vec_kx, vec_ky, lambda
       double precision bloch1, bloch2, pi, alpha, beta, norm
       complex*16 chi_TE, chi_TM, gamma, val_exp
 
@@ -48,12 +48,12 @@ c     Local variables
       complex*16 PlaneW_RE(3), PlaneW_RK(3)
 
       integer*8 i, j, i1, iel, namelen
-      integer*8 q_average, plot_imag, plot_real, plot_abs
+      integer*8 plot_imag, plot_real, plot_abs
       integer*8 debug, ui
       complex*16 z_tmp1
       complex*16 ii
       character*100 tchar
-      integer*8 namelength, charlength
+      integer*8 namelength
 
 
 Cf2py intent(in) nel, npt, nnodes, neq_PW, bloch_vec,
@@ -61,7 +61,7 @@ Cf2py intent(in) table_nod, x, lat_vecs, lambda, n_eff_0
 Cf2py intent(in) vec_coef_down, vec_coef_up,
 Cf2py intent(in) index_pw_inv, ordre_ls, hz, 
 Cf2py intent(in) gmsh_file_pos, extra_name
-Cf2py intent(in) q_average, plot_real, plot_imag, plot_abs
+Cf2py intent(in) plot_real, plot_imag, plot_abs
 
 Cf2py depend(table_nod) nnodes, nel
 Cf2py depend(index_pw_inv) neq_PW
@@ -110,14 +110,13 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       if (hz .lt. 0) then
         write(ui,*)
-        write(ui,*) "gmsh_plot_field: invalid value for hz"
+        write(ui,*) "gmsh_plot_PW: invalid value for hz"
         write(ui,*) "hz should not be negtive (for current version)"
         write(ui,*) "hz = ", hz
-        write(ui,*) "gmsh_plot_field: Aborting..."
+        write(ui,*) "gmsh_plot_PW: Aborting..."
         stop
       endif
 c
-c      q_average = 0  ! use average value if q_average = 1
 c      plot_real = 1  ! plot real part if plot_real = 1
 c      plot_imag = 1  ! plot real part if plot_imag = 1
 c      plot_abs = 1  ! plot absolute value if plot_abs = 1

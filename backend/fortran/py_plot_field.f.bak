@@ -285,7 +285,7 @@ C
       if (PrintSupModes + plot_modes .ge. 1) then
 C  Export the mesh to gmsh format
         call mail_to_gmsh (nel, npt, nnodes, type_el, 
-     *    type_nod, table_nod, 
+     *    table_nod, 
      *    nb_typ_el, n_eff, x_arr, gmsh_file)
 C
 C        call gmsh_interface_cyl (nel, npt, nnodes, type_el, 
@@ -1020,7 +1020,7 @@ C     ! reference number of the field
      *     nnodes, table_nod, type_el, eps_eff, x_arr,  
      *     beta1, sol1, sol_avg, 
      *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
-     *       q_average, plot_real, plot_imag, plot_abs)
+     *       plot_real, plot_imag, plot_abs)
 C
 C     ! hz=0 => top interface; hz=h => bottom interface
       hz = h_1
@@ -1030,7 +1030,7 @@ C     ! reference number of the field
      *     nnodes, table_nod, type_el, eps_eff, x_arr,
      *     beta1, sol1, sol_avg, 
      *     vec_coef, h_1, hz, gmsh_file_pos, dir_name, nb_typ_el, 
-     *       q_average, plot_real, plot_imag, plot_abs)
+     *       plot_real, plot_imag, plot_abs)
 
       do i=1,2*neq_PW
         vec_coef_down(i) = 0.0d0

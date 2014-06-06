@@ -5,7 +5,7 @@ c
       subroutine gmsh_plot_field (nval, 
      *     nel, npt, nnodes, nb_typ_el, table_nod, type_el, 
      *     eps_eff, x, beta, sol, vec_coef, h, hz, 
-     *     gmsh_file_pos, q_average, plot_real, plot_imag, 
+     *     gmsh_file_pos, plot_real, plot_imag, 
      *     plot_abs, extra_name)
 c
       implicit none
@@ -38,19 +38,19 @@ c     Local variables
 c      real v_im, v_re
 
       integer*8 i, j, i1, iel, ival, namelen, typ_e
-      integer*8 q_average, plot_imag, plot_real, plot_abs
+      integer*8 plot_imag, plot_real, plot_abs
       integer*8 debug, ui
       complex*16 z_tmp1
       complex*16 ii
       character*100 tchar
       character*1 tE_H
-      integer*8 namelength, charlength
+      integer*8 namelength
 
 
 Cf2py intent(in) nval, nel, npt, nnodes nb_typ_el, table_nod,
 Cf2py intent(in) type_el, eps_eff, x, beta, sol, vec_coef, h, hz
 Cf2py intent(in) gmsh_file_pos, extra_name
-Cf2py intent(in) q_average, plot_real, plot_imag, plot_abs
+Cf2py intent(in) plot_real, plot_imag, plot_abs
 
 Cf2py depend(table_nod) nnodes, nel
 Cf2py depend(type_el) nel
@@ -97,7 +97,6 @@ c
         stop
       endif
 c
-c      q_average = 0  ! use average value if q_average = 1
 c      plot_real = 1  ! plot real part if plot_real = 1
 c      plot_imag = 1  ! plot real part if plot_imag = 1
 c      plot_abs = 1  ! plot absolute value if plot_abs = 1

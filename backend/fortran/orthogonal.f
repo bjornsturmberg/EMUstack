@@ -1,7 +1,7 @@
 C   Calculate the Overlap integral of the prime and adjoint Plane Waves
 C
       subroutine orthogonal (nval, nel, npt, 
-     *  nnodes, nb_typ_el, pp, qq, table_nod, 
+     *  nnodes, nb_typ_el, pp, table_nod, 
      *  type_el, x, beta1, beta2,
      *  soln_k1, soln_k2, mat_overlap, overlap_file, PrintAll,
      *  pair_warning, k_0)
@@ -13,7 +13,7 @@ c
       complex*16 x(2,npt)
       complex*16 soln_k1(3,nnodes+7,nval,nel)
       complex*16 soln_k2(3,nnodes+7,nval,nel)
-      complex*16 pp(nb_typ_el), qq(nb_typ_el)
+      complex*16 pp(nb_typ_el)
       complex*16 beta1(nval), beta2(nval)
 C      complex*16 mat_overlap(nval,nval)
       complex*16, dimension(nval,nval) :: mat_overlap
@@ -28,11 +28,10 @@ c     Local variables
       complex*16 mat_scal(2*nnodes_0,2*nnodes_0+10)
       integer*8 i, j, j1, typ_e
       integer*8 iel, ival, jval
-      integer*8 jtest, jp, ind_jp, j_eq
-      integer*8 itrial, ip, ind_ip, i_eq
+      integer*8 jtest, ind_jp, j_eq
+      integer*8 itrial, ind_ip, i_eq
       integer*8 info_curved, n_curved, debug, ui
       double precision xel(2,nnodes_0)
-      double precision phi1_list(3), grad1_mat0(2,3), grad1_mat(2,3)
       double precision phi2_list(6), grad2_mat0(2,6)
       double precision grad2_mat(2,6)
       double precision phi3_list(10), grad3_mat0(2,10)

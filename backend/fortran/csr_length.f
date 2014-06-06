@@ -25,9 +25,8 @@ c     Local variables
 
       integer*8 i, j, k, k1, i_ddl, j_ddl
       integer*8 iel, ind_ip, ip, ind_jp, jp
-      integer*8 max_eq, min_eq, row_start, row_end, row_len
+      integer*8 row_start, row_end, row_len
       integer*8 row_start2, row_end2
-      integer*8 left_half_bw, right_half_bw, half_bw
       integer*8 ui, debug
 c
       ui = 6

@@ -9,13 +9,13 @@ c
 c*******************************************************
 c
       subroutine mail_to_gmsh (nel, npt, nnodes, type_el, 
-     *  type_nod, table_nod, nb_typ_el, n_eff, 
+     *  table_nod, nb_typ_el, n_eff, 
      *  x, gmsh_file)
 
 c
       implicit none
       integer*8 nel, npt, nnodes, nb_typ_el
-      integer*8 type_el(nel), type_nod(npt)
+      integer*8 type_el(nel)
       integer*8 table_nod(nnodes,nel)
       integer*8 max_typ_el
       parameter (max_typ_el=10)

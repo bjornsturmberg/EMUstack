@@ -4,7 +4,7 @@
       complex*16 arr(n)
       PARAMETER (M=7,NSTACK=50)
       INTEGER*8 i,indxt,ir,itemp,j,jstack,k,l,istack(NSTACK)
-      double precision a, arr_max, r_tmp, tol
+      double precision a, r_tmp
       integer :: allocate_status=0
       double precision, dimension(:), allocatable :: arr_0
 c

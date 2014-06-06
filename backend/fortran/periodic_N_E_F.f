@@ -22,11 +22,10 @@ c
       complex*16 x_N_E_F(2,n_ddl)
       integer*8 i, j, i1, j1, i_not_periodic
       integer*8 i_boundary1, i_dim1, i_boundary2, i_dim2
-      double precision dx, dy, tmp1, tmp2, tol
-      double precision x_r, y_r
+      double precision tmp1, tmp2, tol
       double precision delta_v(2),  vec(2)
       integer*8 ix, iy, test_lattice
-      integer*8 list_end(2,3), j2, k, debug
+      integer*8 k, debug
 c
       debug = 0
       tol = 1.0d-6
@@ -78,7 +77,7 @@ c
                   write(*,*)
                   write(*,*) "  ???"
                   write(*,*) "periodic_N_E_F: for i, j = ", i, j
-                  write(*,*) "periodic_N_E_F: ip_period_N_E_F : ", i1, j1
+                  write(*,*) "periodic_N_E_F: ip_period_N_E_F : ",i1,j1
                   write(*,*) "periodic_N_E_F: Aborting..."
                   stop
 c                  ip_period_N_E_F(i) = min(i,i1)

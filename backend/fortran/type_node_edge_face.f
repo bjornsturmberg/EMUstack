@@ -15,10 +15,9 @@ c
       complex*16 x(2,npt), x_E_F(2,n_ddl)
 c     Local variables
 
-      integer*8 i, j, k, i1, j1, k1
-      integer*8 type_n(10), i_boundary, max_type
+      integer*8 i, j, j1
+      integer*8 type_n(10), i_boundary
 c      integer*8 list_point_F(6,4)
-      double precision xx(2)
       integer*8 nddl_0
       parameter (nddl_0 = 14)
       double precision xel(2,6)

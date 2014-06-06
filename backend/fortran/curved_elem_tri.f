@@ -17,7 +17,7 @@ c
       parameter (nnd_triangle = 6)
       double precision xel_triangle(2,nnd_triangle)
 
-      integer*8 i, j, i2, i3
+      integer*8 i, j, i2
       double precision tol, tmp
 c
 ccccccccccccccccccccccccccccccccccccccc

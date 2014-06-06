@@ -11,7 +11,7 @@ c
       implicit none
       double precision x(2), phi(3), mat_grad(2,3)
       double precision x0, y0
-      integer*8 inode, j
+      integer*8 inode
 cccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       x0 = x(1)

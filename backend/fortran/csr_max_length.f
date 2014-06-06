@@ -14,9 +14,9 @@ c     Local variables
       integer*8 nddl_0
       parameter (nddl_0 = 14)
 
-      integer*8 i, j, k, iel, ind_ip, ip, neq1
-      integer*8 max_eq, min_eq, k_copy1, k_copy2
-      integer*8 left_half_bw, right_half_bw, half_bw
+      integer*8 i, k, iel, ind_ip, ip
+      integer*8 k_copy1, k_copy2
+      integer*8 left_half_bw
 c
       if ( nnodes .ne. 6 ) then
         write(*,*) "csr_max_length: problem nnodes = ", nnodes

@@ -31,7 +31,7 @@ c
 
 c     Local variables
       integer*8 i
-      double precision poidbar, coorbar, valbar
+      double precision poidbar, coorbar
       double precision poid1, coor1grp1, coor2grp1
       double precision poid2, coor1grp2, coor2grp2
       double precision poid3, coor1grp3, coor2grp3

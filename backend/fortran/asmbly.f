@@ -29,7 +29,7 @@ c     NQUAD: The number of quadrature points used in each element.
       double precision xx(2), xx_g(2), ww, det
       double precision mat_B(2,2), mat_T(2,2)
       double precision grad_i(2), grad_j(2)
-      double precision phi_j, phi_i, phi_z_i, phi_z_j
+      double precision phi_z_i, phi_z_j
 
       integer*8 nnodes_0, nddl_0, nddl_t, ui
       parameter (nnodes_0 = 6, nddl_0 = 14, nddl_t=4)
@@ -46,24 +46,22 @@ c     NQUAD: The number of quadrature points used in each element.
       double precision grad3_mat(2,10)
 
       double precision vec_phi_j(2), curl_phi_j
-      double precision vec_phi_i(2), curl_phi_i, k_x_vec(2)
+      double precision vec_phi_i(2), curl_phi_i
       complex*16 val_exp(nddl_0), z_phase_fact
 
-      integer*8 i, j, k, i1, j1, j2, iel, iq, typ_e
+      integer*8 i, j, k, j1, iel, iq, typ_e
       integer*8 jtest, jp, ind_jp, j_eq
       integer*8 itrial, ip, ind_ip, i_eq
       integer*8 info_curved, n_curved, debug, col_start, col_end
       complex*16 z_tmp1, z_tmp2
       double precision ZERO, ONE
       parameter ( ZERO = 0.0D0, ONE = 1.0D0)
-      double precision det2, xx_g2(2), mat_B2(2,2), mat_T2(2,2)
       double precision bloch_vec(2), r_tmp1, r_tmp2
       double precision delta_xx(2)
       double precision ddot
       complex*16 M_tt, M_zz, M_tz, M_zt
       complex*16 K_tt, K_zz, K_tz, K_zt
       complex*16 ii
-      real r1, r2
 c
 ccccccccccccccccccccccccccccccccccccccc
 c

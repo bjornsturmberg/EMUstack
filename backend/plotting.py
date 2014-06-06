@@ -1144,7 +1144,6 @@ def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
     wl_normed = pstack.layers[Struc_lay].wl_norm()
 
     nnodes=6
-    q_average = 0 # at a discontinuity, use average value if q_average = 1
     if meat.E_H_field == 1:
         EH_name = "E_"
     else:
@@ -1161,7 +1160,7 @@ def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
     EMUstack.gmsh_plot_field (meat.num_BM, 
         meat.n_msh_el, meat.n_msh_pts, nnodes, meat.nb_typ_el, meat.table_nod, meat.type_el,
         eps_eff, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, select_h, 
-        gmsh_file_pos, q_average, meat.structure.plot_real, 
+        gmsh_file_pos, meat.structure.plot_real, 
         meat.structure.plot_imag, meat.structure.plot_abs, extra_name)
 
 
@@ -1193,7 +1192,7 @@ def fields_2d(pstack, wl, Struc_lay = 1, TF_lay=0):
         bloch_vec, meat.table_nod, meat.x_arr, lat_vec, wl_normed,
         n_eff_0, vec_coef_down, vec_coef_up, 
         index_pw_inv, ordre_ls, select_h,
-        gmsh_file_pos, q_average, meat.structure.plot_real, meat.structure.plot_imag,
+        gmsh_file_pos, meat.structure.plot_real, meat.structure.plot_imag,
         meat.structure.plot_abs, extra_name)
 
     # # Semi-inf case

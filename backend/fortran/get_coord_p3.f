@@ -16,7 +16,7 @@ c
 
 c
       implicit none
-      integer*8 nel, npt, nnodes, n_ddl, npt_p3
+      integer*8 nel, npt, nnodes, n_ddl
       integer*8 table_nod(nnodes,nel), table_N_E_F(14,nel)
       integer*8 type_nod(npt), type_N_E_F(2,n_ddl)
       integer*8 visite(n_ddl)
@@ -27,7 +27,7 @@ c     Variable local
       integer*8 nddl_0
       parameter (nddl_0 = 14)
       integer*8 j, k, k1, n, ind, ip(2,3)
-      integer*8 iel, inod, inod1, inod2, inod3, mm
+      integer*8 iel, inod, inod1, inod2, mm
       integer*8 nut0(6), nut_N_E_F(nddl_0)
 
       double precision xx1, xx2, xx3, yy1, yy2, yy3

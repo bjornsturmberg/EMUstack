@@ -1,17 +1,16 @@
 c
       subroutine normalisation (nval, nel, nnodes, 
-     *  table_nod, soln_k1, soln_k2, mat_overlap)
+     *  soln_k1, soln_k2, mat_overlap)
 c
       implicit none
       integer*8 nval, nel, nnodes
-      integer*8 table_nod(nnodes,nel)
       complex*16 soln_k1(3,nnodes+7,nval,nel)
       complex*16 soln_k2(3,nnodes+7,nval,nel)
 C      complex*16 mat_overlap(nval,nval)
       complex*16, dimension(nval,nval) :: mat_overlap
 c     Local variables
       integer*8 i, j
-      integer*8 iel, ival, jval
+      integer*8 iel, ival
       complex*16 z_tmp1, z_tmp2
 c
       do iel=1,nel

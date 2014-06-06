@@ -19,28 +19,22 @@ c
       integer nu_d2(6,max_ne), typ_el_d2(max_ne)
       integer idfn(max_npt)
       integer number_tags, physic_tag
-      integer elm_type(max_ne), typ_el(max_ne)
+      integer elm_type(max_ne)
       integer tab_ns(max_npt), tab_el(max_ne)
       double precision x(max_npt),  y(max_npt)
 c
       integer ne, npt
       integer ne_d1, ne_d2
-      integer i, i0, i2, j, k, etc_1(10)
-      integer nb_tangent, nb_materiau, n_surface, n_dim
-      integer nb_ligne, nb_limit
-      integer nb_pt, gmsh_type_line, gmsh_type_el
+      integer i, j, k, etc_1(10)
+      integer gmsh_type_line, gmsh_type_el
 c
-      double precision s1, pi, largeur, long_aret, aret_max
-      double precision  xx1(2,3)
-      integer nba1, n_secteur, nut(6), i00
-      double precision liste1(2,max_npt), liste2(2,max_npt)
       double precision tmp1, tmp2, tmp3
 c
-      integer debug, ui, namelength1, namelength2
+      integer debug, ui, namelength2
       double precision time1, time2
-      character objet*5, cc*20
+      character objet*5
       character file_ui*100
-      character*200 com_line
+      character*230 com_line
 C
 Cf2py intent(in) geoname
 c

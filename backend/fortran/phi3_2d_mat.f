@@ -11,7 +11,7 @@ c
       implicit none
       double precision x(2), phi(10), mat_grad(2,10)
       double precision x0, y0
-      integer*8 inode, j
+      integer*8 inode
 cccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       x0 = x(1)
@@ -38,7 +38,7 @@ c
         mat_grad(2,inode) = (9*x0*(-5 + 6*x0 + 6*y0))/2.
       inode = 5
         phi(inode) = (-9*x0*(-1 + 3*x0)*(-1 + x0 + y0))/2.
-        mat_grad(1,inode) = (-9*(1 + 9*x0**2 - y0 + x0*(-8 + 6*y0)))/2.
+        mat_grad(1,inode) =(-9*(1 + 9*x0**2 - y0 + x0*(-8 + 6*y0)))/2.
         mat_grad(2,inode) = (-9*x0*(-1 + 3*x0))/2.
       inode = 6
         phi(inode) = (9*x0*(-1 + 3*x0)*y0)/2.
@@ -51,7 +51,7 @@ c
       inode = 8
         phi(inode) = (-9*y0*(-1 + x0 + y0)*(-1 + 3*y0))/2.
         mat_grad(1,inode) = (-9*y0*(-1 + 3*y0))/2.
-        mat_grad(2,inode) = (-9*(1 - 8*y0 + 9*y0**2 + x0*(-1 + 6*y0)))/2.
+        mat_grad(2,inode)=(-9*(1 - 8*y0 + 9*y0**2 +x0*(-1 + 6*y0)))/2.
       inode = 9
         phi(inode) = (9*y0*(-1 + x0 + y0)*(-2 + 3*x0 + 3*y0))/2.
         mat_grad(1,inode) = (9*y0*(-5 + 6*x0 + 6*y0))/2.

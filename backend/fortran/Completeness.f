@@ -7,7 +7,7 @@ C
 C
       integer*8 nval, neq_PW
 c     32-but integers for BLAS and LAPACK
-      integer*4 nval_max_32, PW_max_32
+      integer*8 nval_max_32, PW_max_32
       parameter (nval_max_32 = 1000)
       parameter (PW_max_32 = 200)
       complex*16 K_overlap_mat(nval,2*neq_PW)
@@ -17,7 +17,7 @@ c     32-but integers for BLAS and LAPACK
       complex*16 ZERO, ONE
       integer*8 n, s
 c     32-but integers for BLAS and LAPACK
-      integer*4 neq_PW_32, nval_32
+      integer*8 neq_PW_32, nval_32
 
       ZERO = 0.0d0
       ONE = 1.0d0

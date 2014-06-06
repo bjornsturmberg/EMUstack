@@ -13,12 +13,12 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c
-      subroutine jacobian_p2_2d (x, xel, nnodes, p2_list, 
+      subroutine jacobian_p2_2d (xel, nnodes, p2_list, 
      *     grad_p2_mat, x_g, det_jacobian, mat_B_0, mat_T)
 c
       implicit none
       integer*8 nnodes
-      double precision x(2), xel(2,nnodes)
+      double precision xel(2,nnodes)
       double precision p2_list(nnodes), grad_p2_mat(2,nnodes)
       double precision mat_B(2,2), mat_T(2,2), mat_B_0(2,2)
       double precision det_jacobian, x_g(2)

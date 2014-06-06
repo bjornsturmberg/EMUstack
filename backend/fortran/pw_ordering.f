@@ -5,8 +5,7 @@ C
 C 
       implicit none 
 C  input output parameters
-      integer*8 Zeroth_Order, Zeroth_Order_inv
-      integer*8 neq_PW, PrintAll, ordre_ls, debug
+      integer*8 neq_PW, ordre_ls, debug
       double precision bloch_vec(2), k_0
       double precision lat_vecs(2,2)
       integer*8 index_pw_inv(neq_PW)

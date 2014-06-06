@@ -52,11 +52,11 @@ C      integer*8 jp_matD2, jp_matL2, jp_matU2
       integer*8 jp_vect1, jp_vect2, jp_workd, jp_resid, jp_vschur
       integer*8 jp_trav, jp_vp
 C  Plane wave parameters
-      integer*8 neq_PW, nx_PW, ny_PW, ordre_ls
+      integer*8 neq_PW, ordre_ls
       integer*8 index_pw_inv(neq_PW)
       integer*8 nb_typ_el
       complex*16 pp(nb_typ_el), qq(nb_typ_el)
-      complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el), test
+      complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el)
 c     i_cond = 0 => Dirichlet boundary condition
 c     i_cond = 1 => Neumann boundary condition
 c     i_cond = 2 => Periodic boundary condition
@@ -333,8 +333,8 @@ C
         write(ui,*) "py_calc_modes.f: npt_p3 = ", npt_p3
         write(ui,*) "py_calc_modes.f: n_vertex, n_edge, n_face, nel = ", 
      *    (npt - n_edge), n_edge, n_face, nel
-        write(ui,*) "py_calc_modes.f: 2D case of the Euler characteristic:&
-     & V-E+F=1-(number of holes)"
+        write(ui,*) "py_calc_modes.f: 2D case of the Euler &
+     & characteristic: V-E+F=1-(number of holes)"
         write(ui,*) "py_calc_modes.f: Euler characteristic: V - E + F &
      &= ", (npt - n_edge) - n_edge + n_face
       endif
@@ -691,7 +691,7 @@ C
 C
 C  Calculate energy in each medium (typ_el)
       if (n_k .eq. 2) then
-        call mode_energy (nval, nel, npt, n_ddl, nnodes, 
+        call mode_energy (nval, nel, npt, nnodes, 
      *     n_core, table_nod, type_el, nb_typ_el, eps_eff, 
      *     x_arr, sol, beta, mode_pol)
       endif
@@ -708,7 +708,7 @@ C  Orthogonal integral
       overlap_file = "Normed/Orthogonal.txt"
       call cpu_time(time1_J)
       call orthogonal (nval, nel, npt, nnodes, 
-     *  nb_typ_el, pp, qq, table_nod, 
+     *  nb_typ_el, pp, table_nod, 
      *  type_el, x_arr, beta1, beta2,
      *  sol1, sol2, overlap_L,
      *  overlap_file, PrintAll, pair_warning, k_0)
@@ -750,8 +750,7 @@ C  Normalisation
         write(ui,*) "py_calc_modes.f: Field  Normalisation"
       endif 
       call cpu_time(time1_J)
-      call normalisation (nval, nel, nnodes, table_nod,
-     *  sol1, sol2, overlap_L)  
+      call normalisation (nval, nel, nnodes,sol1, sol2, overlap_L) 
       call cpu_time(time2_J)
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes.f: CPU time for normalisation :",
@@ -764,7 +763,7 @@ C  Orthonormal integral
         overlap_file = "Normed/Orthogonal_n.txt"
         call cpu_time(time1_J)
         call orthogonal (nval, nel, npt, nnodes, 
-     *    nb_typ_el, pp, qq, table_nod, 
+     *    nb_typ_el, pp, table_nod, 
      *    type_el, x_arr, beta1, beta2,
      *    sol1, sol2, overlap_L,
      *    overlap_file, PrintAll, pair_warning, k_0)
@@ -837,16 +836,6 @@ C     *    PrintAll, k_0, ordre_ls)
 C        write(ui,*) "py_calc_modes.f: Completeness Test"
 C        call Completeness (nval, neq_PW, 
 C     *    overlap_K, overlap_J)
-C  Search for number of propagating Bloch Modes
-C      numberprop_N = 0
-C      do i=1,nval
-C        test = beta1(i)
-C        if (ABS(IMAG(test)) .lt. 1.0d-5) then
-C          numberprop_N = numberprop_N + 1
-C        endif
-C      enddo
-C      write(ui,*) "numberprop_N = ", numberprop_N
-C      endif 
 C
 C#########################  End Calculations  ###########################
 C

@@ -8,12 +8,12 @@ c  Note that we use E_z = i * \hat{E}_z * (i*beta) (because of the change of var
 c  It is assumed that the type number triangle in the cylinders is : 
 c                           typ_e=n_core(1) or typ_e=n_core(2)
 c
-      subroutine mode_energy (nval, nel, npt, n_ddl, nnodes, 
+      subroutine mode_energy (nval, nel, npt, nnodes, 
      *     n_core, table_nod, type_el, nb_typ_el, eps_eff, 
      *     x, sol, beta1, mode_pol)
 
       implicit none
-      integer*8 nval, nel, npt, n_ddl, nnodes
+      integer*8 nval, nel, npt, nnodes
       integer*8 nb_typ_el, n_core(2), type_el(nel)
       integer*8 table_nod(nnodes,nel)
       complex*16 x(2,npt), sol(3,nnodes+7,nval,nel)
@@ -38,11 +38,11 @@ C  variables for quadrature interpolation
 
       double precision phi2_list(6)
 
-      integer*8 i, j, iel, ival, ival2, typ_e
+      integer*8 j, iel, ival, typ_e
       integer*8 inode, global, trans
       integer*8 debug, ui
 
-      complex*16 ii, z_tmp, coeff_1
+      complex*16 z_tmp, coeff_1
 C
 CCCCCCCCCCC Start Program CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C

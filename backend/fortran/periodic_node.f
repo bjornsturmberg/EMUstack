@@ -9,14 +9,10 @@ c
 c   type_nod = 0  => interiour point
 c   type_nod != 0 => boundary point
 c
-c   i_cond = 0 => Dirichlet boundary condition
-c   i_cond = 1 => Neumann boundary condition
-c   i_cond = 2 => Periodic boundary condition
-c
 c***********************************************************************
 c
       implicit none
-      integer*8 npt, i_cond, nnodes
+      integer*8 npt, nnodes
       integer*8 type_nod(npt), ip_period(npt)
       integer*8 n_period(npt)
       integer*8 table_nod(nnodes,nel)
@@ -26,7 +22,7 @@ c
       double precision period_x, period_y
       double precision x_min, y_min
       double precision x_max, y_max
-      double precision dx, dy, tmp1, tmp2, tol
+      double precision tmp1, tmp2, tol
       double precision x_r, y_r
       double precision delta_v(2),  vec(2)
       integer*8 ix, iy, test_lattice

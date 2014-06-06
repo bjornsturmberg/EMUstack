@@ -19,8 +19,8 @@ c
       double precision x_max_ymax
       double precision x_r, y_r
       double precision lat_vec_1(2), lat_vec_2(2)
-      double precision tol, xx(2)
-      integer*8 i, m1, m2, n1, n2, debug
+      double precision tol
+      integer*8 i, n1, n2, debug
 c
       debug = 0
       x_min = dble(x(1,1))

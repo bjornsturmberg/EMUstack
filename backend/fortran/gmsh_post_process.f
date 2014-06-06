@@ -44,7 +44,7 @@ C      double precision ls_abs_index(nnodes_0), abs_index
       character*100 tchar
       character tval*4, buf*3
       character*1 tE_H
-      integer*8 namelength, charlength
+      integer*8 namelength
 c
 c  ii = sqrt(-1)
       ii = cmplx(0.0d0, 1.0d0)

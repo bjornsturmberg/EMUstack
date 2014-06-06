@@ -10,9 +10,6 @@ c
       complex*16 beta(nval)
       character mesh_file*100
 c     Local variables
-      integer*8 nnodes_0, nddl_0, nddl_t, dim
-      parameter (nnodes_0 = 6)
-
       integer*8 i, iel, ival
       integer*8 namelen, namelength, namelen2
 

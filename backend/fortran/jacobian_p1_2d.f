@@ -15,7 +15,6 @@ c
       double precision mat_B(2,2), mat_T(2,2), mat_B_0(2,2)
       double precision det_jacobian, x_g(2)
       integer*8 i, j
-      double precision phi, phi_x
 c
       double precision ZERO, ONE
       parameter ( ZERO = 0.0D0, ONE = 1.0D0)

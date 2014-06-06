@@ -16,7 +16,7 @@ c
       double precision lx, ly
       parameter (max_typ_el=10)
       complex*16 x(2,npt)
-      double precision xx(2), re_tmp, im_tmp
+      double precision xx(2)
 
       character mesh_file*100
 

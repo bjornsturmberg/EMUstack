@@ -433,9 +433,9 @@ c
             list_tag(physic_tag) = type_data(type_el(iel))
             list_tag(physic_tag+1) = type_data(type_el(iel))
           else
-            write(*,*) "mail_to_gmsh: no action is defined when ", 
-     *      " choice_type = ", choice_type
-            write(*,*) "mail_to_gmsh: Aborting..."
+            write(*,*) "gmsh_plot_field_3d: no action is defined ",
+     *      "when choice_type = ", choice_type
+            write(*,*) "gmsh_plot_field_3d: Aborting..."
             stop
           endif
           do inod=1,3  ! Scan the vertices
