@@ -66,7 +66,7 @@ class NanoStruct(object):
         - 'ellipticity'   : If != 0, inclusion has given ellipticity, with b=diameter,
            a=diameter-ellipticity*diameter. NOTE: only implemented for 1 inclusion.
 
-        - 'square'        : If True, '2D_array' has square NWs (ie. 2D grating).
+        - 'square_inc'    : If True, '2D_array' has square NWs (ie. 2D grating).
 
         - 'ff'            : The fill fraction of the inclusions. If non-zero, 
             the specified diameters are overritten s.t. given ff is achieved,
@@ -115,7 +115,7 @@ class NanoStruct(object):
         diameter2=0,  diameter3=0, diameter4=0, diameter5=0, diameter6=0, 
         diameter7=0, diameter8=0, diameter9=0, diameter10=0, diameter11=0, 
         diameter12=0, diameter13=0,diameter14=0, diameter15=0, diameter16=0, 
-        ellipticity=0.0, square=False,
+        ellipticity=0.0, square_inc=False,
         ff=0, ff_rand=False, 
         small_d=0, posx=0, posy=0,
         make_mesh_now=True, force_mesh=False, 
@@ -150,14 +150,10 @@ class NanoStruct(object):
         self.ellipticity   = ellipticity
         if ellipticity > 1.0:
             raise TypeError, "ellipticity must be less than 1.0"
-        self.square        = square
-        if square == True:
-            self.square_int = 1
-        else:
-            self.square_int = 0
+        self.square_inc    = square_inc
         if ff == 0:
             if geometry == '2D_array':
-                self.ff = calculate_ff(square,period,diameter1,diameter2,
+                self.ff = calculate_ff(square_inc,period,diameter1,diameter2,
                     diameter3,diameter4,diameter5,diameter6,diameter7,diameter8,diameter9,
                     diameter10,diameter11,diameter12,diameter13,diameter14,diameter15,
                     diameter16,ellipticity)
@@ -234,7 +230,7 @@ class NanoStruct(object):
 
             if self.ellipticity != 0:
                 msh_name = msh_name + '_e_%(e)s' % {'e' : dec_float_str(self.ellipticity),}
-            if self.square == True:
+            if self.square_inc == True:
                 msh_name = msh_name + '_sq'
             if self.posx != 0:
                 msh_name = msh_name + 'x%(e)s' % {'e' : dec_float_str(self.posx),}
@@ -266,7 +262,7 @@ class NanoStruct(object):
                         select_diameter = random.uniform(min_a,max_a)
                         rad_array = np.append(rad_array,select_diameter)
 
-                    test_ff = calculate_ff(self.square, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
+                    test_ff = calculate_ff(self.square_inc, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
                     rad_array[5],rad_array[6],rad_array[7],rad_array[8],rad_array[9],rad_array[10],
                     rad_array[11],rad_array[12],rad_array[13],rad_array[14],rad_array[15])
                     print test_ff
@@ -289,7 +285,7 @@ class NanoStruct(object):
                         self.diameter14  = rad_array[13]
                         self.diameter15  = rad_array[14]
                         self.diameter16  = rad_array[15]
-                    test_ff = calculate_ff(self.square, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
+                    test_ff = calculate_ff(self.square_inc, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
                     rad_array[5],rad_array[6],rad_array[7],rad_array[8],rad_array[9],rad_array[10],
                     rad_array[11],rad_array[12],rad_array[13],rad_array[14],rad_array[15])
 
@@ -302,7 +298,7 @@ class NanoStruct(object):
                 geo = geo.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
                 geo = geo.replace('a1 = 0;', "a1 = %f;" % self.diameter1)
                 geo = geo.replace('ellipticity = 0;', "ellipticity = %f;" % self.ellipticity)
-                geo = geo.replace('square = 0;', "square = %i;" % self.square_int)
+                if self.square_inc == True: geo = geo.replace('square = 0;', "square = 1;")
                 geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
                 geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
                 geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
@@ -542,10 +538,10 @@ def dec_float_str(dec_float):
 
 
 
-def calculate_ff(square, d, a1, a2=0, a3=0, a4=0, a5=0, a6=0, a7=0, a8=0, a9=0, a10=0,
+def calculate_ff(square_inc, d, a1, a2=0, a3=0, a4=0, a5=0, a6=0, a7=0, a8=0, a9=0, a10=0,
     a11=0, a12=0, a13=0, a14=0, a15=0, a16=0, el1 = 0):
 
-    if square == False:
+    if square_inc == False:
         ff = np.pi*((a1/2)**2*np.sqrt(1-el1) + (a2/2)**2 + (a3/2)**2 + (a4/2)**2 + (a5/2)**2 + (a6/2)**2 + 
             (a7/2)**2 + (a8/2)**2 + (a9/2)**2 + (a10/2)**2 + (a11/2)**2 + (a12/2)**2 + (a13/2)**2 + 
             (a14/2)**2 + (a15/2)**2 + (a16/2)**2)/(d)**2

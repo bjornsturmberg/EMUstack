@@ -109,7 +109,7 @@ def gen_params_string(stack, layer=1):
             if param_layer.diameter14 != 0: params_2_print += 'a14 = %(rad)d '%   {'rad' : param_layer.diameter14,}
             if param_layer.diameter15 != 0: params_2_print += 'a15 = %(rad)d '%   {'rad' : param_layer.diameter15,}
             if param_layer.diameter16 != 0: params_2_print += 'a16 = %(rad)d \n'% {'rad' : param_layer.diameter16,}
-            if param_layer.square == True: params_2_print += '\nSquare NWs '
+            if param_layer.square_inc == True: params_2_print += '\nSquare NWs '
             if param_layer.ellipticity == True: params_2_print += '\nEllipticity = %(rad)5.3f '% {'rad' : param_layer.ellipticity,}
         elif param_layer.geometry == '1D_array':
             params_2_print += ''
