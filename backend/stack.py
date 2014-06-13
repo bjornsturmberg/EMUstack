@@ -2,7 +2,8 @@
     stack.py is a subroutine of EMUstack that contains the Stack object,
     which takes layers with known scattering matrices and calculates
     the net scattering matrices of the multilayered stack.
-
+"""
+"""
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify

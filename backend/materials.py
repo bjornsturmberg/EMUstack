@@ -2,7 +2,8 @@
     materials.py is a subroutine of EMUstack that defines Material objects,
     these represent dispersive lossy refractive indices and possess 
     methods to interpolate n from tabulated data.
-
+"""
+"""
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
@@ -34,9 +35,9 @@ class Material(object):
 
         INPUTS:
 
-        - `n`: Either a scalar refractive index,
-                an array of values `(wavelength, n)`, or 
-                `(wavelength, real(n), imag(n))`,
+        - `n`: Either a scalar refractive index, \
+                an array of values `(wavelength, n)`, or \
+                `(wavelength, real(n), imag(n))`, \
                 or omega_p, omega_g, eps_inf for Drude model.
     """
     def __init__(self, n):
@@ -69,10 +70,9 @@ class Material(object):
             #     self._n = interp1d(self.data_wls, self.data_ns, 'cubic')
             # else:
             self._n = interp1d(self.data_wls, self.data_ns)
-
         else:
-            raise ValueError, \
-            "You must either set a constant refractive index, provide tabulated data, or drude parameters"
+            raise ValueError, "You must either set a constant refractive"
+                # index, provide tabulated data, or drude parameters"
 
 
     def n(self, wl_nm):

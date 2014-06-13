@@ -2,7 +2,8 @@
     mode_calcs.py is a subroutine of EMUstack that contains methods to 
     calculate the modes of a given layer, either analytically 
     (class 'Anallo') or from the FEM routine (class 'Simmo').
-
+"""
+"""
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify

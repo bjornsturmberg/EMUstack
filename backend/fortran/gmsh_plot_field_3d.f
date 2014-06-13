@@ -3,7 +3,7 @@ c   evecs(i) : contains the values of the solution for all points
 
       subroutine gmsh_plot_field_3d (lambda, h, nval,   
      *     E_H_field, nel, npt, nnodes, 
-     *     type_el, nb_typ_el, n_eff, table_nod, beta,
+     *     type_el, nb_typ_el, table_nod, beta,
      *     evecs, vec_coef, x, gmsh_file_pos, extra_name)
 
 
@@ -11,7 +11,6 @@ c   evecs(i) : contains the values of the solution for all points
       double precision lambda, h
       integer*8 nval, nel, npt, nnodes, E_H_field, nb_typ_el
       integer*8 table_nod(nnodes,nel), type_el(nel)
-      complex*16 n_eff(nb_typ_el)
       double precision x(2,npt)
       complex*16 beta(nval), vec_coef(2*nval)
       complex*16 evecs(3,nnodes+7,nval,nel)
@@ -19,13 +18,12 @@ c   evecs(i) : contains the values of the solution for all points
       character(*) extra_name
 
 Cf2py intent(in) lambda, h, nval, E_H_field, nel, npt, nnodes, 
-Cf2py intent(in) type_el, nb_typ_el, table_nod, n_eff
+Cf2py intent(in) type_el, nb_typ_el, table_nod
 Cf2py intent(in) x, beta, vec_coef, evecs, gmsh_file_pos, extra_name
 
 Cf2py depend(table_nod) nnodes, nel
 Cf2py depend(type_el) nel
 Cf2py depend(x) npt
-Cf2py depend(n_eff) nb_typ_el
 Cf2py depend(beta) nval
 Cf2py depend(vec_coef) nval
 Cf2py depend(evecs) nnodes, nval, nel
@@ -47,7 +45,7 @@ c     Local variables
 
       complex*16 P_down, P_up, coef_down, coef_up, coef_t, coef_z
       complex*16 ii, z_tmp1
-      double precision hz, dz, zz, r_tmp, r_index
+      double precision hz, dz, zz, r_tmp
 
       integer*8 nel_3d, npt_3d  ! prism elements
       integer*8 npt_p1  ! Number of vertices of the 2D FEM mesh
@@ -58,8 +56,8 @@ c     Local variables
 
       integer*8 gmsh_type_prism, choice_type, typ_e
       integer*8 number_tags, physic_tag
-      double precision list_tag(6)
-      double precision, dimension(:), allocatable :: type_data
+      integer*8 list_tag(6)
+      integer*8, dimension(:), allocatable :: type_data
 
       character*100 tchar
       character*1 tE_H
@@ -372,24 +370,9 @@ c     For choice_type = 3, the user provide a map for the types
       else
         do i=1,nb_typ_el
           r_tmp = (dble(i-1)/dble(nb_typ_el-1))
-          type_data(i) = 1.0 + 18.0d0*r_tmp
+          type_data(i) = int(1.0 + 18.0d0*r_tmp)
         enddo
       endif
-
-c     elment type: defines the geometrical type
-c     6-node prism
-      gmsh_type_prism = 6
-
-
-c      gmsh_version = 2
-c     For choice_type = 3, the user provide a map for the types
-      choice_type = 3
-      number_tags = 6
-      physic_tag = 4
-      list_tag(2) = gmsh_type_prism
-      list_tag(3) = number_tags - 3
-      list_tag(5) = 1
-      list_tag(6) = 0
 
       npt_3d_p1 = npt_p1 * npt_h
 c
@@ -423,12 +406,12 @@ c
           list_tag(1) = iel + (i_h-1) * nel
           if (choice_type .eq. 1) then
             list_tag(physic_tag) = type_el(iel)
-            list_tag(physic_tag+1) = type_el(iel)
-          elseif (choice_type .eq. 2) then
-            typ_e = type_el(iel)
-            r_index = real(n_eff(typ_e))
-            list_tag(physic_tag) = r_index
-            list_tag(physic_tag+1) = r_index
+            list_tag(physic_tag+1) = type_el(iel)  
+C          elseif (choice_type .eq. 2) then ! must change list_tag to double precision
+C            typ_e = type_el(iel)           ! and reintroduce n_index, n_eff
+C            r_index = int(n_eff(typ_e))
+C            list_tag(physic_tag) = r_index
+C            list_tag(physic_tag+1) = r_index
           elseif (choice_type .eq. 3) then
             list_tag(physic_tag) = type_data(type_el(iel))
             list_tag(physic_tag+1) = type_data(type_el(iel))

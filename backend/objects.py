@@ -3,7 +3,8 @@
     ThinFilm and Light objects. These represent the properties of a 
     structured layer, a homogeneous layer and the incident light
     respectively.
-
+"""
+"""
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
@@ -48,11 +49,11 @@ class NanoStruct(object):
         - 'diameter1'     : The diameter of the inclusion in nm.
         - 'diameter2-16'  : The diameter of further inclusions in nm.
 
-        - 'height_nm'     : The thickness of the layer in nm or 'semi_inf'
+        - 'height_nm'     : The thickness of the layer in nm or 'semi_inf' \
             for a semi-infinte layer.
 
-        - 'inclusion_a'   : A :Material: instance for first inclusion, 
-            specified as dispersive refractive index (eg. materials.Si_c) 
+        - 'inclusion_a'   : A :Material: instance for first inclusion, \
+            specified as dispersive refractive index (eg. materials.Si_c) \
             or nondispersive complex number (eg. Material(1.0 + 0.0j)).
 
         - 'inclusion_b'   : "  " for the second inclusion medium.
@@ -60,51 +61,51 @@ class NanoStruct(object):
 
         - 'loss'          : If False, Im(n) = 0, if True n as in :Material: instance.
 
-        - 'hyperbolic'    : If True FEM looks for Eigenvalues around n**2 * k_0**2
+        - 'hyperbolic'    : If True FEM looks for Eigenvalues around n**2 * k_0**2\
             rather than the regular n**2 * k_0**2 - alpha**2 - beta**2.
 
-        - 'ellipticity'   : If != 0, inclusion has given ellipticity, with b=diameter,
+        - 'ellipticity'   : If != 0, inclusion has given ellipticity, with b=diameter,\
            a=diameter-ellipticity*diameter. NOTE: only implemented for 1 inclusion.
 
         - 'square_inc'    : If True, '2D_array' has square NWs (ie. 2D grating).
 
-        - 'ff'            : The fill fraction of the inclusions. If non-zero, 
-            the specified diameters are overritten s.t. given ff is achieved,
+        - 'ff'            : The fill fraction of the inclusions. If non-zero, \
+            the specified diameters are overritten s.t. given ff is achieved, \
             otherwise ff is calculated from parameters and stored in self.ff.
-        - 'ff_rand'       : If True, diameters overritten with random diameters,
+        - 'ff_rand'       : If True, diameters overritten with random diameters, \
             s.t. the ff is as assigned. Must provide non-zero dummy diameters.
         
-        - 'posx'          : Shift NWs laterally towards center (each other), 
+        - 'posx'          : Shift NWs laterally towards center (each other), \
             posx is a fraction of the distance possible before NWs touching.
         - 'posy'          : Shift NWs vertically "  ". 
  
         - 'small_d'       : Distance between 2 inclusions of interleaved 1D grating.
 
-        - 'make_mesh_now' : If True, program creates a FEM mesh with provided 
-            NanoStruct parameters. If False, must provide mesh_file name of 
+        - 'make_mesh_now' : If True, program creates a FEM mesh with provided \
+            NanoStruct parameters. If False, must provide mesh_file name of \
             existing .mail that will be run despite NanoStruct parameters.
 
-        - 'force_mesh'    : If True, a new mesh is created despite existance of 
-            mesh with same parameter. This is used to make mesh with equal 
+        - 'force_mesh'    : If True, a new mesh is created despite existance of \
+            mesh with same parameter. This is used to make mesh with equal \
             period etc. but different lc refinement.
 
-        - 'mesh_file'     : If using a set premade mesh give its name including 
+        - 'mesh_file'     : If using a set premade mesh give its name including \
             .mail (eg. 600_60.mail), it must be located in backend/Data/
 
-        - 'lc_bkg'        : Length constant of meshing of background medium.
+        - 'lc_bkg'        : Length constant of meshing of background medium \
             (smaller = finer mesh)
-        - 'lc2'           : factor by which lc_bkg should be reduced on inclusion 
+        - 'lc2'           : factor by which lc_bkg should be reduced on inclusion \
             surfaces; lc_surface = cl_bkg / lc2.
         - 'lc3-6'         : "  " at center of inclusions.
 
-        - `plot_modes'    : Plot modes (ie. FEM solutions) in gmsh format, 
-            you get epsilon*|E|^2 & either real/imag/abs of 
+        - 'plot_modes'    : Plot modes (ie. FEM solutions) in gmsh format, \
+            you get epsilon*|E|^2 & either real/imag/abs of \
             x,y,z components, field vectors.
 
-        - `plot_real'     : Plot the real part of modal fields.
-        - `plot_imag'     : Plot the imaginary part of modal fields.
-        - `plot_abs'      : Plot the absolute value of modal fields.
-        - `plotting3d'    : Plot the fields in 3D.
+        - 'plot_real'     : Plot the real part of modal fields.
+        - 'plot_imag'     : Plot the imaginary part of modal fields.
+        - 'plot_abs'      : Plot the absolute value of modal fields.
+        - 'plotting3d'    : Plot the fields in 3D.
     """
 
 
@@ -420,14 +421,14 @@ class ThinFilm(object):
 
         INPUTS:
 
-        - 'period'         : Artificial period imposed on homogeneous film 
-            to give consistently defined plane waves in terms of 
+        - 'period'         : Artificial period imposed on homogeneous film \
+            to give consistently defined plane waves in terms of \
             diffraction orders of structured layers.
 
-        - 'height_nm'      : The thickness of the layer in nm or 'semi_inf'
+        - 'height_nm'      : The thickness of the layer in nm or 'semi_inf' \
             for a semi-infinte layer.
 
-        - 'material'       : A :Material: instance specifying the n of 
+        - 'material'       : A :Material: instance specifying the n of \
             the layer and related methods.
 
         - 'num_pw_per_pol' : Number of plane waves per polarisation.
@@ -467,7 +468,7 @@ class Light(object):
 
         - `max_order_PWs` : Maximum plane wave order to include.
 
-        - `k_parallel`    : The wave vector components (k_x, k_y)
+        - `k_parallel`    : The wave vector components (k_x, k_y) \
             parallel to the interface planes. Units of nm^-1.
 
         - `theta`         : Polar angle of incidence in degrees.
