@@ -1128,7 +1128,7 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
 def fields_2d(pstack, Struc_lay = 1, TF_lay=0):
     """
     """
-    from fortran import EMUstack
+    from fem_2d import EMUstack
 
     dir_name = "2D_Fields"
     if os.path.exists(dir_name):
@@ -1713,7 +1713,7 @@ def E_PW_fields(stack, nu_calc_pts = 51, max_height = 3,\
 def fields_3d(pstack, wl):
     """
     """
-    from fortran import EMUstack
+    from fem_2d import EMUstack
     import subprocess
 
     nnodes=6

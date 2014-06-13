@@ -54,7 +54,7 @@ c     Local variables
       integer*8 namelen_gmsh, namelen_dir, namelen_tchar
       integer*8 namelen_extra
 
-      integer*8 gmsh_type_prism, choice_type, typ_e
+      integer*8 gmsh_type_prism, choice_type
       integer*8 number_tags, physic_tag
       integer*8 list_tag(6)
       integer*8, dimension(:), allocatable :: type_data

@@ -26,9 +26,9 @@ import numpy as np
 import random
 import materials
 from mode_calcs import Simmo, Anallo
-from fortran import EMUstack
+from fem_2d import EMUstack
 
-data_location = '../backend/data/'
+msh_location = '../backend/fem_2d/msh/'
 
 # Acknowledgements
 print '\n#################################################################\n' + \
@@ -44,7 +44,7 @@ class NanoStruct(object):
 
         - 'geometry'      : Either 1D or 2D structure; '1D_array', '2D_array'.
 
-        - 'period'        : The diameter the unit cell in nanometers.
+        - 'period'        : The period of the unit cell in nanometers.
 
         - 'diameter1'     : The diameter of the inclusion in nm.
         - 'diameter2-16'  : The diameter of further inclusions in nm.
@@ -150,7 +150,7 @@ class NanoStruct(object):
         self.diameter16    = diameter16
         self.ellipticity   = ellipticity
         if ellipticity > 1.0:
-            raise TypeError, "ellipticity must be less than 1.0"
+            raise ValueError, "ellipticity must be less than 1.0"
         self.square_inc    = square_inc
         if ff == 0:
             if geometry == '2D_array':
@@ -293,8 +293,8 @@ class NanoStruct(object):
 
 
 
-            if not os.path.exists(data_location + msh_name + '.mail') or self.force_mesh == True:
-                geo_tmp = open(data_location + '%s_msh_template.geo' % supercell, "r").read()
+            if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
+                geo_tmp = open(msh_location + '%s_msh_template.geo' % supercell, "r").read()
                 geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                 geo = geo.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
                 geo = geo.replace('a1 = 0;', "a1 = %f;" % self.diameter1)
@@ -335,13 +335,13 @@ class NanoStruct(object):
                     geo = geo.replace('a15 = 0;', "a15 = %f;" % self.diameter15)
                     geo = geo.replace('a16 = 0;', "a16 = %f;" % self.diameter16)
 
-                open(data_location + msh_name + '.geo', "w").write(geo)
-                EMUstack.conv_gmsh(data_location+msh_name)
+                open(msh_location + msh_name + '.geo', "w").write(geo)
+                EMUstack.conv_gmsh(msh_location+msh_name)
 
             # Automatically show created mesh in gmsh.
-                # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
+                # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.msh'
                 # os.system(gmsh_cmd)
-                # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
+                # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.geo'
                 # os.system(gmsh_cmd)
 
 
@@ -361,8 +361,8 @@ class NanoStruct(object):
             self.mesh_file = msh_name + '.mail'    
 
             
-            if not os.path.exists(data_location + msh_name + '.mail') or self.force_mesh == True:
-                geo_tmp = open(data_location + '1D_%s_msh_template.geo' % supercell, "r").read()
+            if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
+                geo_tmp = open(msh_location + '1D_%s_msh_template.geo' % supercell, "r").read()
                 geo = geo_tmp.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
                 geo = geo.replace('w1 = 0;', "w1 = %f;" % self.diameter1)
                 geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
@@ -389,10 +389,10 @@ class NanoStruct(object):
                 #     geo = geo.replace('lc5 = lc/1;', "lc5 = lc/%f;" % self.lc5)
 
 
-                open(data_location + msh_name + '.geo', "w").write(geo)              
-                EMUstack.conv_gmsh(data_location+msh_name)
-                # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.msh'
-                # gmsh_cmd = 'gmsh '+ data_location + msh_name + '.geo'
+                open(msh_location + msh_name + '.geo', "w").write(geo)              
+                EMUstack.conv_gmsh(msh_location+msh_name)
+                # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.msh'
+                # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.geo'
                 # os.system(gmsh_cmd)
         else:
             raise ValueError, "Must be simulating either a '1D_array' or a '2D_array'."
@@ -425,22 +425,26 @@ class ThinFilm(object):
             to give consistently defined plane waves in terms of \
             diffraction orders of structured layers.
 
+        - 'world_1d'       : Does the rest of the stack have only 1D \
+            periodicity? This dictates the set of PWs to use.
+
         - 'height_nm'      : The thickness of the layer in nm or 'semi_inf' \
             for a semi-infinte layer.
+
+        - 'num_pw_per_pol' : The number of plane waves per polarisation.
 
         - 'material'       : A :Material: instance specifying the n of \
             the layer and related methods.
 
-        - 'num_pw_per_pol' : Number of plane waves per polarisation.
-
         - 'loss'           : If False sets Im(n) = 0, if True leaves n as is.
     """
-    def __init__(self, period, height_nm = 2330, material = materials.Si_c, 
-        num_pw_per_pol = 0, loss = True):
+    def __init__(self, period, world_1d = False, height_nm = 1000,  
+        num_pw_per_pol=0, material = materials.Material(3.0 + 0.001), loss = True):
         self.period         = period
+        self.world_1d       = world_1d
         self.height_nm      = height_nm
-        self.material       = material
         self.num_pw_per_pol = num_pw_per_pol
+        self.material       = material
         self.loss           = loss
     
     def calc_modes(self, light):

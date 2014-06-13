@@ -28,7 +28,7 @@ sys.path.append("../backend/")
 
 import materials
 import objects
-from fortran import EMUstack
+from fem_2d import EMUstack
 
 _interfaces_i_have_known = {}
 pi = np.pi
@@ -48,7 +48,13 @@ class Modes(object):
         """ Return an :Anallo: for air for the same :Light: as this."""
         return self.light._air_ref(self.structure.period)
 
-    def calc_grating_orders(self, max_order):
+    def calc_1d_grating_orders(self, max_order):
+        """ Return the grating order indices px and py, unsorted."""
+        # Create arrays of grating order indexes (-p, ..., p)
+        pxs = np.arange(-max_order, max_order + 1)
+        return pxs
+
+    def calc_2d_grating_orders(self, max_order):
         """ Return the grating order indices px and py, unsorted."""
         # Create arrays of grating order indexes (-p, ..., p)
         pxs = pys = np.arange(-max_order, max_order + 1)
@@ -106,19 +112,34 @@ class Anallo(Modes):
         """ Return a sorted 1D array of grating orders' kz."""
         d = 1 #TODO: are lx, ly relevant here??
 
-        # Calculate vectors of pxs and pys of all orders
-        # with px^2 + py^2 <= self.max_order_PWs
-        pxs, pys = self.calc_grating_orders(self.max_order_PWs)
+        if self.structure.world_1d == True:
+            # Calculate vectors of pxs
+            pxs = self.calc_1d_grating_orders(self.max_order_PWs)
+            # Calculate k_x and k_y components of scattered PWs
+            # (using the grating equation)
+            alpha0, beta0 = self.k_pll_norm()
+            alphas = alpha0 + pxs * 2 * pi / d
+            betas  = beta0
+            self.alphas = alphas
+            self.betas = betas
+            k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
 
-        # Calculate k_x and k_y components of scattered PWs
-        # (using the grating equation)
-        alpha0, beta0 = self.k_pll_norm()
-        alphas = alpha0 + pxs * 2 * pi / d
-        betas  = beta0 + pys * 2 * pi / d
-        self.alphas = alphas
-        self.betas = betas
+        elif self.structure.world_1d == False:
+            # Calculate vectors of pxs and pys of all orders
+            # with px^2 + py^2 <= self.max_order_PWs
+            pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
+            # Calculate k_x and k_y components of scattered PWs
+            # (using the grating equation)
+            alpha0, beta0 = self.k_pll_norm()
+            alphas = alpha0 + pxs * 2 * pi / d
+            betas  = beta0 + pys * 2 * pi / d
+            self.alphas = alphas
+            self.betas = betas
+            k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
 
-        k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
+        else:
+            raise ValueError, "must specify world_1d status of ThinFilm."
+
 
         if self.is_air_ref:
             assert not hasattr(self, 'sort_order'), \
@@ -222,7 +243,8 @@ class Simmo(Modes):
         self.mode_pol       = None
 
     def calc_modes(self, num_BM = None, delete_working = True):
-        """ Run the FEM in Fortran """
+        """ Run a Fortran FEM caluculation to find the modes of a \
+        structured layer. """
         st = self.structure
         wl = self.light.wl_nm
         if self.structure.diameter2 == 0:
@@ -232,11 +254,19 @@ class Simmo(Modes):
         self.n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl), 
             st.inclusion_b.n(wl)])
         self.n_effs = self.n_effs[:self.nb_typ_el]
-
         if self.structure.loss == False:
             self.n_effs = self.n_effs.real
 
-        pxs, pys = self.calc_grating_orders(self.max_order_PWs)
+
+        if self.structure.geometry == '1D_array':
+            pxs = self.calc_1d_grating_orders(self.max_order_PWs)
+        elif self.structure.geometry == '2D_array':
+            pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
+        else:
+            raise ValueError, "object.geometry must either be '1D_array' \
+                or '2D_array'."
+
+
         num_pw_per_pol = pxs.size
         if num_BM == None: self.num_BM = num_pw_per_pol * 2 + 20
         else: self.num_BM = num_BM
@@ -246,16 +276,10 @@ class Simmo(Modes):
 
         d = self.structure.period
 
-        # Prepare for the mesh
-        with open("../backend/data/"+self.structure.mesh_file) as f:
-            self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
-
-        # Size of Fortran's complex superarray (scales with mesh)
-        # In theory could do some python-based preprocessing
-        # on the mesh file to work out RAM requirements
-        cmplx_max = 2**27#30
-
         # Parameters that control how FEM routine runs
+        self.E_H_field = 1  # Selected formulation (1=E-Field, 2=H-Field)
+        i_cond         = 2  # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
+        itermax        = 30 # Maximum number of iterations for convergence
         FEM_debug = 0   # Fortran routine will print info to screen and save additional into to file
         if FEM_debug == 1:
             if not os.path.exists("Normed"):
@@ -265,35 +289,78 @@ class Simmo(Modes):
             if not os.path.exists("Output"):
                 os.mkdir("Output")
 
-        # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
-        max_n = np.real(self.n_effs.max()) # Take real part so that complex conjugate pair 
-        # Eigenvalues are equal distance from shift and invert point and therefore both found.
-        k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
 
-        if self.structure.hyperbolic == True:
-            shift = 1.01*max_n**2 * k_0**2
+        if self.structure.geometry == '1D_array':
+            raise NotImplementedError, "Soz still working on this"
+            with open("../backend/fem_1d/msh/"+self.structure.mesh_file) as f:
+                self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
+            # Size of Fortran's complex superarray (scales with mesh)
+            # In theory could do some python-based preprocessing
+            # on the mesh file to work out RAM requirements
+            cmplx_max = 2**27
+
+            try:
+                resm = EMUstack.calc_1d_modes(
+                    self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
+                    self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
+                    self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
+                    self.E_H_field, i_cond, itermax, 
+                    self.structure.plot_modes, self.structure.plot_real, 
+                    self.structure.plot_imag, self.structure.plot_abs,
+                    num_pw_per_pol, cmplx_max)
+
+                self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
+                self.table_nod, self.type_el, self.x_arr = resm
+                self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+            except KeyboardInterrupt:
+                print "Fortran FEM routine encoutered an error..."
+                pass
+
+
+
+        elif self.structure.geometry == '2D_array':
+            # Prepare for the mesh
+            with open("../backend/fem_2d/msh/"+self.structure.mesh_file) as f:
+                self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
+
+            # Size of Fortran's complex superarray (scales with mesh)
+            # In theory could do some python-based preprocessing
+            # on the mesh file to work out RAM requirements
+            cmplx_max = 2**27#30
+
+            # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
+            max_n = np.real(self.n_effs.max()) # Take real part so that complex conjugate pair 
+            # Eigenvalues are equal distance from shift and invert point and therefore both found.
+            k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
+
+            if self.structure.hyperbolic == True:
+                shift = 1.01*max_n**2 * k_0**2
+            else:
+                shift = 1.01*max_n**2 * k_0**2  \
+                - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
+
+            try:
+                resm = EMUstack.calc_2d_modes(
+                    self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
+                    self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
+                    self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
+                    self.E_H_field, i_cond, itermax, 
+                    self.structure.plot_modes, self.structure.plot_real, 
+                    self.structure.plot_imag, self.structure.plot_abs,
+                    num_pw_per_pol, cmplx_max)
+
+                self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
+                self.table_nod, self.type_el, self.x_arr = resm
+                self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+            except KeyboardInterrupt:
+                print "Fortran FEM routine encoutered an error..."
+                pass
+
         else:
-            shift = 1.01*max_n**2 * k_0**2  \
-            - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
+            raise ValueError, "object.geometry must either be '1D_array' \
+                or '2D_array'."
 
 
-        self.E_H_field = 1   # Selected formulation (1=E-Field, 2=H-Field)
-        i_cond    = 2   # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
-        itermax   = 30  # Maximum number of iterations for convergence
-
-        resm = EMUstack.calc_modes(
-            self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
-            self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-            self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
-            self.E_H_field, i_cond, itermax, 
-            self.structure.plot_modes, self.structure.plot_real, 
-            self.structure.plot_imag, self.structure.plot_abs,
-            num_pw_per_pol, cmplx_max)
-
-        self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
-        self.table_nod, self.type_el, self.x_arr = resm
-
-        self.J, self.J_dag = np.mat(J), np.mat(J_dag)
 
         if delete_working:
             self.sol2 = None
@@ -311,6 +378,11 @@ class Simmo(Modes):
             del self.n_effs
             del self.E_H_field
             del self.nb_typ_el
+
+
+
+
+
 
 def r_t_mat(lay1, lay2):
     """ Return R12, T12, R21, T21 at an interface between lay1

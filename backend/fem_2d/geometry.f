@@ -24,7 +24,7 @@ c
 c
       ui = 6
 c
-        open (unit=24,file="../backend/data/"//mesh_file,
+        open (unit=24,file="../backend/fem_2d/msh/"//mesh_file,
      *     status='old')
         read(24,*) npt2, nel2
 c

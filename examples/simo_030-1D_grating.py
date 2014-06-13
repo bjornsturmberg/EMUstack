@@ -47,7 +47,7 @@ num_cores = 2
 ################ Light parameters #####################
 wl_1     = 400
 wl_2     = 800
-no_wl_1  = 4
+no_wl_1  = 2
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0) for wl in wavelengths]
 
@@ -57,34 +57,30 @@ period = 300
 # Define each layer of the structure, as in last example.
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air)
-TF_2 = objects.ThinFilm(period, height_nm = 5e6,
-    material = materials.InP, loss=False)
-TF_3 = objects.ThinFilm(period, height_nm = 52,
-    material = materials.Si_a)
-mirror = objects.ThinFilm(period, height_nm = 1e5, # realistically a few micron thick mirror
-    material = materials.Ag) # would do the trick, but EMUstack is height agnostic.
+grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
+    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j), 
+    loss = True, make_mesh_now = True, force_mesh = False, lc_bkg = 0.1, lc2= 3.0)
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air)
 
 def simulate_stack(light):    
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
-    sim_mirror = mirror.calc_modes(light)
-    sim_TF_2 = TF_2.calc_modes(light)
-    sim_TF_3 = TF_3.calc_modes(light)
+    sim_grating = grating.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
     ################ Evaluate stacked structure ##############
     """ Now when defining full structure order is critical and
     stack MUST be ordered from bottom to top!
     """
 # Put semi-inf substrate below thick mirror so that propagating energy is defined.
-    stack = Stack((sim_substrate, sim_mirror, sim_TF_3, sim_TF_2, sim_superstrate))
+    stack = Stack((sim_substrate, sim_grating, sim_superstrate))
     stack.calc_scat(pol = 'TM')
 
     return stack
 
 pool = Pool(num_cores)
-stacks_list = pool.map(simulate_stack, light_list)
+# stacks_list = pool.map(simulate_stack, light_list)
+stacks_list = map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
 simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
 np.savez('Simo_results'+simotime, stacks_list=stacks_list)
