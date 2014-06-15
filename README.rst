@@ -1,4 +1,5 @@
 Welcome to EMUstack!
+--------------------
 
 EMUstack is an open-source simulation package for calculating light propagation through multi-layered stacks of dispersive, lossy, nanostructured, optical media. It implements a generalised scattering matrix method, which extends the physical intuition of thin film optics to complex structures.
 
@@ -7,7 +8,7 @@ ORIGIN
 ------
 
 EMUstack is the product of many years research, and is designed primarily as a research tool.
-The underpinnings of EMUstack were majoritively developed within CUDOS (the ARC Centre of Excellence for Ultra-high bandwidth Devices for Optical Systems), at its University of Technology Sydney (UTS) and University of Sydney (USyd) nodes.
+The underpinnings of EMUstack were majoritively developed within CUDOS (the ARC Centre of Excellence for Ultra-high bandwidth Devices for Optical Systems), at its University of Sydney (USyd) and University of Technology Sydney (UTS) nodes.
 
 The scattering matrix method formalism was developed by Lindsay Botten, Ara Asatryan, and Kokou Dossou at UTS. The FEM routine was developed by Kokou Dossou while at the Université du Québec en Outaouais, Université Laval and UTS.
 
@@ -39,7 +40,7 @@ EMUstack comes with a range of tests to ensure it is running correctly. These ar
 HELP!
 -----
 
-The growing human-readable documentation for EMUstack lives in EMUstack_docs/
+The growing human-readable documentation for EMUstack lives in EMUstack/docs/
 
 Limited community support is available on the GitHub site: <https://github.com/EMUstack/EMUstack_stable>, and via the EMUstack mailing list <https://groups.google.com/forum/#!forum/emustack>. Feel free to ask questions.
 
