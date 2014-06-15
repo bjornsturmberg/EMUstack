@@ -1,7 +1,6 @@
 """
     plotting.py is a subroutine of EMUstack that contains numerous plotting
-    routines. These were developed during simulations for photovoltaics,
-    hence the efficiency calculations.
+    routines.
 """
 """
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
@@ -52,13 +51,13 @@ charge_e       = 1.602176565*1e-19  # Charge of an electron
 
 ####Short utility functions############################################################
 def clear_previous(file_type):
-    """ Delete all files of specified type 'file_type', eg '.txt' """
+    """ Delete all files of specified type 'file_type'. """
 
     files_rm = 'rm *%s'% file_type
     subprocess.call(files_rm, shell = True)
 
 def zeros_int_str(zero_int):
-    """ Convert integer into string with '0' in place of ' ' """
+    """ Convert integer into string with '0' in place of ' '. """
     # if zero_int == 0:
     #     fmt_string = '0000'
     # else:
@@ -74,6 +73,7 @@ def tick_function(energies):
     return wls
 
 def max_n(stacks_list):
+    """ Find maximum refractive index n in stacks_list. """
     ns = []
     for s in stacks_list:
         for l in s.layers:
@@ -87,7 +87,9 @@ def max_n(stacks_list):
     return np.real(np.max(ns))
 
 def gen_params_string(stack, layer=1):
-    """ Generate the string of simulation info that is to be printed at the top of plots. """
+    """ Generate the string of simulation info that is to be printed \
+        at the top of plots. 
+    """
     param_layer = stack[0].layers[layer].structure
     # Plot t,r,a for each layer & total, then save each to text files
     if isinstance(param_layer,objects.NanoStruct):
@@ -110,8 +112,8 @@ def gen_params_string(stack, layer=1):
             if param_layer.diameter14 != 0: params_2_print += 'a14 = %(rad)d '%   {'rad' : param_layer.diameter14,}
             if param_layer.diameter15 != 0: params_2_print += 'a15 = %(rad)d '%   {'rad' : param_layer.diameter15,}
             if param_layer.diameter16 != 0: params_2_print += 'a16 = %(rad)d \n'% {'rad' : param_layer.diameter16,}
-            if param_layer.square_inc == True: params_2_print += '\nSquare NWs '
-            if param_layer.ellipticity == True: params_2_print += '\nEllipticity = %(rad)5.3f '% {'rad' : param_layer.ellipticity,}
+            if param_layer.inc_shape == 'square': params_2_print += '\nSquare NWs '
+            if param_layer.inc_shape == 'ellipse': params_2_print += '\nEllipticity = %(rad)5.3f '% {'rad' : param_layer.ellipticity}
         elif param_layer.geometry == '1D_array':
             params_2_print += ''
         params_2_print += '%(BMs)dBMs, PW_radius = %(PWs)d, '% {
@@ -133,8 +135,44 @@ def gen_params_string(stack, layer=1):
 ####Standard plotting of spectra#######################################################
 def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=0,\
     stack_label=1, ult_eta=False, J_sc=False, weight_spec=False, extinct=False,\
-    add_height=0, add_name='', force_txt_save=False):
-    """ Plot t,r,a for each layer & total, then save each to text files. """
+    add_height=0., add_name='', force_txt_save=False):
+    """ Plot t, r, a for each layer & in total. 
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+        Keyword Args:
+            xvalues  (list): The values stacks_list is to be plotted as a \
+                function of.
+
+            params_layer  (int): The index in stacks_list of the layer for \
+                which the geometric parameters are put in the title of \
+                the plots.
+
+            active_layer_nu  (int): The index in stacks_list of the layer for \
+                which the ult_eta and/or J_sc are calculated.
+            
+            stack_label  (int): Label to differentiate plots of different \
+                :Stack:s.
+            
+            ult_eta  (bool): If True, calculate the 'ultimate efficiency'.
+
+            J_sc  (bool): If True, calculate the idealised short circuit \
+                current.
+            
+            weight_spec  (bool): If True, plot t, r, a spectra weighted by \
+                the ASTM 1.5 solar spectrum.
+            
+            extinct  (bool): If True, calculate the extinction ratio in \
+                transmission.
+
+            add_height  (float): Print the heights of :Stack: layer in title.
+
+            add_name  (str): Add add_name to title.
+
+            force_txt_save  (bool): If True, save spectra data to text \
+                files.
+    """
 
     height_list = stacks_list[0].heights_nm()[::-1]
     params_2_print = gen_params_string(stacks_list, params_layer)
@@ -213,7 +251,10 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=0,\
 
 def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_print,\
     stack_label, add_name, force_txt_save):
-    """ The plotting function for one type of spectrum across all layers. """
+    """ Plots one type of spectrum across all layers. 
+
+        Is called from t_r_a_plots. 
+    """
 
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     nu_layers = len(spec_list)/len(xvalues)
@@ -285,7 +326,10 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_prin
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, params_2_print,\
     stack_label, add_name):
-    """ The plotting function for total t,r,a spectra on one plot. """
+    """ Plots total t, r, a spectra on one plot. 
+
+        Is called from t_r_a_plots, t_r_a_plots_subs
+    """
 
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
     
@@ -334,8 +378,44 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, params_2_
 def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
     active_layer_nu=0, stack_label=1, ult_eta=False, J_sc=False, weight_spec=False,\
     extinct=False, add_height=0, add_name=''):
-    """ Plot t,r,a indicating Wood anomalies in substrate for each layer & total,
-        then save each to text files. """
+    """ Plot t, r, a indicating Wood anomalies in substrate for each layer & total.
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+            wavelengths  (list): The wavelengths corresponding to stacks_list.
+
+            period  (float): Period of :Stack:s.
+
+            sub_n  (float): Refractive index of the substrate in which Wood \
+                anomalies are considered.
+
+        Keyword Args:
+            params_layer  (int): The index in stacks_list of the layer for \
+                which the geometric parameters are put in the title of \
+                the plots.
+
+            active_layer_nu  (int): The index in stacks_list of the layer for \
+                which the ult_eta and/or J_sc are calculated.
+            
+            stack_label  (int): Label to differentiate plots of different \
+                :Stack:s.
+            
+            ult_eta  (bool): If True, calculate the 'ultimate efficiency'.
+
+            J_sc  (bool): If True, calculate the idealised short circuit \
+                current.
+            
+            weight_spec  (bool): If True, plot t, r, a spectra weighted by \
+                the ASTM 1.5 solar spectrum.
+            
+            extinct  (bool): If True, calculate the extinction ratio in \
+                transmission.
+
+            add_height  (float): Print the heights of :Stack: layer in title.
+
+            add_name  (str): Add add_name to title.
+    """
 
     height_list = stacks_list[0].heights_nm()[::-1]
     params_2_print = gen_params_string(stacks_list, params_layer)
@@ -398,7 +478,10 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
 
 def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
     params_2_print, stack_label, add_name, period, sub_n):
-    """ The plotting function for total t,r,a spectra on one plot. """
+    """ Plots total t, r, a spectra with lines at first 6 Wood anomalies. 
+
+        Is called from t_r_a_plots_subs
+    """
 
     t_WA_01 = sub_n * period
     t_WA_11 = sub_n * period / np.sqrt(2)
@@ -503,7 +586,26 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
 ####Save J_sc & ult efficiency w/o spectra#############################################
 def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, active_layer_nu=0,\
     stack_label=1, add_name=''):
-    """ Calculate J_sc & efficiency but do not save or plot spectra. """
+    """ Calculate J_sc & ultimate efficiency but do not save or plot spectra.
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+            wavelengths  (list): The wavelengths corresponding to stacks_list.
+
+        Keyword Args:
+            params_layer  (int): The index in stacks_list of the layer for \
+                which the geometric parameters are put in the title of \
+                the plots.
+
+            active_layer_nu  (int): The index in stacks_list of the layer for \
+                which the ult_eta and/or J_sc are calculated.
+            
+            stack_label  (int): Label to differentiate plots of different \
+                :Stack:s.
+            
+            add_name  (str): Add add_name to title.
+    """
 
     height_list = stacks_list[0].heights_nm()[::-1]
     params_2_print = gen_params_string(stacks_list, params_layer)
@@ -529,9 +631,50 @@ def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, active_layer_nu=
 
 
 ####Saving spectra to files############################################################
+def t_r_a_write_files(stacks_list, wavelengths, stack_label=1, add_name=''):
+    """ Save t, r, a for each layer & total in text files. 
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+            wavelengths  (list): The wavelengths corresponding to stacks_list.
+
+        Keyword Args:            
+            stack_label  (int): Label to differentiate plots of different \
+                :Stack:s.
+            
+            add_name  (str): Add add_name to title.
+    """
+    stack_label = zeros_int_str(stack_label)
+
+    a_list = []
+    t_list = []
+    r_list = []
+    for stack in stacks_list:
+        a_list.extend(stack.a_list)
+        t_list.extend(stack.t_list)
+        r_list.extend(stack.r_list)
+
+    layers_steps = len(stacks_list[0].layers) - 1
+    a_tot      = []
+    t_tot      = []
+    r_tot      = []
+    for i in range(len(wavelengths)): 
+        a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
+        t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
+        r_tot.append(float(r_list[i]))
+
+    total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
+    layers_print('Lay_Absorb', a_list, wavelengths, total_h, stack_label)
+    layers_print('Lay_Trans',  t_list, wavelengths, total_h, stack_label)
+    layers_print('Lay_Reflec', r_list, wavelengths, total_h, stack_label)
+
 def layers_print(spectra_name, spec_list, wavelengths, total_h, stack_label=1,\
     add_name=''):
-    """ Save spectra to text files. """
+    """ Save spectra to text files.
+
+        Is called from t_r_a_write_files.
+    """
 
     nu_layers = len(spec_list)/len(wavelengths)
     h_array = np.ones(len(wavelengths))*total_h
@@ -559,32 +702,6 @@ def layers_print(spectra_name, spec_list, wavelengths, total_h, stack_label=1,\
         else:
             np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
                 'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
-
-def t_r_a_write_files(stacks_list, wavelengths, stack_label=1, add_name=''):
-    """ Save t,r,a for each layer & total in text files. """
-    stack_label = zeros_int_str(stack_label)
-
-    a_list = []
-    t_list = []
-    r_list = []
-    for stack in stacks_list:
-        a_list.extend(stack.a_list)
-        t_list.extend(stack.t_list)
-        r_list.extend(stack.r_list)
-
-    layers_steps = len(stacks_list[0].layers) - 1
-    a_tot      = []
-    t_tot      = []
-    r_tot      = []
-    for i in range(len(wavelengths)): 
-        a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
-        t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
-        r_tot.append(float(r_list[i]))
-
-    total_h = sum(stacks_list[0].heights_nm()) #look at first wl result to find h.
-    layers_print('Lay_Absorb', a_list, wavelengths, total_h, stack_label)
-    layers_print('Lay_Trans',  t_list, wavelengths, total_h, stack_label)
-    layers_print('Lay_Reflec', r_list, wavelengths, total_h, stack_label)
 #######################################################################################
 
 
@@ -667,8 +784,9 @@ def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_na
 
 def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name):
     """ Calculate the photovoltaic ultimate efficiency achieved in the specified active layer. 
-        For definition see Sturmberg et al., Optics Express, Vol. 19, Issue S5, pp. A1067-A1081 (2011)
-        http://dx.doi.org/10.1364/OE.19.0A1067
+        
+        For definition see `Sturmberg et al., Optics Express, Vol. 19, Issue S5, pp. A1067-A1081 (2011)\
+         <http://dx.doi.org/10.1364/OE.19.0A1067>`_.
     """
     # TODO make E_g a property of material, not just longest wl included.
 
@@ -692,7 +810,21 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
 
 ####Plot dispersion diagrams & field concentrations as function of wavelength##########
 def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
-    """ Plots the dispersion diagram of each layer in one plot. """
+    """ Plots the dispersion diagram of each layer in one plot. 
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+            wavelengths  (list): The wavelengths corresponding to stacks_list.
+
+        Keyword Args:
+            params_layer  (int): The index in stacks_list of the layer for \
+                which the geometric parameters are put in the title of \
+                the plots.
+
+            stack_label  (int): Label to differentiate plots of different \
+                :Stack:s.
+    """
 
     params_2_print = gen_params_string(stacks_list, params_layer)
     stack_label = zeros_int_str(stack_label)
@@ -759,7 +891,27 @@ def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
 
 def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, params_layer=1,\
     stack_label=1):
-    """ Plots the energy concentration (epsilon |E_{cyl}| / epsilon |E_{cell}|) of given layer. """
+    """ Plots the energy concentration (epsilon E_cyl / epsilon E_cell) of given layer. 
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+            which_layer  (int): The index in stacks_list of the layer for \
+                which the energy concentration is to be calculated.
+
+            which_modes  (list): Indices of Bloch modes for which to calculate \
+                the energy concentration.
+
+            wavelengths  (list): The wavelengths corresponding to stacks_list.
+
+        Keyword Args:
+            params_layer  (int): The index in stacks_list of the layer for \
+                which the geometric parameters are put in the title of \
+                the plots.
+
+            stack_label  (int): Label to differentiate plots of different \
+                :Stack:s.
+    """
 
     params_2_print = gen_params_string(stacks_list, params_layer)
     stack_label = zeros_int_str(stack_label)
@@ -792,7 +944,19 @@ def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, params_layer
 
 ####Visualise scattering matrices######################################################
 def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
-    """ Plot given scattering matrix as greyscale images. """
+    """ Plot given scattering matrix as greyscale images.
+
+        Args:
+            scat_mat  (np.matrix): A scattering matrix.
+
+        Keyword Args:
+            nu_prop_PWs  (int): Number of propagating PWs.
+
+            wl  (int): Index in case of calling in a loop.
+
+            extra_title  (str): Add extra_title to title. 
+    """
+
     fig = plt.figure(num=None, figsize=(14, 6), dpi=80, facecolor='w', edgecolor='k')
     if wl != None and extra_title == None: title = '-wl%(wl)i' % {'wl' : wl}
     elif wl == None and extra_title != None: title = '-%(ti)s' % {'ti' : extra_title}
@@ -840,7 +1004,18 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
 
 ####Plot PW amplitudes function k-vector###############################################
 def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
-    """ Plot PW amplitudes as a function of their in-plane k-vector. """
+    """ PW amplitudes in transmission as a function of their in-plane k-vector.
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+        Keyword Args:
+            lay_interest  (int): The index in stacks_list of the layer in \
+                which amplitudes are calculated.
+
+            pol  (str): Include transmission in Which polarisation.
+
+    """
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
 
@@ -907,7 +1082,28 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
 ####Plot amplitudes of PW orders#######################################################
 def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
     lay_interest=0, add_height=None, add_title=None):
-    """ Plot the amplitudes of plane wave orders in given layer. """
+    """ Plot the amplitudes of plane wave orders in selected layer.
+
+        Assumes dealing with 1D grating and only have 1D diffraction orders.
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+        Keyword Args:
+            xvalues  (list): The values stacks_list is to be plotted as a \
+                function of.
+
+            chosen_PW_order  (list): PW diffraction orders to include. \
+                eg. [-1,0,2].
+
+            lay_interest  (int): The index in stacks_list of the layer in \
+                which amplitudes are calculated.
+
+            add_height  (float): Print the heights of :Stack: layer in title.
+
+            add_title  (str): Add add_name to title.
+    """
+
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
     # vec_coef sorted from top of stack, everything else is sorted from bottom
@@ -964,7 +1160,28 @@ def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
 
 def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
     lay_interest=0, add_height=None, add_title=None):
-    """ Create a figure of merit for the 'evanescent-ness' of excited fields. """
+    """ Plot a figure of merit for the 'evanescent-ness' of excited fields. 
+
+        Assumes dealing with 1D grating and only have 1D diffraction orders.
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+        Keyword Args:
+            xvalues  (list): The values stacks_list is to be plotted as a \
+                function of.
+
+            chosen_PW_order  (list): PW diffraction orders to include. \
+                eg. [-1,0,2].
+
+            lay_interest  (int): The index in stacks_list of the layer in \
+                which amplitudes are calculated.
+
+            add_height  (float): Print the heights of :Stack: layer in title.
+
+            add_title  (str): Add add_name to title.
+    """
+
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
     # vec_coef sorted from top of stack, everything else is sorted from bottom
@@ -1708,8 +1925,6 @@ def E_PW_fields(stack, nu_calc_pts = 51, max_height = 3,\
                 plt.savefig('%(dir_name)s/E_%(name)s_diag_slice_y=%(diag)sx_%(wl)s_contour_%(p)s.pdf'% \
                     {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, 'name' : name_lay[ll]})
 
-
-
 def fields_3d(pstack, wl):
     """
     """
@@ -1745,10 +1960,27 @@ def fields_3d(pstack, wl):
 
 
 ####Fabry-Perot resonances#############################################################
-def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0, lay_interests=1):
+def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0, lay_interest=1):
     """ Calculate the Fabry-Perot resonance condition for a resonances within a layer.
-    'lay_interest' : specifies which layer in the stack to find F-P resonances of.
+
+        This is equivalent to finding the slab waveguide modes of the layer.
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+            freq_list  (list): Frequencies included.
+
+            kx_list  (list): In-plane wavenumbers included.
+
+            f_0  (list): Frequency w.r.t. which axis is normalised.
+
+            k_0  (list): In-plane wavenumber w.r.t. which axis is normalised.
+
+        Keyword Args:
+            lay_interest  (int): The index in stacks_list of the layer of \
+            which F-P resonances are calculated.
     """
+
     n_freqs = len(freq_list)
     n_kxs   = len(kx_list)
     height = stacks_list[-1].heights_nm()[lay_interest-1] # assumes all stacks have equal height

@@ -26,15 +26,13 @@ import sys
 import os
 sys.path.append("../backend/")
 
-import materials
-import objects
 from fem_2d import EMUstack
 
 _interfaces_i_have_known = {}
 pi = np.pi
 
 class Modes(object):
-    """ Super-class from which Simmo and Anallo inherit common functionality."""
+    """ Super-class from which Simmo and Anallo inherit common functionality. """
     def k_pll_norm(self):
         return self.light.k_pll * self.structure.period
 
@@ -45,17 +43,17 @@ class Modes(object):
         return wl
 
     def air_ref(self):
-        """ Return an :Anallo: for air for the same :Light: as this."""
+        """ Return an :Anallo: for air for the same :Light: as this. """
         return self.light._air_ref(self.structure.period)
 
     def calc_1d_grating_orders(self, max_order):
-        """ Return the grating order indices px and py, unsorted."""
+        """ Return the grating order indices px and py, unsorted. """
         # Create arrays of grating order indexes (-p, ..., p)
         pxs = np.arange(-max_order, max_order + 1)
         return pxs
 
     def calc_2d_grating_orders(self, max_order):
-        """ Return the grating order indices px and py, unsorted."""
+        """ Return the grating order indices px and py, unsorted. """
         # Create arrays of grating order indexes (-p, ..., p)
         pxs = pys = np.arange(-max_order, max_order + 1)
         # The inner loop in the fortran is over y, not x
@@ -67,11 +65,11 @@ class Modes(object):
         return pxs_mesh[low_ord], pys_mesh[low_ord]
 
     def prop_fwd(self, height_norm):
-        """ Return the matrix P corresponding to forward propagation/decay."""
+        """ Return the matrix P corresponding to forward propagation/decay. """
         return np.mat(np.diag(np.exp(1j * self.k_z * height_norm)))
 
     def shear_transform(self, coords):
-        """ Return the matrix Q corresponding to a shear transformation to coordinats coords."""
+        """ Return the matrix Q corresponding to a shear transformation to coordinats coords. """
         alphas = np.append(self.air_ref().alphas,self.air_ref().alphas)
         betas  = np.append(self.air_ref().betas,self.air_ref().betas)
         return np.mat(np.diag(np.exp(1j * (alphas * coords[0] + betas * coords[1]))))
@@ -93,7 +91,10 @@ class Modes(object):
 
 
 class Anallo(Modes):
-    """ Like a :Simmo:, but for a thin film, and calculated analytically."""
+    """ Interaction of one :Light: object with one :ThinFilm: object.
+
+        Like a :Simmo:, but for a thin film, and calculated analytically. 
+    """
     def __init__(self, thin_film, light):
         self.structure     = thin_film
         self.light         = light
@@ -109,7 +110,7 @@ class Anallo(Modes):
         self.structure.num_pw_per_pol = len(kzs)
 
     def calc_kz(self):
-        """ Return a sorted 1D array of grating orders' kz."""
+        """ Return a sorted 1D array of grating orders' kz. """
         d = 1 #TODO: are lx, ly relevant here??
 
         if self.structure.world_1d == True:
@@ -171,7 +172,7 @@ class Anallo(Modes):
 
 
     def k(self):
-        """ Return the normalised wavenumber in the background material"""
+        """ Return the normalised wavenumber in the background material. """
         return np.complex128(2 * pi * self.n() / self.wl_norm())
 
     def Z(self):
@@ -196,7 +197,7 @@ class Anallo(Modes):
         return np.concatenate((Zcr * k_on_kz, Zcr / k_on_kz))
 
     def specular_incidence(self, pol = 'TE'):
-        """ Return a vector of plane wave amplitudes corresponding
+        """ Return a vector of plane wave amplitudes corresponding \
             to specular incidence in the specified polarisation.
 
             i.e. all elements are 0 except the zeroth order.
@@ -234,7 +235,11 @@ class Anallo(Modes):
 
 
 class Simmo(Modes):
-    """docstring for Simmo"""
+    """ Interaction of one :Light: object with one :NanoStruc: object.
+
+        Inherits knowledge of :NanoStruc:, :Light: objects 
+        Stores the calculated modes of :NanoStruc: for illumination by :Light:
+    """
     def __init__(self, structure, light):
         self.structure      = structure
         self.light          = light
@@ -385,7 +390,7 @@ class Simmo(Modes):
 
 
 def r_t_mat(lay1, lay2):
-    """ Return R12, T12, R21, T21 at an interface between lay1
+    """ Return R12, T12, R21, T21 at an interface between lay1 \
         and lay2.
     """
     assert lay1.structure.period == lay2.structure.period
@@ -451,8 +456,8 @@ def r_t_mat_tf_ns(an1, sim2):
     """ Returns R12, T12, R21, T21 at an1-sim2 interface.
 
         Based on:
-        Dossou et al., JOSA A, Vol. 29, Issue 5, pp. 817-831 (2012)
-        http://dx.doi.org/10.1364/JOSAA.29.000817
+        `Dossou et al., JOSA A, Vol. 29, Issue 5, pp. 817-831 (2012)\
+         <http://dx.doi.org/10.1364/JOSAA.29.000817>`_
 
         But we use Zw = 1/(Zcr X) instead of X, so that an1 does not 
         have to be free space.

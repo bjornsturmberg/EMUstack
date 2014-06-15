@@ -134,7 +134,7 @@ plotting.vis_scat_mats(R_interface)
 
 # Lastly, we can also plot the transmission, reflection, absorption 
 # of each layer and of the stack as a whole.
-plotting.t_r_a_plots(stacks_list, wavelengths)
+plotting.t_r_a_plots(stacks_list)
 
 # ps we'll keep an eye on the time...
 ######################## Wrapping up ########################

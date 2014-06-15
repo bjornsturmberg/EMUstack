@@ -31,11 +31,10 @@ class Material(object):
         If the material is dispersive, the refractive index at a given
         wavelength is calculated by linear interpolation from the 
         initially given data `n`. Materials may also have `n` calculated
-        from a Drude model with input paramters.
+        from a Drude model with input parameters.
 
-        INPUTS:
-
-        - `n`: Either a scalar refractive index, \
+        Args:
+            n  : Either a scalar refractive index, \
                 an array of values `(wavelength, n)`, or \
                 `(wavelength, real(n), imag(n))`, \
                 or omega_p, omega_g, eps_inf for Drude model.
@@ -72,7 +71,7 @@ class Material(object):
             self._n = interp1d(self.data_wls, self.data_ns)
         else:
             raise ValueError, "You must either set a constant refractive \
-                index, provide tabulated data, or drude parameters"
+                index, provide tabulated data, or Drude parameters"
 
 
     def n(self, wl_nm):
@@ -130,6 +129,8 @@ Cu       = Material(np.loadtxt('%sCu_Palik.txt'% data_location))    # Palik
 # Drude model - need to give [omega_plasma, omega_gamma, eplison_infinity]
 Au_drude = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
 
+
+# Use the below to plot the interpolated refractive indices 
 
 # import matplotlib
 # matplotlib.use('pdf')

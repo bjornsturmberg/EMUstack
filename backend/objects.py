@@ -37,88 +37,112 @@ print '\n#################################################################\n' + 
       'Starting EMUstack calculation ...\n' + \
       '#################################################################\n'
 
+
+
 class NanoStruct(object):
     """ Represents a structured layer.
 
-        INPUTS:
+        Args:
+            geometry (str): Either 1D or 2D structure; '1D_array', '2D_array'.
 
-        - 'geometry'      : Either 1D or 2D structure; '1D_array', '2D_array'.
+            period (float): The period of the unit cell in nanometers.
 
-        - 'period'        : The period of the unit cell in nanometers.
+            diameter1 (float): The diameter of the inclusion in nm.
 
-        - 'diameter1'     : The diameter of the inclusion in nm.
-        - 'diameter2-16'  : The diameter of further inclusions in nm.
+        Keyword Args:
+            inc_shape  (str): Shape of inclusions that have template mesh,\
+                currently; 'circle', 'ellipse', 'square', 'split ring'.
 
-        - 'height_nm'     : The thickness of the layer in nm or 'semi_inf' \
-            for a semi-infinte layer.
+            ellipticity   (float): If != 0, inclusion has given ellipticity,\
+                with b = diameter, a = diameter-ellipticity * diameter. \
+                NOTE: only implemented for 1 inclusion.
 
-        - 'inclusion_a'   : A :Material: instance for first inclusion, \
-            specified as dispersive refractive index (eg. materials.Si_c) \
-            or nondispersive complex number (eg. Material(1.0 + 0.0j)).
+            diameter2-16  (float): The diameters of further inclusions in nm.
 
-        - 'inclusion_b'   : "  " for the second inclusion medium.
-        - 'background'    : "  " for the background medium.
+            inclusion_a   : A :Material: instance for first inclusion, \
+                specified as dispersive refractive index (eg. materials.Si_c) \
+                or nondispersive complex number (eg. Material(1.0 + 0.0j)).
 
-        - 'loss'          : If False, Im(n) = 0, if True n as in :Material: instance.
+            inclusion_b   : A :Material: instance for the second \
+                inclusion medium.
 
-        - 'hyperbolic'    : If True FEM looks for Eigenvalues around n**2 * k_0**2\
-            rather than the regular n**2 * k_0**2 - alpha**2 - beta**2.
+            background    : A :Material: instance for the background medium.
 
-        - 'ellipticity'   : If != 0, inclusion has given ellipticity, with b=diameter,\
-           a=diameter-ellipticity*diameter. NOTE: only implemented for 1 inclusion.
+            loss  (bool): If False, Im(n) = 0, if True n as in \
+                :Material: instance.
 
-        - 'square_inc'    : If True, '2D_array' has square NWs (ie. 2D grating).
+            height_nm (float): The thickness of the layer in nm or 'semi_inf' \
+                for a semi-infinite layer.
 
-        - 'ff'            : The fill fraction of the inclusions. If non-zero, \
-            the specified diameters are overritten s.t. given ff is achieved, \
-            otherwise ff is calculated from parameters and stored in self.ff.
-        - 'ff_rand'       : If True, diameters overritten with random diameters, \
-            s.t. the ff is as assigned. Must provide non-zero dummy diameters.
-        
-        - 'posx'          : Shift NWs laterally towards center (each other), \
-            posx is a fraction of the distance possible before NWs touching.
-        - 'posy'          : Shift NWs vertically "  ". 
- 
-        - 'small_d'       : Distance between 2 inclusions of interleaved 1D grating.
+            hyperbolic  (bool): If True FEM looks for Eigenvalues around \
+                n**2 * k_0**2 rather than the regular \
+                n**2 * k_0**2 - alpha**2 - beta**2.
 
-        - 'make_mesh_now' : If True, program creates a FEM mesh with provided \
-            NanoStruct parameters. If False, must provide mesh_file name of \
-            existing .mail that will be run despite NanoStruct parameters.
+            ff  (float): The fill fraction of the inclusions. If non-zero, \
+                the specified diameters are overwritten s.t. given ff is \
+                achieved, otherwise ff is calculated from parameters and \
+                stored in self.ff.
 
-        - 'force_mesh'    : If True, a new mesh is created despite existance of \
-            mesh with same parameter. This is used to make mesh with equal \
-            period etc. but different lc refinement.
+            ff_rand  (bool): If True, diameters overwritten with random \
+                diameters, s.t. the ff is as assigned. Must provide non-zero \
+                dummy diameters.
+            
+            posx  (float): Shift NWs laterally towards center (each other), \
+                posx is a fraction of the distance possible before NWs touch.
 
-        - 'mesh_file'     : If using a set premade mesh give its name including \
-            .mail (eg. 600_60.mail), it must be located in backend/Data/
+            posy  (float): Shift NWs vertically towards center (each other), \
+                posx is a fraction of the distance possible before NWs touch.
+     
+            small_d  (float): Distance between 2 inclusions of interleaved \
+                1D grating.
 
-        - 'lc_bkg'        : Length constant of meshing of background medium \
-            (smaller = finer mesh)
-        - 'lc2'           : factor by which lc_bkg should be reduced on inclusion \
-            surfaces; lc_surface = cl_bkg / lc2.
-        - 'lc3-6'         : "  " at center of inclusions.
+            make_mesh_now  (bool): If True, program creates a FEM mesh with \
+                provided :NanoStruct: parameters. If False, must provide \
+                mesh_file name of existing .mail that will be run despite \
+                :NanoStruct: parameters.
 
-        - 'plot_modes'    : Plot modes (ie. FEM solutions) in gmsh format, \
-            you get epsilon*|E|^2 & either real/imag/abs of \
-            x,y,z components, field vectors.
+            force_mesh  (bool): If True, a new mesh is created despite \
+                existence of mesh with same parameter. This is used to make \
+                mesh with equal period etc. but different lc refinement.
 
-        - 'plot_real'     : Plot the real part of modal fields.
-        - 'plot_imag'     : Plot the imaginary part of modal fields.
-        - 'plot_abs'      : Plot the absolute value of modal fields.
-        - 'plotting3d'    : Plot the fields in 3D.
+            mesh_file  (str): If using a set premade mesh give its name \
+                including .mail (eg. 600_60.mail), it must be located in \
+                backend/fem_2d/msh/
+
+            lc_bkg  (float): Length constant of meshing of background medium \
+                (smaller = finer mesh)
+
+            lc2  (float): factor by which lc_bkg will be reduced on inclusion\
+                surfaces; lc_surface = cl_bkg / lc2.
+
+            lc3-6'  (float): factor by which lc_bkg will be reduced at center \
+                of inclusions.
+
+            plot_modes  (bool): Plot modes (ie. FEM solutions) in gmsh format,\
+                you get epsilon*|E|^2 & either real/imag/abs of \
+                x,y,z components, field vectors.
+
+            plot_real  (bool): Plot the real part of modal fields.
+
+            plot_imag  (bool): Plot the imaginary part of modal fields.
+
+            plot_abs  (bool): Plot the absolute value of modal fields.
+
+            plotting3d  (bool): Plot the fields in 3D.
     """
 
 
-    def __init__(self, geometry, period, diameter1, 
-        height_nm=2330,
-        inclusion_a = materials.Si_c, inclusion_b = materials.Air,
-        background = materials.Air, loss=True, hyperbolic=False,
+    def __init__(self, geometry, period, diameter1,
+        inc_shape='circle', ellipticity=0.0,
+        ff=0, ff_rand=False, small_d=0, 
+        inclusion_a = materials.Material(3.0 + 0.1j), 
+        inclusion_b = materials.Material(3.0 + 0.1j),
+        background = materials.Material(1.0 + 0.0j),
+        loss=True, height_nm=1000, 
         diameter2=0,  diameter3=0, diameter4=0, diameter5=0, diameter6=0, 
         diameter7=0, diameter8=0, diameter9=0, diameter10=0, diameter11=0, 
         diameter12=0, diameter13=0,diameter14=0, diameter15=0, diameter16=0, 
-        ellipticity=0.0, square_inc=False,
-        ff=0, ff_rand=False, 
-        small_d=0, posx=0, posy=0,
+        hyperbolic=False, posx=0, posy=0,
         make_mesh_now=True, force_mesh=False, 
         mesh_file='NEED_FILE.mail', 
         lc_bkg=0.09, lc2=1.0, lc3=1.0, lc4=1.0, lc5=1.0, lc6=1.0,
@@ -151,10 +175,10 @@ class NanoStruct(object):
         self.ellipticity   = ellipticity
         if ellipticity > 1.0:
             raise ValueError, "ellipticity must be less than 1.0"
-        self.square_inc    = square_inc
+        self.inc_shape    = inc_shape
         if ff == 0:
             if geometry == '2D_array':
-                self.ff = calculate_ff(square_inc,period,diameter1,diameter2,
+                self.ff = calculate_ff(inc_shape,period,diameter1,diameter2,
                     diameter3,diameter4,diameter5,diameter6,diameter7,diameter8,diameter9,
                     diameter10,diameter11,diameter12,diameter13,diameter14,diameter15,
                     diameter16,ellipticity)
@@ -231,7 +255,7 @@ class NanoStruct(object):
 
             if self.ellipticity != 0:
                 msh_name = msh_name + '_e_%(e)s' % {'e' : dec_float_str(self.ellipticity),}
-            if self.square_inc == True:
+            if self.inc_shape == 'square':
                 msh_name = msh_name + '_sq'
             if self.posx != 0:
                 msh_name = msh_name + 'x%(e)s' % {'e' : dec_float_str(self.posx),}
@@ -263,7 +287,7 @@ class NanoStruct(object):
                         select_diameter = random.uniform(min_a,max_a)
                         rad_array = np.append(rad_array,select_diameter)
 
-                    test_ff = calculate_ff(self.square_inc, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
+                    test_ff = calculate_ff(self.inc_shape, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
                     rad_array[5],rad_array[6],rad_array[7],rad_array[8],rad_array[9],rad_array[10],
                     rad_array[11],rad_array[12],rad_array[13],rad_array[14],rad_array[15])
                     print test_ff
@@ -286,7 +310,7 @@ class NanoStruct(object):
                         self.diameter14  = rad_array[13]
                         self.diameter15  = rad_array[14]
                         self.diameter16  = rad_array[15]
-                    test_ff = calculate_ff(self.square_inc, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
+                    test_ff = calculate_ff(self.inc_shape, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
                     rad_array[5],rad_array[6],rad_array[7],rad_array[8],rad_array[9],rad_array[10],
                     rad_array[11],rad_array[12],rad_array[13],rad_array[14],rad_array[15])
 
@@ -299,7 +323,7 @@ class NanoStruct(object):
                 geo = geo.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
                 geo = geo.replace('a1 = 0;', "a1 = %f;" % self.diameter1)
                 geo = geo.replace('ellipticity = 0;', "ellipticity = %f;" % self.ellipticity)
-                if self.square_inc == True: geo = geo.replace('square = 0;', "square = 1;")
+                if self.inc_shape == 'square': geo = geo.replace('square = 0;', "square = 1;")
                 geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
                 geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
                 geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
@@ -398,13 +422,15 @@ class NanoStruct(object):
             raise ValueError, "Must be simulating either a '1D_array' or a '2D_array'."
 
     def calc_modes(self, light, **args):
-        """ Run a simulation to find the structure's modes.
+        """ Run a simulation to find the NanoStruct's modes.
 
-            INPUTS:
+            Args:
+                light  (Light instance): Represents incident light.
 
-            - `light`: A :Light: instance representing incident light.
+                args  (dict): Options to pass to :Simmo.calc_modes:.
 
-            - `args` : A dict of options to pass to :Simmo.calc_modes:.
+            Returns:
+                :Simmo: object
         """
         simmo = Simmo(self, light) 
 
@@ -419,24 +445,25 @@ class NanoStruct(object):
 class ThinFilm(object):
     """ Represents an unstructured homogeneous film.
 
-        INPUTS:
+        Args:
+            period  (float): Artificial period imposed on homogeneous film \
+                to give consistently defined plane waves in terms of \
+                diffraction orders of structured layers.
 
-        - 'period'         : Artificial period imposed on homogeneous film \
-            to give consistently defined plane waves in terms of \
-            diffraction orders of structured layers.
+        Keyword Args:
+            world_1d  (bool): Does the rest of the stack have exclusively 1D \
+                periodic structures and homogeneous layers? \
+                If True we use the set of 1D diffraction order PWs.
 
-        - 'world_1d'       : Does the rest of the stack have only 1D \
-            periodicity? This dictates the set of PWs to use.
+            height_nm  (float): The thickness of the layer in nm or 'semi_inf'\
+                for a semi-infinte layer.
 
-        - 'height_nm'      : The thickness of the layer in nm or 'semi_inf' \
-            for a semi-infinte layer.
+            num_pw_per_pol  (int): The number of plane waves per polarisation.
 
-        - 'num_pw_per_pol' : The number of plane waves per polarisation.
+            material  : A :Material: instance specifying the n of \
+                the layer and related methods.
 
-        - 'material'       : A :Material: instance specifying the n of \
-            the layer and related methods.
-
-        - 'loss'           : If False sets Im(n) = 0, if True leaves n as is.
+            loss  (bool): If False sets Im(n) = 0, if True leaves n as is.
     """
     def __init__(self, period, world_1d = False, height_nm = 1000,  
         num_pw_per_pol=0, material = materials.Material(3.0 + 0.001), loss = True):
@@ -448,6 +475,16 @@ class ThinFilm(object):
         self.loss           = loss
     
     def calc_modes(self, light):
+        """ Run a simulation to find the ThinFilm's modes.
+
+            Args:
+                light  (Light instance): Represents incident light.
+
+                args  (dict): Options to pass to :Anallo.calc_modes:.
+
+            Returns:
+                :Anallo: object
+        """
         an = Anallo(self, light)
         an.calc_modes()
         return an
@@ -466,18 +503,19 @@ class Light(object):
 
         `wl_nm` and `k_pll` are both in unnormalised units.
 
-        INPUTS:
+        Args:
 
-        - `wl_nm`         : Wavelength, in nanometers.
+            wl_nm  (float): Wavelength, in nanometers.
 
-        - `max_order_PWs` : Maximum plane wave order to include.
+        Keyword Args:
+            max_order_PWs  (int): Maximum plane wave order to include.
 
-        - `k_parallel`    : The wave vector components (k_x, k_y) \
-            parallel to the interface planes. Units of nm^-1.
+            k_parallel  (tuple): The wave vector components (k_x, k_y) \
+                parallel to the interface planes. Units of nm^-1.
 
-        - `theta`         : Polar angle of incidence in degrees.
+            theta  (float): Polar angle of incidence in degrees.
 
-        - `phi`           : Azimuthal angle of incidence in degrees.
+            phi  (float): Azimuthal angle of incidence in degrees.
     """
     def __init__(self, wl_nm, max_order_PWs = 2, k_parallel = [0.,0.], 
         theta = None, phi = None, n_inc = 1.):
@@ -508,7 +546,7 @@ class Light(object):
 
 
     def _air_ref(self, period):
-        """ Return a :Anallo: corresponding to this :Light: in free space.
+        """ Return an :Anallo: corresponding to this :Light: in free space.
 
             The :Anallo: will have `len(anallo.k_z) == 2 * num_pw'.
         """
@@ -543,14 +581,30 @@ def dec_float_str(dec_float):
 
 
 
-def calculate_ff(square_inc, d, a1, a2=0, a3=0, a4=0, a5=0, a6=0, a7=0, a8=0, a9=0, a10=0,
+def calculate_ff(inc_shape, d, a1, a2=0, a3=0, a4=0, a5=0, a6=0, a7=0, a8=0, a9=0, a10=0,
     a11=0, a12=0, a13=0, a14=0, a15=0, a16=0, el1 = 0):
+    """ Calculate the fill fraction of the inclusions.
 
-    if square_inc == False:
+        Args:
+            inc_shape  (str): shape of the inclusions.
+
+            d  (float): period of structure, in same units as a1-16.
+
+            a1  (float): diameter of inclusion 1, in same units as d.
+
+        Keyword Args:
+            a2-16  (float): diameters of further inclusions.
+
+            el1  (float): ellipticity of inclusion 1.
+    """
+
+    if inc_shape == 'circle' or inc_shape == 'ellipse':
         ff = np.pi*((a1/2)**2*np.sqrt(1-el1) + (a2/2)**2 + (a3/2)**2 + (a4/2)**2 + (a5/2)**2 + (a6/2)**2 + 
             (a7/2)**2 + (a8/2)**2 + (a9/2)**2 + (a10/2)**2 + (a11/2)**2 + (a12/2)**2 + (a13/2)**2 + 
             (a14/2)**2 + (a15/2)**2 + (a16/2)**2)/(d)**2
-    else:
+    elif inc_shape == 'square':
         ff = ((a1)**2 + (a2)**2 + (a3)**2 + (a4)**2 + (a5)**2 + (a6)**2 + (a7)**2 + (a8)**2 + (a9)**2
             + (a10)**2 + (a11)**2 + (a12)**2 + (a13)**2 + (a14)**2 + (a15)**2 + (a16)**2)/(d)**2 
+    else:
+        ValueError, "Only know how to calculate fill fraction of squares, circles and ellipses."
     return ff

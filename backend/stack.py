@@ -30,15 +30,14 @@ class Stack(object):
 
         This includes the semi-infinite input and output layers.
 
-        INPUTS:
+        Args:
+            layers  (tuple): :ThinFilm:s and :NanoStruct:s \
+                ordered from top to bottom layer.
 
-          - `layers` : a tuple of :ThinFilm:s and :NanoStruct:s 
-            ordered from top to bottom layer.
-
-          - `heights_nm` : a tuple of the heights of the inside layers,
-            i.e., all layers except for the top and bottom. This 
-            overrides any heights specified in the :ThinFilm: or
-            :NanoStruct: objects.
+            heights_nm  (tuple): the heights of the inside layers,\
+                i.e., all layers except for the top and bottom. This\ 
+                overrides any heights specified in the :ThinFilm: or\
+                :NanoStruct: objects.
 
     """
     def __init__(self, layers, heights_nm = None, shears = None):
@@ -148,13 +147,12 @@ class Stack(object):
     #     return f_down_list, f_up_list
 
     def calc_scat(self, pol = 'TE', incoming_amplitudes = None):
-        """ Calculate the transmission and reflection matrices of the stack
+        """ Calculate the transmission and reflection matrices of the stack.
 
             In relation to the FEM mesh the polarisation is orientated,
             - vertically   for TE
             - horizontally for TM
             at normal incidence (polar angle theta = 0, azimuthal angle phi = 0).
-
         """
         # Can check this against lines ~ 127 in J_overlap.f E components are TE, have diffraction
         # orders along beta, which is along y.
@@ -170,9 +168,9 @@ class Stack(object):
         PW_pols         = 2*neq_PW
         I_air           = np.matrix(np.eye(PW_pols),dtype='D')
 
-        """ Calculate net scattering matrices starting at the bottom
-            1 is infintesimal air layer
-            2 is medium in layer (symmetric as air on each side)
+        """ Calculate net scattering matrices starting at the bottom.
+            1 is infintesimal air layer.
+            2 is medium in layer (symmetric as air on each side).
             (r)t12 and (r)tnet lists run from bottom to top!
         """
         r12_list = []
@@ -256,10 +254,12 @@ class Stack(object):
         self.R_net, self.T_net = rnet, tnet
 
 
-        """ Calculate field expansions for all layers (including air) starting at top
-            Ordering is now top to bottom (inverse of above)! ie f1 is superstrate (top)
-            Calculate net downward energy flux in each infintesimal air layer & super/substrates
-            (see appendix C in Dossou et al. JOSA 2012)
+        """ Calculate field expansions for all layers (including air) \
+            starting at top.
+            Ordering is now top to bottom (inverse of above)! \
+            i.e. f1 is superstrate (top).
+            Calculate net downward energy flux in each infintesimal air layer \
+            & super/substrates (see appendix C in Dossou et al. JOSA 2012).
         """
 
         self.t_list = []
