@@ -22,7 +22,7 @@ EMUstack is free software; you can redistribute it and/or modify it under the te
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License in the EMUstack_docs/ directory. If not, see `here <http://www.gnu.org/copyleft/gpl.html>`_
+You should have received a copy of the GNU General Public License in the EMUstack/ directory. If not, see `here <http://www.gnu.org/copyleft/gpl.html>`_
 
 
 OFFICIALLY SUPPORTED PLATFORMS
@@ -34,7 +34,7 @@ EMUstack has been developed for use on Linux and Unix-like operating systems. It
 TESTING
 -------
 
-EMUstack comes with a range of tests to ensure it is running correctly. These are found in the EMUstack_tests directories.
+EMUstack comes with a range of tests to ensure it is running correctly. These are found in the EMUstack/tests directories.
 
 
 HELP!
