@@ -37,6 +37,7 @@ class Modes(object):
         return self.light.k_pll * self.structure.period
 
     def wl_norm(self):
+        """ Return normalised wavelength (wl/period). """
         wl = float(self.light.wl_nm) / self.structure.period
         if self.light.wl_nm % self.structure.period == 0: # Avoid Wood Anomalies
             wl += 1e-10
@@ -165,6 +166,7 @@ class Anallo(Modes):
         return k_z_unsrt[s]
 
     def n(self):
+        """ Return refractive index of an object at its wavelength. """
         if self.structure.loss:
             return self.structure.material.n(self.light.wl_nm)
         else:
