@@ -46,7 +46,6 @@ Thin Film Stack
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_020-thin_film_multilayered_stack.py
-    :language: python
     :lines: 20-
 
 
@@ -54,7 +53,6 @@ Thin Film Stack
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_030-1D_grating.py
-    :language: python
     :lines: 20-
 
 
@@ -62,7 +60,6 @@ Thin Film Stack
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_040-2D_array.py
-    :language: python
     :lines: 20-
 
 
@@ -70,7 +67,6 @@ Angles of Incidence
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_041-2D_array_angles.py
-    :language: python
     :lines: 20-
 
 
@@ -78,7 +74,6 @@ Eliptical Inclusions
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_042-eliptical_holes-CD.py
-    :language: python
     :lines: 20-
 
 
@@ -86,7 +81,6 @@ Plotting Fields
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_050-plotting_fields.py
-    :language: python
     :lines: 20-
 
 
@@ -94,7 +88,6 @@ Plotting Amplitudes
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_051-plotting_amplitudes.py
-    :language: python
     :lines: 20-
 
 
@@ -102,7 +95,6 @@ Shear Transformations
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_060-shear_transformations.py
-    :language: python
     :lines: 20-
 
 
@@ -110,7 +102,6 @@ Varying a Single Layer
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_070-many_substrates.py
-    :language: python
     :lines: 20-
 
 
@@ -118,7 +109,6 @@ Convergence Testing
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_080-convergence-stacked_gratings.py
-    :language: python
     :lines: 20-
 
 
@@ -126,7 +116,6 @@ Stacked Gratings with Angles
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_090-stacked_grating_w_angles.py
-    :language: python
     :lines: 20-
 
 
@@ -134,7 +123,6 @@ Stacked Gratings with Wavelengths
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_091-stacked_grating_w_wls.py
-    :language: python
     :lines: 20-
 
 
@@ -142,7 +130,6 @@ Extraordinary Optical Transmission
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_100-EOT.py
-    :language: python
     :lines: 20-
 
 
@@ -150,7 +137,6 @@ Resonant Grating
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_101-resonant_grating.py
-    :language: python
     :lines: 20-
 
 
