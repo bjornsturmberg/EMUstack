@@ -40,7 +40,7 @@ EMUstack comes with a range of tests to ensure it is running correctly. These ar
 HELP!
 -----
 
-The growing human-readable documentation for EMUstack lives in EMUstack/docs/
+The growing human-readable documentation for EMUstack lives in EMUstack/docs/ and online at `readthedocs <http://emustack.readthedocs.org/en/latest/index.html>`_.org.
 
 Limited community support is `available on the GitHub site <https://github.com/bjornsturmberg/EMUstack>`_, and via `the EMUstack mailing list <https://groups.google.com/forum/#!forum/emustack>`_. Feel free to ask questions.
 
