@@ -32,7 +32,6 @@ Single Interface
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_010-single_interface.py
-    :language: python
     :lines: 20-
 
 
@@ -40,7 +39,6 @@ Dispersion
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_011-single_interface-dispersive.py
-    :language: python
     :lines: 20-
 
 
