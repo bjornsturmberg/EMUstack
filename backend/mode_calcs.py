@@ -265,13 +265,13 @@ class Simmo(Modes):
             self.n_effs = self.n_effs.real
 
 
-        if self.structure.geometry == '1D_array':
-            pxs = self.calc_1d_grating_orders(self.max_order_PWs)
-        elif self.structure.geometry == '2D_array':
-            pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
-        else:
-            raise ValueError, "object.geometry must either be '1D_array' \
-                or '2D_array'."
+        # if self.structure.geometry == '1D_array':
+        #     pxs = self.calc_1d_grating_orders(self.max_order_PWs)
+        # elif self.structure.geometry == '2D_array':
+        pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
+        # else:
+        #     raise ValueError, "object.geometry must either be '1D_array' \
+        #         or '2D_array'."
 
 
         num_pw_per_pol = pxs.size
@@ -297,75 +297,75 @@ class Simmo(Modes):
                 os.mkdir("Output")
 
 
-        if self.structure.geometry == '1D_array':
-            raise NotImplementedError, "Soz still working on this"
-            with open("../backend/fem_1d/msh/"+self.structure.mesh_file) as f:
-                self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
-            # Size of Fortran's complex superarray (scales with mesh)
-            # In theory could do some python-based preprocessing
-            # on the mesh file to work out RAM requirements
-            cmplx_max = 2**27
+        # if self.structure.geometry == '1D_array':
+        #     raise NotImplementedError, "Soz still working on this"
+        #     with open("../backend/fem_1d/msh/"+self.structure.mesh_file) as f:
+        #         self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
+        #     # Size of Fortran's complex superarray (scales with mesh)
+        #     # In theory could do some python-based preprocessing
+        #     # on the mesh file to work out RAM requirements
+        #     cmplx_max = 2**27
 
-            try:
-                resm = EMUstack.calc_1d_modes(
-                    self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
-                    self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-                    self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
-                    self.E_H_field, i_cond, itermax, 
-                    self.structure.plot_modes, self.structure.plot_real, 
-                    self.structure.plot_imag, self.structure.plot_abs,
-                    num_pw_per_pol, cmplx_max)
+        #     try:
+        #         resm = EMUstack.calc_1d_modes(
+        #             self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
+        #             self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
+        #             self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
+        #             self.E_H_field, i_cond, itermax, 
+        #             self.structure.plot_modes, self.structure.plot_real, 
+        #             self.structure.plot_imag, self.structure.plot_abs,
+        #             num_pw_per_pol, cmplx_max)
 
-                self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
-                self.table_nod, self.type_el, self.x_arr = resm
-                self.J, self.J_dag = np.mat(J), np.mat(J_dag)
-            except KeyboardInterrupt:
-                print "Fortran FEM routine encoutered an error..."
-                pass
+        #         self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
+        #         self.table_nod, self.type_el, self.x_arr = resm
+        #         self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+        #     except KeyboardInterrupt:
+        #         print "Fortran FEM routine encoutered an error..."
+        #         pass
 
 
 
-        elif self.structure.geometry == '2D_array':
-            # Prepare for the mesh
-            with open("../backend/fem_2d/msh/"+self.structure.mesh_file) as f:
-                self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
+        # elif self.structure.geometry == '2D_array':
+        # Prepare for the mesh
+        with open("../backend/fem_2d/msh/"+self.structure.mesh_file) as f:
+            self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
 
-            # Size of Fortran's complex superarray (scales with mesh)
-            # In theory could do some python-based preprocessing
-            # on the mesh file to work out RAM requirements
-            cmplx_max = 2**27#30
+        # Size of Fortran's complex superarray (scales with mesh)
+        # In theory could do some python-based preprocessing
+        # on the mesh file to work out RAM requirements
+        cmplx_max = 2**27#30
 
-            # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
-            max_n = np.real(self.n_effs.max()) # Take real part so that complex conjugate pair 
-            # Eigenvalues are equal distance from shift and invert point and therefore both found.
-            k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
+        # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
+        max_n = np.real(self.n_effs.max()) # Take real part so that complex conjugate pair 
+        # Eigenvalues are equal distance from shift and invert point and therefore both found.
+        k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
 
-            if self.structure.hyperbolic == True:
-                shift = 1.01*max_n**2 * k_0**2
-            else:
-                shift = 1.01*max_n**2 * k_0**2  \
-                - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
-
-            try:
-                resm = EMUstack.calc_2d_modes(
-                    self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
-                    self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-                    self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
-                    self.E_H_field, i_cond, itermax, 
-                    self.structure.plot_modes, self.structure.plot_real, 
-                    self.structure.plot_imag, self.structure.plot_abs,
-                    num_pw_per_pol, cmplx_max)
-
-                self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
-                self.table_nod, self.type_el, self.x_arr = resm
-                self.J, self.J_dag = np.mat(J), np.mat(J_dag)
-            except KeyboardInterrupt:
-                print "Fortran FEM routine encoutered an error..."
-                pass
-
+        if self.structure.hyperbolic == True:
+            shift = 1.01*max_n**2 * k_0**2
         else:
-            raise ValueError, "object.geometry must either be '1D_array' \
-                or '2D_array'."
+            shift = 1.01*max_n**2 * k_0**2  \
+            - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
+
+        try:
+            resm = EMUstack.calc_2d_modes(
+                self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
+                self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
+                self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
+                self.E_H_field, i_cond, itermax, 
+                self.structure.plot_modes, self.structure.plot_real, 
+                self.structure.plot_imag, self.structure.plot_abs,
+                num_pw_per_pol, cmplx_max)
+
+            self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
+            self.table_nod, self.type_el, self.x_arr = resm
+            self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+        except KeyboardInterrupt:
+            print "Fortran FEM routine encoutered an error..."
+            pass
+
+        # else:
+        #     raise ValueError, "object.geometry must either be '1D_array' \
+        #         or '2D_array'."
 
 
 
