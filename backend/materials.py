@@ -69,9 +69,9 @@ class Material(object):
             #     self._n = interp1d(self.data_wls, self.data_ns, 'cubic')
             # else:
             self._n = interp1d(self.data_wls, self.data_ns)
-        # else:
-        #     raise ValueError, "You must either set a constant refractive \
-        #         index, provide tabulated data, or Drude parameters"
+        else:
+            raise ValueError, "You must either set a constant refractive \
+                index, provide tabulated data, or Drude parameters"
 
 
     def n(self, wl_nm):
