@@ -17,7 +17,7 @@ import os
 
 class Mock(object):
     __all__ = []
-    
+
     def __init__(self, *args, **kwargs):
         pass
 
@@ -33,7 +33,8 @@ class Mock(object):
         else:
             return Mock()
 
-MOCK_MODULES = ['scipy', 'scipy.interpolate', 'numpy', 'fem_2d', 'fem_2d.EMUstack',]
+MOCK_MODULES = ['scipy', 'scipy.interpolate', 'numpy', 'fem_2d', 'fem_2d.EMUstack',
+    'matplotlib', 'matplotlib.pyplot', 'matplotlib.mlab']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 
