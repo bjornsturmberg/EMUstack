@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+
+'sphinxcontrib.napoleon',# -*- coding: utf-8 -*-
 #
 # EMUstack documentation build configuration file, created by
 # sphinx-quickstart on Sat Jun 14 14:17:22 2014.
@@ -35,6 +36,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
+    'sphinxcontrib.napoleon',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
