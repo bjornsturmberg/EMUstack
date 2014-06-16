@@ -1,3 +1,6 @@
+Simulation Structure
+------------------------------------------------
+
 Simulations with EMUstack are generally carried out using a python script file.
 This file is kept in its own directory which is placed in the EMUstack directory.
 All results of the simulation are automatically created within this directory. This directory then serves as a complete record of the calculation. Often, we will also save the simulation objects (scattering matrices, propagation constants etc.) within this folder for future inspection, manipulation, plotting, etc.
