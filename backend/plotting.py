@@ -1977,7 +1977,7 @@ def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0, lay_interest=1):
             k_0  (list): In-plane wavenumber w.r.t. which axis is normalised.
 
         Keyword Args:
-            lay_interest  (int): The index in stacks_list of the layer of \
+            lay_interest  (int): The index in stacks_list of the layer of\
             which F-P resonances are calculated.
     """
 

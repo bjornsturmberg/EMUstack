@@ -4,7 +4,6 @@ Introduction
 
 EMUstack calculates the scattering matrices of a multi-layered structure, where each layer can be homogeneous or structured (down to sub-wavelength dimensions) and the materials may have complex, dispersive refractive indices. The scattering matrices are powerful tools from which many physical quantities, such as the total transmission, absorption in each layer, and the resonances of the structure, can be derived.
 
------
 An advantage of EMUstack over other scattering matrix programs (for example `CAMFR <http://docutils.sf.net/rst.html>`_) is that the fields in each layer are considered in their natural basis with transmission scattering matrices converting fields between them. The fields in homogeneous layers are therefore expressed in terms of plane waves, while the natural basis in the periodically structured layers are Bloch modes. Expressing fields in their natural basis gives the terms of the scattering matrices intuitive meaning, providing access to greater physical insights. It is also advantages for the speed and accuracy of the numerical method.
 
 Inherent to the scattering matrix approach is the requirement that the interfaces between layers be planar, *ie.* that each layer is uniform in one direction (here labelled {\it z}). In this nomenclature the incident field must have $k_z = k_{\perp} \ne 0$, but is unconstrained in $k_{\parallel} = k_{x,y}$.

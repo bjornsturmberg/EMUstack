@@ -8,14 +8,16 @@ To start a simulation open a terminal and change into the directory containing t
 To run this script::
 
     $ python simo.py
+
 To have direct access to the simulation objects upon the completion of the script use,::
 
     $ python -i simo.py
-This will return you into an interactive python session in which all simulation objects are accessible. 
-In this session you can access the docstrings of objects, classes and methods. For example::
+
+This will return you into an interactive python session in which all simulation objects are accessible. In this session you can access the docstrings of objects, classes and methods. For example::
 
     >>> from pydoc import help
     >>> help(objects.Light)
+
 where we have accessed the docstring of the Light class from objects.py
 
 
@@ -167,7 +169,8 @@ is an extremely useful little linux command. In the context of long-ish calculat
 For more information see the manual::
     
     $ man screen
-or see online discussions `here <http://www.howtoforge.com/linux_screen>`_ and `here <http://www.rackaid.com/blog/linux-screen-tutorial-and-how-to/>`_.
+
+or see online discussions `here <http://www.howtoforge.com/linux_screen>`_ `and here <http://www.rackaid.com/blog/linux-screen-tutorial-and-how-to/>`_.
 
 
 The screen session or also called screen instance looks just like your regular terminal/putty, but you can disconnect from it (close putty, turn off your computer etc.) and later reconnect to the screen session and everything inside of this will have kept running. You can also reconnect to the session from a different computer via ssh.
@@ -203,6 +206,7 @@ We could now start another screen and run some more calculations in this termina
 If we want to access the first session we 'reattach' by typing::
 
     Ctrl +a +r
+
 Or entering the following into the terminal::
 
     $ screen -r
@@ -210,6 +214,7 @@ Or entering the following into the terminal::
 If there are multiple sessions use::
 
     $ screen -ls
+
 to get a listing of the sessions and their ID numbers. To reattach to a particular screen, with ID 1221::
 
     $ screen -r 1221
@@ -217,6 +222,7 @@ to get a listing of the sessions and their ID numbers. To reattach to a particul
 To terminate a screen from within type::
 
     Ctrl+d
+
 Or, taking the session ID from the previous example::
 
     screen -X -S 1221 kill
@@ -230,10 +236,11 @@ Terminating EMU stacks
 If (for some estranged reason) a simulation hangs, we can kill all python instances upon the machine::
 
     $ pkill python
-If a calculation hangs from within a screen session one must first detach from that session then kill python.
-A more targeted way to kill processes is using their PID::
+
+If a calculation hangs from within a screen session one must first detach from that session then kill python. A more targeted way to kill processes is using their PID::
 
     $ kill PID
+
 Or if this does not suffice be a little more forceful::
 
     $ kill -9 PID
