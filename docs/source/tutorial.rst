@@ -170,7 +170,7 @@ For more information see the manual::
     
     $ man screen
 
-or see online discussions `here <http://www.howtoforge.com/linux_screen>`_ `and here <http://www.rackaid.com/blog/linux-screen-tutorial-and-how-to/>`_.
+or see online discussions `here <http://www.howtoforge.com/linux_screen>`_, `and here <http://www.rackaid.com/blog/linux-screen-tutorial-and-how-to/>`_.
 
 
 The screen session or also called screen instance looks just like your regular terminal/putty, but you can disconnect from it (close putty, turn off your computer etc.) and later reconnect to the screen session and everything inside of this will have kept running. You can also reconnect to the session from a different computer via ssh.
