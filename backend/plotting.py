@@ -1202,12 +1202,13 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
         "evanescent_merit cannot guess what to plot on x-axis, specify with xvalues input."
         return
 
-    store_m_p  = []
-    store_m_ne = []
-    store_m_fe = []
-    store_x_p  = []
-    store_x_ne = []
-    store_x_fe = []
+    store_m_p     = []
+    store_m_ne    = []
+    store_m_fe    = []
+    store_x_p     = []
+    store_x_ne    = []
+    store_x_fe    = []
+    store_mean_ev = []
     s = 0
     for stack in stacks_list:
         assert isinstance(stack.layers[lay_interest],objects.Anallo), \
@@ -1215,6 +1216,8 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
         merit_prop    = 0.0
         merit_near_ev = 0.0
         merit_far_ev  = 0.0
+        sum_p_amps    = 0.0
+        sum_amps      = 0.0
         for pxs in chosen_PW_order:
             k0 = stack.layers[lay_interest].k()
             n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
@@ -1236,6 +1239,8 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
             if this_k_pll2 < k0**2: merit_prop += trans
             if k0**2 < this_k_pll2 < (n_H*k0)**2: merit_near_ev += trans
             if this_k_pll2 > (n_H*k0)**2: merit_far_ev += trans
+            sum_p_amps += np.abs(pxs) * trans
+            sum_amps += trans
 
         if merit_prop != 0.0:
             store_m_p = np.append(store_m_p,merit_prop)
@@ -1247,97 +1252,99 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
             store_m_fe = np.append(store_m_fe,merit_far_ev)
             store_x_fe = np.append(store_x_fe,xvalues[s])
         s+=1
+        store_mean_ev = np.append(store_mean_ev,sum_p_amps/sum_amps)
 
-    if len(store_m_p)  != 0: ax1.plot(store_x_p,store_m_p, label="prop")
-    if len(store_m_ne) != 0: ax1.plot(store_x_ne,store_m_ne, label="near ev")
-    if len(store_m_fe) != 0: ax1.plot(store_x_fe,store_m_fe, label="far ev")
+    if len(store_m_p)  != 0: ax1.plot(store_x_p,store_m_p, 'b', label="prop")
+    if len(store_m_ne) != 0: ax1.plot(store_x_ne,store_m_ne, 'g', label="near ev")
+    if len(store_m_fe) != 0: ax1.plot(store_x_fe,store_m_fe, 'r', label="far ev")
+    ax1.plot(xvalues,store_mean_ev, 'k', label=r'$\Sigma|p| |a_p| / \Sigma|a_p|$')
 
     handles, labels = ax1.get_legend_handles_labels()
-    lgd = ax1.legend(handles, labels, ncol=3, loc='upper center', bbox_to_anchor=(0.5,1.2))
+    lgd = ax1.legend(handles, labels, ncol=4, loc='upper center', bbox_to_anchor=(0.5,1.2))
     ax1.set_ylabel('Ev FoM')
     ax1.set_xlabel(xlabel)
     if add_title != None: plt.suptitle('%s' % add_title)
     if add_height!= None: add_title += zeros_int_str(add_height)
     if add_title != None: plt.savefig('evanescent_merit-lay_%s' % lay_interest + add_title, \
-        bbox_extra_artists=(lgd,), bbox_inches='tight')
+        fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
     else: plt.savefig('evanescent_merit-lay_%s' % lay_interest, bbox_extra_artists=(lgd,),\
      bbox_inches='tight')
 
 
-    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-    ax1 = fig.add_subplot(1,1,1)
+    # fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+    # ax1 = fig.add_subplot(1,1,1)
 
-    store_m_p  = []
-    store_m_ne = []
-    store_m_fe = []
-    for stack in stacks_list:
-        merit_prop    = 0.0
-        merit_near_ev = 0.0
-        for pxs in chosen_PW_order:
-            k0 = stack.layers[lay_interest].k()
-            n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
-            # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
-            alpha0, beta0 = stack.layers[lay_interest].k_pll_norm()
-            alphas = alpha0 + pxs * 2 * np.pi
-            this_k_pll2 = alphas**2 + beta0**2
-            on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
-            full_k_space = stack.layers[lay_interest].k_z
-            # consider only transmission into singular polarization
-            one_pol_k_space = full_k_space[0:n_PW_p_pols]
+    # store_m_p  = []
+    # store_m_ne = []
+    # store_m_fe = []
+    # for stack in stacks_list:
+    #     merit_prop    = 0.0
+    #     merit_near_ev = 0.0
+    #     for pxs in chosen_PW_order:
+    #         k0 = stack.layers[lay_interest].k()
+    #         n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
+    #         # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
+    #         alpha0, beta0 = stack.layers[lay_interest].k_pll_norm()
+    #         alphas = alpha0 + pxs * 2 * np.pi
+    #         this_k_pll2 = alphas**2 + beta0**2
+    #         on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
+    #         full_k_space = stack.layers[lay_interest].k_z
+    #         # consider only transmission into singular polarization
+    #         one_pol_k_space = full_k_space[0:n_PW_p_pols]
 
-            ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
-            axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
+    #         ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
+    #         axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
 
-            trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
-            trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+    #         trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
+    #         trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
 
-            merit_prop += np.abs(pxs) * trans
-            merit_near_ev += trans
+    #         merit_prop += np.abs(pxs) * trans
+    #         merit_near_ev += trans
 
-        store_m_p  = np.append(store_m_p,merit_prop)
-        store_m_ne = np.append(store_m_ne,merit_prop/merit_near_ev)
+    #     store_m_p  = np.append(store_m_p,merit_prop)
+    #     store_m_ne = np.append(store_m_ne,merit_prop/merit_near_ev)
 
-    s = 0
-    for stack in stacks_list:
-        merit_far_ev  = 0.0
-        for pxs in chosen_PW_order:
-            k0 = stack.layers[lay_interest].k()
-            n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
-            # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
-            alpha0, beta0 = stack.layers[lay_interest].k_pll_norm()
-            alphas = alpha0 + pxs * 2 * np.pi
-            this_k_pll2 = alphas**2 + beta0**2
-            on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
-            full_k_space = stack.layers[lay_interest].k_z
-            # consider only transmission into singular polarization
-            one_pol_k_space = full_k_space[0:n_PW_p_pols]
+    # s = 0
+    # for stack in stacks_list:
+    #     merit_far_ev  = 0.0
+    #     for pxs in chosen_PW_order:
+    #         k0 = stack.layers[lay_interest].k()
+    #         n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
+    #         # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
+    #         alpha0, beta0 = stack.layers[lay_interest].k_pll_norm()
+    #         alphas = alpha0 + pxs * 2 * np.pi
+    #         this_k_pll2 = alphas**2 + beta0**2
+    #         on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
+    #         full_k_space = stack.layers[lay_interest].k_z
+    #         # consider only transmission into singular polarization
+    #         one_pol_k_space = full_k_space[0:n_PW_p_pols]
 
-            ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
-            axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
+    #         ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
+    #         axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
 
-            trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
-            trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+    #         trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
+    #         trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
 
-            merit_far_ev += np.abs(np.abs(pxs) - np.abs(store_m_ne[s]))**2 * trans
+    #         merit_far_ev += np.abs(np.abs(pxs) - np.abs(store_m_ne[s]))**2 * trans
 
-        store_m_fe = np.append(store_m_fe, merit_far_ev)
-        s +=1
+    #     store_m_fe = np.append(store_m_fe, merit_far_ev)
+    #     s +=1
 
-    ax1.plot(xvalues,store_m_p, label=r'$\Sigma |p| |a_p|$')
-    ax1.plot(xvalues,store_m_ne, label=r'$\Sigma|p| |a_p| / |a_p|$')
-    ax1.plot(xvalues,store_m_fe, label=r'$\Sigma||p| - |\overline{p}||^2 |a_p|$')
+    # ax1.plot(xvalues,store_m_p, label=r'$\Sigma |p| |a_p|$')
+    # ax1.plot(xvalues,store_m_ne, label=r'$\Sigma|p| |a_p| / |a_p|$')
+    # ax1.plot(xvalues,store_m_fe, label=r'$\Sigma||p| - |\overline{p}||^2 |a_p|$')
 
-    handles, labels = ax1.get_legend_handles_labels()
-    lgd = ax1.legend(handles, labels, ncol=3, loc='upper center', bbox_to_anchor=(0.5,1.2))
-    ax1.set_ylabel('Ev FoM')
-    if np.max(xvalues) < 90: ax1.set_xlabel(r'$\theta$') # hack way to tell what plotting against
-    else: ax1.set_xlabel(r'$\lambda$ (nm)')
-    if add_title != None: plt.suptitle('%s' % add_title)
-    if add_height!= None: add_title += zeros_int_str(add_height)
-    if add_title != None: plt.savefig('evanescent_merit-2-lay_%s' % lay_interest + add_title, \
-        bbox_extra_artists=(lgd,), bbox_inches='tight')
-    else: plt.savefig('evanescent_merit-2-lay_%s' % lay_interest, bbox_extra_artists=(lgd,),\
-     bbox_inches='tight')
+    # handles, labels = ax1.get_legend_handles_labels()
+    # lgd = ax1.legend(handles, labels, ncol=3, loc='upper center', bbox_to_anchor=(0.5,1.2))
+    # ax1.set_ylabel('Ev FoM')
+    # if np.max(xvalues) < 90: ax1.set_xlabel(r'$\theta$') # hack way to tell what plotting against
+    # else: ax1.set_xlabel(r'$\lambda$ (nm)')
+    # if add_title != None: plt.suptitle('%s' % add_title)
+    # if add_height!= None: add_title += zeros_int_str(add_height)
+    # if add_title != None: plt.savefig('evanescent_merit-2-lay_%s' % lay_interest + add_title, \
+    #     bbox_extra_artists=(lgd,), bbox_inches='tight')
+    # else: plt.savefig('evanescent_merit-2-lay_%s' % lay_interest, bbox_extra_artists=(lgd,),\
+    #  bbox_inches='tight')
 #######################################################################################
 
 

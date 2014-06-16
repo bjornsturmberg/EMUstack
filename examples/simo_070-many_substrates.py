@@ -129,7 +129,7 @@ def simulate_stack(light):
     stack2.a_list[-1] = average_a
 
 # stack2 contains info on the last height and the average spectra
-    return [stack0,stack1,stack2,stack2_indiv_hs] 
+    return np.array([stack2,stack2_indiv_hs] )
     # return stack1
 
 
@@ -141,85 +141,17 @@ simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
 np.savez('Simo_results'+simotime, stacks_list=stacks_list)
     
 
-
-
-
-# Pull apart simultaneously simulated stakes into single stack, all wls arrays.
-# Unnecissary if just returning a single stack
-np.array(stacks_list)
-
-
 ######################## Plotting ########################
-last_light_object = light_list.pop()
-
-
-
-
-
-param_layer = NWs # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=max_num_BMs)
 
 #### Example 1: simple multilayered stack.
 stack_label = 1 # Specify which stack you are dealing with.
 stack1_wl_list = []
 for i in range(len(wavelengths)):
     stack1_wl_list.append(stacks_list[i][stack_label])
-active_layer_nu = 1
 
-Efficiency = plotting.t_r_a_plots(stack1_wl_list, wavelengths, params_string, 
-    active_layer_nu=active_layer_nu, stack_label=stack_label) 
+plotting.t_r_a_plots(stack1_wl_list) 
 # Dispersion
-plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stack_label) 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# #### Example 0: simple interface.
-# param_layer = bottom1 # Specify the layer for which the parameters should be printed on figures.
-# params_string = plotting.gen_params_string(param_layer, last_light_object)
-# stack_label = 0 # Specify which stack you are dealing with.
-# stack0_wl_list = []
-# for i in range(len(wavelengths)):
-#     stack0_wl_list.append(stacks_list[i][stack_label])
-# # Plot total transmission, reflection, absorption & that of each layer.
-# Efficiency = plotting.t_r_a_plots(stack0_wl_list, wavelengths, params_string, 
-#     stack_label=stack_label) 
-
-
-
-
-# param_layer = TF4 # Specify the layer for which the parameters should be printed on figures.
-# params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=max_num_BMs)
-
-# #### Example 1: simple multilayered stack.
-# stack_label = 1 # Specify which stack you are dealing with.
-# stack1_wl_list = []
-# for i in range(len(wavelengths)):
-#     stack1_wl_list.append(stacks_list[i][stack_label])
-# active_layer_nu = 2 # Specify which layer is the active one (where absorption generates charge carriers).
-# # Plot total transmission, reflection, absorption & that of each layer. 
-# # Also calculate efficiency of active layer.
-# Efficiency = plotting.t_r_a_plots(stack1_wl_list, wavelengths, params_string, 
-#     active_layer_nu=active_layer_nu, stack_label=stack_label) 
-# # Dispersion
-# plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stack_label) 
-# # # Energy Concentration
-# # which_layer = 2
-# # which_modes = [1,2] # can be a single mode or multiple modes
-# # plotting.E_conc_plot(stack1_wl_list, which_layer, which_modes, wavelengths, 
-# #     params_string, stack_label=stack_label)
-
-
+plotting.omega_plot(stack1_wl_list, wavelengths) 
 
 
 
@@ -276,10 +208,6 @@ plotting.omega_plot(stack1_wl_list, wavelengths, params_string, stack_label=stac
 
 
 ######################## Wrapping up ########################
-print '\n*******************************************'
-print 'The ultimate efficiency is %12.8f' % Efficiency
-print '-------------------------------------------'
-
 # Calculate and record the (real) time taken for simulation
 elapsed = (time.time() - start)
 hms     = str(datetime.timedelta(seconds=elapsed))
