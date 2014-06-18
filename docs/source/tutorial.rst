@@ -102,10 +102,17 @@ Shear Transformations
     :lines: 20-
 
 
+Ultrathin Absorption Limit - Varying n
+------------------------------------------------
+
+.. literalinclude:: ../../examples/simo_070-ultrathin_limit.py
+    :lines: 20-
+
+
 Varying a Layers of a Stack
 ------------------------------------------------
 
-.. literalinclude:: ../../examples/simo_070-many_substrates.py
+.. literalinclude:: ../../examples/simo_071-many_substrates.py
     :lines: 20-
 
 
