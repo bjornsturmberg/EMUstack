@@ -18,7 +18,8 @@
 """
 
 """
-Simulating a stack of homogeneous, dispersive media.
+Simulating an ultrathin film with a range of real and imaginary refractive
+indices. Can we reach the theoretical limit of 0.5 absorption?
 """
 
 import time
