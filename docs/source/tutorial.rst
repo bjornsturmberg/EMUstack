@@ -109,7 +109,7 @@ Ultrathin Absorption Limit - Varying n
     :lines: 20-
 
 
-Varying a Layers of a Stack
+Varying a Layer of a Stack
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_071-many_substrates.py
