@@ -1,7 +1,7 @@
 """
     simo_011-single_interface.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2013  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,12 +41,12 @@ wl_2     = 600
 no_wl_1  = 4
 # Set up light objects, starting with the wavelengths,
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-# and also specifying angles of incidence and refractive medium of semi-infinite layer
-# that the light is incident upon (default value is n_inc = 1.0).
-# Fields in homogeneous layers are expressed in a Fourier series of diffraction orders,
-# where all orders within a radius of max_order_PWs in k-space are included.
-light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0, n_inc=1.5) \
- for wl in wavelengths]
+# and also specifying angles of incidence and refractive medium of semi-infinite 
+# layer that the light is incident upon (default value is n_inc = 1.0).
+# Fields in homogeneous layers are expressed in a Fourier series of diffraction 
+# orders,where all orders within a radius of max_order_PWs in k-space are included.
+light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0, \
+    n_inc=1.5) for wl in wavelengths]
 
 # Our structure must have a period, even if this is artificially imposed
 # on a homogeneous thin film. What's more,
@@ -77,8 +77,7 @@ def simulate_stack(light):
 
 stacks_list = map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
-np.savez('Simo_results'+simotime, stacks_list=stacks_list)
+np.savez('Simo_results', stacks_list=stacks_list)
 
 # Calculation of the modes and scattering matrices of each layer
 # as well as the scattering matrices of the interfaces of the stack
@@ -136,7 +135,7 @@ plotting.vis_scat_mats(R_interface)
 # of each layer and of the stack as a whole.
 plotting.t_r_a_plots(stacks_list)
 
-# ps we'll keep an eye on the time...
+# p.s. we'll keep an eye on the time...
 ######################## Wrapping up ########################
 print '\n*******************************************'
 # Calculate and record the (real) time taken for simulation,

@@ -1,7 +1,7 @@
 """
     simo_011-single_interface-dispersive.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2013  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,7 +36,8 @@ from stack import *
 
 start = time.time()
 
-# Remove results of previous simulations.
+# We begin by remove all results of previous simulations.
+plotting.clear_previous('.npz')
 plotting.clear_previous('.txt')
 plotting.clear_previous('.pdf')
 plotting.clear_previous('.log')
@@ -49,9 +50,11 @@ num_cores = 2
 wl_1     = 400
 wl_2     = 800
 no_wl_1  = 4
-# Set up light objects (no need to specifiy n_inc as light incident from Air with n_inc = 1.0).
+# Set up light objects (no need to specifiy n_inc as light incident from 
+# Air with n_inc = 1.0).
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0) \
+    for wl in wavelengths]
 
 # The period must be consistent throughout a simulation!
 period = 300
@@ -81,14 +84,13 @@ def simulate_stack(light):
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
-np.savez('Simo_results'+simotime, stacks_list=stacks_list)
+np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Post Processing ########################
 # This time let's visualise the net Transmission scattering matrix,
 # which describes the propagation of light all the way from the superstrate into 
-# the substrate. When studying diffractive layers it is useful to know how many of the
-# plane waves of the substrate are propagating, so lets include this.
+# the substrate. When studying diffractive layers it is useful to know how many 
+# of theplane waves of the substrate are propagating, so lets include this.
 wl_num = -1
 T_net = stacks_list[wl_num].T_net
 nu_prop = stacks_list[wl_num].layers[0].num_prop_pw_per_pol

@@ -24,7 +24,8 @@ This will return you into an interactive python session in which all simulation 
 where we have accessed the docstring of the Light class from objects.py
 
 
-In the remainder of the tutorial we go through a number of example simo.py files. These cover a wide range (though non-exhaustive) of established applications of EMUstack. The source files for these examples are in EMUstack/examples/
+In the remainder of the guide we go through a number of example simo.py files. These cover a wide range (though non-exhaustive) of established applications of EMUstack. The source files for these examples are in EMUstack/examples/
+The first 8 examples are pretty essential for using EMUstack, while those thereafter show EMUstack applied to a number of (IMHO) interesting situations.
 
 Another tip to mention before diving into the examples is running simulations within `Screen Sessions`_. These allow you to disconnect from the terminal instance and are discusses in `Screen Sessions`_.
 
@@ -38,7 +39,7 @@ Single Interface
     :lines: 20-
 
 
-Dispersion
+Dispersion & Parallel Computation
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_011-single_interface-dispersive.py
@@ -49,6 +50,13 @@ Thin Film Stack
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_020-thin_film_multilayered_stack.py
+    :lines: 20-
+
+
+Including Metals
+------------------------------------------------
+
+.. literalinclude:: ../../examples/simo_021-thin_film_mirror.py
     :lines: 20-
 
 
@@ -66,14 +74,7 @@ Thin Film Stack
     :lines: 20-
 
 
-Angles of Incidence
-------------------------------------------------
-
-.. literalinclude:: ../../examples/simo_041-2D_array_angles.py
-    :lines: 20-
-
-
-Eliptical Inclusions
+Angles of Incidence & Eliptical Inclusions
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_042-eliptical_holes-CD.py
@@ -101,7 +102,7 @@ Shear Transformations
     :lines: 20-
 
 
-Varying a Single Layer
+Varying a Layers of a Stack
 ------------------------------------------------
 
 .. literalinclude:: ../../examples/simo_070-many_substrates.py
@@ -115,31 +116,17 @@ Convergence Testing
     :lines: 20-
 
 
-Stacked Gratings with Angles
-------------------------------------------------
-
-.. literalinclude:: ../../examples/simo_090-stacked_grating_w_angles.py
-    :lines: 20-
-
-
-Stacked Gratings with Wavelengths
-------------------------------------------------
-
-.. literalinclude:: ../../examples/simo_091-stacked_grating_w_wls.py
-    :lines: 20-
-
-
 Extraordinary Optical Transmission
 ------------------------------------------------
 
-.. literalinclude:: ../../examples/simo_100-EOT.py
+.. literalinclude:: ../../examples/simo_090-EOT.py
     :lines: 20-
 
 
 Resonant Grating
 ------------------------------------------------
 
-.. literalinclude:: ../../examples/simo_101-resonant_grating.py
+.. literalinclude:: ../../examples/simo_091-resonant_grating.py
     :lines: 20-
 
 

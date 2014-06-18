@@ -16,14 +16,14 @@ import materials
 import plotting
 from stack import *
 
-directory = '/home/bjorn/Results/14_06-Ev_FoMs/day3/fig_of_merit-900-1100-single_large_grating-higher_grating'
-npz_file  = 'Simo_results20140610191336'
-data = np.load(directory+'/'+npz_file+'.npz')
+directory = 'single_grating'
+npz_file  = 'Simo_results'
+data = np.load('../'+directory+'/'+npz_file+'.npz')
 stacks_list = data['stacks_list']
 
 #### stacks_list is now just like in the original simo.py ####
 
-# plotting.t_r_a_plots(stacks_list) 
+# plotting.t_r_a_plots(stacks_list)
 
-plotting.evanescent_merit(stacks_list, lay_interest=0)
-plotting.evanescent_merit(stacks_list, lay_interest=1)
+plotting.evanescent_merit(stacks_list, lay_interest=0, save_mean_ev=True)
+plotting.evanescent_merit(stacks_list, lay_interest=1, save_mean_ev=True)

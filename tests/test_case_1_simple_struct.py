@@ -46,7 +46,8 @@ plotting.clear_previous('.pdf')
 
 # Set up light objects
 wavelengths = np.array([500, 1000])
-light_list  = [objects.Light(wl, max_order_PWs = 2, theta = 0.0, phi = 0.0) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 2, theta = 0.0, phi = 0.0) \
+    for wl in wavelengths]
 
 
 

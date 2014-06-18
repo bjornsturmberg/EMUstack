@@ -1,7 +1,7 @@
 """
-    simmo_template-many_substrates.py is a simulation script template for EMUstack.
+    simo_070-many_substrates.py is a simulation script template for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2013  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@
 """
 
 """
-Simulating solar cell efficiency of nanohole array of set geometry
-as vary substrate and superstrate refractive indeces.
-CAUTION: very memory intensive!
+Simulating solar cell efficiency of nanohole array as a function of
+substrate refractive indices (keeping geometry fixed).
+We also average over a range of thicknesses to remove sharp Fabry-Perot resonances.
 """
 
 import time
@@ -39,9 +39,10 @@ start = time.time()
 ################ Simulation parameters ################
 
 # Number of CPUs to use im simulation
-num_cores = 7
+num_cores = 4
 
 # Remove results of previous simulations
+plotting.clear_previous('.npz')
 plotting.clear_previous('.txt')
 plotting.clear_previous('.pdf')
 plotting.clear_previous('.gif')
@@ -49,165 +50,110 @@ plotting.clear_previous('.log')
 
 ################ Light parameters #####################
 wl_1     = 310
-wl_2     = 1127
+wl_2     = 1127 
 no_wl_1  = 3
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
-# Single wavelength run
-# wl_super = 450
-# wavelengths = np.array([wl_super])
-# light_list  = [objects.Light(wl) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 2, theta = 0.0, phi = 0.0) \
+    for wl in wavelengths]
 
 
-# period must be consistent throughout simulation!!!
-period = 600
-max_num_BMs = 200
+# Period must be consistent throughout simulation!!!
+period = 550
 
-superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
+cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = True)
 
-substrate = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Si_c, loss = False)
+sub_ns = np.linspace(1.0,4.0,100)
 
-ThinFilm2  = objects.ThinFilm(period, height_nm = 100,
-    material = materials.SiO2_a, loss = True)
-
-ThinFilm4  = objects.ThinFilm(period, height_nm = 200,
-    material = materials.Si_c, loss = True)
-
-NW_diameter = 120
-NWs = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
+NW_diameter = 480
+NWs = objects.NanoStruct('1D_array', period, NW_diameter, height_nm = 2330, 
     inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
-    make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 1.0)
+    make_mesh_now = True, force_mesh = True, lc_bkg = 0.17, lc2= 2.5)
 
-# Find num_BM for each simulation (wl) as num decreases w decreasing index contrast.
-max_n = max([NWs.inclusion_a.n(wl).real for wl in wavelengths])
-
-def simulate_stack(light):
-    num_BM = round(max_num_BMs * NWs.inclusion_a.n(light.wl_nm).real/max_n)
-    # num_BM = max_num_BMs
-    
+def simulate_stack(light):   
     ################ Evaluate each layer individually ##############
-    sim_superstrate = superstrate.calc_modes(light)
-    sim_substrate   = substrate.calc_modes(light)
-    sim_ThinFilm2   = ThinFilm2.calc_modes(light)+
-    sim_ThinFilm4   = ThinFilm4.calc_modes(light)
-    sim_NWs         = NWs.calc_modes(light, num_BM = num_BM)
+    sim_cover = cover.calc_modes(light)
+    sim_NWs   = NWs.calc_modes(light)
 
-    ################ Evaluate full solar cell structure ##############
-    """ Now when defining full structure order is critical and
-    solar_cell list MUST be ordered from bottom to top!
-    """
+    # Loop over substrates
+    stack_list = []
+    for s in sub_ns:
+        sub = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+        material = materials.Material(s + 0.0j), loss = False)
+        sim_sub = sub.calc_modes(light)
 
-    stack0 = Stack((sim_substrate, sim_superstrate))
-    stack1 = Stack((sim_substrate, sim_NWs, sim_superstrate))
-    # stack1 = Stack((sim_substrate, sim_ThinFilm2, sim_NWs, sim_superstrate))
-    # stack1 = Stack((sim_substrate, sim_ThinFilm2, sim_ThinFilm4 sim_superstrate))
-    stack0.calc_scat(pol = 'TE')
-    stack1.calc_scat(pol = 'TE')
+        # Loop over heights to wash out sharp FP resonances
+        average_t = 0
+        average_r = 0
+        average_a = 0
 
-# multiple heights for sim_ThinFilm4 
-    stack2_indiv_hs = []
-    average_t = 0
-    average_r = 0
-    average_a = 0
+        num_h = 21
+        for h in np.linspace(2180,2480,num_h):
+            stackSub = Stack((sim_sub, sim_NWs, sim_cover), heights_nm = ([h]))
+            stackSub.calc_scat(pol = 'TE')
+            average_t += stackSub.t_list[-1]/num_h
+            average_r += stackSub.r_list[-1]/num_h
+            average_a += stackSub.a_list[-1]/num_h
+        stackSub.t_list[-1] = average_t
+        stackSub.r_list[-1] = average_r
+        stackSub.a_list[-1] = average_a
+        stack_list.append(stackSub)
 
-    num_h = 10
-    for h in np.linspace(100,2000,num_h):
-        stack2 = Stack((sim_substrate,sim_ThinFilm2,sim_ThinFilm4 sim_superstrate),
-         heights_nm = ([sim_ThinFilm2.height_nm,h]))
-        stack2.calc_scat(pol = 'TE')
-
-        stack2_indiv_hs.append(stack2)
-
-        average_t += stack2.t_list[-1]/num_h
-        average_r += stack2.r_list[-1]/num_h
-        average_a += stack2.a_list[-1]/num_h
-    stack2.t_list[-1] = average_t
-    stack2.r_list[-1] = average_r
-    stack2.a_list[-1] = average_a
-
-# stack2 contains info on the last height and the average spectra
-    return np.array([stack2,stack2_indiv_hs] )
-    # return stack1
+    return stack_list
 
 
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
-np.savez('Simo_results'+simotime, stacks_list=stacks_list)
-    
+np.savez('Simo_results', stacks_list=stacks_list)
+
+
 
 ######################## Plotting ########################
+eta = []
+for s in range(len(sub_ns)):
+    stack_label = s # Specify which stack you are dealing with.
+    stack1_wl_list = []
+    for i in range(len(wavelengths)):
+        stack1_wl_list.append(stacks_list[i][stack_label])
+    sub_n = sub_ns[s]
+    Efficiency = plotting.t_r_a_plots(stack1_wl_list, ult_eta=True,
+        stack_label=stack_label, add_name = str(s))
+    eta.append(100.0*Efficiency[0])
+    # Dispersion of structured layer is the same for all cases.
+    if s == 0:
+        plotting.omega_plot(stack1_wl_list, wavelengths, stack_label=stack_label) 
 
-#### Example 1: simple multilayered stack.
-stack_label = 1 # Specify which stack you are dealing with.
-stack1_wl_list = []
-for i in range(len(wavelengths)):
-    stack1_wl_list.append(stacks_list[i][stack_label])
+# Now plot as a function of substrate refractive index.
+import matplotlib
+matplotlib.use('pdf')
+import matplotlib.pyplot as plt
+fig = plt.figure()
+linesstrength = 3
+font = 18
+ax1 = fig.add_subplot(1,1,1)
+ax1.plot(sub_ns,eta, 'k-o', linewidth=linesstrength)
+ax1.set_xlabel('Substrate refractive index',fontsize=font)
+ax1.set_ylabel(r'$\eta$ (%)',fontsize=font)
+plt.savefig('eta_substrates')
 
-plotting.t_r_a_plots(stack1_wl_list) 
-# Dispersion
-plotting.omega_plot(stack1_wl_list, wavelengths) 
-
-
-
-# #### Example 2: averaged multilayered stack where one layer has many heights.
-# stack_label = 2
-# active_layer_nu = 2
-# stack2_wl_list = []
-# for i in range(len(wavelengths)):
-#     stack2_wl_list.append(stacks_list[i][stack_label])
-# Efficiency = plotting.t_r_a_plots(stack2_wl_list, wavelengths, params_string, 
-#     active_layer_nu=active_layer_nu, stack_label=stack_label)
-
-
-
-# #### Example 3: individual spectra of multilayered stack where one layer has many heights.
-# stack_label = 3
-# active_layer_nu = 2
-# number_of_hs = len(stacks_list[0][stack_label])
-# for h in range(number_of_hs):
-#     gen_name = '_h-'
-#     h_name = str(h)
-#     additional_name = gen_name+h_name # You can add an arbitry string onto the end of the spectra filenames.
-#     stack3_hs_wl_list = []
-#     for i in range(len(wavelengths)):
-#         stack3_hs_wl_list.append(stacks_list[i][stack_label][h])
-#     Efficiency = plotting.t_r_a_plots(stack3_hs_wl_list, wavelengths, params_string, 
-#         active_layer_nu=active_layer_nu, stack_label=stack_label, add_name = additional_name)
-# # Animate spectra as a function of heights.
-# from os import system as ossys
-# delay = 5 # delay between images in gif in hundredths of a second
-# names = 'Lay_Absorb_stack'+str(stack_label)+gen_name
-# gif_cmd = 'convert -delay %(d)i +dither -layers Optimize -colors 16 %(n)s*.pdf %(n)s.gif'% {
-# 'd' : delay, 'n' : names}
-# ossys(gif_cmd)
-# opt_cmd = 'gifsicle -O2 %(n)s.gif -o %(n)s-opt.gif'% {'n' : names}
-# ossys(opt_cmd)
-# rm_cmd = 'rm %(n)s.gif'% {'n' : names}
-# ossys(rm_cmd)
+# Animate spectra as a function of substrates.
+from os import system as ossys
+delay = 30 # delay between images in gif in hundredths of a second
+names = 'Total_Spectra_stack'
+gif_cmd = 'convert -delay %(d)i +dither -layers Optimize -colors 16 \
+%(n)s*.pdf %(n)s.gif'% {
+'d' : delay, 'n' : names}
+ossys(gif_cmd)
+opt_cmd = 'gifsicle -O2 %(n)s.gif -o %(n)s-opt.gif'% {'n' : names}
+ossys(opt_cmd)
+rm_cmd = 'rm %(n)s.gif'% {'n' : names}
+ossys(rm_cmd)
 
 
 
-######################## Single Wavelength Plotting ########################
-# Plot transmission as a function of k vector.
-# plotting.t_func_k_plot(stack3_wl_list)
-
-# # Visualise the Scattering Matrices
-# for i in range(len(wavelengths)):
-#     extra_title = 'R_net'
-#     plotting.vis_scat_mats(stack1_wl_list[i].R_net, i, extra_title)
-#     extra_title = 'R_12'
-#     plotting.vis_scat_mats(stack1_wl_list[i].layers[2].T21, i, extra_title)
-
-
-
-
-######################## Wrapping up ########################
 # Calculate and record the (real) time taken for simulation
 elapsed = (time.time() - start)
 hms     = str(datetime.timedelta(seconds=elapsed))
@@ -220,6 +166,6 @@ python_log = open("python_log.log", "w")
 python_log.write(hms_string)
 python_log.close()
 
+print '*******************************************'
 print hms_string
 print '*******************************************'
-print ''

@@ -1,7 +1,7 @@
 """
     simo_020-thin_film_mulilatered_stack.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2013  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ from stack import *
 start = time.time()
 
 # Remove results of previous simulations.
+plotting.clear_previous('.npz')
 plotting.clear_previous('.txt')
 plotting.clear_previous('.pdf')
 plotting.clear_previous('.log')
@@ -52,7 +53,8 @@ wl_1     = 400
 wl_2     = 800
 no_wl_1  = 4
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0)\
+    for wl in wavelengths]
 
 # The period must be consistent throughout a simulation!
 period = 300
@@ -64,8 +66,10 @@ TF_2 = objects.ThinFilm(period, height_nm = 5e6,
     material = materials.InP, loss=False)
 TF_3 = objects.ThinFilm(period, height_nm = 52,
     material = materials.Si_a)
-mirror = objects.ThinFilm(period, height_nm = 1e5, # realistically a few micron thick mirror
-    material = materials.Ag) # would do the trick, but EMUstack is height agnostic.
+# Realistically a few micron thick mirror would do the trick, 
+# but EMUstack is height agnostic.... so what the hell.
+mirror = objects.ThinFilm(period, height_nm = 1e5,
+    material = materials.Ag) 
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air)
 
@@ -89,8 +93,7 @@ def simulate_stack(light):
 pool = Pool(num_cores)  
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
-np.savez('Simo_results'+simotime, stacks_list=stacks_list)
+np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Post Processing ########################
 # The total transmission should be zero.

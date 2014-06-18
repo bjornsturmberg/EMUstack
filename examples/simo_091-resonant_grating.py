@@ -1,7 +1,7 @@
 """
-    simmo_resonant_grating.py is a simulation script template for EMUstack.
+    simo_101-resonant_grating.py is a simulation script template for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2013  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,33 +18,7 @@
 """
 
 """
-Template python script file to execute a simulation. To start, open a terminal and change
-directory to the directory containing this file (which must be in the same directory as 
-the EMUstack directory). Run this script file by executing the following in the command line
 
-$ python simmo_resonant_grating.py
-
-This will use num_cores worth of your CPUs, and by default return you in the command
-line, having printed results and saved plots to file as specified towards the end of 
-this file. If instead you wish to have direct access to the simulation results (for 
-further manipulation, debugging etc.) run this script with
-
-$ python -i simmo_resonant_grating.py
-
-which, after the calculations are complete, will return you into an interactive session 
-of python, in which all simulation objects are accessible. In this session you can access
-the docstrings of objects/classes/methods by typing
-
->>> from pydoc import help
->>> help(objects.Light)
-
-where we have accessed the docstring of the Light class from objects.py
-
-
-In real simulation scripts replace this docstring with a brief description of the 
-simulation, eg.
-`Simulating the coupling of normally incident light into evanescent orders through a 
-metallic grating of period 120 nm. Included 3 PW orders.'
 """
 
 
@@ -68,9 +42,9 @@ start = time.time()
 num_cores = 5
 
 # Remove results of previous simulations
+plotting.clear_previous('.npz')
 plotting.clear_previous('.txt')
 plotting.clear_previous('.pdf')
-plotting.clear_previous('.gif')
 plotting.clear_previous('.log')
 
 ################ Light parameters #####################
@@ -126,7 +100,7 @@ def simulate_stack(light):
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
-# Save full simo data to .npz file for safe keeping!
+# Save full simo data to timestamped .npz file for safe keeping!
 simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
 np.savez('Simo_results'+simotime, stacks_list=stacks_list)
     

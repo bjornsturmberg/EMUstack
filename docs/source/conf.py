@@ -33,8 +33,9 @@ class Mock(object):
         else:
             return Mock()
 
-MOCK_MODULES = ['scipy', 'scipy.interpolate', 'numpy', 'fem_2d', 'fem_2d.EMUstack',
-    'matplotlib', 'matplotlib.pyplot', 'matplotlib.mlab', 'matplotlib.mlab.griddata']
+MOCK_MODULES = ['scipy', 'scipy.interpolate', 'numpy', 'fem_2d', 
+    'matplotlib', 'matplotlib.pyplot', 'matplotlib.mlab', 'matplotlib.mlab.griddata',
+    'fem_2d', 'fem_1d']
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 

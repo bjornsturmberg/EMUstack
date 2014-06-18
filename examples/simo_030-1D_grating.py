@@ -36,6 +36,7 @@ from stack import *
 start = time.time()
 
 # Remove results of previous simulations.
+plotting.clear_previous('.npz')
 plotting.clear_previous('.txt')
 plotting.clear_previous('.pdf')
 plotting.clear_previous('.log')
@@ -82,8 +83,7 @@ pool = Pool(num_cores)
 # stacks_list = pool.map(simulate_stack, light_list)
 stacks_list = map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
-np.savez('Simo_results'+simotime, stacks_list=stacks_list)
+np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Post Processing ########################
 # The total transmission should be zero.

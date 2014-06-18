@@ -27,6 +27,7 @@ import os
 sys.path.append("../backend/")
 
 from fem_2d import EMUstack
+from fem_1d import EMUstack1D
 
 _interfaces_i_have_known = {}
 pi = np.pi
@@ -298,30 +299,38 @@ class Simmo(Modes):
 
 
         # if self.structure.geometry == '1D_array':
-        #     raise NotImplementedError, "Soz still working on this"
-        #     with open("../backend/fem_1d/msh/"+self.structure.mesh_file) as f:
+            # raise NotImplementedError, "Soz still working on this"
+            # with open("../backend/fem_1d/msh/"+self.structure.mesh_file) as f:
+            #     self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
+            # # Size of Fortran's complex superarray (scales with mesh)
+            # # In theory could do some python-based preprocessing
+            # # on the mesh file to work out RAM requirements
+            # cmplx_max = 2**27
+
+        #     with open("../backend/fem_1d/msh/mesh_1d_1.txt") as f:
         #         self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
-        #     # Size of Fortran's complex superarray (scales with mesh)
-        #     # In theory could do some python-based preprocessing
-        #     # on the mesh file to work out RAM requirements
-        #     cmplx_max = 2**27
 
-        #     try:
-        #         resm = EMUstack.calc_1d_modes(
-        #             self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
-        #             self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-        #             self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
-        #             self.E_H_field, i_cond, itermax, 
-        #             self.structure.plot_modes, self.structure.plot_real, 
-        #             self.structure.plot_imag, self.structure.plot_abs,
-        #             num_pw_per_pol, cmplx_max)
+        #     print self.wl_norm(), self.num_BM,
+        #     print self.nb_typ_el
+        #     lamdba    = self.wl_norm()
+        #     nb_typ_el = 4#self.nb_typ_el
+        #     nval = 20
+        #     ordre_ls = 5
+        #     neq_PW = 2 * ordre_ls + 1
 
-        #         self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
-        #         self.table_nod, self.type_el, self.x_arr = resm
-        #         self.J, self.J_dag = np.mat(J), np.mat(J_dag)
-        #     except KeyboardInterrupt:
-        #         print "Fortran FEM routine encoutered an error..."
-        #         pass
+        #     resm = EMUstack1D.calc_1d_modes(lamdba, nval, neq_PW, nb_typ_el)
+
+        #     # resm = EMUstack1D.calc_1d_modes(
+        #     #     self.wl_norm(), self.num_BM, self.n_msh_pts, self.n_msh_el,
+        #     #     self.nb_typ_el)
+
+        #     J = resm
+        #     self.J = np.mat(J)
+
+        #     print self.J
+
+
+
 
 
 
@@ -346,22 +355,19 @@ class Simmo(Modes):
             shift = 1.01*max_n**2 * k_0**2  \
             - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
 
-        try:
-            resm = EMUstack.calc_2d_modes(
-                self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
-                self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-                self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
-                self.E_H_field, i_cond, itermax, 
-                self.structure.plot_modes, self.structure.plot_real, 
-                self.structure.plot_imag, self.structure.plot_abs,
-                num_pw_per_pol, cmplx_max)
+        resm = EMUstack.calc_2d_modes(
+            self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
+            self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
+            self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
+            self.E_H_field, i_cond, itermax, 
+            self.structure.plot_modes, self.structure.plot_real, 
+            self.structure.plot_imag, self.structure.plot_abs,
+            num_pw_per_pol, cmplx_max)
 
-            self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
-            self.table_nod, self.type_el, self.x_arr = resm
-            self.J, self.J_dag = np.mat(J), np.mat(J_dag)
-        except KeyboardInterrupt:
-            print "Fortran FEM routine encoutered an error..."
-            pass
+        self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
+        self.table_nod, self.type_el, self.x_arr = resm
+        self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+
 
         # else:
         #     raise ValueError, "object.geometry must either be '1D_array' \

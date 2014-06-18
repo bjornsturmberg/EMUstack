@@ -1,7 +1,7 @@
 """
-    simmo_circular_dichroism.py is a simulation script template for EMUstack.
+    simo_042-eliptical_holes.py is a simulation script template for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2013  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,12 +38,12 @@ start = time.time()
 ################ Simulation parameters ################
 
 # Number of CPUs to use im simulation
-num_cores = 15
+num_cores = 4
 
 # Remove results of previous simulations
+plotting.clear_previous('.npz')
 plotting.clear_previous('.txt')
 plotting.clear_previous('.pdf')
-plotting.clear_previous('.gif')
 plotting.clear_previous('.log')
 
 ################ Light parameters #####################
@@ -52,17 +52,22 @@ wl_2     = 1000
 no_wl_1  = 21
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl,theta = 45, phi = 45, max_order_PWs = 2) for wl in wavelengths]
+light_list  = [objects.Light(wl, theta = 45, phi = 45, max_order_PWs = 2) \
+    for wl in wavelengths]
 
 
 
-#period must be consistent throughout simulation!!!
+# Period must be consistent throughout simulation!!!
 period = 165
 diam1  = 140
 diam2  = 60
 ellipticity = (float(diam1-diam2))/float(diam1)
 
-Au_NHs = objects.NanoStruct('2D_array', period, diam1,ellipticity = ellipticity,height_nm = 60, 
+# Replicating the geometry of the paper we set up a gold layer with elliptical air 
+# holes. To get good agreement with the published work we use the Drude model for Au.
+# Note that better physical results are obtained using the tabulated data for Au!
+Au_NHs = objects.NanoStruct('2D_array', period, diam1, inc_shape = 'ellipse',
+    ellipticity = ellipticity, height_nm = 60,
     inclusion_a = materials.Air, background = materials.Au_drude, loss = True,    
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 5.0)
 
@@ -71,25 +76,20 @@ superstrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
 substrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
+# Again for this example we fix the number of BMs.
 num_BM = 50
 
 def simulate_stack(light):  
-    num_h = 21
-    NH_heights = [60]#np.linspace(10,100,num_h)
-
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_Au   = Au_NHs.calc_modes(light, num_BM = num_BM)
     sim_substrate = substrate.calc_modes(light)
 
-# Loop over heights
-    height_list = []
-    # for h in NH_heights:
-    stackSub = Stack((sim_substrate, sim_Au, sim_superstrate))#, heights_nm = ([h]))
+    stackSub = Stack((sim_substrate, sim_Au, sim_superstrate))
     stackSub.calc_scat(pol = 'R Circ')
-    stackSub2 = Stack((sim_substrate, sim_Au, sim_superstrate))#, heights_nm = ([h]))
+    stackSub2 = Stack((sim_substrate, sim_Au, sim_superstrate))
     stackSub2.calc_scat(pol = 'L Circ')
-    saveStack = Stack((sim_substrate, sim_Au, sim_superstrate))#, heights_nm = ([h]))
+    saveStack = Stack((sim_substrate, sim_Au, sim_superstrate))
     
     a_CD = []
     t_CD = []
@@ -103,35 +103,22 @@ def simulate_stack(light):
     saveStack.a_list = a_CD
     saveStack.t_list = t_CD
     saveStack.r_list = r_CD
-    height_list.append(saveStack)
-    # height_list.append(stackSub)
 
-    return height_list
+    return saveStack
 
 
 # Run in parallel across wavelengths.
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
-np.savez('Simo_results'+simotime, stacks_list=stacks_list)
+np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Plotting ########################
-last_light_object = light_list.pop()
+# Just to show how it's done we can add the height of the layer and some extra 
+# details to the file names and plot titles.
+title = 'what_a_lovely_day-'
 
-
-#### Individual spectra of multilayered stack where one layer has many heights.
-stack_label = 0
-active_layer_nu = 1
-# for h in range(num_h):
-h = 0
-gen_name = '_h-'
-h_name = str(h)
-additional_name = gen_name+h_name # You can add an arbitry string onto the end of the spectra filenames.
-stack3_hs_wl_list = []
-for i in range(len(wavelengths)):
-    stack3_hs_wl_list.append(stacks_list[i][h])
-plotting.t_r_a_plots(stack3_hs_wl_list, stack_label=stack_label, add_name = additional_name)
+plotting.t_r_a_plots(stacks_list, add_height=Au_NHs.height_nm, add_name=title)
 
 
 # Calculate and record the (real) time taken for simulation

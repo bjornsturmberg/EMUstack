@@ -1,5 +1,5 @@
 """
-    simmo_NW_array.py is a simulation example for EMUstack.
+    simo_050-plotting_fields.py is a simulation example for EMUstack.
 
     Copyright (C) 2013  Bjorn Sturmberg
 
@@ -18,31 +18,6 @@
 """
 
 """
-Template python script file to execute a simulation. To start, open a terminal and change
-directory to the directory containing this file (which must be in the same directory as 
-the EMUstack directory). Run this script file by executing the following in the command line
-
-$ python simmo_NW_array.py
-
-This will use num_cores worth of your CPUs, and by default return you in the command
-line, having printed results and saved plots to file as specified towards the end of 
-this file. If instead you wish to have direct access to the simulation results (for 
-further manipulation, debugging etc.) run this script with
-
-$ python -i simmo_NW_array.py
-
-which, after the calculations are complete, will return you into an interactive session 
-of python, in which all simulation objects are accessible. In this session you can access
-the docstrings of objects/classes/methods by typing
-
->>> from pydoc import help
->>> help(objects.Light)
-
-where we have accessed the docstring of the Light class from objects.py
-
-
-In real simulation scripts replace this docstring with a brief description of the 
-simulation, eg.
 `Simulating NW array with period 600 nm and NW diameter 120 nm, placed ontop of 
 different substrates.'
 """
@@ -66,9 +41,9 @@ start = time.time()
 num_cores = 7
 
 # Remove results of previous simulations
+plotting.clear_previous('.npz')
 plotting.clear_previous('.txt')
 plotting.clear_previous('.pdf')
-plotting.clear_previous('.gif')
 plotting.clear_previous('.log')
 
 ################ Light parameters #####################
@@ -122,8 +97,7 @@ def simulate_stack(light):
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
-np.savez('Simo_results'+simotime, stacks_list=stacks_list)
+np.savez('Simo_results', stacks_list=stacks_list)
 
 
 ######################## Plotting ########################

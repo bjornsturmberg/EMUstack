@@ -1,7 +1,7 @@
 """
-    simmo_EOT.py is a simulation script template for EMUstack.
+    simo_100-EOT.py is a simulation script template for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2013  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 """
 Simulating Extraordinary Optical Transmission 
 as in H. Liu, P. Lalanne, Nature 452 2008 doi:10.1038/nature06762
-
 """
 
 import time
@@ -42,9 +41,9 @@ start = time.time()
 num_cores = 16
 
 # Remove results of previous simulations
+plotting.clear_previous('.npz')
 plotting.clear_previous('.txt')
 plotting.clear_previous('.pdf')
-plotting.clear_previous('.gif')
 plotting.clear_previous('.log')
 
 ################ Light parameters #####################
@@ -95,8 +94,7 @@ def simulate_stack(light):
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
-np.savez('Simo_results'+simotime, stacks_list=stacks_list)
+np.savez('Simo_results', stacks_list=stacks_list)
     
 
 

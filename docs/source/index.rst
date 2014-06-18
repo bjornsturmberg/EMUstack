@@ -7,9 +7,9 @@ Welcome to EMUstack's documentation!
 ====================================
 
 
-
+==================
 Introduction 
-============
+==================
 
 .. toctree::
     :maxdepth: 4
@@ -17,17 +17,17 @@ Introduction
     intro
 
 
-
+==================
 Installation 
-============
+==================
 
 .. toctree::
     :maxdepth: 4
 
     install
 
-
-Tutorial
+==================
+Guide
 ==================
 
 .. toctree::
@@ -36,9 +36,9 @@ Tutorial
     tutorial
 
 
-
+==================
 Python Backend
-==============
+==================
 
 .. toctree::
     :maxdepth: 4
@@ -49,19 +49,20 @@ Python Backend
     stack
     plotting
 
-
-FEM Backend
-===========
+==================
+FEM Backends
+==================
 
 .. toctree::
     :maxdepth: 4
 
+    fem_1d
     fem_2d
 
 
 
 
-
+==================
 Indices and tables
 ==================
 

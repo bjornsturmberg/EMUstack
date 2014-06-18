@@ -133,7 +133,7 @@ def gen_params_string(stack, layer=1):
 
 
 ####Standard plotting of spectra#######################################################
-def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=0,\
+def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=1,\
     stack_label=1, ult_eta=False, J_sc=False, weight_spec=False, extinct=False,\
     add_height=0., add_name='', force_txt_save=False):
     """ Plot t, r, a for each layer & in total. 
@@ -149,8 +149,8 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=0,\
                 which the geometric parameters are put in the title of \
                 the plots.
 
-            active_layer_nu  (int): The index in stacks_list of the layer for \
-                which the ult_eta and/or J_sc are calculated.
+            active_layer_nu  (int): The index in stacks_list (from bottom) \
+                of the layer for which the ult_eta and/or J_sc are calculated.
             
             stack_label  (int): Label to differentiate plots of different \
                 :Stack:s.
@@ -179,18 +179,19 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=0,\
     params_2_print += '\n'r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
 
-    if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
-        xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
-        xlabel = r'$\lambda$ (nm)'
-    elif set(stacks_list[0].layers[0].light.k_pll) != set(stacks_list[-1].layers[0].light.k_pll):
-        xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
-        xlabel = r'$|k_\parallel|$'
-    elif xvalues==None: 
-        "t_r_a_plots cannot guess what to plot on x-axis, specify with xvalues input."
-        return
+    xlabel = 'xvalues'
+    if xvalues==None:
+        if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
+            xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
+            xlabel = r'$\lambda$ (nm)'
+        elif set(stacks_list[0].layers[0].light.k_pll) != set(stacks_list[-1].layers[0].light.k_pll):
+            xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
+            xlabel = r'$|k_\parallel|$'
+        else:
+            raise ValueError, \
+                "t_r_a_plots cannot guess what to plot on x-axis, specify with xvalues input."
 
-
-    if add_height!=0: add_name += zeros_int_str(add_height)
+    if add_height!=0.: add_name += zeros_int_str(add_height)
     stack_label = zeros_int_str(stack_label)
     
     a_list = []
@@ -202,25 +203,34 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=0,\
         r_list.extend(stack.r_list)
 
     layers_steps = len(stacks_list[0].layers) - 1
-    active_abs = []
     a_tot      = []
     t_tot      = []
     r_tot      = []
-    for i in range(len(xvalues)): 
-        active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
+    for i in range(len(xvalues)):
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
+
+    if ult_eta == True or J_sc == True:
+        active_abs = []
+        active_layer_nu = len(stacks_list[0].layers) - active_layer_nu - 1
+        if not 0 < active_layer_nu < len(stacks_list[0].layers)-1:
+            raise ValueError, "active_layer_nu must refer to a finite layer."
+        for i in range(len(xvalues)):
+            active_abs.append(float(a_list[active_layer_nu - 1 + i*layers_steps]))
+        out = []
     
     if ult_eta == True:
         Efficiency = ult_efficiency(active_abs, xvalues, params_2_print, stack_label, add_name)
         params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
         params_2_print += ' %'
+        out.append(Efficiency)
 
     if J_sc == True:
         J = J_short_circuit(active_abs, xvalues, params_2_print, stack_label, add_name)
         params_2_print += r'$J_{sc}$ = %(J)6.2f'% {'J' : J, }
         params_2_print += r' mA/cm$^2$'
+        out.append(J)
 
     total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
     # Plot t,r,a for each layer
@@ -247,7 +257,10 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=0,\
 
     if  extinct == True:
         extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
-    return
+    if J_sc == True or ult_eta == True:
+        return out
+    else:
+        return
 
 def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_print,\
     stack_label, add_name, force_txt_save):
@@ -376,8 +389,8 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, params_2_
 
 ####Plot spectra indicating Wood anomalies in substrate################################
 def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
-    active_layer_nu=0, stack_label=1, ult_eta=False, J_sc=False, weight_spec=False,\
-    extinct=False, add_height=0, add_name=''):
+    active_layer_nu=1, stack_label=1, ult_eta=False, J_sc=False, weight_spec=False,\
+    extinct=False, add_height=0., add_name=''):
     """ Plot t, r, a indicating Wood anomalies in substrate for each layer & total.
 
         Args:
@@ -395,8 +408,8 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
                 which the geometric parameters are put in the title of \
                 the plots.
 
-            active_layer_nu  (int): The index in stacks_list of the layer for \
-                which the ult_eta and/or J_sc are calculated.
+            active_layer_nu  (int): The index in stacks_list (from bottom) \
+                of the layer for which the ult_eta and/or J_sc are calculated.
             
             stack_label  (int): Label to differentiate plots of different \
                 :Stack:s.
@@ -433,15 +446,22 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
         r_list.extend(stack.r_list)
 
     layers_steps = len(stacks_list[0].layers) - 1
-    active_abs = []
     a_tot      = []
     t_tot      = []
     r_tot      = []
     for i in range(len(wavelengths)): 
-        active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
+
+    if ult_eta == True or J_sc == True:
+        active_abs = []
+        active_layer_nu = len(stacks_list[0].layers) - active_layer_nu - 1
+        if not 0 < active_layer_nu < len(stacks_list[0].layers)-1:
+            raise ValueError, "active_layer_nu must refer to a finite layer."
+        for i in range(len(xvalues)):
+            active_abs.append(float(a_list[active_layer_nu - 1 + i*layers_steps]))
+
 
     if ult_eta == True:
         Efficiency = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name)
@@ -584,7 +604,7 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
 
 
 ####Save J_sc & ult efficiency w/o spectra#############################################
-def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, active_layer_nu=0,\
+def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, active_layer_nu=1,\
     stack_label=1, add_name=''):
     """ Calculate J_sc & ultimate efficiency but do not save or plot spectra.
 
@@ -598,8 +618,8 @@ def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, active_layer_nu=
                 which the geometric parameters are put in the title of \
                 the plots.
 
-            active_layer_nu  (int): The index in stacks_list of the layer for \
-                which the ult_eta and/or J_sc are calculated.
+            active_layer_nu  (int): The index in stacks_list (from bottom) \
+                of the layer for which the ult_eta and/or J_sc are calculated.
             
             stack_label  (int): Label to differentiate plots of different \
                 :Stack:s.
@@ -620,8 +640,11 @@ def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, active_layer_nu=
 
     layers_steps = len(stacks_list[0].layers) - 1
     active_abs = []
+    active_layer_nu = len(stacks_list[0].layers) - active_layer_nu - 1
+    if not 0 < active_layer_nu < len(stacks_list[0].layers)-1:
+        raise ValueError, "active_layer_nu must refer to a finite layer."
     for i in range(len(wavelengths)): 
-        active_abs.append(float(a_list[active_layer_nu + i*layers_steps]))
+        active_abs.append(float(a_list[active_layer_nu -1 + i*layers_steps]))
 
     Efficiency = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label, add_name)
 
@@ -798,7 +821,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
     integral_tmp = np.trapz(expression, x=wavelengths)
     Efficiency   = integral_tmp/(bandgap_wl*ASTM15_tot_I)   
     nums_2_print = params_2_print.split()
-    if len(nums_2_print) >= 8:
+    if len(nums_2_print) >= 9:
         eta_string   = '%8.6f \n'% Efficiency + nums_2_print[5].replace(',','\n') + \
           nums_2_print[8].replace(',','\n') #save params in easy to read in fmt
     else:
@@ -943,7 +966,7 @@ def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, params_layer
 
 
 ####Visualise scattering matrices######################################################
-def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
+def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,add_name=''):
     """ Plot given scattering matrix as greyscale images.
 
         Args:
@@ -954,14 +977,11 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
 
             wl  (int): Index in case of calling in a loop.
 
-            extra_title  (str): Add extra_title to title. 
+            add_name  (str): Add add_name to title. 
     """
 
     fig = plt.figure(num=None, figsize=(14, 6), dpi=80, facecolor='w', edgecolor='k')
-    if wl != None and extra_title == None: title = '-wl%(wl)i' % {'wl' : wl}
-    elif wl == None and extra_title != None: title = '-%(ti)s' % {'ti' : extra_title}
-    elif wl != None and extra_title != None: title = '-wl%(wl)i-%(ti)s' % {'wl' : wl, 'ti' : extra_title}
-    else: title = ''
+    if wl != None: add_name = '-wl%(wl)i-%(ti)s' % {'wl' : wl, 'ti' : add_name}
 
     for i in [1,2]:
         ax1 = fig.add_subplot(1,2,i)
@@ -997,8 +1017,8 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,extra_title=None):
         ax1.set_ylabel('Outgoing Orders')
         
 
-    plt.suptitle('Scattering Matrices' + title)
-    plt.savefig('Scat_mat' + title)
+    plt.suptitle('Scattering Matrices' + add_name)
+    plt.savefig('Scat_mat' + add_name)
 #######################################################################################
 
 
@@ -1081,7 +1101,7 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
 
 ####Plot amplitudes of PW orders#######################################################
 def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
-    lay_interest=0, add_height=None, add_title=None):
+    lay_interest=0, add_height=None, add_name=''):
     """ Plot the amplitudes of plane wave orders in selected layer.
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
@@ -1101,7 +1121,7 @@ def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
 
             add_height  (float): Print the heights of :Stack: layer in title.
 
-            add_title  (str): Add add_name to title.
+            add_name  (str): Add add_name to title.
     """
 
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
@@ -1113,15 +1133,17 @@ def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
         max_ords = stacks_list[0].layers[-1].max_order_PWs
         chosen_PW_order = np.arange(-max_ords, max_ords + 1)
 
-    if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
-        xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
-        xlabel = r'$\lambda$ (nm)'
-    elif set(stacks_list[0].layers[0].light.k_pll) != set(stacks_list[-1].layers[0].light.k_pll):
-        xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
-        xlabel = r'$|k_\parallel|$'
-    elif xvalues==None: 
-        "amps_of_orders cannot guess what to plot on x-axis, specify with xvalues input."
-        return
+    xlabel = 'xvalues'
+    if xvalues==None:
+        if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
+            xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
+            xlabel = r'$\lambda$ (nm)'
+        elif set(stacks_list[0].layers[0].light.k_pll) != set(stacks_list[-1].layers[0].light.k_pll):
+            xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
+            xlabel = r'$|k_\parallel|$'
+        else:
+            raise ValueError, \
+                "amps_of_orders cannot guess what to plot on x-axis, specify with xvalues input."
 
     for pxs in chosen_PW_order:
         store_trans = []
@@ -1151,15 +1173,14 @@ def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
     lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
     ax1.set_ylabel(r'$|E|_{trans}$')
     ax1.set_xlabel(xlabel)
-    if add_title != None: plt.suptitle('%s' % add_title)
-    if add_height!= None: add_title += zeros_int_str(add_height)
-    if add_title != None: plt.savefig('PW_orders-lay_%s' % lay_interest + add_title, \
-        bbox_extra_artists=(lgd,), bbox_inches='tight')
-    else: plt.savefig('PW_orders-lay_%s' % lay_interest, bbox_extra_artists=(lgd,), \
-        bbox_inches='tight')
+    plt.suptitle(add_name)
+    if add_height!= None: add_name += '-'+zeros_int_str(add_height)
+    add_name = str(lay_interest) + add_name
+    plt.savefig('PW_orders-lay_%s' % add_name, \
+        fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
-    lay_interest=0, add_height=None, add_title=None):
+    lay_interest=0, save_mean_ev=False, add_height=None, add_name=''):
     """ Plot a figure of merit for the 'evanescent-ness' of excited fields. 
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
@@ -1177,9 +1198,12 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
             lay_interest  (int): The index in stacks_list of the layer in \
                 which amplitudes are calculated.
 
+            save_mean_ev  (bool): If True, saves average value of \
+                mean PW order to file.
+
             add_height  (float): Print the heights of :Stack: layer in title.
 
-            add_title  (str): Add add_name to title.
+            add_name  (str): Add add_name to title.
     """
 
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
@@ -1192,15 +1216,18 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
         chosen_PW_order = np.arange(-max_ords, max_ords + 1)
     n_H = max_n(stacks_list)
 
-    if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
-        xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
-        xlabel = r'$\lambda$ (nm)'
-    elif set(stacks_list[0].layers[0].light.k_pll) != set(stacks_list[-1].layers[0].light.k_pll):
-        xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
-        xlabel = r'$|k_\parallel|$'
-    elif xvalues==None: 
-        "evanescent_merit cannot guess what to plot on x-axis, specify with xvalues input."
-        return
+    xlabel = 'xvalues'
+    if xvalues==None:
+        if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
+            xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
+            xlabel = r'$\lambda$ (nm)'
+        elif set(stacks_list[0].layers[0].light.k_pll) != set(stacks_list[-1].layers[0].light.k_pll):
+            xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
+            xlabel = r'$|k_\parallel|$'
+        else:
+            raise ValueError, \
+            "evanescent_merit cannot guess what to plot on x-axis, specify with xvalues input."
+
 
     store_m_p     = []
     store_m_ne    = []
@@ -1263,88 +1290,19 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
     lgd = ax1.legend(handles, labels, ncol=4, loc='upper center', bbox_to_anchor=(0.5,1.2))
     ax1.set_ylabel('Ev FoM')
     ax1.set_xlabel(xlabel)
-    if add_title != None: plt.suptitle('%s' % add_title)
-    if add_height!= None: add_title += zeros_int_str(add_height)
-    if add_title != None: plt.savefig('evanescent_merit-lay_%s' % lay_interest + add_title, \
+    plt.suptitle(add_name)
+    if add_height!= None: add_name += '-'+zeros_int_str(add_height)
+    print add_name
+    add_name = str(lay_interest) + add_name
+    plt.savefig('evanescent_merit-lay_%s' % add_name, \
         fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
-    else: plt.savefig('evanescent_merit-lay_%s' % lay_interest, bbox_extra_artists=(lgd,),\
-     bbox_inches='tight')
 
 
-    # fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-    # ax1 = fig.add_subplot(1,1,1)
-
-    # store_m_p  = []
-    # store_m_ne = []
-    # store_m_fe = []
-    # for stack in stacks_list:
-    #     merit_prop    = 0.0
-    #     merit_near_ev = 0.0
-    #     for pxs in chosen_PW_order:
-    #         k0 = stack.layers[lay_interest].k()
-    #         n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
-    #         # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
-    #         alpha0, beta0 = stack.layers[lay_interest].k_pll_norm()
-    #         alphas = alpha0 + pxs * 2 * np.pi
-    #         this_k_pll2 = alphas**2 + beta0**2
-    #         on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
-    #         full_k_space = stack.layers[lay_interest].k_z
-    #         # consider only transmission into singular polarization
-    #         one_pol_k_space = full_k_space[0:n_PW_p_pols]
-
-    #         ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
-    #         axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
-
-    #         trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
-    #         trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
-
-    #         merit_prop += np.abs(pxs) * trans
-    #         merit_near_ev += trans
-
-    #     store_m_p  = np.append(store_m_p,merit_prop)
-    #     store_m_ne = np.append(store_m_ne,merit_prop/merit_near_ev)
-
-    # s = 0
-    # for stack in stacks_list:
-    #     merit_far_ev  = 0.0
-    #     for pxs in chosen_PW_order:
-    #         k0 = stack.layers[lay_interest].k()
-    #         n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
-    #         # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
-    #         alpha0, beta0 = stack.layers[lay_interest].k_pll_norm()
-    #         alphas = alpha0 + pxs * 2 * np.pi
-    #         this_k_pll2 = alphas**2 + beta0**2
-    #         on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
-    #         full_k_space = stack.layers[lay_interest].k_z
-    #         # consider only transmission into singular polarization
-    #         one_pol_k_space = full_k_space[0:n_PW_p_pols]
-
-    #         ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
-    #         axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
-
-    #         trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
-    #         trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
-
-    #         merit_far_ev += np.abs(np.abs(pxs) - np.abs(store_m_ne[s]))**2 * trans
-
-    #     store_m_fe = np.append(store_m_fe, merit_far_ev)
-    #     s +=1
-
-    # ax1.plot(xvalues,store_m_p, label=r'$\Sigma |p| |a_p|$')
-    # ax1.plot(xvalues,store_m_ne, label=r'$\Sigma|p| |a_p| / |a_p|$')
-    # ax1.plot(xvalues,store_m_fe, label=r'$\Sigma||p| - |\overline{p}||^2 |a_p|$')
-
-    # handles, labels = ax1.get_legend_handles_labels()
-    # lgd = ax1.legend(handles, labels, ncol=3, loc='upper center', bbox_to_anchor=(0.5,1.2))
-    # ax1.set_ylabel('Ev FoM')
-    # if np.max(xvalues) < 90: ax1.set_xlabel(r'$\theta$') # hack way to tell what plotting against
-    # else: ax1.set_xlabel(r'$\lambda$ (nm)')
-    # if add_title != None: plt.suptitle('%s' % add_title)
-    # if add_height!= None: add_title += zeros_int_str(add_height)
-    # if add_title != None: plt.savefig('evanescent_merit-2-lay_%s' % lay_interest + add_title, \
-    #     bbox_extra_artists=(lgd,), bbox_inches='tight')
-    # else: plt.savefig('evanescent_merit-2-lay_%s' % lay_interest, bbox_extra_artists=(lgd,),\
-    #  bbox_inches='tight')
+    if save_mean_ev == True:
+        av_diff = [np.mean(store_mean_ev)]
+        add_name = str(lay_interest) + add_name
+        np.savetxt('average_diff_order-lay_%s.txt' % add_name, \
+            av_diff, fmt = '%18.11f')
 #######################################################################################
 
 

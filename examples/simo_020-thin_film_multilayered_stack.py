@@ -1,7 +1,7 @@
 """
     simo_020-thin_film_mulilatered_stack.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2013  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ from stack import *
 start = time.time()
 
 # Remove results of previous simulations.
+plotting.clear_previous('.npz')
 plotting.clear_previous('.txt')
 plotting.clear_previous('.pdf')
 plotting.clear_previous('.log')
@@ -49,7 +50,8 @@ wl_1     = 400
 wl_2     = 800
 no_wl_1  = 4
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0) \
+for wl in wavelengths]
 
 # The period must be consistent throughout a simulation!
 period = 300
@@ -57,17 +59,23 @@ period = 300
 # Define each layer of the structure.
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air)
-TF_1 = objects.ThinFilm(period, height_nm = 100, # specify thickness in nm
-    material = materials.Material(2.0 + 0.1j)) # give it a constant refractive index
-TF_2 = objects.ThinFilm(period, height_nm = 5e6, # EMUstack calc time is independent of height
-    material = materials.InP, loss=False) # dispersive refractive index, but with
-# the imaginary part of n set to zero for all wavelengths.
+# Define a thin film with (finite) thickness in nm and constant refractive index
+TF_1 = objects.ThinFilm(period, height_nm = 100, 
+    material = materials.Material(2.0 + 0.1j))
+# EMUstack calculation time is independent dispersion and thickness of layer!
+# This layer is made of Indium Phosphide, the tabulated refractive index of which 
+# is stored in EMUstack/data/
+# We artificially set the imaginary part of the layer to zero for all wavelengths.
+TF_2 = objects.ThinFilm(period, height_nm = 5e6,  
+    material = materials.InP, loss=False) 
+# By default loss = True
 TF_3 = objects.ThinFilm(period, height_nm = 52,
-    material = materials.Si_a) # by default loss = True
-substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Si_c, loss=False) # Crystaline silicon
+    material = materials.Si_a) 
 # Note that the semi-inf substrate must be lossess so that EMUstack can distinguish 
 # propagating plane waves that carry energy from evanescent waves which do not.
+# This layer is therefore crystalline silicon with Im(n) == 0.
+substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
+    material = materials.Si_c, loss=False) 
 
 def simulate_stack(light):    
     ################ Evaluate each layer individually ##############
@@ -81,7 +89,8 @@ def simulate_stack(light):
     stack MUST be ordered from bottom to top!
     """
 # We can now stack these layers of finite thickness however we wish.
-    stack = Stack((sim_substrate, sim_TF_1, sim_TF_3, sim_TF_2, sim_TF_1, sim_superstrate))
+    stack = Stack((sim_substrate, sim_TF_1, sim_TF_3, sim_TF_2, sim_TF_1, \
+        sim_superstrate))
     stack.calc_scat(pol = 'TM')
 
     return stack
@@ -90,8 +99,7 @@ def simulate_stack(light):
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
-np.savez('Simo_results'+simotime, stacks_list=stacks_list)
+np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Post Processing ########################
 # We will now see the absorption in each individual layer as well as of the stack.

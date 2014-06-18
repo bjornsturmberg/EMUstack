@@ -1,4 +1,23 @@
 """
+    simo_080-convergence_stacked_grating.py is a simulation script template for EMUstack.
+
+    Copyright (C) 2013  Bjorn Sturmberg
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+"""
     Replicate Fig 2a from Handmer Opt Lett 2010
 """
 
@@ -22,10 +41,10 @@ start = time.time()
 num_cores = 8
 
 # Remove results of previous simulations
+plotting.clear_previous('.npz')
 plotting.clear_previous('.log')
 plotting.clear_previous('.txt')
 plotting.clear_previous('.pdf')
-plotting.clear_previous('.gif')
 
 ################ Light parameters #####################
 wavelengths = np.linspace(1600,900,1)
@@ -83,8 +102,7 @@ for PWs in np.linspace(1,10,10):
     pool = Pool(num_cores)
     stacks_list = pool.map(simulate_stack, light_list)
     # Save full simo data to .npz file for safe keeping!
-    simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
-    np.savez('Simo_results'+simotime, stacks_list=stacks_list)
+    np.savez('Simo_results', stacks_list=stacks_list)
 
 
     additional_name = str(int(PWs))

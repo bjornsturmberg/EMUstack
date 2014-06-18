@@ -1,5 +1,3 @@
-Installation
-================
 
 The source code for EMUstack is hosted  `here on Github <https://github.com/bjornsturmberg/EMUstack>`_. The most convenient method of installing EMUstack is to download the installation script as follows (the alternative being to download direct from Github).
 
