@@ -25,7 +25,7 @@ C  Local parameters:
       parameter(nnodes_P2=3)
 
       integer*8, allocatable :: type_nod(:), type_el(:), table_nod(:, :)
-      integer*8, allocatable :: table_ddl(:,:), ineq(:)  ! table_ddl(3+4+4,nel), ineq(n_ddl)
+      integer*8, allocatable :: table_ddl(:,:), ineq(:)
       integer*8, allocatable :: ip_period_ddl(:)
 
       double precision, allocatable :: x_P2(:), x_ddl(:)
@@ -41,13 +41,13 @@ C  Local parameters:
       complex*16, pointer :: beta(:)
 
 ccc      complex*16, allocatable :: sol_1(:,:,:), sol_2(:,:,:)
-      complex*16, allocatable, target :: sol_1(:,:,:), sol_2(:,:,:)  !  (3+4+4,nval,nel)
+      complex*16, allocatable, target :: sol_1(:,:,:), sol_2(:,:,:)
       complex*16, pointer :: sol(:,:,:)
 
 c      complex*16, allocatable, target :: 
-      complex*16, allocatable :: sol_P2(:,:,:,:)  !  (3,nnodes_P2,nval,nel)
+      complex*16, allocatable :: sol_P2(:,:,:,:)
 
-      complex*16, allocatable ::  eps_eff(:), n_eff(:)  !  eps_eff(nb_typ_el), n_eff(nb_typ_el)
+      complex*16, allocatable ::  eps_eff(:), n_eff(:)
 
 
       complex*16, allocatable :: overlap_J(:,:)
@@ -96,7 +96,7 @@ C      integer*8 jp_matD2, jp_matL2, jp_matU2
       integer*8 jp_trav, jp_vp
 C  Plane wave parameters
       integer*8 neq_PW, nx_PW, ordre_ls
-      integer*8, allocatable ::  index_pw_inv(:)  ! (neq_PW)
+      integer*8, allocatable ::  index_pw_inv(:)
 
 
       integer*8 i, j, n_k
