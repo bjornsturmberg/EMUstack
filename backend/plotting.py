@@ -797,12 +797,7 @@ def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_na
     integral_tmp = np.trapz(expression, x=wavelengths)
     J = (charge_e/(Plancks_h*speed_c)) * integral_tmp *1e-10 # in mA/cm^2  
     nums_2_print = params_2_print.split()
-    if len(nums_2_print) >= 9:
-        eta_string   = '%8.6f \n'% J + nums_2_print[5].replace(',','\n') + \
-          nums_2_print[8].replace(',','\n') #save params in easy to read in fmt
-    else:
-        eta_string   = '%8.6f \n'% J
-    np.savetxt('J_sc_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, np.array([eta_string]), fmt = '%s')
+    np.savetxt('J_sc_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, J, fmt = '%10.6f')
     return J
 
 def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name):
@@ -821,12 +816,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
     integral_tmp = np.trapz(expression, x=wavelengths)
     Efficiency   = integral_tmp/(bandgap_wl*ASTM15_tot_I)   
     nums_2_print = params_2_print.split()
-    if len(nums_2_print) >= 9:
-        eta_string   = '%8.6f \n'% Efficiency + nums_2_print[5].replace(',','\n') + \
-          nums_2_print[8].replace(',','\n') #save params in easy to read in fmt
-    else:
-        eta_string   = '%8.6f \n'% Efficiency
-    np.savetxt('Efficiency_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, np.array([eta_string]), fmt = '%s')
+    np.savetxt('Efficiency_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, Efficiency, fmt = '%8.6f')
     return Efficiency
 #######################################################################################
 
@@ -957,10 +947,13 @@ def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, params_layer
         # ax2.plot(wavelengths,E_conc,'k', linewidth=linesstrength)
         # ax2.set_xlabel('Wavelength (nm)')
         # ax2.set_ylabel(r'$E_{cyl} / E_{cell}$')
-        fig1.suptitle('Energy Concentration = '+r'$E_{cyl} / E_{cell}$'+'\n'+params_2_print,fontsize=title_font)
-        fig1.savefig('Energy_Concentration_stack%(bon)s'% {'bon' : stack_label}, bbox_inches='tight')
+        fig1.suptitle('Energy Concentration = ' + r'$E_{cyl} / E_{cell}$' + '\n' + \
+            params_2_print, fontsize=title_font)
+        fig1.savefig('Energy_Concentration_stack%(bon)s'% {'bon' : stack_label}, \
+            bbox_inches='tight')
     else:
-        print "\n ERROR: plotting.E_conc_plot; \n Can only calculate energy concentration in NanoStruct layers."
+        print "\nERROR: plotting.E_conc_plot; \n" + \
+            "Can only calculate energy concentration in NanoStruct layers."
         print repr(stacks_list[0].layers[which_layer])
 #######################################################################################
 
@@ -1246,15 +1239,16 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
         sum_p_amps    = 0.0
         sum_amps      = 0.0
         for pxs in chosen_PW_order:
-            k0 = stack.layers[lay_interest].k()
+            k0 = stack.layers[-1].k() # Incident k0
+            k = stack.layers[lay_interest].k() # k in film
             n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
             # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
             alpha0, beta0 = stack.layers[lay_interest].k_pll_norm()
             alphas = alpha0 + pxs * 2 * np.pi
             this_k_pll2 = alphas**2 + beta0**2
-            on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
+            on_axis_kzs = sqrt(k**2 - alphas**2 - beta0**2)
             full_k_space = stack.layers[lay_interest].k_z
-            # consider only transmission into singular polarization
+            # Consider only transmission into singular polarization
             one_pol_k_space = full_k_space[0:n_PW_p_pols]
 
             ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
@@ -1263,9 +1257,10 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
             trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
             trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
 
-            if this_k_pll2 < k0**2: merit_prop += trans
-            if k0**2 < this_k_pll2 < (n_H*k0)**2: merit_near_ev += trans
-            if this_k_pll2 > (n_H*k0)**2: merit_far_ev += trans
+            if np.abs(this_k_pll2) < np.abs(k**2): merit_prop += trans
+            if np.abs(k**2) < np.abs(this_k_pll2) < np.abs((n_H*k0)**2):
+                merit_near_ev += trans
+            if np.abs(this_k_pll2) > np.abs((n_H*k0)**2): merit_far_ev += trans
             sum_p_amps += np.abs(pxs) * trans
             sum_amps += trans
 
@@ -1292,7 +1287,6 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
     ax1.set_xlabel(xlabel)
     plt.suptitle(add_name)
     if add_height!= None: add_name += '-'+zeros_int_str(add_height)
-    print add_name
     add_name = str(lay_interest) + add_name
     plt.savefig('evanescent_merit-lay_%s' % add_name, \
         fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
@@ -1300,7 +1294,6 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
 
     if save_mean_ev == True:
         av_diff = [np.mean(store_mean_ev)]
-        add_name = str(lay_interest) + add_name
         np.savetxt('average_diff_order-lay_%s.txt' % add_name, \
             av_diff, fmt = '%18.11f')
 #######################################################################################

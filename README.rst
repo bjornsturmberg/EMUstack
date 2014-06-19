@@ -48,4 +48,4 @@ Limited community support is `available on the GitHub site <https://github.com/b
 CONTRIBUTING
 ------------
 
-If you make an improvement to EMUstack, please share it with others by contributing back to the project, via the GitHub site.
+If you make an improvement to EMUstack, please share it with others by contributing back to the project via the GitHub site.

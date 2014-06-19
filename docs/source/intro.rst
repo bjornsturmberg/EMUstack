@@ -1,6 +1,8 @@
 Introduction
 ================
 
+EMUstack is an open-source simulation package for calculating light propagation through multi-layered stacks of dispersive, lossy, nanostructured, optical media. It implements a generalised scattering matrix method, which extends the physical intuition of thin film optics to complex structures.
+
 EMUstack calculates the scattering matrices of a multi-layered structure, where each layer can be homogeneous or structured (down to sub-wavelength dimensions) and the materials may have complex, dispersive refractive indices. The scattering matrices are powerful tools from which many physical quantities, such as the total transmission, absorption in each layer, and the resonances of the structure, can be derived.
 
 An advantage of EMUstack over other scattering matrix programs (for example `CAMFR <http://docutils.sf.net/rst.html>`_) is that the fields in each layer are considered in their natural basis with transmission scattering matrices converting fields between them. The fields in homogeneous layers are therefore expressed in terms of plane waves, while the natural basis in the periodically structured layers are Bloch modes. Expressing fields in their natural basis gives the terms of the scattering matrices intuitive meaning, providing access to greater physical insights. It is also advantages for the speed and accuracy of the numerical method.
