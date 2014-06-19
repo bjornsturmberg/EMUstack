@@ -764,11 +764,8 @@ c
       REAL               TARRAY( 2 )
 *     ..
 *     .. External Functions ..
-C      REAL               ETIME
-C     gfortran likes the following
-      INTRINSIC          ETIME
-C     ifort likes the following
-C      EXTERNAL           ETIME
+      REAL               ETIME
+*      EXTERNAL           ETIME   ! This line has been commented by KD - 30 May 2013
 *     ..
 *     .. Executable Statements ..
 *
