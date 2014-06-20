@@ -58,11 +58,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C     Ordering
       s = 1
       do px = -ordre_ls, ordre_ls
-        alpha = bloch1 + vec_kx*px  ! Bloch vector along x
+        alpha = bloch1 + vec_kx*px 
         z_tmp = k_0**2 - alpha**2 - bloch_vec_y**2
         beta_z_pw(s) = sqrt(z_tmp)
         s = s + 1
       enddo
+
 
 cc        do py = -ordre_ls, ordre_ls
 cc          if (px**2 + py**2 .le. ordre_ls**2) then
@@ -71,7 +72,6 @@ cc          endif
 cc        enddo
 
 C      
-
       call z_indexx (neq_PW, beta_z_pw, index_pw)
       if (debug .eq. 1) then
         write(ui,*) "index_pw = ", (index_pw(s),s=1,neq_PW)

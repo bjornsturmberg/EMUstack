@@ -1,5 +1,12 @@
 
-      subroutine calc_modes_1d(lambda, nval, npt, nel, nb_typ_el)
+      subroutine calc_modes_1d(
+c     Explicit inputs
+     *    lambda, nval, ordre_ls, neq_PW, nb_typ_el,
+     *    npt_P2, nel, itermax, debug, mesh_file,
+C     Outputs
+     *     beta_1, overlap_J, overlap_J_dagger, sol_1, sol_2)
+
+
 
 C************************************************************************
 C
@@ -10,7 +17,7 @@ C************************************************************************
 C
       implicit none
 
-      integer*8 nel, npt, nb_typ_el
+      integer*8 nel, nb_typ_el
 C  Local parameters:
       integer*8 int_max, cmplx_max, int_used, cmplx_used
       integer*8 real_max, real_used, n_64
@@ -37,21 +44,20 @@ C  Local parameters:
       complex*16, allocatable :: vp(:,:), v(:,:)
       complex*16, allocatable :: mode_pol(:,:)
 
-      complex*16, allocatable, target :: beta_1(:), beta_2(:)
+      complex*16, target :: beta_1(nval), beta_2(nval)
       complex*16, pointer :: beta(:)
 
 ccc      complex*16, allocatable :: sol_1(:,:,:), sol_2(:,:,:)
-      complex*16, allocatable, target :: sol_1(:,:,:), sol_2(:,:,:)
+      complex*16, target :: sol_1(3+4+4,nval,nel), sol_2(3+4+4,nval,nel)
       complex*16, pointer :: sol(:,:,:)
 
 c      complex*16, allocatable, target :: 
       complex*16, allocatable :: sol_P2(:,:,:,:)
+      complex*16, allocatable :: eps_eff(:), n_eff(:)
 
-      complex*16, allocatable ::  eps_eff(:), n_eff(:)
 
-
-      complex*16, allocatable :: overlap_J(:,:)
-      complex*16, allocatable :: overlap_J_dagger(:,:)
+      complex*16 overlap_J(2*neq_PW, nval)
+      complex*16 overlap_J_dagger(2*neq_PW, nval)
 
 
 
@@ -178,22 +184,20 @@ c      complex*16, target :: beta_1(nval), beta_2(nval)
 c      complex*16, pointer :: beta(:)
 
 
+Cf2py intent(in) lambda, nval, ordre_ls, neq_PW, nb_typ_el
+Cf2py intent(in) npt_P2, nel, itermax, debug, mesh_file
+
+Cf2py intent(out) beta_1, overlap_J, overlap_J_dagger
+Cf2py intent(out) sol_1, sol_2
 
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-
-      debug = 1
       ui = 6
       pi = 3.141592653589793d0
 
-      nval = 20
-      nvect = 25 + 25
-      itermax = 30
+      nvect = 2*nval + nval/2 +3
       tol = 0.0d0
-
-      ordre_ls = 5
-      neq_PW = 2 * ordre_ls + 1
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
@@ -290,21 +294,15 @@ c      nval = 80
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-C
-      mesh_file = "mesh_1d_2.txt"
 
-        open (unit=24,file="../Mesh/"//mesh_file,
-     *     status='old')
-        read(24,*) npt_P2, nel
-      close(24)
-c
-cccccccccccccccccccccccccccccccccccccccccccccccccc
-c
+CC  tmp shortened tp -4, was -5.
+CC  change back if using .mail msh
+
 C     clean mesh_format
       namelength = len_trim(mesh_file)
-      gmsh_file = mesh_file(1:namelength-5)//'.msh'
+      gmsh_file = mesh_file(1:namelength-4)//'.msh'
       gmsh_file_pos = mesh_file(1:namelength)
-      log_file = mesh_file(1:namelength-5)//'.log'
+      log_file = mesh_file(1:namelength-4)//'.log'
       if (debug .eq. 1) then
         write(*,*) "mesh_file = ", mesh_file
         write(*,*) "gmsh_file = ", gmsh_file
@@ -400,16 +398,6 @@ c
         stop
       endif
 
-      allocate(beta_1(nval+1), beta_2(nval+1), 
-     *     STAT=allocate_status)
-      if (allocate_status /= 0) then
-        write(*,*) "The allocation is unsuccessful"
-        write(*,*) "allocate_status = ", allocate_status
-        write(*,*) "Not enough memory for d, vp, v"
-        write(*,*) "neq, nval, nvect = ", nval
-        write(*,*) "Aborting..."
-        stop
-      endif
 
       allocate(vp(neq,nval), v(neq,nvect), STAT=allocate_status)
       if (allocate_status /= 0) then
@@ -431,18 +419,6 @@ c
         stop
       endif
 
-      allocate(sol_1(3+4+4,nval,nel), sol_2(3+4+4,nval,nel), 
-     *     STAT=allocate_status)
-      if (allocate_status /= 0) then
-        write(*,*) "The allocation is unsuccessful"
-        write(*,*) "allocate_status = ", allocate_status
-        write(*,*) "Not enough memory for sol_1, sol_2"
-        write(*,*) "nval, nel = ", nval,nel
-        write(*,*) "Aborting..."
-        stop
-      endif
-
-
       allocate(sol_P2(3,nnodes_P2,nval,nel), STAT=allocate_status)
       if (allocate_status /= 0) then
         write(*,*) "The allocation is unsuccessful"
@@ -459,26 +435,6 @@ c
         write(*,*) "allocate_status = ", allocate_status
         write(*,*) "Not enough memory for index_pw_inv"
         write(*,*) "neq_PW = ", neq_PW
-        write(*,*) "Aborting..."
-        stop
-      endif
-
-      allocate(overlap_J(2*neq_PW, nval), STAT=allocate_status)
-      if (allocate_status /= 0) then
-        write(*,*) "The allocation is unsuccessful"
-        write(*,*) "allocate_status = ", allocate_status
-        write(*,*) "Not enough memory for overlap_J"
-        write(*,*) "neq_PW, nval = ", neq_PW, nval
-        write(*,*) "Aborting..."
-        stop
-      endif
-
-      allocate(overlap_J_dagger(nval, 2*neq_PW), STAT=allocate_status)
-      if (allocate_status /= 0) then
-        write(*,*) "The allocation is unsuccessful"
-        write(*,*) "allocate_status = ", allocate_status
-        write(*,*) "Not enough memory for overlap_J_dagger"
-        write(*,*) "neq_PW, nval = ", neq_PW, nval
         write(*,*) "Aborting..."
         stop
       endif
@@ -651,11 +607,11 @@ C     finite element equations
 
 
       if (debug .eq. 1) then
-        write(ui,*) "py_calc_modes.f:        Adjoint(1) / Prime(2)", n_k
+        write(ui,*) "py_calc_modes_1d.f: Adjoint(1) / Prime(2)", n_k
       endif
 
       if (debug .eq. 1) then
-        write(ui,*) "py_calc_modes_1d.f: call to valpr"
+        write(ui,*) "py_calc_modes_1d.f: call to valpr_64_1d"
       endif
       call valpr_64_1d (nvect, nval, neq, itermax, 
      *  tol, matrix_1, matrix_2, v, beta, vp,   
@@ -664,7 +620,7 @@ C     finite element equations
 c
       if (n_conv .ne. nval) then
          write(ui,*) "py_calc_modes_1d.f: convergence problem with 
-     *                valpr_64"
+     *                valpr_64_1d"
          write(ui,*) "py_calc_modes_1d.f: n_conv != nval : ",
      *    n_conv, nval
          write(ui,*) "py_calc_modes_1d.f: Aborting..."
@@ -765,10 +721,10 @@ cc      endif
 C  Orthogonal integral
       pair_warning = 0
       if (debug .eq. 1) then 
-        write(ui,*) "py_calc_modes.f: Field product"
+        write(ui,*) "py_calc_modes_1d.f: Field product"
       endif
       overlap_file = "Normed/Orthogonal.txt"
-      call orthogonal_d1 (nval, nel, npt_P2, 
+      call orthogonal_1d (nval, nel, npt_P2, 
      *  nb_typ_el, pp, qq, bloch_vec_y, table_nod, 
      *  type_el, x_P2, beta_1, beta_2,
      *  sol_1, sol_2, overlap_L, overlap_file, PrintAll,
@@ -804,7 +760,7 @@ C    Save Original solution
 C        
 C  Normalisation
       if(debug .eq. 1) then
-        write(ui,*) "py_calc_modes.f: Field  Normalisation"
+        write(ui,*) "py_calc_modes_1d.f: Field  Normalisation"
       endif
       call normalisation_1d (nval, nel, 
      *  sol_1, sol_2, overlap_L)
@@ -815,7 +771,7 @@ C  Orthonormal integral
         write(ui,*) "py_calc_modes_1d.f: Product of normalised field"
         overlap_file = "Normed/Orthogonal_n.txt"
         call cpu_time(time1_J)
-        call orthogonal_d1 (nval, nel, npt_P2, 
+        call orthogonal_1d (nval, nel, npt_P2, 
      *    nb_typ_el, pp, qq, bloch_vec_y, table_nod, 
      *    type_el, x_P2, beta_1, beta_2,
      *    sol_1, sol_2, overlap_L, overlap_file, PrintAll,
@@ -825,12 +781,13 @@ C  Orthonormal integral
      *    (time2_J-time1_J)
       endif
 
-
 C  Plane wave ordering
+      if (debug .eq. 1) then
+        write(ui,*) "py_calc_modes_1d.f: pw_ordering_1d"
+      endif
       call pw_ordering_1d (neq_PW, period_x,
      *  bloch_vec_x, bloch_vec_y, index_pw_inv,
      *  debug, ordre_ls, k_0)
-
 
 c      if (debug .eq. 1) then
 c        call array_sol_test_1d (nval, nel, n_ddl, 
@@ -840,7 +797,7 @@ c      endif
 
 C  J_overlap
       if (debug .eq. 1) then
-        write(ui,*) "py_calc_modes.f: J_overlap Integral"
+        write(ui,*) "py_calc_modes_1d.f: J_overlap_1d Integral"
       endif
       call J_overlap_1d(nval, nel, npt_P2, 
      *  type_el, table_nod, x_P2, sol_1,
@@ -848,9 +805,10 @@ C  J_overlap
      *  bloch_vec_x, bloch_vec_y, index_pw_inv, PrintAll,
      *  ordre_ls)
 
+
 C  J_dagger_overlap
       if (debug .eq. 1) then
-        write(ui,*) "py_calc_modes.f: J_dagger_overlap Integral"
+        write(ui,*) "py_calc_modes_1d.f: J_dagger_overlap_1d Integral"
       endif
       call J_dagger_overlap_1d(nval, nel, npt_P2, 
      *  type_el, table_nod, x_P2, sol_2, 

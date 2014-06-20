@@ -26,9 +26,9 @@ import numpy as np
 import random
 import materials
 from mode_calcs import Simmo, Anallo
-from fem_2d import EMUstack
+from fortran import EMUstack
 
-msh_location = '../backend/fem_2d/msh/'
+msh_location = '../backend/fortran/msh/'
 
 # Acknowledgements
 print '\n#################################################################\n' + \
@@ -55,7 +55,7 @@ class NanoStruct(object):
 
             ellipticity   (float): If != 0, inclusion has given ellipticity,\
                 with b = diameter, a = diameter-ellipticity * diameter. \
-                NOTE: only implemented for 1 inclusion.
+                NOTE: only implemented for a single inclusion.
 
             diameter2-16  (float): The diameters of further inclusions in nm.
 
@@ -107,7 +107,7 @@ class NanoStruct(object):
 
             mesh_file  (str): If using a set premade mesh give its name \
                 including .mail (eg. 600_60.mail), it must be located in \
-                backend/fem_2d/msh/
+                backend/fortran/msh/
 
             lc_bkg  (float): Length constant of meshing of background medium \
                 (smaller = finer mesh)
@@ -451,22 +451,22 @@ class ThinFilm(object):
                 diffraction orders of structured layers.
 
         Keyword Args:
-            world_1d  (bool): Does the rest of the stack have exclusively 1D \
-                periodic structures and homogeneous layers? \
-                If True we use the set of 1D diffraction order PWs.
-
             height_nm  (float): The thickness of the layer in nm or 'semi_inf'\
                 for a semi-infinte layer.
 
             num_pw_per_pol  (int): The number of plane waves per polarisation.
+
+            world_1d  (bool): Does the rest of the stack have exclusively 1D \
+                periodic structures and homogeneous layers? \
+                If True we use the set of 1D diffraction order PWs.
 
             material  : A :Material: instance specifying the n of \
                 the layer and related methods.
 
             loss  (bool): If False sets Im(n) = 0, if True leaves n as is.
     """
-    def __init__(self, period, world_1d = False, height_nm = 1000,  
-        num_pw_per_pol=0, material = materials.Material(3.0 + 0.001), loss = True):
+    def __init__(self, period, height_nm = 1000, num_pw_per_pol=0, 
+        world_1d = False, material = materials.Material(3.0 + 0.001), loss = True):
         self.period         = period
         self.world_1d       = world_1d
         self.height_nm      = height_nm
@@ -545,16 +545,22 @@ class Light(object):
                         [np.cos(phi), np.sin(phi)], dtype='float64')
 
 
-    def _air_ref(self, period):
+    def _air_ref(self, period, world_1d):
         """ Return an :Anallo: corresponding to this :Light: in free space.
 
-            The :Anallo: will have `len(anallo.k_z) == 2 * num_pw'.
+            The :Anallo: will have len(anallo.k_z) == 2 * num_pw.
+
+            Args:
+                period  (float): period imposed on homogeneous film.
+
+                world_1d  (bool): Specify whether to use 1D or 2D\
+                    diffraction orders.
         """
 
         if (period) in self._air_anallos:
             return self._air_anallos[(period)]
         else:
-            air = ThinFilm(period = period, material = materials.Air)
+            air = ThinFilm(period = period, material = materials.Air, world_1d = world_1d)
             an = Anallo(air, self)
 
             an.is_air_ref = True
@@ -581,8 +587,8 @@ def dec_float_str(dec_float):
 
 
 
-def calculate_ff(inc_shape, d, a1, a2=0, a3=0, a4=0, a5=0, a6=0, a7=0, a8=0, a9=0, a10=0,
-    a11=0, a12=0, a13=0, a14=0, a15=0, a16=0, el1 = 0):
+def calculate_ff(inc_shape, d, a1, a2=0, a3=0, a4=0, a5=0, a6=0, a7=0, a8=0,
+    a9=0, a10=0, a11=0, a12=0, a13=0, a14=0, a15=0, a16=0, el1 = 0):
     """ Calculate the fill fraction of the inclusions.
 
         Args:
