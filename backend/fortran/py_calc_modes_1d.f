@@ -440,7 +440,7 @@ c
         n_eff(i) = 1
       enddo
 ccc        n_eff(3) = 3
-
+C
 c     Calculate effective permittivity
       do i=1,nb_typ_el
         eps_eff(i) = n_eff(i)**2
@@ -463,7 +463,6 @@ c      k_0 = 2.0d0*pi*n_eff_0*freq
         write(ui,*) "bloch_vec_x = ", bloch_vec_x
         write(ui,*) "bloch_vec_y = ", bloch_vec_y
       endif
-
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
@@ -486,7 +485,7 @@ C
         freq = 1.0d0/lambda
         n_eff_0 = DBLE(n_eff(1))
         k_0 = 2.0d0 * pi * freq
-
+C
 C  Index number of the core materials (material with highest Re(eps_eff))
         n_core(1) = 3
         do i=3,nb_typ_el
@@ -506,7 +505,7 @@ C  Index number of the core materials (material with highest Re(eps_eff))
             write(ui,*) "H-Field formulation"
           endif
         EndIf
-
+C
 C
       if(E_H_field .eq. 1) then
         do i=1,nb_typ_el
@@ -541,14 +540,13 @@ C
         bloch_vec_x_k = -bloch_vec_x
         bloch_vec_y_k = -bloch_vec_y
       endif
-
 C
 C     Assemble the coefficient matrix A and the right-hand side F of the
 C     finite element equations
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes_1d.f: Asmbly: call to asmbly_1d"
       endif
-
+C
       call asmbly_1d (nel, npt_P2, n_ddl, neq, 
      *  shift, bloch_vec_x_k, bloch_vec_y_k, nb_typ_el, 
      *  pp, qq, table_nod, table_ddl, type_el, ineq, 
@@ -565,7 +563,7 @@ C     finite element equations
       call valpr_64_1d (nvect, nval, neq, itermax, 
      *  tol, matrix_1, matrix_2, v, beta, vp,   
      *  n_conv, ls_data, debug)
-
+C
 c
       if (n_conv .ne. nval) then
          write(ui,*) "py_calc_modes_1d.f: convergence problem with "
@@ -655,13 +653,13 @@ C  Orthogonal integral
      *  type_el, x_P2, beta_1, beta_2,
      *  sol_1, sol_2, overlap_L, overlap_file, debug,
      *  pair_warning, k_0)
-
+C
       if (pair_warning .ne. 0 .and. nval .le. 20) then
         write(ui,*) "py_calc_modes_1d.f: Warning found 1 BM
      * of cmplx conj"
         write(ui,*) "pair, increase num_BMs to include the other."
       endif
-
+C
 C    Save Original solution
       if (plot_modes .eq. 1) then
         call array_sol_P2_1d (nval, nel, sol_1, sol_P2)
@@ -687,7 +685,6 @@ C  Normalisation
       endif
       call normalisation_1d (nval, nel, 
      *  sol_1, sol_2, overlap_L)
-
 C
 C  Orthonormal integral
       if (debug .eq. 1) then
@@ -703,7 +700,7 @@ C  Orthonormal integral
           write(ui,*) "py_calc_modes_1d.f: CPU time for orthogonal :",
      *    (time2_J-time1_J)
       endif
-
+C
 C  Plane wave ordering
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes_1d.f: pw_ordering_1d"
@@ -711,13 +708,7 @@ C  Plane wave ordering
       call pw_ordering_1d (neq_PW, period_x,
      *  bloch_vec_x, bloch_vec_y, index_pw_inv,
      *  debug, ordre_ls, k_0)
-
-c      if (debug .eq. 1) then
-c        call array_sol_test_1d (nval, nel, n_ddl, 
-c     *           table_ddl, x_ddl, sol_1, period_x,
-c     *           bloch_vec_x, bloch_vec_y)
-c      endif
-
+C
 C  J_overlap
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes_1d.f: J_overlap_1d Integral"
@@ -727,8 +718,7 @@ C  J_overlap
      *  period_x, lambda, freq, overlap_J, neq_PW,
      *  bloch_vec_x, bloch_vec_y, index_pw_inv, debug,
      *  ordre_ls)
-
-
+C
 C  J_dagger_overlap
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes_1d.f: J_dagger_overlap_1d Integral"
@@ -737,7 +727,6 @@ C  J_dagger_overlap
      *  type_el, table_nod, x_P2, sol_2, 
      *  period_x, lambda, freq, overlap_J_dagger, neq_PW,
      *  bloch_vec_x, bloch_vec_y, index_pw_inv, debug, ordre_ls)
-
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c

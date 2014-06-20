@@ -118,7 +118,6 @@ C
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-C
 C set up final solution matrix
       do j=1,nval
         do i=1,neq_PW
@@ -246,7 +245,7 @@ C
             write(35,*) s, tmp_ls_alpha(s)
           enddo
         close(35)
-
+C
         open (unit=35, file="Matrices/J_mat.txt", status='unknown')
         open (unit=33, file="Matrices/J_K.txt", status='unknown')
         open (unit=32, file="Matrices/J_E.txt", status='unknown')
@@ -274,7 +273,6 @@ C
 131   format(2(f12.4))
 132   format(2(I4),2(g25.17),g18.10)
       endif
-C
 C
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

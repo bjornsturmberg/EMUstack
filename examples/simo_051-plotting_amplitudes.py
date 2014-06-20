@@ -98,17 +98,19 @@ np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Post Processing ########################
 # We can plot the amplitudes of each transmitted plane wave order as a 
-# function of angle.
+# function of angle. 
 plotting.amps_of_orders(stacks_list, add_name='-default_substrate')
 # By default this will plot the amplitudes in the substrate, however we can also give
 # the index in the stack of a different homogeneous layer and calculate them here.
-plotting.amps_of_orders(stacks_list, lay_interest=1)
+# We here chose a subset of orders to plot.
+plotting.amps_of_orders(stacks_list, chosen_PW_order=[-1,0,2], \
+    lay_interest=1)
 
 # When many plane wave orders are included these last plots can become confusing,
 # so instead one may wish to sum together the amplitudes of all propagating orders,
 # of all evanescent orders, and all far-evanescent orders 
 # (which have in plane k>n_H * k0).
-plotting.evanescent_merit(stacks_list,lay_interest=0)
+plotting.evanescent_merit(stacks_list, lay_interest=0)
 
 # We can represent the strength with which different orders are excited 
 # in k-space.

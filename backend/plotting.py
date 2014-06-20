@@ -1110,7 +1110,7 @@ def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
                 function of.
 
             chosen_PW_order  (list): PW diffraction orders to include. \
-                eg. [-1,0,2].
+                eg. [-1,0,2]. If 'None' are given all are plotted.
 
             lay_interest  (int): The index in stacks_list of the layer in \
                 which amplitudes are calculated.
@@ -1159,9 +1159,10 @@ def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
 
             ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
             axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
-
-            trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
-            trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+            # Outgoing TE polarisation
+            trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) 
+            # Outgoing TM polarisation
+            trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) 
             store_trans = np.append(store_trans,trans)
 
         ax1.plot(xvalues,store_trans, label="m = %s" %str(pxs))#, linewidth=linesstrength)
@@ -1171,7 +1172,7 @@ def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
     ax1.set_ylabel(r'$|E|_{trans}$')
     ax1.set_xlabel(xlabel)
     plt.suptitle(add_name)
-    if add_height!= None: add_name += '-'+zeros_int_str(add_height)
+    if add_height!= None: add_name += '-' + zeros_int_str(add_height)
     add_name = str(lay_interest) + add_name
     plt.savefig('PW_orders-lay_%s' % add_name, \
         fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
@@ -1307,6 +1308,7 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
 ####Field plotting routines############################################################
 def fields_2d(pstack, Struc_lay = 1, TF_lay=0):
     """
+    Plot fields in the x-y plane at chosen values of z.
     """
     from fortran import EMUstack
 
@@ -1385,6 +1387,10 @@ def fields_2d(pstack, Struc_lay = 1, TF_lay=0):
 
 def E_PW_fields(stack, nu_calc_pts = 51, max_height = 3,\
     nu_slices = 5, Substrate = True, Superstrate = True,):
+    """
+    Plot fields along z direction at slices through x-y plane.
+    Written by Dale Grant.
+    """
 
     wl = stack.layers[-1].light.wl_nm
     pw = stack.layers[-1].max_order_PWs
@@ -1890,6 +1896,7 @@ def E_PW_fields(stack, nu_calc_pts = 51, max_height = 3,\
 
 def fields_3d(pstack, wl):
     """
+    Plot fields in 3D using gmsh.
     """
     from fortran import EMUstack
     import subprocess

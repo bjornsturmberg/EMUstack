@@ -382,7 +382,7 @@ class NanoStruct(object):
             else:
                 raise ValueError, "must have at least one grating of nonzero width."
 
-            self.mesh_file = msh_name + '.mail'    
+            self.mesh_file = msh_name + '.mail'
 
             
             if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
