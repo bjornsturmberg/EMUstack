@@ -49,7 +49,7 @@ class Modes(object):
             world_1d = self.structure.world_1d
         elif isinstance(self, Simmo):
             if self.structure.geometry == '1D_array': world_1d = True
-        else: world_1d = False
+            else: world_1d = False
         return self.light._air_ref(self.structure.period, world_1d)
 
     def calc_1d_grating_orders(self, max_order):
@@ -77,8 +77,12 @@ class Modes(object):
     def shear_transform(self, coords):
         """ Return the matrix Q corresponding to a shear transformation to coordinats coords. """
         alphas = np.append(self.air_ref().alphas,self.air_ref().alphas)
-        betas  = np.append(self.air_ref().betas,self.air_ref().betas)
-        return np.mat(np.diag(np.exp(1j * (alphas * coords[0] + betas * coords[1]))))
+        if np.shape(coords) == (1,):
+            return np.mat(np.diag(np.exp(1j * (alphas * coords[0]))))
+        else:
+            print 'hola'
+            betas  = np.append(self.air_ref().betas,self.air_ref().betas)
+            return np.mat(np.diag(np.exp(1j * (alphas * coords[0] + betas * coords[1]))))
 
     def __del__(self):
         # Clean up _interfaces_i_have_known to avoid memory leak
@@ -322,6 +326,9 @@ class Simmo(Modes):
             ordre_ls = 5 # self.max_order_PWs
             neq_PW = 2 * ordre_ls + 1
 
+            print 'neq_PW', neq_PW
+            print 'num_pw_per_pol', num_pw_per_pol
+
             resm = EMUstack.calc_modes_1d(lam, nval, ordre_ls,
                 neq_PW, nb_typ_el, self.n_msh_pts,
                 self.n_msh_el, itermax, FEM_debug, self.structure.mesh_file,
@@ -329,8 +336,6 @@ class Simmo(Modes):
 
             self.k_z, J, J_dag, self.sol1, self.sol2 = resm
             self.J, self.J_dag = np.mat(J), np.mat(J_dag)
-
-            # print repr(self.J)
 
 
         elif self.structure.geometry == '2D_array':
@@ -366,7 +371,6 @@ class Simmo(Modes):
             self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
             self.table_nod, self.type_el, self.x_arr = resm
             self.J, self.J_dag = np.mat(J), np.mat(J_dag)
-
 
         else:
             raise ValueError, "object.geometry must either be '1D_array' \

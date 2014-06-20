@@ -43,11 +43,11 @@ class NanoStruct(object):
     """ Represents a structured layer.
 
         Args:
-            geometry (str): Either 1D or 2D structure; '1D_array', '2D_array'.
+            geometry  (str): Either 1D or 2D structure '1D_array', '2D_array'.
 
-            period (float): The period of the unit cell in nanometers.
+            period  (float): The period of the unit cell in nanometers.
 
-            diameter1 (float): The diameter of the inclusion in nm.
+            diameter1  (float): The diameter of the inclusion in nm.
 
         Keyword Args:
             inc_shape  (str): Shape of inclusions that have template mesh,\

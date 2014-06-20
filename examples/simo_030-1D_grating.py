@@ -67,7 +67,7 @@ substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
 def simulate_stack(light):    
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
-    sim_grating = grating.calc_modes(light)
+    sim_grating     = grating.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
     ################ Evaluate stacked structure ##############
     """ Now when defining full structure order is critical and

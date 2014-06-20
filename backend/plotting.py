@@ -797,7 +797,8 @@ def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_na
     integral_tmp = np.trapz(expression, x=wavelengths)
     J = (charge_e/(Plancks_h*speed_c)) * integral_tmp *1e-10 # in mA/cm^2  
     nums_2_print = params_2_print.split()
-    np.savetxt('J_sc_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, J, fmt = '%10.6f')
+    np.savetxt('J_sc_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, \
+        np.array([J]), fmt = '%10.6f')
     return J
 
 def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name):
@@ -816,7 +817,8 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
     integral_tmp = np.trapz(expression, x=wavelengths)
     Efficiency   = integral_tmp/(bandgap_wl*ASTM15_tot_I)   
     nums_2_print = params_2_print.split()
-    np.savetxt('Efficiency_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, Efficiency, fmt = '%8.6f')
+    np.savetxt('Efficiency_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name},\
+        np.array([Efficiency]), fmt = '%8.6f')
     return Efficiency
 #######################################################################################
 

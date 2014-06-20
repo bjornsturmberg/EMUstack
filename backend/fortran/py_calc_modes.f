@@ -163,9 +163,9 @@ C      cmplx_max=n_64**25
       int_max  = n_64**22
 c      3*npt+nel+nnodes*nel 
 
-      !write(*,*) "cmplx_max = ", cmplx_max
-      !write(*,*) "real_max = ", real_max
-      !write(*,*) "int_max = ", int_max
+C      write(*,*) "cmplx_max = ", cmplx_max
+C      write(*,*) "real_max = ", real_max
+C      write(*,*) "int_max = ", int_max
 
 C     Old inputs now internal to here and commented out by default.
 C      mesh_format = 1

@@ -58,7 +58,7 @@ c      complex*16, allocatable, target ::
 
 
       complex*16 overlap_J(2*neq_PW, nval)
-      complex*16 overlap_J_dagger(2*neq_PW, nval)
+      complex*16 overlap_J_dagger(nval, 2*neq_PW)
 
 
 
@@ -208,9 +208,9 @@ c
       cmplx_max = n_64**1
 c      3*npt+nel+nnodes*nel 
 
-      !write(*,*) "cmplx_max = ", cmplx_max
-      !write(*,*) "real_max = ", real_max
-      !write(*,*) "int_max = ", int_max
+C      write(*,*) "cmplx_max = ", cmplx_max
+C      write(*,*) "real_max = ", real_max
+C      write(*,*) "int_max = ", int_max
 
       tol = 0.0 ! ARPACK accuracy (0.0 for machine precision)
       lx = 1 ! Diameter of unit cell. Default, lx = 1.0.
@@ -491,40 +491,17 @@ c
         open (unit=241, file="Output/Dispersion/omega.txt",
      *    status='unknown')
 
-      n_lambda = 1
-      lambda_1 = 0.5d0
-      lambda_2 = 2.0d0
 
-      if(n_lambda .gt. 1) then
-        d_lambda = (lambda_2 - lambda_1)/dble(n_lambda-1)
-        d_freq   = (1.0d0/lambda_2 - 1.0d0/lambda_1) /
-     *             dble(n_lambda-1)
-      else
-        d_lambda = 0.0d0
-        d_freq   = 0.0d0
-      endif
-
-C
-C#####################  Loop over Wavelengths  ##########################
-C
-
-      do i_lambda=1,n_lambda
-
-        write(ui,*) 
-        write(ui,*) "--------------------------------------------",
+      write(ui,*) 
+      write(ui,*) "--------------------------------------------",
      *     "-------"
-        write(ui,*) "MAIN: Slice Progress  ", 
-     *     i_lambda,"/", n_lambda
+      write(ui,*) " Wavelength : ", lambda, " (d)"
+      write(ui,*) "--------------------------------------------",
+     *     "-------"
+      write(ui,*) 
 
-C
-C  For uniformly spaced wavelengths
-c        lambda = lambda_1 + (i_lambda-1)*d_lambda
-c        freq = 1.0d0/lambda
-C
-C  For uniformly spaced frequencies
-        freq = 1.0d0/lambda_1 + (i_lambda-1)*d_freq
-        lambda = 1.0d0/freq
 
+        freq = 1.0d0/lambda
         n_eff_0 = DBLE(n_eff(1))
         k_0 = 2.0d0 * pi * freq
 
@@ -868,7 +845,6 @@ c
         enddo
       endif
 
-        enddo
 
 C
 C#########################  End Wavelength Loop  ########################
@@ -901,9 +877,9 @@ c
       deallocate(a,b,c,index,overlap_L)
 
 C
-        write(ui,*) "   .      .      ."
-        write(ui,*) "   .      .      ."
-        write(ui,*) "   .      .      ."
-        write(ui,*) "  and   we're  done!"
+C        write(ui,*) "   .      .      ."
+C        write(ui,*) "   .      .      ."
+C        write(ui,*) "   .      .      ."
+C        write(ui,*) "  and   we're  done!"
 c
       end subroutine calc_modes_1d

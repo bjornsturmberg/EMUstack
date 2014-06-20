@@ -39,11 +39,18 @@ class Stack(object):
                 overrides any heights specified in the :ThinFilm: or\
                 :NanoStruct: objects.
 
+            shears  (tuple): the in-plane coordinates of each layer,\
+                including semi-inf layers in unit cell units (i.e. 0-1).
+                e.g. ([0.0, 0.3], [0.1, 0.1], [0.2, 0.5]) for '2D_array'\
+                e.g. ([0.0], [ 0.1], [0.5]) for '1D_array'.\
+                Only required if wish to shift layers relative to each\
+                other. Only relative difference matters.
+
     """
     def __init__(self, layers, heights_nm = None, shears = None):
         self.layers = tuple(layers)
         self._heights_nm = heights_nm
-        self._shears = shears
+        self.shears = shears
         self.period = float(layers[0].structure.period)
         self._check_periods_are_consistent()
 
@@ -59,11 +66,13 @@ class Stack(object):
     def total_height(self):
         return sum(self.heights())
 
-    def shears(self):
-        if None != self._shears:
-            return np.asarray(self._shears)
-        else:
-            return np.array([[0.0, 0.0] for lay in self.layers[0:-1]])
+    # def shears(self):
+    #     if None != self._shears:
+    #         return np.asarray(self._shears)
+    #     else:
+    #         print 'no shear here!!'
+    #         return None
+    #         # return np.array([[0.0, 0.0] for lay in self.layers[0:-1]])
 
     def structures(self):
         return (lay.structure for lay in self.layers)
@@ -197,7 +206,6 @@ class Stack(object):
         tnet_list.append(tnet)
         rnet_list.append(rnet)
 
-        if self.shears != None: shears_list = self.shears()
         inv_t21_list   = []
         inv_t12_list   = []
         for i in range(1, len(self.layers) - 1):
@@ -209,7 +217,7 @@ class Stack(object):
                 tnet           = tnet*inverted_t21
                 rnet           = r21_list[i] + t12_list[i]*rnet*inverted_t21
             else:
-                coord_diff = shears_list[i-1] - shears_list[i]
+                coord_diff = np.asarray(self.shears[i-1]) - np.asarray(self.shears[i])
                 Q = st1.shear_transform(coord_diff)
                 Q_inv = st1.shear_transform(-1*coord_diff)
                 to_invert      = (I_air - r12_list[i]*Q_inv*rnet*Q)
@@ -240,7 +248,7 @@ class Stack(object):
             tnet         = tnet*inverted_t21
             rnet         = r21_list[-1] + t12_list[-1]*rnet*inverted_t21
         else:
-            coord_diff = shears_list[-1]
+            coord_diff = np.asarray(self.shears[-1])
             Q = st1.shear_transform(coord_diff)
             Q_inv = st1.shear_transform(-1*coord_diff)
             to_invert    = (I_air - r12_list[-1]*Q_inv*rnet*Q)
