@@ -1160,7 +1160,7 @@ def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
             ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
             axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
             # Outgoing TE polarisation
-            trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) 
+            trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
             # Outgoing TM polarisation
             trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) 
             store_trans = np.append(store_trans,trans)

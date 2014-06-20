@@ -26,6 +26,7 @@ import sys
 import os
 sys.path.append("../backend/")
 
+import objects
 from fortran import EMUstack
 
 _interfaces_i_have_known = {}
@@ -293,8 +294,6 @@ class Simmo(Modes):
         "Currently you have %(bm)i BMs < %(np)i PWs." % {
             'bm': self.num_BM, 'np': num_pw_per_pol * 2} 
 
-        d = self.structure.period
-
         # Parameters that control how FEM routine runs
         self.E_H_field = 1  # Selected formulation (1=E-Field, 2=H-Field)
         i_cond         = 2  # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
@@ -313,29 +312,31 @@ class Simmo(Modes):
             with open("../backend/fortran/msh/"+self.structure.mesh_file) as f:
                 self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
 
-            # print self.nb_typ_el
-            nb_typ_el = 4 #self.nb_typ_el #checked geo_1d.f reading to get nb_typ=4 WHY???
-
-
-            nval = 20
-            d_in_nm = 1
-            lam = 2.0 * np.pi / 5.0
-
-            ordre_ls = 5 # self.max_order_PWs
-            neq_PW = 2 * ordre_ls + 1
-
-            # print 'neq_PW', neq_PW
-            # print 'num_pw_per_pol', num_pw_per_pol
+            if self.structure.geometry == '1D_array': 
+                world_1d = 1
+                num_pw_per_pol_2d = 1
+            else:
+                world_1d = 0
+                dummy_2d_layer = objects.ThinFilm(period = self.structure.period, world_1d = False)
+                dummy_2d_anallo = Anallo(dummy_2d_layer, self)
+                pxs, pys = dummy_2d_anallo.calc_2d_grating_orders(self.max_order_PWs)
+                num_pw_per_pol_2d = pxs.size
 
             resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BM, self.max_order_PWs,
-                self.nb_typ_el, self.n_msh_pts,
+                world_1d, self.nb_typ_el, self.n_msh_pts,
                 self.n_msh_el, itermax, FEM_debug, self.structure.mesh_file,
-                d_in_nm, self.structure.plot_modes,
+                self.structure.period, self.structure.plot_modes,
                 self.structure.plot_real, self.structure.plot_imag, 
-                self.structure.plot_abs, num_pw_per_pol )
+                self.structure.plot_abs, num_pw_per_pol, num_pw_per_pol_2d )
 
-            self.k_z, J, J_dag, self.sol1, self.sol2 = resm
-            self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+            self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1, self.sol2 = resm
+
+            if self.structure.geometry == '1D_array': 
+                self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+            else:
+                self.J, self.J_dag = np.mat(J_2d), np.mat(J_dag_2d)
+            del J_2d, J_dag_2d
+
 
 
         elif self.structure.geometry == '2D_array':

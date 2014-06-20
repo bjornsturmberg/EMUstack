@@ -1,13 +1,14 @@
 
       subroutine calc_modes_1d(
 c     Explicit inputs
-     *    lambda, nval, ordre_ls, nb_typ_el,
+     *    lambda, nval, ordre_ls, world_1d, nb_typ_el,
      *    npt_P2, nel, itermax, debug, mesh_file,
      *    d_in_nm,
      *    plot_modes, plot_real, plot_imag, plot_abs,
-     *    neq_PW,
+     *    neq_PW, neq_PW_2d, 
 C     Outputs
-     *     beta_1, overlap_J, overlap_J_dagger, sol_1, sol_2)
+     *     beta_1, overlap_J, overlap_J_dagger, overlap_J_2d, 
+     *     overlap_J_dagger_2d, sol_1, sol_2)
 
 
 
@@ -20,7 +21,7 @@ C************************************************************************
 C
       implicit none
 
-      integer*8 nel, nb_typ_el
+      integer*8 nel, nb_typ_el, world_1d
 C  Local parameters:
       integer*8 int_max, cmplx_max, int_used, cmplx_used
       integer*8 real_max, real_used, n_64
@@ -54,8 +55,12 @@ ccc      complex*16, allocatable :: sol_1(:,:,:), sol_2(:,:,:)
 c      complex*16, allocatable, target :: 
       complex*16, allocatable :: sol_P2(:,:,:,:)
       complex*16, allocatable :: eps_eff(:), n_eff(:)
+
       complex*16 overlap_J(2*neq_PW, nval)
       complex*16 overlap_J_dagger(nval, 2*neq_PW)
+      complex*16 overlap_J_2d(2*neq_PW_2d, nval)
+      complex*16 overlap_J_dagger_2d(nval, 2*neq_PW_2d)
+
       complex*16, allocatable :: beta_PW(:)
       integer*8, allocatable :: index_PW(:)
 
@@ -94,7 +99,7 @@ C      integer*8 jp_matD2, jp_matL2, jp_matU2
       integer*8 jp_vect1, jp_vect2, jp_workd, jp_resid, jp_vschur
       integer*8 jp_trav, jp_vp
 C  Plane wave parameters
-      integer*8 neq_PW, nx_PW, ordre_ls
+      integer*8 neq_PW, neq_PW_2d, nx_PW, ordre_ls
       integer*8, allocatable ::  index_pw_inv(:)
 
 
@@ -179,6 +184,7 @@ Cf2py intent(in) lambda, nval, ordre_ls, neq_PW, nb_typ_el
 Cf2py intent(in) npt_P2, nel, itermax, debug, mesh_file
 
 Cf2py intent(out) beta_1, overlap_J, overlap_J_dagger
+Cf2py intent(out) overlap_J_2d, overlap_J_dagger_2d
 Cf2py intent(out) sol_1, sol_2
 
 c
@@ -727,6 +733,20 @@ C  J_dagger_overlap
      *  type_el, table_nod, x_P2, sol_2, 
      *  period_x, lambda, freq, overlap_J_dagger, neq_PW,
      *  bloch_vec_x, bloch_vec_y, index_pw_inv, debug, ordre_ls)
+C
+C  Convert overlap integrals from 1D diffraction order basis to 
+C  2D diffraction order basis (filling with zeros).
+      if (debug .eq. 1) then
+        if (debug .eq. 1) then
+          write(ui,*)"py_calc_modes_1d.f: pw_matrix_1d_to_2d conversion"
+        endif
+        call pw_matrix_1d_to_2d (neq_PW, neq_PW_2d, nval, 
+     *    period_x, bloch_vec_x, bloch_vec_y, index_pw_inv,
+     *    debug, ordre_ls, overlap_J, overlap_J_2d,
+     *    overlap_J_dagger, overlap_J_dagger_2d,
+     *    k_0, debug)
+      endif
+
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
