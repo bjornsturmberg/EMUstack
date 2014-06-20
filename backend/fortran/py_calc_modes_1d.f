@@ -1,9 +1,11 @@
 
       subroutine calc_modes_1d(
 c     Explicit inputs
-     *    lambda, nval, ordre_ls, neq_PW, nb_typ_el,
+     *    lambda, nval, ordre_ls, nb_typ_el,
      *    npt_P2, nel, itermax, debug, mesh_file,
      *    d_in_nm,
+     *    plot_modes, plot_real, plot_imag, plot_abs,
+     *    neq_PW,
 C     Outputs
      *     beta_1, overlap_J, overlap_J_dagger, sol_1, sol_2)
 
@@ -41,33 +43,23 @@ C  Local parameters:
       complex*16, dimension(:,:), allocatable :: matrix_1, matrix_2
       complex*16, dimension(:,:), allocatable :: overlap_L
       complex*16, allocatable :: pp(:), qq(:)
-
       complex*16, allocatable :: vp(:,:), v(:,:)
       complex*16, allocatable :: mode_pol(:,:)
-
       complex*16, target :: beta_1(nval), beta_2(nval)
       complex*16, pointer :: beta(:)
 
 ccc      complex*16, allocatable :: sol_1(:,:,:), sol_2(:,:,:)
       complex*16, target :: sol_1(3+4+4,nval,nel), sol_2(3+4+4,nval,nel)
       complex*16, pointer :: sol(:,:,:)
-
 c      complex*16, allocatable, target :: 
       complex*16, allocatable :: sol_P2(:,:,:,:)
       complex*16, allocatable :: eps_eff(:), n_eff(:)
-
-
       complex*16 overlap_J(2*neq_PW, nval)
       complex*16 overlap_J_dagger(nval, 2*neq_PW)
-
-
-
       complex*16, allocatable :: beta_PW(:)
       integer*8, allocatable :: index_PW(:)
 
-
       integer*8 nval, nvect, n_conv
-
       double precision k_0, pi, lx, bloch_vec_x, bloch_vec_y
       double precision bloch_vec_x_k, bloch_vec_y_k
       double precision n_eff_0, period_x
@@ -179,8 +171,6 @@ c      complex*16 x_arr(2,npt)
 c      complex*16, target :: sol1(3,nnodes+7,nval,nel)
 c      complex*16, target :: sol2(3,nnodes+7,nval,nel)
 c      complex*16, pointer :: sol(:,:,:,:)
-
-
 c      complex*16, target :: beta_1(nval), beta_2(nval)
 c      complex*16, pointer :: beta(:)
 
@@ -215,10 +205,8 @@ C      write(*,*) "int_max = ", int_max
       tol = 0.0 ! ARPACK accuracy (0.0 for machine precision)
       lx = 1 ! Diameter of unit cell. Default, lx = 1.0.
 
-
 C     Old inputs now internal to here and commented out by default.
 C      mesh_format = 1
-C      Checks = 0 ! check completeness, energy conservation
 
       if (debug .eq. 1) then
         write(*,*) "WELCOME TO DEBUG MODE"
@@ -461,7 +449,6 @@ c     Calculate effective permittivity
 cc      n_eff_0 = DBLE(n_eff(1))
 cc      freq = 1.0d0/lambda
 cc      k_0 = 2.0d0 * pi * freq
-
 c      k_0 = 2.0d0*pi*n_eff_0*freq
 
       bloch_vec_x = 0.1d0 * 1
@@ -483,15 +470,11 @@ c
       call periodic_cond_1d (nel, npt_P2, n_ddl, neq, table_nod, 
      *      ineq, x_P2, table_ddl, ip_period_ddl, x_ddl, debug,
      *      period_x)
-
+C
       if(debug .eq. 1) then
         write(ui,*) "period_x = ", period_x
       endif
-
-        open (unit=241, file="Output/Dispersion/omega.txt",
-     *    status='unknown')
-
-
+C
       write(ui,*) 
       write(ui,*) "--------------------------------------------",
      *     "-------"
@@ -499,8 +482,7 @@ c
       write(ui,*) "--------------------------------------------",
      *     "-------"
       write(ui,*) 
-
-
+C
         freq = 1.0d0/lambda
         n_eff_0 = DBLE(n_eff(1))
         k_0 = 2.0d0 * pi * freq
@@ -621,13 +603,6 @@ c
 C
       call z_indexx (nval, beta, index)
 c
-c      if(debug .eq. 1) then
-c        write(ui,*)
-c        do i=1,nval
-c          write(ui,*) "A: ", i, beta(i)
-c        enddo
-c      endif
-c
 C       The eigenvectors will be stored in the array sol
 C       The eigenvalues and eigenvectors will be renumbered  
 C                 using the permutation vector index
@@ -665,26 +640,10 @@ C
         enddo
       endif
 C
-
-      if (n_k .eq. 1) then
-        call DispersionDiagram_1d(lambda, nval, n_conv, 
-     *    bloch_vec_x_k, bloch_vec_y_k, beta, d_in_nm)
-      endif
-c
       enddo
 C
 CCCCCCCCCCCCCCCCCCCCCCCC  End Prime, Adjoint Loop  CCCCCCCCCCCCCCCCCCCCCC
 C
-
-cc      if (debug .eq. -100) then
-cc        call array_sol_test_1d (nval, nel, n_ddl, 
-cc     *           table_ddl, x_ddl, sol_1, period_x,
-cc     *           bloch_vec_x, bloch_vec_y)
-cc        call array_sol_test_1d (nval, nel, n_ddl, 
-cc     *           table_ddl, x_ddl, sol_2, period_x,
-cc     *           -bloch_vec_x, -bloch_vec_y)
-cc      endif
-
 C  Orthogonal integral
       pair_warning = 0
       if (debug .eq. 1) then 
@@ -707,12 +666,9 @@ C    Save Original solution
       if (plot_modes .eq. 1) then
         call array_sol_P2_1d (nval, nel, sol_1, sol_P2)
         dir_name = "Bloch_Fields"
-        call write_sol_P2_1d (nval, nel, E_H_field,
-     *     lambda, beta_1, sol_P2, mesh_file, dir_name)
+C        call write_sol_P2_1d (nval, nel, E_H_field,
+C     *     lambda, beta_1, sol_P2, mesh_file, dir_name)
         q_average = 0
-        plot_real = 1
-        plot_imag = 0
-        plot_abs = 0
         tchar = "Bloch_Fields/PNG/All_plots_png_abs2_eE.geo"
         open (unit=34,file=tchar)
         do i=1,nval
@@ -837,20 +793,12 @@ cc      endif
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-
       if(debug .eq. 1000) then
         write(ui,*)
         do i=1,nval
           write(ui,*) "b=", i, beta_1(i)
         enddo
       endif
-
-
-C
-C#########################  End Wavelength Loop  ########################
-C
-        close(241)
-
 C
 C     factorization of the globale matrice
 C     -----------------------------------
@@ -869,17 +817,9 @@ c      do i=1,10
 c        write(*,"(8(I7))") i, (table_nod(j,i),j=1,nnodes_P2), type_el(i)
 c      enddo
 c
-
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-
       deallocate(a,b,c,index,overlap_L)
-
-C
-C        write(ui,*) "   .      .      ."
-C        write(ui,*) "   .      .      ."
-C        write(ui,*) "   .      .      ."
-C        write(ui,*) "  and   we're  done!"
 c
       end subroutine calc_modes_1d

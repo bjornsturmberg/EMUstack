@@ -80,7 +80,6 @@ class Modes(object):
         if np.shape(coords) == (1,):
             return np.mat(np.diag(np.exp(1j * (alphas * coords[0]))))
         else:
-            print 'hola'
             betas  = np.append(self.air_ref().betas,self.air_ref().betas)
             return np.mat(np.diag(np.exp(1j * (alphas * coords[0] + betas * coords[1]))))
 
@@ -330,9 +329,11 @@ class Simmo(Modes):
             print 'num_pw_per_pol', num_pw_per_pol
 
             resm = EMUstack.calc_modes_1d(lam, nval, ordre_ls,
-                neq_PW, nb_typ_el, self.n_msh_pts,
+                nb_typ_el, self.n_msh_pts,
                 self.n_msh_el, itermax, FEM_debug, self.structure.mesh_file,
-                d_in_nm )
+                d_in_nm, self.structure.plot_modes,
+                self.structure.plot_real, self.structure.plot_imag, 
+                self.structure.plot_abs, neq_PW )
 
             self.k_z, J, J_dag, self.sol1, self.sol2 = resm
             self.J, self.J_dag = np.mat(J), np.mat(J_dag)

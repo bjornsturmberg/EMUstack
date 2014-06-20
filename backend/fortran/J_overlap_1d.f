@@ -225,7 +225,6 @@ C
             enddo
 cc        enddo
       enddo
-
 C
 C  Save as J_mat = | J_E |                
 C                  | J_K |
@@ -241,40 +240,36 @@ C                  | J_K |
 C
 CCCCCCCCCCCCCCCCC	  save results   CCCCCCCCCCCCCCCC
 C
-
-      open (unit=35, file="Matrices/ls_alpha.txt", status='unknown')
-        do s=1,neq_PW
-          write(35,*) s, tmp_ls_alpha(s)
-        enddo
-      close(35)
-
       if (PrintAll .eq. 1) then
-C
-      open (unit=35, file="Matrices/J_mat.txt", status='unknown')
-      open (unit=33, file="Matrices/J_K.txt", status='unknown')
-      open (unit=32, file="Matrices/J_E.txt", status='unknown')
-C      write(34,131) lambda, freq      
-      write(35,131) lambda, freq     
-      write(33,131) lambda, freq   
-      write(32,131) lambda, freq 
-C
-      do n = 1, nval
-        do twos = 1, 2*neq_PW
-          write(35,132) twos,n,overlap_J(twos,n),
+        open (unit=35, file="Matrices/ls_alpha.txt", status='unknown')
+          do s=1,neq_PW
+            write(35,*) s, tmp_ls_alpha(s)
+          enddo
+        close(35)
+
+        open (unit=35, file="Matrices/J_mat.txt", status='unknown')
+        open (unit=33, file="Matrices/J_K.txt", status='unknown')
+        open (unit=32, file="Matrices/J_E.txt", status='unknown')
+        write(35,131) lambda, freq     
+        write(33,131) lambda, freq   
+        write(32,131) lambda, freq 
+C  
+        do n = 1, nval
+          do twos = 1, 2*neq_PW
+            write(35,132) twos,n,overlap_J(twos,n),
      *         abs(overlap_J(twos,n))
-        enddo    
-      enddo
-      do n=1,nval
-        do s=1,neq_PW
-          write(33,132) s, n, overlap_K(s,n), abs(overlap_K(s,n))
-          write(32,132) s, n, overlap_E(s,n), abs(overlap_E(s,n))
+          enddo    
         enddo
-      enddo
+        do n=1,nval
+          do s=1,neq_PW
+            write(33,132) s, n, overlap_K(s,n), abs(overlap_K(s,n))
+            write(32,132) s, n, overlap_E(s,n), abs(overlap_E(s,n))
+          enddo
+        enddo
 C
-      close(35)    
-      close(34)
-      close(33)
-      close(32) 
+        close(35)  
+        close(33)
+        close(32) 
 C
 131   format(2(f12.4))
 132   format(2(I4),2(g25.17),g18.10)

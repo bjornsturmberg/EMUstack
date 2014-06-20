@@ -172,7 +172,6 @@ C      mesh_format = 1
 C      Checks = 0 ! check completeness, energy conservation
       PrintAll = debug ! only need to print when debugging J overlap, orthogonal
       tol = 0.0 ! ARPACK accuracy (0.0 for machine precision)
-      q_average = 0
       lx=1 ! Diameter of unit cell. Default, lx = 1.0.
       ly=1 ! NOTE: currently requires ly=lx, ie square unit cell.
 
@@ -727,6 +726,7 @@ C
 C    Save Original solution
       if (plot_modes .eq. 1) then
         dir_name = "Bloch_Fields"
+        q_average = 0
 C        call write_sol (nval, nel, nnodes, E_H_field, lambda,
 C     *       beta1, sol1, mesh_file, dir_name)
 C        call write_param (E_H_field, lambda, npt, nel, i_cond,

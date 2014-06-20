@@ -188,8 +188,9 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=1,\
             xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
             xlabel = r'$|k_\parallel|$'
         else:
-            raise ValueError, \
-                "t_r_a_plots cannot guess what to plot on x-axis, specify with xvalues input."
+            xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
+            xlabel = r'$\lambda$ (nm)'
+            print "t_r_a_plots is guessing you have a single wavelength, else specify xvalues."
 
     if add_height!=0.: add_name += zeros_int_str(add_height)
     stack_label = zeros_int_str(stack_label)
@@ -1137,8 +1138,9 @@ def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
             xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
             xlabel = r'$|k_\parallel|$'
         else:
-            raise ValueError, \
-                "amps_of_orders cannot guess what to plot on x-axis, specify with xvalues input."
+            xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
+            xlabel = r'$\lambda$ (nm)'
+            print "amps_of_orders is guessing you have a single wavelength, else specify xvalues."
 
     for pxs in chosen_PW_order:
         store_trans = []
@@ -1220,8 +1222,9 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
             xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
             xlabel = r'$|k_\parallel|$'
         else:
-            raise ValueError, \
-            "evanescent_merit cannot guess what to plot on x-axis, specify with xvalues input."
+            xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
+            xlabel = r'$\lambda$ (nm)'
+            print "evanescent_merit is guessing you have a single wavelength, else specify xvalues."
 
 
     store_m_p     = []
