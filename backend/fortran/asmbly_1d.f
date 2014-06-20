@@ -53,8 +53,10 @@ c
 c
 ccccccccccccccccccccccccccccccccccccccc
 c
-
-        write(*,*) "asmbly_1d"
+c  ii = sqrt(-1)
+      ii = dcmplx(0.0d0, 1.0d0)
+      ui = 6
+      debug = 0
 
       do eq_ip=1,neq
         do eq_jp=1,neq
@@ -70,8 +72,9 @@ c
       dim2 = node_P2+2*node_P3
       dim3 = nel
 
+      if (debug .eq. 1) then
         write(*,*) "asmbly_1d: dim1, dim2, dim3 = ", dim1, dim2, dim3
-
+      endif
 
       allocate(ls_mat_el_1(dim1,dim2,dim3), STAT=allocate_status)
       if (allocate_status /= 0) then
@@ -92,16 +95,6 @@ c
         write(*,*) "Aborting..."
         stop
       endif
-
-c
-ccccccccccccccccccccccccccccccccccccccc
-c
-c  ii = sqrt(-1)
-      ii = dcmplx(0.0d0, 1.0d0)
-
-      ui = 6
-      debug = 1
-
 c
 ccccccccccccccccccccccccccccccccccccccc
 c

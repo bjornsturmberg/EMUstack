@@ -436,7 +436,9 @@ c
 ccccccccccccccccccccccccccccccccccccccccccc
 c
 
+      if (debug .eq. 1) then
         write(ui,*) "valpr_64_1d: call to ARPACK"
+      endif
 ccccccccccccccccccc
 c
       compteur = 0

@@ -57,7 +57,7 @@ c  ii = sqrt(-1)
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-      debug = 1
+      debug = 0
 
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc

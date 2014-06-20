@@ -23,7 +23,7 @@ c      double precision xx, re_tmp, im_tmp
       integer*8 i, j, k, debug
 c
       ui = 6
-      debug = 1
+      debug = 0
 c
         open (unit=24,file="../backend/fortran/msh/"//mesh_file,
      *     status='old')

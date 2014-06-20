@@ -3,6 +3,7 @@
 c     Explicit inputs
      *    lambda, nval, ordre_ls, neq_PW, nb_typ_el,
      *    npt_P2, nel, itermax, debug, mesh_file,
+     *    d_in_nm,
 C     Outputs
      *     beta_1, overlap_J, overlap_J_dagger, sol_1, sol_2)
 
@@ -82,7 +83,7 @@ c     Wavelength lambda is in normalised units of d_in_nm
 
       character mesh_file*100
 
-      integer*8 neq, debug
+      integer*8 neq
 c     E_H_field = 1 => Electric field formulation (E-Field)
 c     E_H_field = 2 => Magnetic field formulation (H-Field)
       integer*8 E_H_field
@@ -155,7 +156,7 @@ C  Names and Controls
       character gmsh_file_pos*100
       character overlap_file*100, dir_name*100
       character*100 tchar
-      integer*8 namelength, PrintAll!, Checks
+      integer*8 namelength, debug
       integer*8 plot_modes
       integer*8 pair_warning
       integer*8 q_average, plot_real, plot_imag, plot_abs
@@ -212,14 +213,12 @@ c      3*npt+nel+nnodes*nel
       !write(*,*) "int_max = ", int_max
 
       tol = 0.0 ! ARPACK accuracy (0.0 for machine precision)
-c      q_average = 0
-      lx=1 ! Diameter of unit cell. Default, lx = 1.0.
+      lx = 1 ! Diameter of unit cell. Default, lx = 1.0.
 
 
 C     Old inputs now internal to here and commented out by default.
 C      mesh_format = 1
 C      Checks = 0 ! check completeness, energy conservation
-c      PrintAll = debug ! only need to print when debugging J overlap, orthogonal
 
       if (debug .eq. 1) then
         write(*,*) "WELCOME TO DEBUG MODE"
@@ -227,9 +226,6 @@ c      PrintAll = debug ! only need to print when debugging J overlap, orthogona
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-
-c      nval = 80
-
       allocate_status = 0
 
       allocate(b(cmplx_max), STAT=allocate_status)
@@ -462,9 +458,6 @@ c     Calculate effective permittivity
         eps_eff(i) = n_eff(i)**2
       end do
 
-      lambda = 2.0d0*pi / 5.0d0
-      d_in_nm = 1
-
 cc      n_eff_0 = DBLE(n_eff(1))
 cc      freq = 1.0d0/lambda
 cc      k_0 = 2.0d0 * pi * freq
@@ -483,9 +476,6 @@ c      k_0 = 2.0d0*pi*n_eff_0*freq
         write(ui,*) "bloch_vec_x = ", bloch_vec_x
         write(ui,*) "bloch_vec_y = ", bloch_vec_y
       endif
-
-      PrintAll = 1
-
 
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -619,8 +609,8 @@ C     finite element equations
 
 c
       if (n_conv .ne. nval) then
-         write(ui,*) "py_calc_modes_1d.f: convergence problem with 
-     *                valpr_64_1d"
+         write(ui,*) "py_calc_modes_1d.f: convergence problem with "
+     *               // "valpr_64_1d"
          write(ui,*) "py_calc_modes_1d.f: n_conv != nval : ",
      *    n_conv, nval
          write(ui,*) "py_calc_modes_1d.f: Aborting..."
@@ -727,7 +717,7 @@ C  Orthogonal integral
       call orthogonal_1d (nval, nel, npt_P2, 
      *  nb_typ_el, pp, qq, bloch_vec_y, table_nod, 
      *  type_el, x_P2, beta_1, beta_2,
-     *  sol_1, sol_2, overlap_L, overlap_file, PrintAll,
+     *  sol_1, sol_2, overlap_L, overlap_file, debug,
      *  pair_warning, k_0)
 
       if (pair_warning .ne. 0 .and. nval .le. 20) then
@@ -767,14 +757,14 @@ C  Normalisation
 
 C
 C  Orthonormal integral
-      if (PrintAll .eq. 1) then
+      if (debug .eq. 1) then
         write(ui,*) "py_calc_modes_1d.f: Product of normalised field"
         overlap_file = "Normed/Orthogonal_n.txt"
         call cpu_time(time1_J)
         call orthogonal_1d (nval, nel, npt_P2, 
      *    nb_typ_el, pp, qq, bloch_vec_y, table_nod, 
      *    type_el, x_P2, beta_1, beta_2,
-     *    sol_1, sol_2, overlap_L, overlap_file, PrintAll,
+     *    sol_1, sol_2, overlap_L, overlap_file, debug,
      *    pair_warning, k_0)
         call cpu_time(time2_J)
           write(ui,*) "py_calc_modes_1d.f: CPU time for orthogonal :",
@@ -802,7 +792,7 @@ C  J_overlap
       call J_overlap_1d(nval, nel, npt_P2, 
      *  type_el, table_nod, x_P2, sol_1,
      *  period_x, lambda, freq, overlap_J, neq_PW,
-     *  bloch_vec_x, bloch_vec_y, index_pw_inv, PrintAll,
+     *  bloch_vec_x, bloch_vec_y, index_pw_inv, debug,
      *  ordre_ls)
 
 
@@ -813,7 +803,7 @@ C  J_dagger_overlap
       call J_dagger_overlap_1d(nval, nel, npt_P2, 
      *  type_el, table_nod, x_P2, sol_2, 
      *  period_x, lambda, freq, overlap_J_dagger, neq_PW,
-     *  bloch_vec_x, bloch_vec_y, index_pw_inv, PrintAll, ordre_ls)
+     *  bloch_vec_x, bloch_vec_y, index_pw_inv, debug, ordre_ls)
 
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc

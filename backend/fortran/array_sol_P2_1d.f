@@ -29,7 +29,7 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c
-      debug = 1
+      debug = 0
 
 c     Values of the P3 basis function at the mid-point
       P3_mid_mode_value(1) = -1.0d0 / 16.0d0

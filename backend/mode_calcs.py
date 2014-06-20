@@ -296,7 +296,7 @@ class Simmo(Modes):
         self.E_H_field = 1  # Selected formulation (1=E-Field, 2=H-Field)
         i_cond         = 2  # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
         itermax        = 30 # Maximum number of iterations for convergence
-        FEM_debug      = 1   # Fortran routines will display and save additional info
+        FEM_debug      = 0   # Fortran routines will display and save additional info
         if FEM_debug == 1:
             if not os.path.exists("Normed"):
                 os.mkdir("Normed")
@@ -316,18 +316,21 @@ class Simmo(Modes):
             # CC  change back if using .mail msh
 
             nval = 20
+            d_in_nm = 1
+            lam = 2.0 * np.pi / 5.0
 
             ordre_ls = 5 # self.max_order_PWs
             neq_PW = 2 * ordre_ls + 1
 
-            resm = EMUstack.calc_modes_1d(self.wl_norm(), nval, ordre_ls,
+            resm = EMUstack.calc_modes_1d(lam, nval, ordre_ls,
                 neq_PW, nb_typ_el, self.n_msh_pts,
-                self.n_msh_el, itermax, FEM_debug, self.structure.mesh_file)
+                self.n_msh_el, itermax, FEM_debug, self.structure.mesh_file,
+                d_in_nm )
 
             self.k_z, J, J_dag, self.sol1, self.sol2 = resm
             self.J, self.J_dag = np.mat(J), np.mat(J_dag)
 
-
+            # print repr(self.J)
 
 
         elif self.structure.geometry == '2D_array':
