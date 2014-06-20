@@ -386,7 +386,6 @@ class NanoStruct(object):
             mesh_file = msh_location + msh_name + '.txt'
             
             if not os.path.exists(mesh_file) or self.force_mesh == True:
-                print ' in bussfdsf'
                 nel = 1.0/self.lc
                 rad1 = self.diameter1/(2*self.period)
                 EMUstack.mesh_1d_p2(rad1, nel, mesh_file)

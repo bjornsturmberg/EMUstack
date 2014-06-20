@@ -313,7 +313,7 @@ class Simmo(Modes):
             with open("../backend/fortran/msh/"+self.structure.mesh_file) as f:
                 self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
 
-            print self.nb_typ_el
+            # print self.nb_typ_el
             nb_typ_el = 4 #self.nb_typ_el #checked geo_1d.f reading to get nb_typ=4 WHY???
 
 
@@ -324,15 +324,15 @@ class Simmo(Modes):
             ordre_ls = 5 # self.max_order_PWs
             neq_PW = 2 * ordre_ls + 1
 
-            print 'neq_PW', neq_PW
-            print 'num_pw_per_pol', num_pw_per_pol
+            # print 'neq_PW', neq_PW
+            # print 'num_pw_per_pol', num_pw_per_pol
 
-            resm = EMUstack.calc_modes_1d(lam, nval, ordre_ls,
-                nb_typ_el, self.n_msh_pts,
+            resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BM, self.max_order_PWs,
+                self.nb_typ_el, self.n_msh_pts,
                 self.n_msh_el, itermax, FEM_debug, self.structure.mesh_file,
                 d_in_nm, self.structure.plot_modes,
                 self.structure.plot_real, self.structure.plot_imag, 
-                self.structure.plot_abs, neq_PW )
+                self.structure.plot_abs, num_pw_per_pol )
 
             self.k_z, J, J_dag, self.sol1, self.sol2 = resm
             self.J, self.J_dag = np.mat(J), np.mat(J_dag)
