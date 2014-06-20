@@ -315,8 +315,7 @@ class Simmo(Modes):
 
             print self.nb_typ_el
             nb_typ_el = 4 #self.nb_typ_el #checked geo_1d.f reading to get nb_typ=4 WHY???
-            # CC  tmp shortened tp -4, was -5.
-            # CC  change back if using .mail msh
+
 
             nval = 20
             d_in_nm = 1

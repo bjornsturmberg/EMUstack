@@ -106,8 +106,8 @@ class NanoStruct(object):
                 mesh with equal period etc. but different lc refinement.
 
             mesh_file  (str): If using a set premade mesh give its name \
-                including .mail (eg. 600_60.mail), it must be located in \
-                backend/fortran/msh/
+                including .mail if 2D_array (eg. 600_60.mail), or .txt if \
+                1D_array. It must be located in backend/fortran/msh/
 
             lc_bkg  (float): Length constant of meshing of background medium \
                 (smaller = finer mesh)
@@ -382,42 +382,68 @@ class NanoStruct(object):
             else:
                 raise ValueError, "must have at least one grating of nonzero width."
 
-            self.mesh_file = msh_name + '.mail'
+            self.mesh_file = msh_name + '.txt'
+            mesh_file = msh_location + msh_name + '.txt'
+            
+            if not os.path.exists(mesh_file) or self.force_mesh == True:
+                print ' in bussfdsf'
+                nel = 1.0/self.lc
+                rad1 = self.diameter1/(2*self.period)
+                EMUstack.mesh_1d_p2(rad1, nel, mesh_file)
+
+
+# Latency of old 1D grating meshed in 2D.
+
+        # elif self.geometry == '1D_array':
+        #     if self.diameter2 > 0:
+        #         supercell = 2
+        #         msh_name  =  '1D_%(d)s_%(diameter)s_%(diameters)s' % {
+        #        'd' : dec_float_str(self.period), 'diameter' : dec_float_str(self.diameter1),
+        #        'diameters' : dec_float_str(self.diameter2)}
+        #     elif self.diameter1 > 0:
+        #         supercell = 1
+        #         msh_name  =  '1D_%(d)s_%(diameter)s' % {'d' : dec_float_str(self.period), 
+        #             'diameter' : dec_float_str(self.diameter1)}
+        #     else:
+        #         raise ValueError, "must have at least one grating of nonzero width."
+
+        #     self.mesh_file = msh_name + '.mail'    
 
             
-            if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
-                geo_tmp = open(msh_location + '1D_%s_msh_template.geo' % supercell, "r").read()
-                geo = geo_tmp.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
-                geo = geo.replace('w1 = 0;', "w1 = %f;" % self.diameter1)
-                geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
-                geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
-                if supercell > 1:
-                    geo = geo.replace('w2 = 0;', "w2 = %f;" % self.diameter2)
-                    geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
-                    geo = geo.replace('lc4 = lc/1;', "lc4 = lc/%f;" % self.lc4)
-                if self.small_d != 0:
-                    # small distance between centre of gratings in nm
-                    # calc complementary large distance, which is added to top & bottom
-                    large_d_on_2 = (self.period - self.diameter1/2 - self.diameter2/2 - self.small_d)/2
-                    posx1 = large_d_on_2 + self.diameter1/2
-                    posx2 = large_d_on_2 + self.diameter2/2
-                    posx3 = large_d_on_2 + self.diameter1 + ((self.small_d - self.diameter1/2 - self.diameter2/2)/2)
-                    geo = geo.replace('posx1 = hy/4;', "posx1 = %f/d_in_nm;" % posx1)
-                    geo = geo.replace('posx2 = hy/4;', "posx2 = %f/d_in_nm;" % posx2)
-                    geo = geo.replace('posx3 = hy/2;', "posx3 = %f/d_in_nm;" % posx3)
-                # if supercell > 1:
-                #     geo = geo.replace('a2 = 0;', "a2 = %i;" % self.diameter2)
-                #     geo = geo.replace('lc4 = lc/1;', "lc4 = lc/%f;" % self.lc4)
-                # if supercell > 2:
-                #     geo = geo.replace('a3 = 0;', "a3 = %i;" % self.diameter3)
-                #     geo = geo.replace('lc5 = lc/1;', "lc5 = lc/%f;" % self.lc5)
+        #     if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
+        #         geo_tmp = open(msh_location + '1D_%s_msh_template.geo' % supercell, "r").read()
+        #         geo = geo_tmp.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
+        #         geo = geo.replace('w1 = 0;', "w1 = %f;" % self.diameter1)
+        #         geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
+        #         geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
+        #         if supercell > 1:
+        #             geo = geo.replace('w2 = 0;', "w2 = %f;" % self.diameter2)
+        #             geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
+        #             geo = geo.replace('lc4 = lc/1;', "lc4 = lc/%f;" % self.lc4)
+        #         if self.small_d != 0:
+        #             # small distance between centre of gratings in nm
+        #             # calc complementary large distance, which is added to top & bottom
+        #             large_d_on_2 = (self.period - self.diameter1/2 - self.diameter2/2 - self.small_d)/2
+        #             posx1 = large_d_on_2 + self.diameter1/2
+        #             posx2 = large_d_on_2 + self.diameter2/2
+        #             posx3 = large_d_on_2 + self.diameter1 + ((self.small_d - self.diameter1/2 - self.diameter2/2)/2)
+        #             geo = geo.replace('posx1 = hy/4;', "posx1 = %f/d_in_nm;" % posx1)
+        #             geo = geo.replace('posx2 = hy/4;', "posx2 = %f/d_in_nm;" % posx2)
+        #             geo = geo.replace('posx3 = hy/2;', "posx3 = %f/d_in_nm;" % posx3)
+        #         # if supercell > 1:
+        #         #     geo = geo.replace('a2 = 0;', "a2 = %i;" % self.diameter2)
+        #         #     geo = geo.replace('lc4 = lc/1;', "lc4 = lc/%f;" % self.lc4)
+        #         # if supercell > 2:
+        #         #     geo = geo.replace('a3 = 0;', "a3 = %i;" % self.diameter3)
+        #         #     geo = geo.replace('lc5 = lc/1;', "lc5 = lc/%f;" % self.lc5)
 
 
-                open(msh_location + msh_name + '.geo', "w").write(geo)              
-                EMUstack.conv_gmsh(msh_location+msh_name)
-                # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.msh'
-                # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.geo'
-                # os.system(gmsh_cmd)
+        #         open(msh_location + msh_name + '.geo', "w").write(geo)              
+        #         EMUstack.conv_gmsh(msh_location+msh_name)
+        #         # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.msh'
+        #         # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.geo'
+        #         # os.system(gmsh_cmd)
+
         else:
             raise ValueError, "Must be simulating either a '1D_array' or a '2D_array'."
 

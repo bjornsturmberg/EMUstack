@@ -62,18 +62,8 @@ c     Connectivity table
 
       nb_typ_el = nb_typ_el2
 
-      if(nb_typ_el2 .gt. nb_typ_el) then
-         write(ui,*)
-         write(ui,*) "   ???"
-         write(ui,*) "geometry_1d: nb_typ_el2 > nb_typ_el : ", 
-     *    nb_typ_el2, nb_typ_el
-         write(ui,*) "geometry_1d: Aborting..."
-         stop
-      endif
-
       if (debug .eq. 1) then
-        write(*,*) "geometry_1d: nb_typ_el2, nb_typ_el = ",
-     *    nb_typ_el2, nb_typ_el
+        write(*,*) "geometry_1d: nb_typ_el = ", nb_typ_el
       endif
 
       return
