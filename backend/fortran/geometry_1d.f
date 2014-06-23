@@ -6,7 +6,7 @@ c   type_nod != 0 => boundary point
 c
 c
       subroutine geometry_1d (nel, npt, nnodes, nb_typ_el,
-     *    lx, type_nod, type_el, table_nod, x, 
+     *    lx, type_el, table_nod, x, 
      *    mesh_file)
 c
       implicit none

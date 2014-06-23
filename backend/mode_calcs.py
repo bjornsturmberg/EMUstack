@@ -266,13 +266,9 @@ class Simmo(Modes):
         structured layer. """
         st = self.structure
         wl = self.light.wl_nm
-        if self.structure.diameter2 == 0:
-            self.nb_typ_el = 2
-        else:
-            self.nb_typ_el = 3
         self.n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl), 
             st.inclusion_b.n(wl)])
-        self.n_effs = self.n_effs[:self.nb_typ_el]
+        self.n_effs = self.n_effs[:self.structure.nb_typ_el]
         if self.structure.loss == False:
             self.n_effs = self.n_effs.real
 
@@ -284,7 +280,6 @@ class Simmo(Modes):
         else:
             raise ValueError, "structure.geometry must either be '1D_array' \
                 or '2D_array'."
-
 
         num_pw_per_pol = pxs.size
         if num_BM == None: self.num_BM = num_pw_per_pol * 2 + 20
@@ -307,31 +302,42 @@ class Simmo(Modes):
             if not os.path.exists("Output"):
                 os.mkdir("Output")
 
+        # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
+        max_n = np.real(self.n_effs.max()) # Take real part so that complex conjugate pair 
+        # Eigenvalues are equal distance from shift and invert point and therefore both found.
+        k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
+
+        if self.structure.hyperbolic == True:
+            shift = 1.01*max_n**2 * k_0**2
 
         if self.structure.geometry == '1D_array':
-            with open("../backend/fortran/msh/"+self.structure.mesh_file) as f:
-                self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
+            if self.structure.hyperbolic == False:
+                shift = 1.01*max_n**2 * k_0**2 - self.k_pll_norm()[0]**2
 
-            if self.structure.geometry == '1D_array': 
+            if self.structure.world_1d == True: 
                 world_1d = 1
                 num_pw_per_pol_2d = 1
             else:
                 world_1d = 0
-                dummy_2d_layer = objects.ThinFilm(period = self.structure.period, world_1d = False)
+                dummy_2d_layer = objects.ThinFilm(period = self.structure.period,\
+                    world_1d = False)
                 dummy_2d_anallo = Anallo(dummy_2d_layer, self)
                 pxs, pys = dummy_2d_anallo.calc_2d_grating_orders(self.max_order_PWs)
                 num_pw_per_pol_2d = pxs.size
-
-            resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BM, self.max_order_PWs,
-                world_1d, self.nb_typ_el, self.n_msh_pts,
-                self.n_msh_el, itermax, FEM_debug, self.structure.mesh_file,
-                self.structure.period, self.structure.plot_modes,
-                self.structure.plot_real, self.structure.plot_imag, 
-                self.structure.plot_abs, num_pw_per_pol, num_pw_per_pol_2d )
+            
+            struct = self.structure
+            resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BM, 
+                self.max_order_PWs, struct.nb_typ_el, struct.n_msh_pts, 
+                struct.n_msh_el, struct.table_nod,
+                struct.type_el, struct.x_arr, itermax, FEM_debug, 
+                struct.mesh_file, struct.period, self.n_effs,
+                self.k_pll_norm()[0], self.k_pll_norm()[1], shift, 
+                struct.plot_modes, struct.plot_real, struct.plot_imag, 
+                struct.plot_abs, num_pw_per_pol, num_pw_per_pol_2d )
 
             self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1, self.sol2 = resm
 
-            if self.structure.geometry == '1D_array': 
+            if self.structure.world_1d == True:
                 self.J, self.J_dag = np.mat(J), np.mat(J_dag)
             else:
                 self.J, self.J_dag = np.mat(J_2d), np.mat(J_dag_2d)
@@ -349,21 +355,14 @@ class Simmo(Modes):
             # on the mesh file to work out RAM requirements
             cmplx_max = 2**27#30
 
-            # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
-            max_n = np.real(self.n_effs.max()) # Take real part so that complex conjugate pair 
-            # Eigenvalues are equal distance from shift and invert point and therefore both found.
-            k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
-
-            if self.structure.hyperbolic == True:
-                shift = 1.01*max_n**2 * k_0**2
-            else:
+            if self.structure.hyperbolic == False:
                 shift = 1.01*max_n**2 * k_0**2  \
                 - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
 
             resm = EMUstack.calc_2d_modes(
                 self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
                 self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-                self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
+                self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
                 self.E_H_field, i_cond, itermax, 
                 self.structure.plot_modes, self.structure.plot_real, 
                 self.structure.plot_imag, self.structure.plot_abs,

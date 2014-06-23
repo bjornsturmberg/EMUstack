@@ -23,7 +23,6 @@
 
 import os
 import numpy as np
-import random
 import materials
 from mode_calcs import Simmo, Anallo
 from fortran import EMUstack
@@ -77,6 +76,11 @@ class NanoStruct(object):
             hyperbolic  (bool): If True FEM looks for Eigenvalues around \
                 n**2 * k_0**2 rather than the regular \
                 n**2 * k_0**2 - alpha**2 - beta**2.
+
+            world_1d  (bool): Does the rest of the stack have exclusively 1D \
+                periodic structures and homogeneous layers? \
+                If True we use the set of 1D diffraction order PWs.\
+                Defaults to True for '1D_array', and False for '2D_array'.
 
             ff  (float): The fill fraction of the inclusions. If non-zero, \
                 the specified diameters are overwritten s.t. given ff is \
@@ -142,7 +146,7 @@ class NanoStruct(object):
         diameter2=0,  diameter3=0, diameter4=0, diameter5=0, diameter6=0, 
         diameter7=0, diameter8=0, diameter9=0, diameter10=0, diameter11=0, 
         diameter12=0, diameter13=0,diameter14=0, diameter15=0, diameter16=0, 
-        hyperbolic=False, posx=0, posy=0,
+        hyperbolic=False, world_1d=None, posx=0, posy=0,
         make_mesh_now=True, force_mesh=False, 
         mesh_file='NEED_FILE.mail', 
         lc_bkg=0.09, lc2=1.0, lc3=1.0, lc4=1.0, lc5=1.0, lc6=1.0,
@@ -192,6 +196,13 @@ class NanoStruct(object):
                 self.diameter1 = 2*np.sqrt((ff*(period)**2)/np.pi)
         self.ff_rand       = ff_rand
         self.small_d       = small_d
+        if world_1d == None: 
+            if geometry == '1D_array':
+                self.world_1d = True
+            if geometry == '2D_array':
+                self.world_1d = False
+        else:
+            self.world_1d = world_1d
         self.posx          = posx
         self.posy          = posy
         self.force_mesh    = force_mesh
@@ -225,31 +236,37 @@ class NanoStruct(object):
                'diameters' : dec_float_str(self.diameter2), 'diameters' : dec_float_str(self.diameter2), 
                'diameterss' : dec_float_str(self.diameter3),'diametersss' : dec_float_str(self.diameter4), 
                'adiussss' : dec_float_str(self.diameter5)}
+                self.nb_typ_el = 3
             elif self.diameter5 > 0:
                 supercell = 9
                 msh_name  =  '%(d)s_%(diameter)s_%(diameters)s_%(diameterss)s_%(diametersss)s_%(adiussss)s' % {
                'd' : dec_float_str(self.period), 'diameter' : dec_float_str(self.diameter1), 
                'diameters' : dec_float_str(self.diameter2), 'diameterss' : dec_float_str(self.diameter3),
                'diametersss' : dec_float_str(self.diameter4), 'adiussss' : dec_float_str(self.diameter5)}
+                self.nb_typ_el = 3
             elif self.diameter4 > 0:
                 supercell = 4
                 msh_name  =  '%(d)s_%(diameter)s_%(diameters)s_%(diameterss)s_%(diametersss)s' % {
                'd' : dec_float_str(self.period), 'diameter' : dec_float_str(self.diameter1), 
                'diameters' : dec_float_str(self.diameter2), 'diameterss' : dec_float_str(self.diameter3), 
                'diametersss' : dec_float_str(self.diameter4)}
+                self.nb_typ_el = 3
             elif self.diameter3 > 0:
                 supercell = 3
                 msh_name  =  '%(d)s_%(diameter)s_%(diameters)s_%(diameterss)s' % {
                'd' : dec_float_str(self.period), 'diameter' : dec_float_str(self.diameter1),
                'diameters' : dec_float_str(self.diameter2), 'diameterss' : dec_float_str(self.diameter3)}
+                self.nb_typ_el = 3
             elif self.diameter2 > 0:
                 supercell = 2
                 msh_name  =  '%(d)s_%(diameter)s_%(diameters)s' % {'d' : dec_float_str(self.period), 
                 'diameter' : dec_float_str(self.diameter1), 'diameters' : dec_float_str(self.diameter2)}
+                self.nb_typ_el = 3
             elif self.diameter1 > 0:
                 supercell = 1
                 msh_name  =  '%(d)s_%(diameter)s' % {'d' : dec_float_str(self.period), 
                 'diameter' : dec_float_str(self.diameter1)}
+                self.nb_typ_el = 2
             else:
                 raise ValueError, "must have at least one cylinder of nonzero diameter."
 
@@ -273,6 +290,7 @@ class NanoStruct(object):
             # self.mesh_file = msh_name + '.mail'
 
             if self.ff_rand == True:
+                import random
                 ff_tol = 0.0001
                 min_a  = 50
                 max_a  = (self.period/1.05)/np.sqrt(supercell)
@@ -375,20 +393,82 @@ class NanoStruct(object):
                 msh_name  =  '1D_%(d)s_%(diameter)s_%(diameters)s' % {
                'd' : dec_float_str(self.period), 'diameter' : dec_float_str(self.diameter1),
                'diameters' : dec_float_str(self.diameter2)}
+                self.nb_typ_el = 3
             elif self.diameter1 > 0:
                 supercell = 1
                 msh_name  =  '1D_%(d)s_%(diameter)s' % {'d' : dec_float_str(self.period), 
                     'diameter' : dec_float_str(self.diameter1)}
+                self.nb_typ_el = 2
             else:
                 raise ValueError, "must have at least one grating of nonzero width."
 
-            self.mesh_file = msh_name + '.txt'
-            mesh_file = msh_location + msh_name + '.txt'
+            # Unit cell length normalized to unity
+            x_min = -0.5
+            x_max =  0.5
+            # Mesh elements and points
+            nel = int(np.round(1.0/self.lc))
+            npt = 2 * nel + 1
+            delta_x = (x_max - x_min) / nel
+            # Coordinate and type of the nodes
+            el_list   = range(1,nel+1)
+            # type_nod  = np.zeros(npt)
+            table_nod = np.zeros((3,nel+1))
+            type_el   = np.zeros(nel+1)
+            ls_x      = np.zeros(npt+1)
+
+            for i_el in el_list:
+                x = x_min + (i_el-1) * delta_x
+                ls_x[2*i_el-1] = x
+                ls_x[2*i_el]   = x + delta_x / 2.0
+            # End-points
+            x = x_min + i_el * delta_x
+            ls_x[2*i_el+1] = x
+
+            # type_nod[2*i_el] = 1
+            # type_nod[0] = 1
+
+            rad_1 = self.diameter1/(2.0*self.period)
+            # Connectivity table
+            for i_el in el_list:
+                table_nod[0,i_el] = 2*i_el-1
+                table_nod[1,i_el] = 2*i_el+1
+                table_nod[2,i_el] = 2*i_el  # Mid-node
+                # End-points of the elements
+                x_1 = ls_x[2*i_el-1]
+                x_2 = ls_x[2*i_el+1]
+                if abs(x_1) <= rad_1 and abs(x_2) <= rad_1:
+                    type_el[i_el] = 2
+                else:
+                    type_el[i_el] = 1
+
+            # Store useful quantities as property of the object.
+            self.n_msh_el  = nel
+            self.n_msh_pts = npt
+            # self.type_nod  = type_nod
+            self.table_nod = table_nod[:,1:]
+            self.type_el   = type_el[1:]
+            self.x_arr     = ls_x[1:]
+            self.mesh_file = msh_name
+
+            # Then clean up local variables.
+            del nel
+            del npt
+            # del type_nod
+            del table_nod
+            del ls_x
+            del type_el
+            del el_list
+
+
+
+
+# # Latency of semi-old 1D grating meshing.
+#             self.mesh_file = msh_name + '.txt'
+#             mesh_file = msh_location + msh_name + '.txt'
             
-            if not os.path.exists(mesh_file) or self.force_mesh == True:
-                nel = 1.0/self.lc
-                rad1 = self.diameter1/(2*self.period)
-                EMUstack.mesh_1d_p2(rad1, nel, mesh_file)
+#             if not os.path.exists(mesh_file) or self.force_mesh == True:
+#                 rad1 = self.diameter1/(2.0*self.period)
+#                 EMUstack.mesh_1d_p2(rad1, nel, mesh_file)
 
 
 # Latency of old 1D grating meshed in 2D.

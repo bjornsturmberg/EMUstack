@@ -1,16 +1,15 @@
 
       subroutine calc_modes_1d(
 c     Explicit inputs
-     *    lambda, nval, ordre_ls, world_1d, nb_typ_el,
-     *    npt_P2, nel, itermax, debug, mesh_file,
-     *    d_in_nm,
+     *    lambda, nval, ordre_ls, nb_typ_el,
+     *    npt_P2, nel, table_nod, type_el, x_P2,
+     *    itermax, debug, mesh_file, d_in_nm, n_eff,
+     *    bloch_vec_x, bloch_vec_y, shift, 
      *    plot_modes, plot_real, plot_imag, plot_abs,
      *    neq_PW, neq_PW_2d, 
 C     Outputs
      *     beta_1, overlap_J, overlap_J_dagger, overlap_J_2d, 
      *     overlap_J_dagger_2d, sol_1, sol_2)
-
-
 
 C************************************************************************
 C
@@ -21,8 +20,7 @@ C************************************************************************
 C
       implicit none
 
-      integer*8 nel, nb_typ_el, world_1d
-C  Local parameters:
+      integer*8 nel, nb_typ_el
       integer*8 int_max, cmplx_max, int_used, cmplx_used
       integer*8 real_max, real_used, n_64
 
@@ -30,17 +28,18 @@ C  Local parameters:
       complex*16, dimension(:), allocatable :: b
       double precision, dimension(:), allocatable :: c
       integer allocate_status
-      integer*8 npt_P2, npt_P3, n_ddl
+      integer*8 npt_P2, n_ddl
       integer*8 n_ddl_P2, n_ddl_P3
       integer*8  nnodes_P2, ui
       parameter(nnodes_P2=3)
-
-      integer*8, allocatable :: type_nod(:), type_el(:), table_nod(:, :)
+      integer*8 type_el(nel), table_nod(3,nel)
       integer*8, allocatable :: table_ddl(:,:), ineq(:)
       integer*8, allocatable :: ip_period_ddl(:)
 
-      double precision, allocatable :: x_P2(:), x_ddl(:)
+      double precision x_P2(npt_P2)
+      double precision, allocatable :: x_ddl(:)
 
+      complex*16 shift
       complex*16, dimension(:,:), allocatable :: matrix_1, matrix_2
       complex*16, dimension(:,:), allocatable :: overlap_L
       complex*16, allocatable :: pp(:), qq(:)
@@ -49,12 +48,10 @@ C  Local parameters:
       complex*16, target :: beta_1(nval), beta_2(nval)
       complex*16, pointer :: beta(:)
 
-ccc      complex*16, allocatable :: sol_1(:,:,:), sol_2(:,:,:)
       complex*16, target :: sol_1(3+4+4,nval,nel), sol_2(3+4+4,nval,nel)
       complex*16, pointer :: sol(:,:,:)
-c      complex*16, allocatable, target :: 
       complex*16, allocatable :: sol_P2(:,:,:,:)
-      complex*16, allocatable :: eps_eff(:), n_eff(:)
+      complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el)
 
       complex*16 overlap_J(2*neq_PW, nval)
       complex*16 overlap_J_dagger(nval, 2*neq_PW)
@@ -65,123 +62,64 @@ c      complex*16, allocatable, target ::
       integer*8, allocatable :: index_PW(:)
 
       integer*8 nval, nvect, n_conv
-      double precision k_0, pi, lx, bloch_vec_x, bloch_vec_y
+      double precision k_0, pi, bloch_vec_x, bloch_vec_y
       double precision bloch_vec_x_k, bloch_vec_y_k
       double precision n_eff_0, period_x
-      double precision ls_data(10)
-
+      double precision ls_data(10), d_in_nm, lambda
 c     Wavelength lambda is in normalised units of d_in_nm
-      double precision lambda, d_in_nm
-
-      integer*8 i_lambda, n_lambda
-      double precision lambda_1, lambda_2, d_lambda, d_freq
-
-      complex*16 shift
-
-      character mesh_file*100
-
-      integer*8 neq
-c     E_H_field = 1 => Electric field formulation (E-Field)
-c     E_H_field = 2 => Magnetic field formulation (H-Field)
-      integer*8 E_H_field
-
-C
+      integer*8 i_lambda, n_lambda, neq, E_H_field
 C  Declare the pointers of the integer super-vector
       integer*8 ip_table_E, ip_table_N_E_F, ip_visite
       integer*8 ip_type_N_E_F, ip_eq
       integer*8 ip_period_N, ip_nperiod_N
       integer*8 ip_period_N_E_F, ip_nperiod_N_E_F
-C      integer*8 ip_col_ptr, ip_bandw 
 C  Declare the pointers of the real super-vector
-      integer*8 jp_x_N_E_F
-C      integer*8 jp_matD, jp_matL, jp_matU
-C      integer*8 jp_matD2, jp_matL2, jp_matU2
+      integer*8 jp_x_N_E_F, jp_trav, jp_vp
       integer*8 jp_vect1, jp_vect2, jp_workd, jp_resid, jp_vschur
-      integer*8 jp_trav, jp_vp
 C  Plane wave parameters
       integer*8 neq_PW, neq_PW_2d, nx_PW, ordre_ls
-      integer*8, allocatable ::  index_pw_inv(:)
-
-
+      integer*8, allocatable :: index_pw_inv(:)
       integer*8 i, j, n_k
-
-c
-c
-c   , test
-c     i_cond = 0 => Dirichlet boundary condition
-c     i_cond = 1 => Neumann boundary condition
-c     i_cond = 2 => Periodic boundary condition
-C     ! Number of nodes per element
-c , i_cond
-c
-C, len_skyl, nsym
-c      integer*8 numberprop_N
 C  Variable used by valpr
-      integer*8 itermax, ltrav
-      integer*8 i_base
-c      double precision ls_data(10)
-c      integer*8 pointer_int(20), pointer_cmplx(20)
-C      integer*8 index(2000), n_core(2)
+      integer*8 itermax, ltrav, i_base, n_core(2)
       integer*8, dimension(:), allocatable :: index
-      integer*8 n_core(2)
       complex*16 z_beta, z_tmp, z_tmp0
-c      integer*8 n_edge, n_face, n_ddl, n_ddl_max
-c     variable used by UMFPACK
-c      double precision control (20), info_umf (90)
-c      integer*8 numeric, status, filenum
-C  Renumbering
-c      integer*8 ip_row_ptr, ip_bandw_1, ip_adjncy
-c      integer*8 len_adj, len_adj_max, len_0_adj_max
-c, iout, nonz_1, nonz_2
-
-c    !, mesh_format
-
       double precision freq, lat_vecs(2,2), tol
-c      double precision bloch_vec(2), bloch_vec_k(2)
-c
 C  Timing variables
-      double precision time1, time2
       double precision time1_fact, time2_fact
-      double precision time1_asmbl, time2_asmbl
       double precision time1_postp
       double precision time1_arpack, time2_arpack
       double precision time1_J, time2_J
       character*(8) start_date, end_date
       character*(10) start_time, end_time
 C  Names and Controls
-      character gmsh_file*100, log_file*100
-      character gmsh_file_pos*100
-      character overlap_file*100, dir_name*100
+      character*100 gmsh_file, log_file
+      character*100 gmsh_file_pos, mesh_file
+      character*100 overlap_file, dir_name
       character*100 tchar
       integer*8 namelength, debug
-      integer*8 plot_modes
-      integer*8 pair_warning
+      integer*8 plot_modes, pair_warning
       integer*8 q_average, plot_real, plot_imag, plot_abs
-
 c     Declare the pointers of the real super-vector
       integer*8 kp_rhs_re, kp_rhs_im, kp_lhs_re, kp_lhs_im
       integer*8 kp_mat1_re, kp_mat1_im
-
 c     Declare the pointers of for sparse matrix storage
-      integer*8 ip_col_ptr, ip_row
-      integer*8 jp_mat2
+      integer*8 ip_col_ptr, ip_row, jp_mat2
       integer*8 ip_work, ip_work_sort, ip_work_sort2
-      integer*8 nonz, nonz_max, max_row_len
-
-      integer*8 ip
+      integer*8 nonz, nonz_max, max_row_len, ip
       integer i_32
 
-c     new breed of variables to prise out of a, b and c
-c      complex*16 x_arr(2,npt)
-c      complex*16, target :: sol1(3,nnodes+7,nval,nel)
-c      complex*16, target :: sol2(3,nnodes+7,nval,nel)
-c      complex*16, pointer :: sol(:,:,:,:)
-c      complex*16, target :: beta_1(nval), beta_2(nval)
-c      complex*16, pointer :: beta(:)
+Cf2py intent(in) lambda, nval, ordre_ls, nb_typ_el
+Cf2py intent(in) npt_P2, nel, table_nod, type_el, x_P2,
+Cf2py intent(in) itermax, debug, mesh_file, d_in_nm, n_eff,
+Cf2py intent(in) bloch_vec_x, bloch_vec_y, shift,
+Cf2py intent(in) plot_modes, plot_real, plot_imag, plot_abs,
+Cf2py intent(in) neq_PW, neq_PW_2d,
 
-
-Cf2py intent(in) lambda, nval, ordre_ls, neq_PW, nb_typ_el
-Cf2py intent(in) npt_P2, nel, itermax, debug, mesh_file
+Cf2py depend(n_eff) nb_typ_el
+Cf2py depend(type_el) nel
+Cf2py depend(table_nod) nel
+Cf2py depend(x_P2) npt_P2
 
 Cf2py intent(out) beta_1, overlap_J, overlap_J_dagger
 Cf2py intent(out) overlap_J_2d, overlap_J_dagger_2d
@@ -190,33 +128,24 @@ Cf2py intent(out) sol_1, sol_2
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
+      if (debug .eq. 1) then
+        write(*,*) "WELCOME TO DEBUG MODE"
+      endif
+
       ui = 6
       pi = 3.141592653589793d0
 
       nvect = 2*nval + nval/2 +3
-      tol = 0.0d0
-c
-cccccccccccccccccccccccccccccccccccccccccccccccccc
-c
+      E_H_field = 1
+c     E_H_field = 1 => Electric field formulation (E-Field)
+c     E_H_field = 2 => Magnetic field formulation (H-Field)
+
       n_64 = 2
       real_max = n_64**1
       int_max  = n_64**1
       cmplx_max = n_64**1
-c      3*npt+nel+nnodes*nel 
-
-C      write(*,*) "cmplx_max = ", cmplx_max
-C      write(*,*) "real_max = ", real_max
-C      write(*,*) "int_max = ", int_max
 
       tol = 0.0 ! ARPACK accuracy (0.0 for machine precision)
-      lx = 1 ! Diameter of unit cell. Default, lx = 1.0.
-
-C     Old inputs now internal to here and commented out by default.
-C      mesh_format = 1
-
-      if (debug .eq. 1) then
-        write(*,*) "WELCOME TO DEBUG MODE"
-      endif
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
@@ -270,33 +199,7 @@ c
         write(*,*) "Aborting..."
         stop
       endif
-      allocate(eps_eff(nb_typ_el), n_eff(nb_typ_el), 
-     *           STAT=allocate_status)
-      if (allocate_status /= 0) then
-        write(*,*) "The allocation is unsuccessful"
-        write(*,*) "allocate_status = ", allocate_status
-        write(*,*) "Not enough memory for eps_eff, n_eff"
-        write(*,*) "nb_typ_el = ", nb_typ_el
-        write(*,*) "Aborting..."
-        stop
-      endif
 
-c
-cccccccccccccccccccccccccccccccccccccccccccccccccc
-c
-
-CC  tmp shortened tp -4, was -5.
-CC  change back if using .mail msh
-
-C     clean mesh_format
-      namelength = len_trim(mesh_file)
-      gmsh_file = mesh_file(1:namelength-4)//'.msh'
-      gmsh_file_pos = mesh_file(1:namelength)
-      log_file = mesh_file(1:namelength-4)//'.log'
-      if (debug .eq. 1) then
-        write(*,*) "mesh_file = ", mesh_file
-        write(*,*) "gmsh_file = ", gmsh_file
-      endif
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
@@ -306,22 +209,15 @@ c
          write(ui,*) "py_calc_modes_1d: Aborting..."
          stop
       endif
-      npt_P3 = 3 * nel + 1
-      lx = 1
 
       if (debug .eq. 1) then
         write(*,*) "py_calc_modes_1d: nel = ", nel
         write(*,*) "py_calc_modes_1d: npt_P2 = ", npt_P2
-        write(*,*) "py_calc_modes_1d: npt_P3 = ", npt_P3
       endif
-
-      allocate(type_nod(npt_P2), type_el(nel), x_P2(npt_P2),
-     *     table_nod(3, nel), STAT=allocate_status)
 
       n_ddl_P2 = 3 * nel ! Discontinuous P2 polynomial
       n_ddl_P3 = 3 * nel + 1
       n_ddl = n_ddl_P2 + 2*n_ddl_P3
-
       neq = n_ddl_P2 + 2 * (n_ddl_P3 -1)
 
       if (debug .eq. 1) then
@@ -329,9 +225,16 @@ c
         write(*,*) "py_calc_modes_1d: neq = ", neq
       endif
 
-      call geometry_1d (nel, npt_P2, nnodes_P2, nb_typ_el,
-     *     lx, type_nod, type_el, table_nod, 
-     *     x_P2, mesh_file)
+C      call geometry_1d (nel, npt_P2, nnodes_P2, nb_typ_el,
+C     *     1.0, type_el, table_nod, 
+C     *     x_P2, mesh_file)
+C
+C      write(ui,*) 'nel', nel
+C      write(ui,*) 'npt_P2', npt_P2
+C      write(ui,*) 'nb_typ_el', nb_typ_el
+C      write(ui,*) 'type_el', type_el
+C      write(ui,*) 'table_nod', table_nod
+C      write(ui,*) 'x_P2', x_P2
 
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -442,36 +345,15 @@ c
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-      do i=1,nb_typ_el
-        n_eff(i) = 1
-      enddo
-ccc        n_eff(3) = 3
-C
-c     Calculate effective permittivity
-      do i=1,nb_typ_el
-        eps_eff(i) = n_eff(i)**2
-      end do
-
-cc      n_eff_0 = DBLE(n_eff(1))
-cc      freq = 1.0d0/lambda
-cc      k_0 = 2.0d0 * pi * freq
-c      k_0 = 2.0d0*pi*n_eff_0*freq
-
-      bloch_vec_x = 0.1d0 * 1
-      bloch_vec_y = 0.2d0 * 1
-
-      E_H_field = 1
-
-      if(debug .eq. 1) then
-        write(ui,*) "lambda = ", lambda
-        write(ui,*) "k_0 = ", k_0
-        write(ui,*) "n_eff_0 = ", n_eff_0
-        write(ui,*) "bloch_vec_x = ", bloch_vec_x
-        write(ui,*) "bloch_vec_y = ", bloch_vec_y
+      namelength = len_trim(mesh_file)
+      gmsh_file = mesh_file(1:namelength-4)//'.msh'
+      gmsh_file_pos = mesh_file(1:namelength)
+      log_file = mesh_file(1:namelength-4)//'.log'
+      if (debug .eq. 1) then
+        write(*,*) "mesh_file = ", mesh_file
+        write(*,*) "gmsh_file = ", gmsh_file
       endif
-c
-cccccccccccccccccccccccccccccccccccccccccccccccccc
-c
+
       call periodic_cond_1d (nel, npt_P2, n_ddl, neq, table_nod, 
      *      ineq, x_P2, table_ddl, ip_period_ddl, x_ddl, debug,
      *      period_x)
@@ -488,9 +370,22 @@ C
      *     "-------"
       write(ui,*) 
 C
+c     Calculate effective permittivity
+      do i=1,nb_typ_el
+        eps_eff(i) = n_eff(i)**2
+      enddo
+
         freq = 1.0d0/lambda
         n_eff_0 = DBLE(n_eff(1))
         k_0 = 2.0d0 * pi * freq
+
+      if(debug .eq. 1) then
+        write(ui,*) "lambda = ", lambda
+        write(ui,*) "k_0 = ", k_0
+        write(ui,*) "n_eff_0 = ", n_eff_0
+        write(ui,*) "bloch_vec_x = ", bloch_vec_x
+        write(ui,*) "bloch_vec_y = ", bloch_vec_y
+      endif
 C
 C  Index number of the core materials (material with highest Re(eps_eff))
         n_core(1) = 3
@@ -500,8 +395,6 @@ C  Index number of the core materials (material with highest Re(eps_eff))
           endif
         enddo
         n_core(2) = n_core(1)
-        shift = 1.1d0*Dble(n_eff(n_core(1)))**2 * k_0**2
-     *      - bloch_vec_x**2 - bloch_vec_y**2
         If(debug .eq. 1) then
           write(ui,*) "n_core = ", n_core
           write(ui,*) "shift = ", shift
