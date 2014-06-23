@@ -56,7 +56,8 @@ class NanoStruct(object):
                 with b = diameter, a = diameter-ellipticity * diameter. \
                 NOTE: only implemented for a single inclusion.
 
-            diameter2-16  (float): The diameters of further inclusions in nm.
+            diameter2-16  (float): The diameters of further inclusions in nm.\
+                Implemented up to diameter6 for 1D_arrays.
 
             inclusion_a   : A :Material: instance for first inclusion, \
                 specified as dispersive refractive index (eg. materials.Si_c) \
@@ -98,7 +99,9 @@ class NanoStruct(object):
                 posx is a fraction of the distance possible before NWs touch.
      
             small_d  (float): Distance between 2 inclusions of interleaved \
-                1D grating.
+                1D grating. By default (d_in_nm - diameter1 -diameter2)/2.\
+                Else equals the smaller spacing, which left of center \
+                (inclusion_a remains centered).
 
             make_mesh_now  (bool): If True, program creates a FEM mesh with \
                 provided :NanoStruct: parameters. If False, must provide \
@@ -138,7 +141,7 @@ class NanoStruct(object):
 
     def __init__(self, geometry, period, diameter1,
         inc_shape='circle', ellipticity=0.0,
-        ff=0, ff_rand=False, small_d=0, 
+        ff=0, ff_rand=False, small_d=None, 
         inclusion_a = materials.Material(3.0 + 0.1j), 
         inclusion_b = materials.Material(3.0 + 0.1j),
         background = materials.Material(1.0 + 0.0j),
@@ -195,7 +198,6 @@ class NanoStruct(object):
             else:
                 self.diameter1 = 2*np.sqrt((ff*(period)**2)/np.pi)
         self.ff_rand       = ff_rand
-        self.small_d       = small_d
         if world_1d == None: 
             if geometry == '1D_array':
                 self.world_1d = True
@@ -205,7 +207,6 @@ class NanoStruct(object):
             self.world_1d = world_1d
         self.posx          = posx
         self.posy          = posy
-        self.force_mesh    = force_mesh
         self.lc            = lc_bkg
         self.lc2           = lc2
         self.lc3           = lc3
@@ -335,7 +336,7 @@ class NanoStruct(object):
 
 
 
-            if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
+            if not os.path.exists(msh_location + msh_name + '.mail') or force_mesh == True:
                 geo_tmp = open(msh_location + '%s_msh_template.geo' % supercell, "r").read()
                 geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                 geo = geo.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
@@ -388,20 +389,6 @@ class NanoStruct(object):
 
 
         elif self.geometry == '1D_array':
-            if self.diameter2 > 0:
-                supercell = 2
-                msh_name  =  '1D_%(d)s_%(diameter)s_%(diameters)s' % {
-               'd' : dec_float_str(self.period), 'diameter' : dec_float_str(self.diameter1),
-               'diameters' : dec_float_str(self.diameter2)}
-                self.nb_typ_el = 3
-            elif self.diameter1 > 0:
-                supercell = 1
-                msh_name  =  '1D_%(d)s_%(diameter)s' % {'d' : dec_float_str(self.period), 
-                    'diameter' : dec_float_str(self.diameter1)}
-                self.nb_typ_el = 2
-            else:
-                raise ValueError, "must have at least one grating of nonzero width."
-
             # Unit cell length normalized to unity
             x_min = -0.5
             x_max =  0.5
@@ -411,7 +398,6 @@ class NanoStruct(object):
             delta_x = (x_max - x_min) / nel
             # Coordinate and type of the nodes
             el_list   = range(1,nel+1)
-            # type_nod  = np.zeros(npt)
             table_nod = np.zeros((3,nel+1))
             type_el   = np.zeros(nel+1)
             ls_x      = np.zeros(npt+1)
@@ -423,28 +409,185 @@ class NanoStruct(object):
             # End-points
             x = x_min + i_el * delta_x
             ls_x[2*i_el+1] = x
-
-            # type_nod[2*i_el] = 1
-            # type_nod[0] = 1
-
-            rad_1 = self.diameter1/(2.0*self.period)
             # Connectivity table
             for i_el in el_list:
                 table_nod[0,i_el] = 2*i_el-1
                 table_nod[1,i_el] = 2*i_el+1
                 table_nod[2,i_el] = 2*i_el  # Mid-node
+
+
+
+            if self.diameter6 > 0:
+                msh_name  =  '%(d)s_%(di)s_%(dis)s_%(diss)s_%(disss)s_%(dissss)s_%(disssss)s' % {
+               'd' : dec_float_str(self.period), 'di' : dec_float_str(self.diameter1), 
+               'dis' : dec_float_str(self.diameter2), 'diss' : dec_float_str(self.diameter3),
+               'disss' : dec_float_str(self.diameter4), 'dissss' : dec_float_str(self.diameter5),
+               'disssss' : dec_float_str(self.diameter6)}
+                self.nb_typ_el = 3
                 # End-points of the elements
-                x_1 = ls_x[2*i_el-1]
-                x_2 = ls_x[2*i_el+1]
-                if abs(x_1) <= rad_1 and abs(x_2) <= rad_1:
-                    type_el[i_el] = 2
+                rad_1 = self.diameter1/(2.0*self.period)
+                rad_2 = self.diameter2/(2.0*self.period)
+                rad_3 = self.diameter3/(2.0*self.period)
+                rad_4 = self.diameter4/(2.0*self.period)
+                rad_5 = self.diameter5/(2.0*self.period)
+                rad_6 = self.diameter6/(2.0*self.period)
+                i_d = 0.5 - rad_1 - rad_2 - rad_3 - rad_4 - rad_5 - rad_6
+                for i_el in el_list:
+                    x_1 = ls_x[2*i_el-1]
+                    x_2 = ls_x[2*i_el+1]
+                    if abs(x_1) <= rad_1 and abs(x_2) <= rad_1:
+                        type_el[i_el] = 2
+                    elif x_1 <= -i_d - rad_1 and -i_d - rad_1 - 2.0*rad_2 <= x_1 \
+                    and x_2 <= -i_d - rad_1 and -i_d - rad_1 - 2.0*rad_2 <= x_2:
+                        type_el[i_el] = 3
+                    elif x_1 <= i_d + 2.0*rad_3 + rad_1 and i_d + rad_1 <= x_1 \
+                    and x_2 <= i_d + 2.0*rad_3 + rad_1 and i_d + rad_1 <= x_2:
+                        type_el[i_el] = 3
+                    elif x_1 <= -2.0*i_d - 2.0*rad_2 - rad_1 and -2.0*i_d - 2.0*rad_2 - 2.0*rad_4 - rad_1 <= x_1 \
+                    and x_2 <= -2.0*i_d - 2.0*rad_2 - rad_1 and -2.0*i_d - 2.0*rad_2 - 2.0*rad_4 - rad_1 <= x_2:
+                        type_el[i_el] = 3
+                    elif 2.0*i_d + 2.0*rad_3 + rad_1 <= x_1 and x_1 <= 2.0*i_d + 2.0*rad_3 + 2.0*rad_5 + rad_1 \
+                    and 2.0*i_d + 2.0*rad_3 + rad_1 <= x_2 and x_2 <= 2.0*i_d + 2.0*rad_3 + 2.0*rad_5 + rad_1:
+                        type_el[i_el] = 3
+                    elif x_1 >= 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5\
+                    and x_2 >= 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5:
+                        type_el[i_el] = 3
+                    elif x_1 <= -3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4\
+                    and x_2 <= -3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4:
+                        type_el[i_el] = 3
+                    else:
+                        type_el[i_el] = 1
+            elif self.diameter5 > 0:
+                msh_name  =  '%(d)s_%(di)s_%(dis)s_%(diss)s_%(disss)s_%(dissss)s' % {
+               'd' : dec_float_str(self.period), 'di' : dec_float_str(self.diameter1), 
+               'dis' : dec_float_str(self.diameter2), 'diss' : dec_float_str(self.diameter3),
+               'disss' : dec_float_str(self.diameter4), 'dissss' : dec_float_str(self.diameter5)}
+                self.nb_typ_el = 3
+                # End-points of the elements
+                rad_1 = self.diameter1/(2.0*self.period)
+                rad_2 = self.diameter2/(2.0*self.period)
+                rad_3 = self.diameter3/(2.0*self.period)
+                rad_4 = self.diameter4/(2.0*self.period)
+                rad_5 = self.diameter5/(2.0*self.period)
+                i_d = 0.5 - rad_1 - rad_2 - rad_3 - rad_4 - rad_5
+                for i_el in el_list:
+                    x_1 = ls_x[2*i_el-1]
+                    x_2 = ls_x[2*i_el+1]
+                    if abs(x_1) <= rad_1 and abs(x_2) <= rad_1:
+                        type_el[i_el] = 2
+                    elif x_1 <= -i_d - rad_1 and -i_d - rad_1 - 2.0*rad_2 <= x_1 \
+                    and x_2 <= -i_d - rad_1 and -i_d - rad_1 - 2.0*rad_2 <= x_2:
+                        type_el[i_el] = 3
+                    elif x_1 <= i_d + 2.0*rad_3 + rad_1 and i_d + rad_1 <= x_1 \
+                    and x_2 <= i_d + 2.0*rad_3 + rad_1 and i_d + rad_1 <= x_2:
+                        type_el[i_el] = 3
+                    elif x_1 <= -2.0*i_d - 2.0*rad_2 - rad_1 and -2.0*i_d - 2.0*rad_2 - 2.0*rad_4 - rad_1 <= x_1 \
+                    and x_2 <= -2.0*i_d - 2.0*rad_2 - rad_1 and -2.0*i_d - 2.0*rad_2 - 2.0*rad_4 - rad_1 <= x_2:
+                        type_el[i_el] = 3
+                    elif 2.0*i_d + 2.0*rad_3 + rad_1 <= x_1 and x_1 <= 2.0*i_d + 2.0*rad_3 + 2.0*rad_5 + rad_1 \
+                    and 2.0*i_d + 2.0*rad_3 + rad_1 <= x_2 and x_2 <= 2.0*i_d + 2.0*rad_3 + 2.0*rad_5 + rad_1:
+                        type_el[i_el] = 3
+                    else:
+                        type_el[i_el] = 1
+            elif self.diameter4 > 0:
+                msh_name  =  '%(d)s_%(di)s_%(dis)s_%(diss)s_%(disss)s' % {
+               'd' : dec_float_str(self.period), 'di' : dec_float_str(self.diameter1), 
+               'dis' : dec_float_str(self.diameter2), 'diss' : dec_float_str(self.diameter3), 
+               'disss' : dec_float_str(self.diameter4)}
+                self.nb_typ_el = 3
+                # End-points of the elements
+                rad_1 = self.diameter1/(2.0*self.period)
+                rad_2 = self.diameter2/(2.0*self.period)
+                rad_3 = self.diameter3/(2.0*self.period)
+                rad_4 = self.diameter4/(2.0*self.period)
+                i_d = 0.5 - rad_1 - rad_2 - rad_3 - rad_4
+                for i_el in el_list:
+                    x_1 = ls_x[2*i_el-1]
+                    x_2 = ls_x[2*i_el+1]
+                    if abs(x_1) <= rad_1 and abs(x_2) <= rad_1:
+                        type_el[i_el] = 2
+                    elif x_1 <= -i_d - rad_1 and -i_d - rad_1 - 2.0*rad_2 <= x_1 \
+                    and x_2 <= -i_d - rad_1 and -i_d - rad_1 - 2.0*rad_2 <= x_2:
+                        type_el[i_el] = 3
+                    elif i_d + rad_1 <= x_1 and x_1 <= i_d + rad_1 + 2.0*rad_3 \
+                    and i_d + rad_1 <= x_2 and x_2 <= i_d + rad_1 + 2.0*rad_3:
+                        type_el[i_el] = 3
+                    elif x_1 >= 2.0*i_d + rad_1 + 2.0*rad_3 \
+                    and x_2 >= 2.0*i_d + rad_1 + 2.0*rad_3:
+                        type_el[i_el] = 3
+                    elif x_1 <= 2.0*i_d - rad_1 - 2.0*rad_2 \
+                    and x_2 <= 2.0*i_d - rad_1 - 2.0*rad_2:
+                        type_el[i_el] = 3
+                    else:
+                        type_el[i_el] = 1
+            elif self.diameter3 > 0:
+                msh_name  =  '%(d)s_%(di)s_%(dis)s_%(diss)s' % {
+               'd' : dec_float_str(self.period), 'di' : dec_float_str(self.diameter1),
+               'dis' : dec_float_str(self.diameter2), 'diss' : dec_float_str(self.diameter3)}
+                self.nb_typ_el = 3
+                # End-points of the elements
+                rad_1 = self.diameter1/(2.0*self.period)
+                rad_2 = self.diameter2/(2.0*self.period)
+                rad_3 = self.diameter3/(2.0*self.period)
+                i_d = 0.5 - rad_1 - rad_2 - rad_3
+                for i_el in el_list:
+                    x_1 = ls_x[2*i_el-1]
+                    x_2 = ls_x[2*i_el+1]
+                    # inclusion 1
+                    if abs(x_1) <= rad_1 and abs(x_2) <= rad_1:
+                        type_el[i_el] = 2
+                    # inclusion 2
+                    elif -i_d - 2.0*rad_2 - rad_1 <= x_1 and x_1 <= -i_d - rad_1 \
+                    and -i_d - 2.0*rad_2 - rad_1 <= x_2 and x_2 <= -i_d - rad_1:
+                        type_el[i_el] = 3
+                    # inclusion 3
+                    elif x_1 <= i_d + 2.0*rad_3 + rad_1 and i_d + rad_1 <= x_1 \
+                    and x_2 <= i_d + 2.0*rad_3 + rad_1 and i_d + rad_1 <= x_2:
+                        type_el[i_el] = 3
+                    else:
+                        type_el[i_el] = 1
+            elif self.diameter2 > 0:
+                msh_name  =  '1D_%(d)s_%(diameter)s_%(diameters)s' % {
+               'd' : dec_float_str(self.period), 'diameter' : dec_float_str(self.diameter1),
+               'diameters' : dec_float_str(self.diameter2)}
+                self.nb_typ_el = 3
+                # End-points of the elements
+                rad_1 = self.diameter1/(2.0*self.period)
+                rad_2 = self.diameter2/(2.0*self.period)
+                if small_d == None: 
+                    small_d = large_d = 0.5 - rad_1 - rad_2
                 else:
-                    type_el[i_el] = 1
+                    large_d = 1.0 - small_d - (2*rad_1) - (2*rad_2)
+                for i_el in el_list:
+                    x_1 = ls_x[2*i_el-1]
+                    x_2 = ls_x[2*i_el+1]
+                    if abs(x_1) <= rad_1 and abs(x_2) <= rad_1:
+                        type_el[i_el] = 2
+                    elif x_1 <= -rad_1-small_d and x_2 <= -rad_1-small_d:
+                        type_el[i_el] = 3
+                    elif abs(x_1) >= large_d+rad_1 and abs(x_2) >= large_d+rad_1:
+                        type_el[i_el] = 3
+                    else:
+                        type_el[i_el] = 1
+            elif self.diameter1 > 0:
+                msh_name  =  '1D_%(d)s_%(diameter)s' % {'d' : dec_float_str(self.period), 
+                    'diameter' : dec_float_str(self.diameter1)}
+                self.nb_typ_el = 2
+                # End-points of the elements
+                rad_1 = self.diameter1/(2.0*self.period)
+                for i_el in el_list:
+                    x_1 = ls_x[2*i_el-1]
+                    x_2 = ls_x[2*i_el+1]
+                    if abs(x_1) <= rad_1 and abs(x_2) <= rad_1:
+                        type_el[i_el] = 2
+                    else:
+                        type_el[i_el] = 1
+            else:
+                raise ValueError, "Must have at least one grating of nonzero width."
 
             # Store useful quantities as property of the object.
             self.n_msh_el  = nel
             self.n_msh_pts = npt
-            # self.type_nod  = type_nod
             self.table_nod = table_nod[:,1:]
             self.type_el   = type_el[1:]
             self.x_arr     = ls_x[1:]
@@ -453,7 +596,6 @@ class NanoStruct(object):
             # Then clean up local variables.
             del nel
             del npt
-            # del type_nod
             del table_nod
             del ls_x
             del type_el
@@ -466,7 +608,7 @@ class NanoStruct(object):
 #             self.mesh_file = msh_name + '.txt'
 #             mesh_file = msh_location + msh_name + '.txt'
             
-#             if not os.path.exists(mesh_file) or self.force_mesh == True:
+#             if not os.path.exists(mesh_file) or force_mesh == True:
 #                 rad1 = self.diameter1/(2.0*self.period)
 #                 EMUstack.mesh_1d_p2(rad1, nel, mesh_file)
 
@@ -489,7 +631,7 @@ class NanoStruct(object):
         #     self.mesh_file = msh_name + '.mail'    
 
             
-        #     if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
+        #     if not os.path.exists(msh_location + msh_name + '.mail') or force_mesh == True:
         #         geo_tmp = open(msh_location + '1D_%s_msh_template.geo' % supercell, "r").read()
         #         geo = geo_tmp.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
         #         geo = geo.replace('w1 = 0;', "w1 = %f;" % self.diameter1)

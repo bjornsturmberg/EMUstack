@@ -330,7 +330,7 @@ class Simmo(Modes):
                 self.max_order_PWs, struct.nb_typ_el, struct.n_msh_pts, 
                 struct.n_msh_el, struct.table_nod,
                 struct.type_el, struct.x_arr, itermax, FEM_debug, 
-                struct.mesh_file, struct.period, self.n_effs,
+                struct.mesh_file, self.n_effs,
                 self.k_pll_norm()[0], self.k_pll_norm()[1], shift, 
                 struct.plot_modes, struct.plot_real, struct.plot_imag, 
                 struct.plot_abs, num_pw_per_pol, num_pw_per_pol_2d )

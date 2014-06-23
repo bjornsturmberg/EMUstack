@@ -3,7 +3,7 @@
 c     Explicit inputs
      *    lambda, nval, ordre_ls, nb_typ_el,
      *    npt_P2, nel, table_nod, type_el, x_P2,
-     *    itermax, debug, mesh_file, d_in_nm, n_eff,
+     *    itermax, debug, mesh_file, n_eff,
      *    bloch_vec_x, bloch_vec_y, shift, 
      *    plot_modes, plot_real, plot_imag, plot_abs,
      *    neq_PW, neq_PW_2d, 
@@ -21,7 +21,7 @@ C
       implicit none
 
       integer*8 nel, nb_typ_el
-      integer*8 int_max, cmplx_max, int_used, cmplx_used
+      integer*8 int_max, cmplx_max
       integer*8 real_max, real_used, n_64
 
       integer*8, dimension(:), allocatable :: a
@@ -65,53 +65,33 @@ C
       double precision k_0, pi, bloch_vec_x, bloch_vec_y
       double precision bloch_vec_x_k, bloch_vec_y_k
       double precision n_eff_0, period_x
-      double precision ls_data(10), d_in_nm, lambda
-c     Wavelength lambda is in normalised units of d_in_nm
-      integer*8 i_lambda, n_lambda, neq, E_H_field
-C  Declare the pointers of the integer super-vector
-      integer*8 ip_table_E, ip_table_N_E_F, ip_visite
-      integer*8 ip_type_N_E_F, ip_eq
-      integer*8 ip_period_N, ip_nperiod_N
-      integer*8 ip_period_N_E_F, ip_nperiod_N_E_F
-C  Declare the pointers of the real super-vector
-      integer*8 jp_x_N_E_F, jp_trav, jp_vp
-      integer*8 jp_vect1, jp_vect2, jp_workd, jp_resid, jp_vschur
+      double precision ls_data(10), lambda
+c     Normalised wavelength lambda
+      integer*8 neq, E_H_field
 C  Plane wave parameters
-      integer*8 neq_PW, neq_PW_2d, nx_PW, ordre_ls
+      integer*8 neq_PW, neq_PW_2d, ordre_ls
       integer*8, allocatable :: index_pw_inv(:)
-      integer*8 i, j, n_k
+      integer*8 i, n_k
 C  Variable used by valpr
-      integer*8 itermax, ltrav, i_base, n_core(2)
+      integer*8 itermax, n_core(2)
       integer*8, dimension(:), allocatable :: index
       complex*16 z_beta, z_tmp, z_tmp0
-      double precision freq, lat_vecs(2,2), tol
+      double precision freq, tol
 C  Timing variables
       double precision time1_fact, time2_fact
       double precision time1_postp
       double precision time1_arpack, time2_arpack
       double precision time1_J, time2_J
-      character*(8) start_date, end_date
-      character*(10) start_time, end_time
 C  Names and Controls
-      character*100 gmsh_file, log_file
-      character*100 gmsh_file_pos, mesh_file
+      character*100 mesh_file
       character*100 overlap_file, dir_name
       character*100 tchar
-      integer*8 namelength, debug
-      integer*8 plot_modes, pair_warning
+      integer*8 debug, plot_modes, pair_warning
       integer*8 q_average, plot_real, plot_imag, plot_abs
-c     Declare the pointers of the real super-vector
-      integer*8 kp_rhs_re, kp_rhs_im, kp_lhs_re, kp_lhs_im
-      integer*8 kp_mat1_re, kp_mat1_im
-c     Declare the pointers of for sparse matrix storage
-      integer*8 ip_col_ptr, ip_row, jp_mat2
-      integer*8 ip_work, ip_work_sort, ip_work_sort2
-      integer*8 nonz, nonz_max, max_row_len, ip
-      integer i_32
 
 Cf2py intent(in) lambda, nval, ordre_ls, nb_typ_el
 Cf2py intent(in) npt_P2, nel, table_nod, type_el, x_P2,
-Cf2py intent(in) itermax, debug, mesh_file, d_in_nm, n_eff,
+Cf2py intent(in) itermax, debug, mesh_file, n_eff,
 Cf2py intent(in) bloch_vec_x, bloch_vec_y, shift,
 Cf2py intent(in) plot_modes, plot_real, plot_imag, plot_abs,
 Cf2py intent(in) neq_PW, neq_PW_2d,
@@ -345,13 +325,8 @@ c
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-      namelength = len_trim(mesh_file)
-      gmsh_file = mesh_file(1:namelength-4)//'.msh'
-      gmsh_file_pos = mesh_file(1:namelength)
-      log_file = mesh_file(1:namelength-4)//'.log'
       if (debug .eq. 1) then
         write(*,*) "mesh_file = ", mesh_file
-        write(*,*) "gmsh_file = ", gmsh_file
       endif
 
       call periodic_cond_1d (nel, npt_P2, n_ddl, neq, table_nod, 
@@ -548,10 +523,10 @@ C  Orthogonal integral
       endif
       overlap_file = "Normed/Orthogonal.txt"
       call orthogonal_1d (nval, nel, npt_P2, 
-     *  nb_typ_el, pp, qq, bloch_vec_y, table_nod, 
+     *  nb_typ_el, pp, bloch_vec_y, table_nod, 
      *  type_el, x_P2, beta_1, beta_2,
      *  sol_1, sol_2, overlap_L, overlap_file, debug,
-     *  pair_warning, k_0)
+     *  pair_warning)
 C
       if (pair_warning .ne. 0 .and. nval .le. 20) then
         write(ui,*) "py_calc_modes_1d.f: Warning found 1 BM
@@ -572,7 +547,7 @@ C     *     lambda, beta_1, sol_P2, mesh_file, dir_name)
           call gmsh_post_process_1d (i, E_H_field, nval, 
      *       nel, npt_P2, table_nod, type_el, nb_typ_el, 
      *       n_eff, x_P2, beta_1, sol_P2,
-     *       gmsh_file_pos, dir_name, 
+     *       mesh_file, dir_name, 
      *       q_average, plot_real, plot_imag, plot_abs)
         enddo
         close (unit=34)
@@ -591,10 +566,10 @@ C  Orthonormal integral
         overlap_file = "Normed/Orthogonal_n.txt"
         call cpu_time(time1_J)
         call orthogonal_1d (nval, nel, npt_P2, 
-     *    nb_typ_el, pp, qq, bloch_vec_y, table_nod, 
+     *    nb_typ_el, pp, bloch_vec_y, table_nod, 
      *    type_el, x_P2, beta_1, beta_2,
      *    sol_1, sol_2, overlap_L, overlap_file, debug,
-     *    pair_warning, k_0)
+     *    pair_warning)
         call cpu_time(time2_J)
           write(ui,*) "py_calc_modes_1d.f: CPU time for orthogonal :",
      *    (time2_J-time1_J)

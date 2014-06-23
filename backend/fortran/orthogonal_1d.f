@@ -1,10 +1,10 @@
 C   Calculate the Overlap integral of the prime and adjoint Plane Waves
 C
       subroutine orthogonal_1d (nval, nel, npt_P2, 
-     *  nb_typ_el, pp, qq, bloch_vec_y, table_nod, 
+     *  nb_typ_el, pp, bloch_vec_y, table_nod, 
      *  type_el, x_P2, beta_1, beta_2,
      *  sol_1, sol_2, mat_overlap, overlap_file, PrintAll,
-     *  pair_warning, k_0)
+     *  pair_warning)
 c
       implicit none
       integer*8 nval, nel, npt_P2, nb_typ_el
@@ -14,19 +14,16 @@ c
       double precision x_P2(npt_P2)
       complex*16 sol_1(3+4+4,nval,nel)
       complex*16 sol_2(3+4+4,nval,nel)
-      complex*16 pp(nb_typ_el), qq(nb_typ_el)
+      complex*16 pp(nb_typ_el)
       complex*16 beta_1(nval), beta_2(nval)
       complex*16, dimension(nval,nval) :: mat_overlap
       character overlap_file*100
-      double precision k_0, bloch_vec_y
+      double precision bloch_vec_y
 c     Local variables
       integer*8 nnodes_0, nddl_0
       parameter (nnodes_0 = 3, nddl_0 = 11)
       integer*8 nod_el_p(nnodes_0)
-
       complex*16 vec_1(nddl_0)
-
-
       integer*8 node_P2, node_P3
       parameter (node_P2 = 3, node_P3 = 4)
       double precision mat_Mxx_0(node_P2,node_P2)
@@ -34,22 +31,17 @@ c     Local variables
       double precision mat_Kyy_0(node_P3,4)
       double precision mat_Myy_0(4,4)
       double precision mat_Kyx_0(4,node_P2)
-
 c     nddl_0 = node_P2+2*node_P3
       complex*16 mat_el_2(nddl_0,nddl_0)
       complex*16 sol_el_1(nddl_0), sol_el_2(nddl_0)
-
-
       double precision xmin, xmax
       integer*8 i, j, j1, typ_e
       integer*8 iel, ival, jval
-      integer*8 itrial, jtest
       integer*8 debug, ui
       double precision r_tmp1
       complex*16 z_tmp1, z_tmp2, z_beta_1
       complex*16 ii
 c
-c      double precision pi
 C     Mode ordering
       integer*8 skip, PrintAll, pair_warning
       complex*16 betatmp1(1), betatmp2(1)

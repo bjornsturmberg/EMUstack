@@ -7,7 +7,6 @@ C
 C 
       implicit none 
 C  input output parameters
-      integer*8 Zeroth_Order, Zeroth_Order_inv
       integer*8 neq_PW_1d, neq_PW_2d, nval
       integer*8 PrintAll, ordre_ls, debug
       double precision bloch_vec_x, bloch_vec_y, k_0
@@ -25,7 +24,7 @@ C
       complex*16, dimension(:), allocatable :: beta_z_pw_2d
       integer*8, allocatable :: pw_1d_to_2d(:)
       integer*8 ui, ipw, jval
-      integer*8 i, j, px, py, s, s2, s_1d, s_2d
+      integer*8 px, py, s, s2, s_1d, s_2d
       double precision vec_kx, vec_ky
 c  , d
       double precision bloch1, bloch2, pi, alpha, beta
