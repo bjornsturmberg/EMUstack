@@ -56,7 +56,6 @@ C
       complex*16 ii
       double precision r_tmp, vec_kx, lambda, freq
       double precision bloch1, pi, alpha, norm
-ccc beta, 
 C
 CCCCCCCCCCC Start Program CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -114,11 +113,9 @@ C
         write(*,*) "Aborting..."
         stop
       endif
-
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c
-C set up final solution matrix
+C set up solution matrix
       do j=1,nval
         do i=1,neq_PW
           overlap_K(i,j) = 0.0D0
@@ -132,7 +129,7 @@ C
       vec_kx = 2.0d0*pi/period_x
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
+C
       do n = 1, nval
         do twos = 1, 2*neq_PW
           if (twos .le. neq_PW) then
@@ -142,7 +139,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCC
           endif
         enddo     
       enddo
-C
 C
 CCCCCCCCCCCCCCCCC	loop over all elements	CCCCCCCCCCCCCCCC
 C

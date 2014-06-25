@@ -38,6 +38,52 @@ class Material(object):
                 an array of values `(wavelength, n)`, or \
                 `(wavelength, real(n), imag(n))`, \
                 or omega_p, omega_g, eps_inf for Drude model.
+
+        Currently included materials are;
+
+        .. tabularcolumns:: |c|c|c|
+
+        +--------------------+------------+------------------------+
+        | **Semiconductors** | **Metals** | **Transparent oxides** |
+        +--------------------+------------+------------------------+
+        |    Si_c            |  Au        |   TiO2                 |
+        +--------------------+------------+------------------------+
+        |    Si_a            |  Au_Palik  |   ITO                  |
+        +--------------------+------------+------------------------+
+        |    SiO2_a          |  Ag        |                        |
+        +--------------------+------------+------------------------+
+        |    CuO             |  Ag_Palik  |                        |
+        +--------------------+------------+------------------------+
+        |    CdTe            |  Cu        |                        |
+        +--------------------+------------+------------------------+
+        |    FeS2            |            |                        |
+        +--------------------+------------+------------------------+
+        |    Zn3P2           |            |                        |
+        +--------------------+------------+------------------------+
+        |    Sb2S3           |            |                        |
+        +--------------------+------------+------------------------+
+        |    AlGaAs          |            |                        |
+        +--------------------+------------+------------------------+
+        |    Al2O3           |            |                        |
+        +--------------------+------------+------------------------+
+        |    GaAs            |            |                        |
+        +--------------------+------------+------------------------+
+        |    InGaAs          | **Drude**  | **Other**              |
+        +--------------------+------------+------------------------+
+        |    Si3N4           |  Au_drude  |   Air                  |
+        +--------------------+------------+------------------------+
+        |    MgF2            |            |   H2O                  |
+        +--------------------+------------+------------------------+
+        |    InP             |            |                        |
+        +--------------------+------------+------------------------+
+        |    InAs            |            |                        |
+        +--------------------+------------+------------------------+
+        |    GaP             |            |                        |
+        +--------------------+------------+------------------------+
+        |    Ge              |            |                        |
+        +--------------------+------------+------------------------+
+
+
     """
     def __init__(self, n):
         if () == np.shape(n):
@@ -95,14 +141,13 @@ class Material(object):
             self._n = interp1d(self.data_wls, self.data_ns)
 
 
-Air      = Material(np.loadtxt('%sAir.txt'% data_location))         # Idealised Air n=1.0, k = 0.0 everywhere
+Air      = Material(1.00 + 0.0j)
 H2O      = Material(np.loadtxt('%sH2O.txt'% data_location))         # G. M. Hale and M. R. Querry. doi:10.1364/AO.12.000555
 # Transparent oxides
 TiO2     = Material(np.loadtxt('%sTiO2.txt'% data_location))
 ITO      = Material(np.loadtxt('%sITO.txt'% data_location))         # Filmetrics.com
 # Semiconductors
 Si_c     = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
-Si_c_mod = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
 Si_a     = Material(np.loadtxt('%sSi_a.txt'% data_location))
 SiO2_a   = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
 CuO      = Material(np.loadtxt('%sCuO.txt'% data_location))

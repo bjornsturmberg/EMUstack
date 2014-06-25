@@ -18,7 +18,7 @@
 """
 
 """
-Example coming once 1.5D EMUstack is created...
+Example coming once 1.5D EMUstack is created ...
 """
 
 import time

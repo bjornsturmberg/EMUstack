@@ -6,7 +6,7 @@ c     Explicit inputs
      *    itermax, debug, mesh_file, n_eff,
      *    bloch_vec_x, bloch_vec_y, shift, 
      *    plot_modes, plot_real, plot_imag, plot_abs,
-     *    neq_PW, neq_PW_2d, 
+     *    neq_PW, neq_PW_2d, world_1d, 
 C     Outputs
      *     beta_1, overlap_J, overlap_J_dagger, overlap_J_2d, 
      *     overlap_J_dagger_2d, sol_1, sol_2)
@@ -20,7 +20,7 @@ C************************************************************************
 C
       implicit none
 
-      integer*8 nel, nb_typ_el
+      integer*8 nel, nb_typ_el, world_1d
       integer*8 int_max, cmplx_max
       integer*8 real_max, real_used, n_64
 
@@ -363,8 +363,8 @@ c     Calculate effective permittivity
       endif
 C
 C  Index number of the core materials (material with highest Re(eps_eff))
-        n_core(1) = 3
-        do i=3,nb_typ_el
+        n_core(1) = 2
+        do i=1,nb_typ_el
           if(dble(eps_eff(i)) .gt. dble(eps_eff(n_core(1)))) then
             n_core(1) = i
           endif
@@ -604,7 +604,7 @@ C  J_dagger_overlap
 C
 C  Convert overlap integrals from 1D diffraction order basis to 
 C  2D diffraction order basis (filling with zeros).
-      if (debug .eq. 1) then
+      if (world_1d .eq. 0) then
         if (debug .eq. 1) then
           write(ui,*)"py_calc_modes_1d.f: pw_matrix_1d_to_2d conversion"
         endif

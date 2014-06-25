@@ -26,7 +26,6 @@ import sys
 import os
 sys.path.append("../backend/")
 
-import objects
 from fortran import EMUstack
 
 _interfaces_i_have_known = {}
@@ -46,12 +45,7 @@ class Modes(object):
 
     def air_ref(self):
         """ Return an :Anallo: for air for the same :Light: as this. """
-        if isinstance(self, Anallo):
-            world_1d = self.structure.world_1d
-        elif isinstance(self, Simmo):
-            if self.structure.geometry == '1D_array': world_1d = True
-            else: world_1d = False
-        return self.light._air_ref(self.structure.period, world_1d)
+        return self.light._air_ref(self.structure.period, self.structure.world_1d)
 
     def calc_1d_grating_orders(self, max_order):
         """ Return the grating order indices px and py, unsorted. """
@@ -112,10 +106,8 @@ class Anallo(Modes):
         self.is_air_ref    = False
 
     def calc_modes(self):
-        #TODO: switch to just using calc_kz()?
-
+        """ Calculate the modes of homogeneous layer analytically. """
         kzs = self.calc_kz()
-
         self.k_z = np.append(kzs, kzs) # add 2nd polarisation
         self.structure.num_pw_per_pol = len(kzs)
 
@@ -303,26 +295,24 @@ class Simmo(Modes):
                 os.mkdir("Output")
 
         # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
-        max_n = np.real(self.n_effs.max()) # Take real part so that complex conjugate pair 
+        max_n = np.real(self.n_effs).max() # Take real part so that complex conjugate pair 
         # Eigenvalues are equal distance from shift and invert point and therefore both found.
         k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
-
         if self.structure.hyperbolic == True:
-            shift = 1.01*max_n**2 * k_0**2
+            shift = 1.1*max_n**2 * k_0**2
+        else:
+            shift = 1.1*max_n**2 * k_0**2  \
+            - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
+
+
 
         if self.structure.geometry == '1D_array':
-            if self.structure.hyperbolic == False:
-                shift = 1.01*max_n**2 * k_0**2 - self.k_pll_norm()[0]**2
-
-            if self.structure.world_1d == True: 
+            if self.structure.world_1d == True:
                 world_1d = 1
                 num_pw_per_pol_2d = 1
             else:
                 world_1d = 0
-                dummy_2d_layer = objects.ThinFilm(period = self.structure.period,\
-                    world_1d = False)
-                dummy_2d_anallo = Anallo(dummy_2d_layer, self)
-                pxs, pys = dummy_2d_anallo.calc_2d_grating_orders(self.max_order_PWs)
+                pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
                 num_pw_per_pol_2d = pxs.size
             
             struct = self.structure
@@ -330,10 +320,10 @@ class Simmo(Modes):
                 self.max_order_PWs, struct.nb_typ_el, struct.n_msh_pts, 
                 struct.n_msh_el, struct.table_nod,
                 struct.type_el, struct.x_arr, itermax, FEM_debug, 
-                struct.mesh_file, self.n_effs,
-                self.k_pll_norm()[0], self.k_pll_norm()[1], shift, 
-                struct.plot_modes, struct.plot_real, struct.plot_imag, 
-                struct.plot_abs, num_pw_per_pol, num_pw_per_pol_2d )
+                struct.mesh_file, self.n_effs, self.k_pll_norm()[0],
+                self.k_pll_norm()[1], shift, struct.plot_modes, 
+                struct.plot_real, struct.plot_imag, struct.plot_abs,
+                num_pw_per_pol, num_pw_per_pol_2d, world_1d )
 
             self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1, self.sol2 = resm
 
@@ -342,7 +332,6 @@ class Simmo(Modes):
             else:
                 self.J, self.J_dag = np.mat(J_2d), np.mat(J_dag_2d)
             del J_2d, J_dag_2d
-
 
 
         elif self.structure.geometry == '2D_array':
@@ -354,10 +343,6 @@ class Simmo(Modes):
             # In theory could do some python-based preprocessing
             # on the mesh file to work out RAM requirements
             cmplx_max = 2**27#30
-
-            if self.structure.hyperbolic == False:
-                shift = 1.01*max_n**2 * k_0**2  \
-                - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
 
             resm = EMUstack.calc_2d_modes(
                 self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
@@ -474,6 +459,9 @@ def r_t_mat_tf_ns(an1, sim2):
         have to be free space.
     """
     Z1_sqrt_inv = np.sqrt(1/an1.Z()).reshape((1,-1))
+
+    # print 'J \n', sim2.J
+    # print 'J_dag \n', sim2.J_dag
 
     # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
     # Same difference.

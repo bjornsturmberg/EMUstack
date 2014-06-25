@@ -50,7 +50,7 @@ Python Backend
     plotting
 
 ==================
-FEM Backends
+Fortran Backends
 ==================
 
 .. toctree::

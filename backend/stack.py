@@ -55,26 +55,24 @@ class Stack(object):
         self._check_periods_are_consistent()
 
     def heights_nm(self):
+        """ Update heights of each layer to those given in Keyword Arg
+        'heights_nm'. If no heights specified in Stack, the heights of 
+        each layer object are used. """
         if None != self._heights_nm:
             return self._heights_nm
         else:
             return [float(lay.structure.height_nm) for lay in self.layers[1:-1]]
 
     def heights_norm(self):
+        """ Normalise heights by the array period. """
         return [h / self.period for h in self.heights_nm()]
 
     def total_height(self):
+        """ Calculate total thickness of stack. """
         return sum(self.heights())
 
-    # def shears(self):
-    #     if None != self._shears:
-    #         return np.asarray(self._shears)
-    #     else:
-    #         print 'no shear here!!'
-    #         return None
-    #         # return np.array([[0.0, 0.0] for lay in self.layers[0:-1]])
-
     def structures(self):
+        """ Return :NanoStruct: or :ThinFilm: object of each layer. """
         return (lay.structure for lay in self.layers)
 
     # def calc_R_T_net(self, save_working = True):

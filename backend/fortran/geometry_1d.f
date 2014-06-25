@@ -41,7 +41,7 @@ c
 c    Coordinate of the FEM points
       do i=1,npt
         read(24,*) k, x(i), type_nod(i)
-        x(i) = x(i) * lx
+C        x(i) = x(i) * lx
       enddo
 c     Connectivity table
       nb_typ_el2 = 1
