@@ -171,6 +171,7 @@ class NanoStruct(object):
         self.periodicity    = periodicity
         self.period         = period
         self.diameter1      = diameter1
+        self.inc_shape      = inc_shape
         self.height_nm      = height_nm
         self.inclusion_a    = inclusion_a
         self.inclusion_b    = inclusion_b
@@ -197,7 +198,6 @@ class NanoStruct(object):
         self.ellipticity    = ellipticity
         if ellipticity > 1.0:
             raise ValueError, "ellipticity must be less than 1.0"
-        self.inc_shape    = inc_shape
         if diameter2 != 0:
             self.nb_typ_el = 3
         else:
@@ -389,7 +389,7 @@ class NanoStruct(object):
                         geo = geo.replace('a16 = 0;', "a16 = %f;" % self.diameter16)
 
 
-            if self.inc_shape == 'SRR':
+            elif self.inc_shape == 'SRR':
                 msh_name  =  'SRR_%(d)s_%(lvert)s_%(lhori)s_%(dia)s' % {
                    'd' : dec_float_str(self.period), 'lvert' : dec_float_str(self.len_vertical),
                    'lhori' : dec_float_str(self.len_horizontal), 'dia' : dec_float_str(self.diameter1)}
@@ -405,8 +405,8 @@ class NanoStruct(object):
                     geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
 
             else: 
-                raise NotImplementedError, "Selected 'inc_shape' %s is not \
-                currently implemented. Please make a mesh with gmsh, & \
+                raise NotImplementedError, "\n Selected inc_shape = '%s' \n \
+                is not currently implemented. Please make a mesh with gmsh, & \n \
                 consider contributing this to EMUstack via github." % self.inc_shape
 
             self.mesh_file = msh_name + '.mail'

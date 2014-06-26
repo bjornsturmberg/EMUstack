@@ -18,7 +18,7 @@
 """
 
 """
-Simulating a nanowire array with period 600 nm and NW diameter 120 nm.
+Combining 1D gratings and 2D arrays in the same stack.
 """
 
 import time
@@ -72,15 +72,13 @@ NW_diameter = 120
 NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
     inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 2.0)
-# Here we get EMUstack to make the FEM mesh automagically using our input parameters.
-# the lc_bkg parameter sets the baseline distance between points on the FEM mesh,
-# lc_bkg/lc2 is the distance between mesh points that lie on the inclusion boundary.
-# There are higher lc parameters which are used when including multiple inclusions.
 
-# Alternatively we can specify a pre-made mesh as follows.
-NW_array2 = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
-    inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
-    make_mesh_now = False, mesh_file='4testing-600_120.mail')
+# We now create a 1D grating that is periodic in x only, but whose scattering
+# matrices are constructed with of the 2D plane wave basis. This allows this layer
+# to be combined with 2D_arrays.
+grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
+    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j), 
+    loss = True, lc_bkg = 0.01)
 
 
 def simulate_stack(light):

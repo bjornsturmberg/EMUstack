@@ -69,7 +69,8 @@ superstrate = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
     material = materials.Air)
 # Define 1D grating that is periodic in x. 
-# The mesh for this is always made 'live' in objects.py
+# The mesh for this is always made 'live' in objects.py the number of 
+# FEM elements used is given by 1/lc_bkg.
 # See Fortran Backends section of tutorial for more details.
 grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
     background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j), 
