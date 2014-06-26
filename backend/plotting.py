@@ -135,7 +135,7 @@ def gen_params_string(stack, layer=1):
 ####Standard plotting of spectra#######################################################
 def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=1,\
     stack_label=1, ult_eta=False, J_sc=False, weight_spec=False, extinct=False,\
-    add_height=0., add_name='', force_txt_save=False):
+    add_height=0, add_name='', force_txt_save=False):
     """ Plot t, r, a for each layer & in total. 
 
         Args:
@@ -192,7 +192,7 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=1,\
             xlabel = r'$\lambda$ (nm)'
             print "t_r_a_plots is guessing you have a single wavelength, else specify xvalues."
 
-    if add_height!=0.: add_name += zeros_int_str(add_height)
+    if add_height!=0: add_name += "_" + zeros_int_str(add_height)
     stack_label = zeros_int_str(stack_label)
     
     a_list = []
@@ -335,7 +335,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_prin
                 np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
                     'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
 
-        plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s': spectra_name, 'bon': stack_label,\
+        plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s': spectra_name, 'bon': stack_label,\
             'add' : add_name})
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, params_2_print,\
@@ -384,14 +384,14 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, params_2_
 
     plt.suptitle(params_2_print,fontsize=title_font)
     # plt.suptitle(plot_name+add_name+'\n'+params_2_print)
-    plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+    plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 #######################################################################################
 
 
 ####Plot spectra indicating Wood anomalies in substrate################################
 def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
     active_layer_nu=1, stack_label=1, ult_eta=False, J_sc=False, weight_spec=False,\
-    extinct=False, add_height=0., add_name=''):
+    extinct=False, add_height=0, add_name=''):
     """ Plot t, r, a indicating Wood anomalies in substrate for each layer & total.
 
         Args:
@@ -1172,7 +1172,7 @@ def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
     ax1.set_ylabel(r'$|E|_{trans}$')
     ax1.set_xlabel(xlabel)
     plt.suptitle(add_name)
-    if add_height!= None: add_name += '-' + zeros_int_str(add_height)
+    if add_height!= None: add_name += '_' + zeros_int_str(add_height)
     add_name = str(lay_interest) + add_name
     plt.savefig('PW_orders-lay_%s' % add_name, \
         fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
@@ -1292,7 +1292,7 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
     ax1.set_ylabel('Ev FoM')
     ax1.set_xlabel(xlabel)
     plt.suptitle(add_name)
-    if add_height!= None: add_name += '-'+zeros_int_str(add_height)
+    if add_height!= None: add_name += '_'+zeros_int_str(add_height)
     add_name = str(lay_interest) + add_name
     plt.savefig('evanescent_merit-lay_%s' % add_name, \
         fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
@@ -1455,7 +1455,10 @@ def E_PW_fields(stack, nu_calc_pts = 51, max_height = 3,\
         alpha_unsrt = np.array(stack.layers[l].alphas)
         beta_unsrt = np.array(stack.layers[l].betas)
         alpha = alpha_unsrt[s]
-        beta = beta_unsrt[s]
+        if stack.layers[l].structure.world_1d == True:
+            beta = beta_unsrt
+        else:
+            beta = beta_unsrt[s]
         gamma = np.array(stack.layers[l].calc_kz())
         n = stack.layers[l].n()
         PWordtot = stack.layers[l].structure.num_pw_per_pol
@@ -1502,7 +1505,10 @@ def E_PW_fields(stack, nu_calc_pts = 51, max_height = 3,\
         #2D Version
         x_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
         y_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
-        slice_type = ['xy','xz','yz','diag+','diag-','spec+','spec-']
+        if stack.layers[l].structure.world_1d == True:
+            slice_type = ['xz']
+        else:
+            slice_type = ['xy','xz','yz','diag+','diag-','spec+','spec-']
         for s in slice_type:
             if s == 'xy':
                 x1 = x_range
