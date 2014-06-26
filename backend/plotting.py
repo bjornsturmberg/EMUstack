@@ -97,7 +97,7 @@ def gen_params_string(stack, layer=1):
         params_2_print += 'd = %(period)d, a1 = %(diameter)d, '% {
         'period'        : param_layer.period, 'diameter' : param_layer.diameter1,}
         if param_layer.diameter2 != 0: params_2_print += 'a2 = %(rad)d '% {'rad' : param_layer.diameter2,}
-        if param_layer.geometry == '2D_array':
+        if param_layer.periodicity == '2D_array':
             if param_layer.diameter3  != 0: params_2_print += 'a3 = %(rad)d '%    {'rad' : param_layer.diameter3,}
             if param_layer.diameter4  != 0: params_2_print += 'a4 = %(rad)d '%    {'rad' : param_layer.diameter4,}
             if param_layer.diameter5  != 0: params_2_print += '\na5 = %(rad)d '%  {'rad' : param_layer.diameter5,}
@@ -114,7 +114,7 @@ def gen_params_string(stack, layer=1):
             if param_layer.diameter16 != 0: params_2_print += 'a16 = %(rad)d \n'% {'rad' : param_layer.diameter16,}
             if param_layer.inc_shape == 'square': params_2_print += '\nSquare NWs '
             if param_layer.inc_shape == 'ellipse': params_2_print += '\nEllipticity = %(rad)5.3f '% {'rad' : param_layer.ellipticity}
-        elif param_layer.geometry == '1D_array':
+        elif param_layer.periodicity == '1D_array':
             params_2_print += ''
         params_2_print += '%(BMs)dBMs, PW_radius = %(PWs)d, '% {
         'BMs' : stack[0].layers[layer].num_BM,'PWs' : stack[0].layers[layer].max_order_PWs, }

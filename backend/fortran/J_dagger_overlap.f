@@ -40,13 +40,6 @@ C
       complex*16, dimension(:,:), allocatable :: overlap_K
       complex*16, dimension(:,:), allocatable :: overlap_E
 C
-C      integer*8 nval_max, PW_max
-C      parameter (nval_max = 2000)
-C      parameter (PW_max = 1000)
-C      complex*16 PlaneW_RK(PW_max,2)
-C      complex*16 PlaneW_RE(PW_max,2)
-C      complex*16 overlap_K(PW_max,nval_max)
-C      complex*16 overlap_E(PW_max,nval_max)
       complex*16 overlap_J_dagger(nval,2*neq_PW)
       integer*8 index_pw_inv(neq_PW)
       complex*16 ii, val_exp, coeff_1

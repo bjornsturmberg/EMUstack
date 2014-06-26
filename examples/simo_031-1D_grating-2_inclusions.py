@@ -18,10 +18,7 @@
 """
 
 """
-Simulating a lamellar grating that is periodic in x only.
-For this simulation EMUstack uses the 1D diffraction orders for the basis
-of the plane waves and carries out a 1D FEM calculation for the modes of 
-the grating.
+Increase complexity of grating to contain 2 inclusions that are interleaved.
 """
 
 import time
@@ -61,18 +58,27 @@ period = 300
 # Define each layer of the structure
 # We need to inform EMUstack at this point that all layers in the stack will 
 # be at most be periodic in one dimension (i.e. there are no '2D_arrays's).
-# This is done with the Keyword Arg 'world_1d' and all homogenous layers are 
-# calculated using the PW basis of 1D diffraction orders.
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
     material = materials.Air)
 
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
     material = materials.Air)
-# Define 1D grating that is periodic in x. 
-# The mesh for this is always made 'live' in objects.py
+# Define 1D grating that is periodic in x and contains 2 interleaved inclusions.
+# Inclusion_a is in the center of the unit cell. Inclusion_b has diameter 
+# diameter2 and can be of a different refractive index and by default the 
+# centers of the inclusions are seperated by period/2.
 # See Fortran Backends section of tutorial for more details.
-grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
-    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j), 
+grating = objects.NanoStruct('1D_array', period, int(round(0.15*period)), 
+    diameter2 = int(round(0.27*period)), height_nm = 2900, 
+    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
+    inclusion_b = materials.Material(3.0 + 0.0j), 
+    loss = True, lc_bkg = 0.01)
+# To dictate the seperation of the inclusions set the Keyword Arg small_space to the 
+# distance (in nm) between between the inclusions edges.
+grating_2 = objects.NanoStruct('1D_array', period, int(round(0.15*period)), 
+    diameter2 = int(round(0.27*period)), small_space = 50, height_nm = 2900, 
+    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
+    inclusion_b = materials.Material(3.0 + 0.0j), 
     loss = True, lc_bkg = 0.01)
 
 def simulate_stack(light):    
@@ -84,7 +90,7 @@ def simulate_stack(light):
     """ Now when defining full structure order is critical and
     stack MUST be ordered from bottom to top!
     """
-
+    # For demonstration we only simulate one of the gratings defined above.
     stack = Stack((sim_substrate, sim_grating, sim_superstrate))
     stack.calc_scat(pol = 'TM')
 

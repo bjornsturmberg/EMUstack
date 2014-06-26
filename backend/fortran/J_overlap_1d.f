@@ -7,13 +7,11 @@ c     sol(4..7,nval, nel)  contains the values of Ey component at P3 interpolati
 c     sol(8..11,nval, nel) contains the values of Ez component at P3 interpolation nodes
 C
       subroutine J_overlap_1d(nval, nel, npt_P2, 
-     *  type_el, table_nod, x_P2, sol,
-     *  period_x, lambda, freq, overlap_J, neq_PW,
-     *  bloch_vec_x, bloch_vec_y, index_pw_inv, PrintAll,
-     *  ordre_ls)
+     *  type_el, table_nod, x_P2, sol, period_x, 
+     *  lambda, freq, overlap_J, neq_PW, bloch_vec_x,
+     *  bloch_vec_y, index_pw_inv, PrintAll, ordre_ls)
 
 C************************************************************************
-C
       implicit none 
 C  input output parameters
       integer*8 nval, nel, npt_P2
@@ -25,7 +23,6 @@ C  input output parameters
       integer*8 neq_PW, PrintAll, ordre_ls
       double precision bloch_vec_x, bloch_vec_y
       integer*8 index_pw_inv(neq_PW)
-
 C  local parameters - purely internal
       integer*8 iel, inode, n, i, j, global
       integer*8 ltest, typ_e, s, s2, twos, trans
@@ -33,27 +30,22 @@ C  local parameters - purely internal
       parameter (nnodes_0 = 3)
       integer*8 nod_el_p(nnodes_0)
       complex*16 vec_phi(2), K_tmp(2), E_tmp(2)
-      complex*16 tmp1, tmp2
+      complex*16 tmp1, tmp2, ii
 C
-
       integer alloc_stat
       complex*16, dimension(:,:), allocatable :: PlaneW_RK
       complex*16, dimension(:,:), allocatable :: PlaneW_RE
       complex*16, dimension(:,:), allocatable :: overlap_K
       complex*16, dimension(:,:), allocatable :: overlap_E
-
+C
       integer*8 nnode_P2, nnode_P3
       parameter (nnode_P2 = 3, nnode_P3 = 4)
-
       complex*16 vecP2Exp(nnode_P2), vecP3Exp(nnode_P3)
-
       complex*16, allocatable :: PlaneW_Exp_P2(:,:)
       complex*16, allocatable :: PlaneW_Exp_P3(:,:)
-
+C
       double precision, allocatable :: tmp_ls_alpha(:)
-
       double precision xmin, xmax
-      complex*16 ii
       double precision r_tmp, vec_kx, lambda, freq
       double precision bloch1, pi, alpha, norm
 C
@@ -89,7 +81,6 @@ C
         write(*,*) "Aborting..."
         stop
       endif
-
       allocate(PlaneW_Exp_P2(neq_PW,nnode_P2), STAT=alloc_stat)
       if (alloc_stat /= 0) then
         write(*,*) "J_overlap_1d: Mem. allocation is unseccesfull"
@@ -97,7 +88,6 @@ C
         write(*,*) "Aborting..."
         stop
       endif
-
       allocate(PlaneW_Exp_P3(neq_PW,nnode_P3), STAT=alloc_stat)
       if (alloc_stat /= 0) then
         write(*,*) "J_overlap_1d: Mem. allocation is unseccesfull"
@@ -105,7 +95,6 @@ C
         write(*,*) "Aborting..."
         stop
       endif
-
       allocate(tmp_ls_alpha(neq_PW), STAT=alloc_stat)
       if (alloc_stat /= 0) then
         write(*,*) "J_overlap_1d: Mem. allocation is unseccesfull"
@@ -113,7 +102,7 @@ C
         write(*,*) "Aborting..."
         stop
       endif
-c
+C
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 C set up solution matrix
       do j=1,nval

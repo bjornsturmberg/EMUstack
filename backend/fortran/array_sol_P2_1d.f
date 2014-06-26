@@ -45,7 +45,10 @@ c     Values of the P3 basis function at the mid-point
           inod = 1
             sol_P2(2,inod,ival,iel) = sol_1(inod+3,ival,iel)    ! y-component
             sol_P2(3,inod,ival,iel) = sol_1(inod+3+4,ival,iel)  ! z-component
-          inod = 2  ! Mid-node
+          inod = 2
+            sol_P2(2,inod,ival,iel) = sol_1(inod+3,ival,iel)    ! y-component
+            sol_P2(3,inod,ival,iel) = sol_1(inod+3+4,ival,iel)  ! z-component
+c         Interpolated value for the mid-node
 c         The initial P3 value of Ey is interpolated to obtain the value at the mid-node
           z_tmp1 = 0
           z_tmp2 = 0
@@ -53,12 +56,9 @@ c         The initial P3 value of Ey is interpolated to obtain the value at the 
             z_tmp1 = z_tmp1 + sol_1(j+3,ival,iel) * P3_mid_mode_value(j)
             z_tmp2 = z_tmp2 + sol_1(j+3+4,ival,iel)*P3_mid_mode_value(j)
           enddo
-          inod = 2
+          inod = 3  ! Mid-node
             sol_P2(2,inod,ival,iel) = z_tmp1   ! y-component
             sol_P2(3,inod,ival,iel) = z_tmp2   ! z-component
-          inod = 3
-            sol_P2(2,inod,ival,iel) = sol_1(inod+4,ival,iel)    ! y-component
-            sol_P2(3,inod,ival,iel) = sol_1(inod+4+4,ival,iel)  ! z-component
         enddo
       enddo
 c

@@ -5,7 +5,7 @@ C
 C 
       implicit none 
 C  input output parameters
-      integer*8 neq_PW, PrintAll, ordre_ls, debug
+      integer*8 neq_PW, ordre_ls, debug
       double precision k_0, bloch_vec_x, bloch_vec_y
       double precision period_x
       integer*8 index_pw_inv(neq_PW)

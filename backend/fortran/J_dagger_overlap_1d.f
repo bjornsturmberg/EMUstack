@@ -1,12 +1,11 @@
 C  Calculate the Projection integral of the Plane Waves & adjoint Bloch modes
 C
       subroutine J_dagger_overlap_1d(nval, nel, npt_P2, 
-     *  type_el, table_nod, x_P2, sol, 
-     *  period_x, lambda, freq, overlap_J_dagger, neq_PW,
-     *  bloch_vec_x, bloch_vec_y, index_pw_inv, PrintAll, ordre_ls)
+     *  type_el, table_nod, x_P2, sol, period_x, 
+     *  lambda, freq, overlap_J_dagger, neq_PW, bloch_vec_x,
+     *  bloch_vec_y, index_pw_inv, PrintAll, ordre_ls)
 
-c   nnodes, 
-C 
+C************************************************************************
       implicit none 
 C  input output parameters
       integer*8 nval, nel, npt_P2, ordre_ls
@@ -24,41 +23,27 @@ C  local parameters - purely internal
       integer*8 nnodes_0, debug
       parameter (nnodes_0 = 3)
       integer*8 nod_el_p(nnodes_0)
-cc      double precision xel(2,nnodes_0)
-cc      double precision phi2_list(6)
       complex*16 vec_phi(2), K_tmp(2), E_tmp(2)
-      complex*16 tmp1, tmp2
-C  variables for quadrature interpolation
-cc      integer*8 nquad, nquad_max, iq, py, 
-cc      parameter (nquad_max = 25)
-cc      double precision wq(nquad_max)
-cc      double precision xq(nquad_max), yq(nquad_max)
-cc      double precision xx(2), xx_g(2), ww, det
-cc      double precision mat_B(2,2), mat_T(2,2), d
+      complex*16 tmp1, tmp2, ii
 C
       integer alloc_stat
       complex*16, dimension(:,:), allocatable :: PlaneW_RK
       complex*16, dimension(:,:), allocatable :: PlaneW_RE
       complex*16, dimension(:,:), allocatable :: overlap_K
       complex*16, dimension(:,:), allocatable :: overlap_E
-
+C
       integer*8 nnode_P2, nnode_P3
       parameter (nnode_P2 = 3, nnode_P3 = 4)
-
       complex*16 vecP2Exp(nnode_P2), vecP3Exp(nnode_P3)
-
+C
       complex*16, allocatable :: PlaneW_Exp_P2(:,:)
       complex*16, allocatable :: PlaneW_Exp_P3(:,:)
-
       double precision, allocatable :: tmp_ls_alpha(:)
       double precision xmin, xmax
 C
       complex*16 overlap_J_dagger(nval,2*neq_PW)
       integer*8 index_pw_inv(neq_PW)
-      complex*16 ii
-ccc , val_exp, coeff_1
       double precision r_tmp, vec_kx
-c  , vec_ky bloch2, beta, 
       double precision bloch1, pi, alpha, norm
       double precision lambda, freq
 C
@@ -67,12 +52,6 @@ C
       ui = 6
       debug = 0
 C
-cc      if ( nnodes .ne. 6 ) then
-cc        write(ui,*) "overlap_J_dagger: problem nnodes = ", nnodes
-cc        write(ui,*) "overlap_J_dagger: nnodes should be equal to 6!"
-cc        write(ui,*) "overlap_J_dagger: Aborting..."
-cc        stop
-cc      endif
       allocate(PlaneW_RK(neq_PW,2), STAT=alloc_stat)
       if (alloc_stat /= 0) then
         write(*,*) "J_overlap_dagger: Mem. allocation is unseccesfull"
@@ -101,8 +80,6 @@ cc      endif
         write(*,*) "Aborting..."
         stop
       endif
-
-
       allocate(PlaneW_Exp_P2(neq_PW,nnode_P2), STAT=alloc_stat)
       if (alloc_stat /= 0) then
         write(*,*) "J_overlap_1d: Mem. allocation is unseccesfull"
@@ -110,7 +87,6 @@ cc      endif
         write(*,*) "Aborting..."
         stop
       endif
-
       allocate(PlaneW_Exp_P3(neq_PW,nnode_P3), STAT=alloc_stat)
       if (alloc_stat /= 0) then
         write(*,*) "J_overlap_1d: Mem. allocation is unseccesfull"
@@ -118,7 +94,6 @@ cc      endif
         write(*,*) "Aborting..."
         stop
       endif
-
       allocate(tmp_ls_alpha(neq_PW), STAT=alloc_stat)
       if (alloc_stat /= 0) then
         write(*,*) "J_overlap_1d: Mem. allocation is unseccesfull"
@@ -126,13 +101,9 @@ cc      endif
         write(*,*) "Aborting..."
         stop
       endif
-c
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c
 C
-ccc      call quad_triangle(nquad,nquad_max,wq,xq,yq);
-C        
-C set up final solution matrix
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+C set up solution matrix
         do i=1,neq_PW
           do j=1,nval
             overlap_K(i,j) = 0.0D0
@@ -155,7 +126,7 @@ C
         enddo
         xmin = x_P2(nod_el_p(1))
         xmax = x_P2(nod_el_p(2))
-C       prefactors of plane waves order s(px,py) 
+C     prefactors of plane waves order s(px,py) 
         s = 1
         do px = -ordre_ls, ordre_ls
 ccc              do py = -ordre_ls, ordre_ls

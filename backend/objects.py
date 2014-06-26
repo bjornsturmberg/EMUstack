@@ -42,7 +42,7 @@ class NanoStruct(object):
     """ Represents a structured layer.
 
         Args:
-            geometry  (str): Either 1D or 2D structure '1D_array', '2D_array'.
+            periodicity  (str): Either 1D or 2D structure '1D_array', '2D_array'.
 
             period  (float): The period of the unit cell in nanometers.
 
@@ -50,16 +50,22 @@ class NanoStruct(object):
 
         Keyword Args:
             inc_shape  (str): Shape of inclusions that have template mesh,\
-                currently; 'circle', 'ellipse', 'square', 'split ring'.
+                currently; 'circle', 'ellipse', 'square', 'SRR'.
 
-            ellipticity   (float): If != 0, inclusion has given ellipticity,\
+            ellipticity  (float): If != 0, inclusion has given ellipticity,\
                 with b = diameter, a = diameter-ellipticity * diameter. \
                 NOTE: only implemented for a single inclusion.
+
+            len_vertical  (float): Vertical length of split ring resonator \
+                (if inc_shape = 'SRR').
+
+            len_horizontal  (float): Horizontal length of split ring resonator\
+                (if inc_shape = 'SRR').
 
             diameter2-16  (float): The diameters of further inclusions in nm.\
                 Implemented up to diameter6 for 1D_arrays.
 
-            inclusion_a   : A :Material: instance for first inclusion, \
+            inclusion_a  : A :Material: instance for first inclusion, \
                 specified as dispersive refractive index (eg. materials.Si_c) \
                 or nondispersive complex number (eg. Material(1.0 + 0.0j)).
 
@@ -144,47 +150,51 @@ class NanoStruct(object):
     """
 
 
-    def __init__(self, geometry, period, diameter1,
-        inc_shape='circle', ellipticity=0.0,
-        ff=0, ff_rand=False, small_space=None, edge_spacing = False, 
+    def __init__(self, periodicity, period, diameter1,
+        inc_shape = 'circle', ellipticity = 0.0, 
+        ff = 0, ff_rand=False, small_space = None, edge_spacing = False, 
+        len_vertical = 0, len_horizontal = 0,
         inclusion_a = materials.Material(3.0 + 0.1j), 
         inclusion_b = materials.Material(3.0 + 0.1j),
         background = materials.Material(1.0 + 0.0j),
-        loss=True, height_nm=1000, 
-        diameter2=0,  diameter3=0, diameter4=0, diameter5=0, diameter6=0, 
-        diameter7=0, diameter8=0, diameter9=0, diameter10=0, diameter11=0, 
-        diameter12=0, diameter13=0,diameter14=0, diameter15=0, diameter16=0, 
-        hyperbolic=False, world_1d=None, posx=0, posy=0,
-        make_mesh_now=True, force_mesh=False, 
-        mesh_file='NEED_FILE.mail', 
-        lc_bkg=0.09, lc2=1.0, lc3=1.0, lc4=1.0, lc5=1.0, lc6=1.0,
-        plot_modes=False, plot_real=1, plot_imag=0, plot_abs=0,
+        loss = True, height_nm = 100, 
+        diameter2 = 0,  diameter3 = 0, diameter4 = 0, diameter5 = 0,  
+        diameter6 = 0, diameter7 = 0, diameter8 = 0, diameter9 = 0, 
+        diameter10 = 0, diameter11 = 0, diameter12 = 0, diameter13 = 0,
+        diameter14 = 0, diameter15 = 0, diameter16 = 0, 
+        hyperbolic = False, world_1d = None, posx = 0, posy = 0,
+        make_mesh_now = True, force_mesh = False, 
+        mesh_file = 'NEED_FILE.mail',
+        lc_bkg = 0.09, lc2 = 1.0, lc3 = 1.0, lc4 = 1.0, lc5 = 1.0, lc6 = 1.0,
+        plot_modes = False, plot_real = 1, plot_imag = 0, plot_abs = 0,
         plotting3d = False, plot_field_conc=False):
-        self.geometry      = geometry
-        self.period        = period
-        self.diameter1     = diameter1
-        self.height_nm     = height_nm
-        self.inclusion_a   = inclusion_a
-        self.inclusion_b   = inclusion_b
-        self.background    = background
-        self.loss          = loss
-        self.hyperbolic    = hyperbolic
-        self.diameter2     = diameter2
-        self.diameter3     = diameter3
-        self.diameter4     = diameter4
-        self.diameter5     = diameter5
-        self.diameter6     = diameter6
-        self.diameter7     = diameter7
-        self.diameter8     = diameter8
-        self.diameter9     = diameter9
-        self.diameter10    = diameter10
-        self.diameter11    = diameter11
-        self.diameter12    = diameter12
-        self.diameter13    = diameter13
-        self.diameter14    = diameter14
-        self.diameter15    = diameter15
-        self.diameter16    = diameter16
-        self.ellipticity   = ellipticity
+        self.periodicity    = periodicity
+        self.period         = period
+        self.diameter1      = diameter1
+        self.height_nm      = height_nm
+        self.inclusion_a    = inclusion_a
+        self.inclusion_b    = inclusion_b
+        self.background     = background
+        self.loss           = loss
+        self.hyperbolic     = hyperbolic
+        self.diameter2      = diameter2
+        self.diameter3      = diameter3
+        self.diameter4      = diameter4
+        self.diameter5      = diameter5
+        self.diameter6      = diameter6
+        self.diameter7      = diameter7
+        self.diameter8      = diameter8
+        self.diameter9      = diameter9
+        self.diameter10     = diameter10
+        self.diameter11     = diameter11
+        self.diameter12     = diameter12
+        self.diameter13     = diameter13
+        self.diameter14     = diameter14
+        self.diameter15     = diameter15
+        self.diameter16     = diameter16
+        self.len_vertical   = len_vertical
+        self.len_horizontal = len_horizontal
+        self.ellipticity    = ellipticity
         if ellipticity > 1.0:
             raise ValueError, "ellipticity must be less than 1.0"
         self.inc_shape    = inc_shape
@@ -193,12 +203,12 @@ class NanoStruct(object):
         else:
             self.nb_typ_el = 2
         if ff == 0:
-            if geometry == '2D_array':
+            if periodicity == '2D_array':
                 self.ff = calculate_ff(inc_shape,period,diameter1,diameter2,
                     diameter3,diameter4,diameter5,diameter6,diameter7,diameter8,diameter9,
                     diameter10,diameter11,diameter12,diameter13,diameter14,diameter15,
                     diameter16,ellipticity)
-            elif geometry == '1D_array':
+            elif periodicity == '1D_array':
                 self.ff        = (diameter1 + diameter2)/period
         else:
             self.ff = ff
@@ -208,9 +218,9 @@ class NanoStruct(object):
                 self.diameter1 = 2*np.sqrt((ff*(period)**2)/np.pi)
         self.ff_rand       = ff_rand
         if world_1d == None: 
-            if geometry == '1D_array':
+            if periodicity == '1D_array':
                 self.world_1d = True
-            if geometry == '2D_array':
+            if periodicity == '2D_array':
                 self.world_1d = False
         else:
             self.world_1d = world_1d
@@ -223,6 +233,8 @@ class NanoStruct(object):
         self.lc5           = lc5
         self.lc6           = lc6
         self.force_mesh    = force_mesh
+        self.small_space   = small_space
+        self.edge_spacing  = edge_spacing
         if make_mesh_now == True:
             self.make_mesh()
         else:
@@ -239,160 +251,176 @@ class NanoStruct(object):
         self.plot_field_conc = plot_field_conc
 
     def make_mesh(self):
-        if self.geometry == '2D_array':
-            if self.diameter10 > 0:
-                supercell = 16
-                msh_name  =  '%(d)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s_%(diassss)s' % {
-               'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1), 
-               'dias' : dec_float_str(self.diameter2), 'dias' : dec_float_str(self.diameter2), 
-               'diass' : dec_float_str(self.diameter3),'diasss' : dec_float_str(self.diameter4), 
-               'diassss' : dec_float_str(self.diameter5)}
-            elif self.diameter5 > 0:
-                supercell = 9
-                msh_name  =  '%(d)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s_%(diassss)s' % {
-               'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1), 
-               'dias' : dec_float_str(self.diameter2), 'diass' : dec_float_str(self.diameter3),
-               'diasss' : dec_float_str(self.diameter4), 'diassss' : dec_float_str(self.diameter5)}
-            elif self.diameter4 > 0:
-                supercell = 4
-                msh_name  =  '%(d)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s' % {
-               'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1), 
-               'dias' : dec_float_str(self.diameter2), 'diass' : dec_float_str(self.diameter3), 
-               'diasss' : dec_float_str(self.diameter4)}
-            elif self.diameter3 > 0:
-                supercell = 3
-                msh_name  =  '%(d)s_%(dia)s_%(dias)s_%(diass)s' % {
-               'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1),
-               'dias' : dec_float_str(self.diameter2), 'diass' : dec_float_str(self.diameter3)}
-            elif self.diameter2 > 0:
-                supercell = 2
-                msh_name  =  '%(d)s_%(dia)s_%(dias)s' % {'d' : dec_float_str(self.period), 
-                'dia' : dec_float_str(self.diameter1), 'diameters' : dec_float_str(self.diameter2)}
-            elif self.diameter1 > 0:
-                supercell = 1
-                msh_name  =  '%(d)s_%(dia)s' % {'d' : dec_float_str(self.period), 
-                'dia' : dec_float_str(self.diameter1)}
-            else:
-                raise ValueError, "must have at least one cylinder of nonzero diameter."
+        if self.periodicity == '2D_array':
+            if self.inc_shape in ['circle','ellipse','square']:
+                if self.diameter10 > 0:
+                    supercell = 16
+                    msh_name  =  '%(d)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s_%(diassss)s' % {
+                   'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1), 
+                   'dias' : dec_float_str(self.diameter2), 'dias' : dec_float_str(self.diameter2), 
+                   'diass' : dec_float_str(self.diameter3),'diasss' : dec_float_str(self.diameter4), 
+                   'diassss' : dec_float_str(self.diameter5)}
+                elif self.diameter5 > 0:
+                    supercell = 9
+                    msh_name  =  '%(d)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s_%(diassss)s' % {
+                   'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1), 
+                   'dias' : dec_float_str(self.diameter2), 'diass' : dec_float_str(self.diameter3),
+                   'diasss' : dec_float_str(self.diameter4), 'diassss' : dec_float_str(self.diameter5)}
+                elif self.diameter4 > 0:
+                    supercell = 4
+                    msh_name  =  '%(d)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s' % {
+                   'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1), 
+                   'dias' : dec_float_str(self.diameter2), 'diass' : dec_float_str(self.diameter3), 
+                   'diasss' : dec_float_str(self.diameter4)}
+                elif self.diameter3 > 0:
+                    supercell = 3
+                    msh_name  =  '%(d)s_%(dia)s_%(dias)s_%(diass)s' % {
+                   'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1),
+                   'dias' : dec_float_str(self.diameter2), 'diass' : dec_float_str(self.diameter3)}
+                elif self.diameter2 > 0:
+                    supercell = 2
+                    msh_name  =  '%(d)s_%(dia)s_%(dias)s' % {'d' : dec_float_str(self.period), 
+                    'dia' : dec_float_str(self.diameter1), 'diameters' : dec_float_str(self.diameter2)}
+                elif self.diameter1 > 0:
+                    supercell = 1
+                    msh_name  =  '%(d)s_%(dia)s' % {'d' : dec_float_str(self.period), 
+                    'dia' : dec_float_str(self.diameter1)}
+                else:
+                    raise ValueError, "must have at least one cylinder of nonzero diameter."
 
-            if self.ellipticity != 0:
-                msh_name = msh_name + '_e_%(e)s' % {'e' : dec_float_str(self.ellipticity),}
-            if self.inc_shape == 'square':
-                msh_name = msh_name + '_sq'
-            if self.posx != 0:
-                msh_name = msh_name + 'x%(e)s' % {'e' : dec_float_str(self.posx),}
-            if self.posy != 0:
-                msh_name = msh_name + 'y%(e)s' % {'e' : dec_float_str(self.posy),}
+                if self.ellipticity != 0:
+                    msh_name = msh_name + '_e_%(e)s' % {'e' : dec_float_str(self.ellipticity),}
+                if self.inc_shape == 'square':
+                    msh_name = msh_name + '_sq'
+                if self.posx != 0:
+                    msh_name = msh_name + 'x%(e)s' % {'e' : dec_float_str(self.posx),}
+                if self.posy != 0:
+                    msh_name = msh_name + 'y%(e)s' % {'e' : dec_float_str(self.posy),}
+
+                # for blah in range(1,101,1):
+                #     print blah
+                #     msh_name = 'random_u_%i' % blah
+                #     self.mesh_file = msh_name + '.mail'
+                # msh_name = 'design-last_17'
+                if self.ff_rand == True:
+                    import random
+                    ff_tol = 0.0001
+                    min_a  = 50
+                    max_a  = (self.period/1.05)/np.sqrt(supercell)
+                    unit_period = (self.period/np.sqrt(supercell))
+                    mean = np.sqrt((self.ff*(unit_period)**2)/np.pi)
+                    test_ff = 0
+                    while abs(test_ff-self.ff) > ff_tol:
+                        rad_array = []
+                        for i in range(supercell):
+                            # stand_dev = 30
+                            # select_diameter = random.gauss(mean,stand_dev)
+                            select_diameter = random.uniform(min_a,max_a)
+                            rad_array = np.append(rad_array,select_diameter)
+
+                        test_ff = calculate_ff(self.inc_shape, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
+                        rad_array[5],rad_array[6],rad_array[7],rad_array[8],rad_array[9],rad_array[10],
+                        rad_array[11],rad_array[12],rad_array[13],rad_array[14],rad_array[15])
+                        print test_ff
+                        if supercell>3:
+                            self.diameter1   = rad_array[0]
+                            self.diameter2   = rad_array[1]
+                            self.diameter3   = rad_array[2]
+                            self.diameter4   = rad_array[3]
+                        if supercell>4:
+                            self.diameter5   = rad_array[4]
+                            self.diameter6   = rad_array[5]
+                            self.diameter7   = rad_array[6]
+                            self.diameter8   = rad_array[7]
+                            self.diameter9   = rad_array[8]
+                        if supercell>9:
+                            self.diameter10  = rad_array[9]
+                            self.diameter11  = rad_array[10]
+                            self.diameter12  = rad_array[11]
+                            self.diameter13  = rad_array[12]
+                            self.diameter14  = rad_array[13]
+                            self.diameter15  = rad_array[14]
+                            self.diameter16  = rad_array[15]
+                        test_ff = calculate_ff(self.inc_shape, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
+                        rad_array[5],rad_array[6],rad_array[7],rad_array[8],rad_array[9],rad_array[10],
+                        rad_array[11],rad_array[12],rad_array[13],rad_array[14],rad_array[15])
+
+
+                if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
+                    geo_tmp = open(msh_location + '%s_msh_template.geo' % supercell, "r").read()
+                    geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
+                    geo = geo.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
+                    geo = geo.replace('a1 = 0;', "a1 = %f;" % self.diameter1)
+                    geo = geo.replace('ellipticity = 0;', "ellipticity = %f;" % self.ellipticity)
+                    if self.inc_shape == 'square': geo = geo.replace('square = 0;', "square = 1;")
+                    geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
+                    geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
+                    geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
+                    if self.posx != 0:
+                        # appropriate for old definition of fraction of distance to touching
+                        geo = geo.replace('posx = 0;', "posx = %f;" % (self.posx/self.period*(self.period/(2*np.sqrt(supercell)) - self.diameter1/2.0)))
+                        # appropriate for % shift of distance of centre point to (ind) unitcell boundary (ie d/2)
+                        # geo = geo.replace('posx = 0;', "posx = %f;" % float(self.posx/supercell))
+                    if self.posy != 0:
+                        geo = geo.replace('posy = 0;', "posy = %f;" % (self.posy/self.period*(self.period/(2*np.sqrt(supercell)) - self.diameter1/2.0)))
+                        # geo = geo.replace('posy = 0;', "posy = %f;" % float(self.posy/supercell))
+                    if supercell > 1:
+                        geo = geo.replace('a2 = 0;', "a2 = %f;" % self.diameter2)
+                        geo = geo.replace('lc4 = lc/1;', "lc4 = lc/%f;" % self.lc4)
+                    if supercell > 2:
+                        geo = geo.replace('a3 = 0;', "a3 = %f;" % self.diameter3)
+                        geo = geo.replace('lc5 = lc/1;', "lc5 = lc/%f;" % self.lc5)
+                    if supercell > 3:
+                        geo = geo.replace('a4 = 0;', "a4 = %f;" % self.diameter4)
+                        geo = geo.replace('lc6 = lc/1;', "lc6 = lc/%f;" % self.lc6)
+                    if supercell > 4:
+                        geo = geo.replace('a5 = 0;', "a5 = %f;" % self.diameter5)
+                        geo = geo.replace('a6 = 0;', "a6 = %f;" % self.diameter6)
+                        geo = geo.replace('a7 = 0;', "a7 = %f;" % self.diameter7)
+                        geo = geo.replace('a8 = 0;', "a8 = %f;" % self.diameter8)
+                        geo = geo.replace('a9 = 0;', "a9 = %f;" % self.diameter9)
+                    if supercell > 9:
+                        geo = geo.replace('a10 = 0;', "a10 = %f;" % self.diameter10)
+                        geo = geo.replace('a11 = 0;', "a11 = %f;" % self.diameter11)
+                        geo = geo.replace('a12 = 0;', "a12 = %f;" % self.diameter12)
+                        geo = geo.replace('a13 = 0;', "a13 = %f;" % self.diameter13)
+                        geo = geo.replace('a14 = 0;', "a14 = %f;" % self.diameter14)
+                        geo = geo.replace('a15 = 0;', "a15 = %f;" % self.diameter15)
+                        geo = geo.replace('a16 = 0;', "a16 = %f;" % self.diameter16)
+
+
+            if self.inc_shape == 'SRR':
+                msh_name  =  'SRR_%(d)s_%(lvert)s_%(lhori)s_%(dia)s' % {
+                   'd' : dec_float_str(self.period), 'lvert' : dec_float_str(self.len_vertical),
+                   'lhori' : dec_float_str(self.len_horizontal), 'dia' : dec_float_str(self.diameter1)}
+                if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
+                    geo_tmp = open(msh_location + 'SRR_msh_template.geo', "r").read()
+                    geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
+                    geo = geo.replace('d_in_nm  = 0;', "d_in_nm  = %f;" % self.period)
+                    geo = geo.replace('lvert_nm = 0;', "lvert_nm = %f;" % self.len_vertical)
+                    geo = geo.replace('lhori_nm = 0;', "lhori_nm = %f;" % self.len_horizontal)
+                    geo = geo.replace('width_nm = 0;', "width_nm = %f;" % self.diameter1)
+                    geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
+                    geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
+                    geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
+
+            else: 
+                raise NotImplementedError, "Selected 'inc_shape' %s is not \
+                currently implemented. Please make a mesh with gmsh, & \
+                consider contributing this to EMUstack via github." % self.inc_shape
 
             self.mesh_file = msh_name + '.mail'
-                
-            # for blah in range(1,101,1):
-            #     print blah
-            #     msh_name = 'random_u_%i' % blah
-            #     self.mesh_file = msh_name + '.mail'
+            open(msh_location + msh_name + '.geo', "w").write(geo)
+            EMUstack.conv_gmsh(msh_location+msh_name)
 
-            # msh_name = 'design-last_17'
-            # self.mesh_file = msh_name + '.mail'
-
-            if self.ff_rand == True:
-                import random
-                ff_tol = 0.0001
-                min_a  = 50
-                max_a  = (self.period/1.05)/np.sqrt(supercell)
-                unit_period = (self.period/np.sqrt(supercell))
-                mean = np.sqrt((self.ff*(unit_period)**2)/np.pi)
-                test_ff = 0
-                while abs(test_ff-self.ff) > ff_tol:
-                    rad_array = []
-                    for i in range(supercell):
-                        # stand_dev = 30
-                        # select_diameter = random.gauss(mean,stand_dev)
-                        select_diameter = random.uniform(min_a,max_a)
-                        rad_array = np.append(rad_array,select_diameter)
-
-                    test_ff = calculate_ff(self.inc_shape, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
-                    rad_array[5],rad_array[6],rad_array[7],rad_array[8],rad_array[9],rad_array[10],
-                    rad_array[11],rad_array[12],rad_array[13],rad_array[14],rad_array[15])
-                    print test_ff
-                    if supercell>3:
-                        self.diameter1   = rad_array[0]
-                        self.diameter2   = rad_array[1]
-                        self.diameter3   = rad_array[2]
-                        self.diameter4   = rad_array[3]
-                    if supercell>4:
-                        self.diameter5   = rad_array[4]
-                        self.diameter6   = rad_array[5]
-                        self.diameter7   = rad_array[6]
-                        self.diameter8   = rad_array[7]
-                        self.diameter9   = rad_array[8]
-                    if supercell>9:
-                        self.diameter10  = rad_array[9]
-                        self.diameter11  = rad_array[10]
-                        self.diameter12  = rad_array[11]
-                        self.diameter13  = rad_array[12]
-                        self.diameter14  = rad_array[13]
-                        self.diameter15  = rad_array[14]
-                        self.diameter16  = rad_array[15]
-                    test_ff = calculate_ff(self.inc_shape, self.period,rad_array[0],rad_array[1],rad_array[2],rad_array[3],rad_array[4],
-                    rad_array[5],rad_array[6],rad_array[7],rad_array[8],rad_array[9],rad_array[10],
-                    rad_array[11],rad_array[12],rad_array[13],rad_array[14],rad_array[15])
+            # # Automatically show created mesh in gmsh.
+            # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.msh'
+            # os.system(gmsh_cmd)
+            # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.geo'
+            # os.system(gmsh_cmd)
 
 
-
-
-            if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
-                geo_tmp = open(msh_location + '%s_msh_template.geo' % supercell, "r").read()
-                geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
-                geo = geo.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
-                geo = geo.replace('a1 = 0;', "a1 = %f;" % self.diameter1)
-                geo = geo.replace('ellipticity = 0;', "ellipticity = %f;" % self.ellipticity)
-                if self.inc_shape == 'square': geo = geo.replace('square = 0;', "square = 1;")
-                geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
-                geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
-                geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
-                if self.posx != 0:
-                    # appropriate for old definition of fraction of distance to touching
-                    geo = geo.replace('posx = 0;', "posx = %f;" % (self.posx/self.period*(self.period/(2*np.sqrt(supercell)) - self.diameter1/2.0)))
-                    # appropriate for % shift of distance of centre point to (ind) unitcell boundary (ie d/2)
-                    # geo = geo.replace('posx = 0;', "posx = %f;" % float(self.posx/supercell))
-                if self.posy != 0:
-                    geo = geo.replace('posy = 0;', "posy = %f;" % (self.posy/self.period*(self.period/(2*np.sqrt(supercell)) - self.diameter1/2.0)))
-                    # geo = geo.replace('posy = 0;', "posy = %f;" % float(self.posy/supercell))
-                if supercell > 1:
-                    geo = geo.replace('a2 = 0;', "a2 = %f;" % self.diameter2)
-                    geo = geo.replace('lc4 = lc/1;', "lc4 = lc/%f;" % self.lc4)
-                if supercell > 2:
-                    geo = geo.replace('a3 = 0;', "a3 = %f;" % self.diameter3)
-                    geo = geo.replace('lc5 = lc/1;', "lc5 = lc/%f;" % self.lc5)
-                if supercell > 3:
-                    geo = geo.replace('a4 = 0;', "a4 = %f;" % self.diameter4)
-                    geo = geo.replace('lc6 = lc/1;', "lc6 = lc/%f;" % self.lc6)
-                if supercell > 4:
-                    geo = geo.replace('a5 = 0;', "a5 = %f;" % self.diameter5)
-                    geo = geo.replace('a6 = 0;', "a6 = %f;" % self.diameter6)
-                    geo = geo.replace('a7 = 0;', "a7 = %f;" % self.diameter7)
-                    geo = geo.replace('a8 = 0;', "a8 = %f;" % self.diameter8)
-                    geo = geo.replace('a9 = 0;', "a9 = %f;" % self.diameter9)
-                if supercell > 9:
-                    geo = geo.replace('a10 = 0;', "a10 = %f;" % self.diameter10)
-                    geo = geo.replace('a11 = 0;', "a11 = %f;" % self.diameter11)
-                    geo = geo.replace('a12 = 0;', "a12 = %f;" % self.diameter12)
-                    geo = geo.replace('a13 = 0;', "a13 = %f;" % self.diameter13)
-                    geo = geo.replace('a14 = 0;', "a14 = %f;" % self.diameter14)
-                    geo = geo.replace('a15 = 0;', "a15 = %f;" % self.diameter15)
-                    geo = geo.replace('a16 = 0;', "a16 = %f;" % self.diameter16)
-
-                open(msh_location + msh_name + '.geo', "w").write(geo)
-                EMUstack.conv_gmsh(msh_location+msh_name)
-
-            # Automatically show created mesh in gmsh.
-                # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.msh'
-                # os.system(gmsh_cmd)
-                # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.geo'
-                # os.system(gmsh_cmd)
-
-
-        elif self.geometry == '1D_array':
+        elif self.periodicity == '1D_array':
             # Unit cell length normalized to unity
             x_min = -0.5
             x_max =  0.5
@@ -434,7 +462,7 @@ class NanoStruct(object):
                 rad_4 = self.diameter4/(2.0*self.period)
                 rad_5 = self.diameter5/(2.0*self.period)
                 rad_6 = self.diameter6/(2.0*self.period)
-                if edge_spacing == True:
+                if self.edge_spacing == True:
                     i_d = (1.0 - self.diameter1 - self.diameter2 - self.diameter3 - \
                         self.diameter4 - self.diameter5 - self.diameter6)/6.0
                     for i_el in el_list:
@@ -500,7 +528,7 @@ class NanoStruct(object):
                 rad_3 = self.diameter3/(2.0*self.period)
                 rad_4 = self.diameter4/(2.0*self.period)
                 rad_5 = self.diameter5/(2.0*self.period)
-                if edge_spacing == True:
+                if self.edge_spacing == True:
                     i_d = (1.0 - self.diameter1 - self.diameter2 - self.diameter3 \
                         - self.diameter4 - self.diameter5)/5.0
                     for i_el in el_list:
@@ -553,7 +581,7 @@ class NanoStruct(object):
                 rad_2 = self.diameter2/(2.0*self.period)
                 rad_3 = self.diameter3/(2.0*self.period)
                 rad_4 = self.diameter4/(2.0*self.period)
-                if edge_spacing == True:
+                if self.edge_spacing == True:
                     i_d = (1.0 - self.diameter1 - self.diameter2 - self.diameter3 - \
                         self.diameter4)/4.0
                     for i_el in el_list:
@@ -604,7 +632,7 @@ class NanoStruct(object):
                 rad_1 = self.diameter1/(2.0*self.period)
                 rad_2 = self.diameter2/(2.0*self.period)
                 rad_3 = self.diameter3/(2.0*self.period)
-                if edge_spacing == True:
+                if self.edge_spacing == True:
                     i_d = (1.0 - self.diameter1 - self.diameter2 - self.diameter3)/3.0
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
@@ -644,7 +672,7 @@ class NanoStruct(object):
                 # End-points of the elements
                 rad_1 = self.diameter1/(2.0*self.period)
                 rad_2 = self.diameter2/(2.0*self.period)
-                if small_space == None: 
+                if self.small_space == None: 
                     small_space = large_d = 0.5 - rad_1 - rad_2
                 else:
                     large_d = 1.0 - small_space - (2*rad_1) - (2*rad_2)
@@ -698,7 +726,7 @@ class NanoStruct(object):
 
 # Latency of old 1D grating meshed in 2D.
 
-        # elif self.geometry == '1D_array':
+        # elif self.periodicity == '1D_array':
         #     if self.diameter2 > 0:
         #         supercell = 2
         #         msh_name  =  '1D_%(d)s_%(diameter)s_%(diameters)s' % {
@@ -949,5 +977,5 @@ def calculate_ff(inc_shape, d, a1, a2=0, a3=0, a4=0, a5=0, a6=0, a7=0, a8=0,
         ff = ((a1)**2 + (a2)**2 + (a3)**2 + (a4)**2 + (a5)**2 + (a6)**2 + (a7)**2 + (a8)**2 + (a9)**2
             + (a10)**2 + (a11)**2 + (a12)**2 + (a13)**2 + (a14)**2 + (a15)**2 + (a16)**2)/(d)**2 
     else:
-        ValueError, "Only know how to calculate fill fraction of squares, circles and ellipses."
+        ff = 0.0
     return ff

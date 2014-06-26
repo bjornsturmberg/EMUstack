@@ -4,14 +4,14 @@ C
      *  nb_typ_el, pp, bloch_vec_y, table_nod, 
      *  type_el, x_P2, beta_1, beta_2,
      *  sol_1, sol_2, mat_overlap, overlap_file, PrintAll,
-     *  pair_warning)
+     *  pair_warning, k_0)
 c
       implicit none
       integer*8 nval, nel, npt_P2, nb_typ_el
 
       integer*8 type_el(nel)
       integer*8 table_nod(3,nel)
-      double precision x_P2(npt_P2)
+      double precision x_P2(npt_P2), k_0
       complex*16 sol_1(3+4+4,nval,nel)
       complex*16 sol_2(3+4+4,nval,nel)
       complex*16 pp(nb_typ_el)
@@ -153,6 +153,7 @@ c           Scalar product
             z_tmp1 = 0.0d0
             do i=1,nddl_0
               z_tmp1 = vec_1(i) * sol_el_2(i)
+              z_tmp1 = z_tmp1 / k_0
               mat_overlap(ival,jval) = mat_overlap(ival,jval)
      *              + z_tmp1
             enddo

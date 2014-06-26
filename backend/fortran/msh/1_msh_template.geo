@@ -1,3 +1,7 @@
+// Template mesh geometry file for a single inclusion.
+// By default it will be circular, can also be made to be
+// elliptical or square.
+
 d = 1; // grating period
 ff = 0;
 d_in_nm = 0;

@@ -118,8 +118,8 @@ class Anallo(Modes):
         if self.structure.world_1d == True:
             # Calculate vectors of pxs
             pxs = self.calc_1d_grating_orders(self.max_order_PWs)
-            # Calculate k_x and k_y components of scattered PWs
-            # (using the grating equation)
+            # Calculate k_x (alphas) and k_y (betas) components of 
+            # scattered PWs using the grating equation.
             alpha0, beta0 = self.k_pll_norm()
             alphas = alpha0 + pxs * 2 * pi / d
             betas  = beta0
@@ -131,8 +131,6 @@ class Anallo(Modes):
             # Calculate vectors of pxs and pys of all orders
             # with px^2 + py^2 <= self.max_order_PWs
             pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
-            # Calculate k_x and k_y components of scattered PWs
-            # (using the grating equation)
             alpha0, beta0 = self.k_pll_norm()
             alphas = alpha0 + pxs * 2 * pi / d
             betas  = beta0 + pys * 2 * pi / d
@@ -265,13 +263,13 @@ class Simmo(Modes):
             self.n_effs = self.n_effs.real
 
 
-        if self.structure.geometry == '1D_array':
+        if self.structure.periodicity == '1D_array':
             pxs = self.calc_1d_grating_orders(self.max_order_PWs)
-        elif self.structure.geometry == '2D_array':
+        elif self.structure.periodicity == '2D_array':
             pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
         else:
-            raise ValueError, "structure.geometry must either be '1D_array' \
-                or '2D_array'."
+            raise ValueError, "NanoStruct layer must have periodicity of \
+                either '1D_array' or '2D_array'."
 
         num_pw_per_pol = pxs.size
         if num_BM == None: self.num_BM = num_pw_per_pol * 2 + 20
@@ -306,7 +304,7 @@ class Simmo(Modes):
 
 
 
-        if self.structure.geometry == '1D_array':
+        if self.structure.periodicity == '1D_array':
             if self.structure.world_1d == True:
                 world_1d = 1
                 num_pw_per_pol_2d = 1
@@ -334,7 +332,7 @@ class Simmo(Modes):
             del J_2d, J_dag_2d
 
 
-        elif self.structure.geometry == '2D_array':
+        elif self.structure.periodicity == '2D_array':
             # Prepare for the mesh
             with open("../backend/fortran/msh/"+self.structure.mesh_file) as f:
                 self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
@@ -358,8 +356,8 @@ class Simmo(Modes):
             self.J, self.J_dag = np.mat(J), np.mat(J_dag)
 
         else:
-            raise ValueError, "object.geometry must either be '1D_array' \
-                or '2D_array'."
+            raise ValueError,  "NanoStruct layer must have periodicity of \
+                either '1D_array' or '2D_array'."
 
 
 
@@ -459,9 +457,6 @@ def r_t_mat_tf_ns(an1, sim2):
         have to be free space.
     """
     Z1_sqrt_inv = np.sqrt(1/an1.Z()).reshape((1,-1))
-
-    # print 'J \n', sim2.J
-    # print 'J_dag \n', sim2.J_dag
 
     # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
     # Same difference.

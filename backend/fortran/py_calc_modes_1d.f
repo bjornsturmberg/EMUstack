@@ -22,7 +22,7 @@ C
 
       integer*8 nel, nb_typ_el, world_1d
       integer*8 int_max, cmplx_max
-      integer*8 real_max, real_used, n_64
+      integer*8 real_max, n_64
 
       integer*8, dimension(:), allocatable :: a
       complex*16, dimension(:), allocatable :: b
@@ -526,7 +526,7 @@ C  Orthogonal integral
      *  nb_typ_el, pp, bloch_vec_y, table_nod, 
      *  type_el, x_P2, beta_1, beta_2,
      *  sol_1, sol_2, overlap_L, overlap_file, debug,
-     *  pair_warning)
+     *  pair_warning, k_0)
 C
       if (pair_warning .ne. 0 .and. nval .le. 20) then
         write(ui,*) "py_calc_modes_1d.f: Warning found 1 BM
@@ -557,8 +557,7 @@ C  Normalisation
       if(debug .eq. 1) then
         write(ui,*) "py_calc_modes_1d.f: Field  Normalisation"
       endif
-      call normalisation_1d (nval, nel, 
-     *  sol_1, sol_2, overlap_L)
+      call normalisation_1d (nval, nel, sol_1, sol_2, overlap_L)
 C
 C  Orthonormal integral
       if (debug .eq. 1) then
@@ -569,7 +568,7 @@ C  Orthonormal integral
      *    nb_typ_el, pp, bloch_vec_y, table_nod, 
      *    type_el, x_P2, beta_1, beta_2,
      *    sol_1, sol_2, overlap_L, overlap_file, debug,
-     *    pair_warning)
+     *    pair_warning, k_0)
         call cpu_time(time2_J)
           write(ui,*) "py_calc_modes_1d.f: CPU time for orthogonal :",
      *    (time2_J-time1_J)

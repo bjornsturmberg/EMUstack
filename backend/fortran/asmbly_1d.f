@@ -4,9 +4,7 @@
      *  shift, bloch_vec_x, bloch_vec_y, nb_typ_el, 
      *  pp, qq, table_nod, table_ddl, type_el, ineq, 
      *  ip_period_ddl, x_P2, x_ddl, matrix_1, matrix_2)
-
-
-c   
+C   
       implicit none
       integer*8 nel, npt_P2, n_ddl, neq, nb_typ_el
       integer*8 table_nod(3,nel), type_el(nel)
@@ -17,9 +15,7 @@ c
       double precision x_P2(npt_P2), x_ddl(n_ddl)
       complex*16 shift
       double precision bloch_vec_x, bloch_vec_y
-
-
-
+C
       integer*8 node_P2, node_P3
       parameter (node_P2 = 3, node_P3 = 4)
       double precision mat_Mxx_0(node_P2,node_P2)
@@ -27,29 +23,25 @@ c
       double precision mat_Kyy_0(node_P3,4)
       double precision mat_Myy_0(4,4)
       double precision mat_Kyx_0(4,node_P2)
-
+C
       complex*16 mat_el_1(node_P2+2*node_P3,node_P2+2*node_P3)
       complex*16 mat_el_2(node_P2+2*node_P3,node_P2+2*node_P3)
-
+C
       integer allocate_status
       complex*16, dimension(:,:,:), allocatable :: ls_mat_el_1
       complex*16, dimension(:,:,:), allocatable :: ls_mat_el_2
-
-      double precision xmin, xmax
-
+C
       integer*8 nnodes_0, ui, debug, typ_e, nddl_0
       parameter (nnodes_0 = 3, nddl_0 = 11)
       integer*8 ls_nodes(3)
-      double precision xel(nnodes_0)
+      double precision xmin, xmax
       double precision period_x, delta_x
       complex*16 val_exp_1, val_exp(nddl_0), z_phase_fact
-
+C
       integer*8 dim1, dim2, dim3, info_periodic
       integer*8 i, j, iel, j1
       integer*8 ip, jp, itrial, jtest, eq_ip, eq_jp
-      complex*16 z_tmp1, z_tmp2
-      complex*16 ii
-
+      complex*16 z_tmp1, z_tmp2, ii
 c
 ccccccccccccccccccccccccccccccccccccccc
 c

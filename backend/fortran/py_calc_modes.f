@@ -750,7 +750,7 @@ C  Normalisation
         write(ui,*) "py_calc_modes.f: Field  Normalisation"
       endif 
       call cpu_time(time1_J)
-      call normalisation (nval, nel, nnodes,sol1, sol2, overlap_L) 
+      call normalisation (nval, nel, nnodes, sol1, sol2, overlap_L) 
       call cpu_time(time2_J)
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes.f: CPU time for normalisation :",
@@ -775,6 +775,7 @@ C
 C  Plane wave ordering
       call pw_ordering (neq_PW, lat_vecs, bloch_vec, 
      *  index_pw_inv, debug, ordre_ls, k_0)
+C
 C  J_overlap
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes.f: J_overlap Integral"

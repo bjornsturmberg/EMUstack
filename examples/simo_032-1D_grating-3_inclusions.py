@@ -61,18 +61,28 @@ period = 300
 # Define each layer of the structure
 # We need to inform EMUstack at this point that all layers in the stack will 
 # be at most be periodic in one dimension (i.e. there are no '2D_arrays's).
-# This is done with the Keyword Arg 'world_1d' and all homogenous layers are 
-# calculated using the PW basis of 1D diffraction orders.
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
     material = materials.Air)
 
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
     material = materials.Air)
-# Define 1D grating that is periodic in x. 
-# The mesh for this is always made 'live' in objects.py
+# Define 1D grating that is periodic in x and contains 3 interleaved inclusions.
+# Inclusion_a is in the center of the unit cell. Inclusions 2 and 3 have 
+# diameters diameter2, diameter3, and are of material inclusion_b.
+# Inclusion 1 is still centered in the center and by default all inclusions are 
+# seperated by period/(# inclusions) so in this case perid/3.
 # See Fortran Backends section of tutorial for more details.
-grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
-    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j), 
+grating = objects.NanoStruct('1D_array', period, int(round(0.15*period)), 
+    diameter2 = int(round(0.27*period)), diameter3 = int(round(0.03*period)), height_nm = 2900, 
+    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
+    inclusion_b = materials.Material(3.0 + 0.0j), 
+    loss = True, lc_bkg = 0.01)
+# To instead seperate the inclusions with an equal distance between their edges use 
+# the Keyword Arg edge_spacing = True.
+grating = objects.NanoStruct('1D_array', period, int(round(0.15*period)), 
+    diameter2 = int(round(0.27*period)), diameter3 = int(round(0.03*period)), height_nm = 2900, 
+    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
+    inclusion_b = materials.Material(3.0 + 0.0j), 
     loss = True, lc_bkg = 0.01)
 
 def simulate_stack(light):    
