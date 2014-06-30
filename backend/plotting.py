@@ -133,9 +133,9 @@ def gen_params_string(stack, layer=1):
 
 
 ####Standard plotting of spectra#######################################################
-def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=1,\
-    stack_label=1, ult_eta=False, J_sc=False, weight_spec=False, extinct=False,\
-    add_height=0, add_name='', force_txt_save=False):
+def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1, active_layer_nu = 1,\
+    stack_label = 1, ult_eta = False, J_sc = False, weight_spec = False, extinct = False,\
+    add_height = 0, add_name = '', save_pdf = True, save_txt = False):
     """ Plot t, r, a for each layer & in total. 
 
         Args:
@@ -170,7 +170,10 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=1,\
 
             add_name  (str): Add add_name to title.
 
-            force_txt_save  (bool): If True, save spectra data to text \
+            save_pdf  (bool): If True save spectra as pdf files. \
+                True by default.
+
+            save_txt  (bool): If True, save spectra data to text \
                 files.
     """
 
@@ -235,9 +238,12 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=1,\
 
     total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
     # Plot t,r,a for each layer
-    layers_plot('Lay_Absorb', a_list, xvalues, xlabel,total_h,params_2_print,stack_label,add_name,force_txt_save)
-    layers_plot('Lay_Trans',  t_list, xvalues, xlabel,total_h,params_2_print,stack_label,add_name,force_txt_save)
-    layers_plot('Lay_Reflec', r_list, xvalues, xlabel,total_h,params_2_print,stack_label,add_name,force_txt_save)
+    layers_plot('Lay_Absorb', a_list, xvalues, xlabel,total_h,params_2_print,\
+        stack_label, add_name,save_pdf,save_txt)
+    layers_plot('Lay_Trans',  t_list, xvalues, xlabel,total_h,params_2_print,\
+        stack_label, add_name,save_pdf,save_txt)
+    layers_plot('Lay_Reflec', r_list, xvalues, xlabel,total_h,params_2_print,\
+        stack_label, add_name,save_pdf,save_txt)
     # Also plot total t,r,a on a single plot
     plot_name = 'Total_Spectra'
     total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel, params_2_print, stack_label, add_name)
@@ -256,7 +262,7 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=1,\
         total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, xvalues, 
             xlabel, params_2_print, stack_label, add_name)
 
-    if  extinct == True:
+    if extinct == True:
         extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
     if J_sc == True or ult_eta == True:
         return out
@@ -264,7 +270,7 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1, active_layer_nu=1,\
         return
 
 def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_print,\
-    stack_label, add_name, force_txt_save):
+    stack_label, add_name, save_pdf, save_txt):
     """ Plots one type of spectrum across all layers. 
 
         Is called from t_r_a_plots. 
@@ -277,6 +283,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_prin
         layer_spec = []
         for wl in range(len(xvalues)):
             layer_spec = np.append(layer_spec,spec_list[wl*nu_layers + i])
+        av_array = zip(xvalues, layer_spec, h_array)
         ax1 = fig.add_subplot(nu_layers,1,i+1)
         ax1.plot(xvalues, layer_spec, linewidth=linesstrength)
         ax2 = ax1.twiny()
@@ -323,20 +330,19 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_prin
             if i == nu_layers-1: 
                 ax1.set_ylabel('Total')
                 lay_spec_name = 'Reflectance'
-        av_array = zip(xvalues, layer_spec, h_array)
-        ax1.set_xlim((xvalues[0], xvalues[-1]))
-        plt.ylim((0, 1))
+            ax1.set_xlim((xvalues[0], xvalues[-1]))
+            plt.ylim((0, 1))
 
-        if force_txt_save == True:
+        if save_txt == True:
             if i != nu_layers-1: 
                 np.savetxt('%(s)s_%(i)i_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 'i' : i, 
                     'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
             else:
                 np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
                     'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
-
-        plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s': spectra_name, 'bon': stack_label,\
-            'add' : add_name})
+        if save_pdf == True:
+            plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s': spectra_name, 'bon': stack_label,\
+                'add' : add_name})
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, params_2_print,\
     stack_label, add_name):
@@ -1096,7 +1102,7 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
 
 
 ####Plot amplitudes of PW orders#######################################################
-def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
+def amps_of_orders(stacks_list, xvalues = None, chosen_PW_order = None,\
     lay_interest=0, add_height=None, add_name=''):
     """ Plot the amplitudes of plane wave orders in selected layer.
 
@@ -1177,8 +1183,9 @@ def amps_of_orders(stacks_list, xvalues=None, chosen_PW_order=None,\
     plt.savefig('PW_orders-lay_%s' % add_name, \
         fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
-def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
-    lay_interest=0, save_mean_ev=False, add_height=None, add_name=''):
+def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
+    lay_interest = 0, add_height = None, add_name = '', \
+    save_pdf = True, save_txt = False):
     """ Plot a figure of merit for the 'evanescent-ness' of excited fields. 
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
@@ -1196,12 +1203,15 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
             lay_interest  (int): The index in stacks_list of the layer in \
                 which amplitudes are calculated.
 
-            save_mean_ev  (bool): If True, saves average value of \
-                mean PW order to file.
-
             add_height  (float): Print the heights of :Stack: layer in title.
 
             add_name  (str): Add add_name to title.
+
+            save_pdf  (bool): If True save spectra as pdf files. \
+                True by default.
+
+            save_txt  (bool): If True, saves average value of \
+                mean PW order to file.
     """
 
     fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
@@ -1282,23 +1292,33 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PW_order=None,\
         s+=1
         store_mean_ev = np.append(store_mean_ev,sum_p_amps/sum_amps)
 
-    if len(store_m_p)  != 0: ax1.plot(store_x_p,store_m_p, 'b', label="prop")
-    if len(store_m_ne) != 0: ax1.plot(store_x_ne,store_m_ne, 'g', label="near ev")
-    if len(store_m_fe) != 0: ax1.plot(store_x_fe,store_m_fe, 'r', label="far ev")
-    ax1.plot(xvalues,store_mean_ev, 'k', label=r'$\Sigma|p| |a_p| / \Sigma|a_p|$')
-
-    handles, labels = ax1.get_legend_handles_labels()
-    lgd = ax1.legend(handles, labels, ncol=4, loc='upper center', bbox_to_anchor=(0.5,1.2))
-    ax1.set_ylabel('Ev FoM')
-    ax1.set_xlabel(xlabel)
-    plt.suptitle(add_name)
     if add_height!= None: add_name += '_'+zeros_int_str(add_height)
-    add_name = str(lay_interest) + add_name
-    plt.savefig('evanescent_merit-lay_%s' % add_name, \
-        fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    if save_pdf == True:
+        if len(store_m_p)  != 0: ax1.plot(store_x_p,store_m_p, 'b', label="prop")
+        if len(store_m_ne) != 0: ax1.plot(store_x_ne,store_m_ne, 'g', label="near ev")
+        if len(store_m_fe) != 0: ax1.plot(store_x_fe,store_m_fe, 'r', label="far ev")
+        ax1.plot(xvalues,store_mean_ev, 'k', label=r'$\Sigma|p| |a_p| / \Sigma|a_p|$')
+
+        handles, labels = ax1.get_legend_handles_labels()
+        lgd = ax1.legend(handles, labels, ncol=4, loc='upper center', bbox_to_anchor=(0.5,1.2))
+        ax1.set_ylabel('Ev FoM')
+        ax1.set_xlabel(xlabel)
+        plt.suptitle(add_name)
+        add_name = str(lay_interest) + add_name
+        plt.savefig('evanescent_merit-lay_%s' % add_name, \
+            fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
-    if save_mean_ev == True:
+    if save_txt == True:
+        av_diff = [np.mean(store_m_p)]
+        np.savetxt('prop_diff_order-lay_%s.txt' % add_name, \
+            av_diff, fmt = '%18.11f')
+        av_diff = [np.mean(store_m_ne)]
+        np.savetxt('near_ev_diff_order-lay_%s.txt' % add_name, \
+            av_diff, fmt = '%18.11f')
+        av_diff = [np.mean(store_m_fe)]
+        np.savetxt('far_ev_diff_order-lay_%s.txt' % add_name, \
+            av_diff, fmt = '%18.11f')
         av_diff = [np.mean(store_mean_ev)]
         np.savetxt('average_diff_order-lay_%s.txt' % add_name, \
             av_diff, fmt = '%18.11f')

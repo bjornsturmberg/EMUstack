@@ -100,7 +100,7 @@ def setup_module(module):
     pool = Pool(2)
     module.stack_list = pool.map(simulate_stack, light_list)
 
-    plotting.t_r_a_plots(stack_list, force_txt_save=True)
+    plotting.t_r_a_plots(stack_list, save_txt=True)
 
 
     # # SAVE DATA AS REFERENCE

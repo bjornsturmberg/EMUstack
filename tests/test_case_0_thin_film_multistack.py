@@ -102,7 +102,7 @@ def setup_module(module):
     module.stack_list = pool.map(simulate_stack, light_list)
 
     active_layer_nu = 3 # Specify which layer is the active one (where absorption generates charge carriers).
-    plotting.t_r_a_plots(stack_list, active_layer_nu=active_layer_nu, force_txt_save=True)
+    plotting.t_r_a_plots(stack_list, active_layer_nu=active_layer_nu, save_txt=True)
 
 
     # # SAVE DATA AS REFERENCE

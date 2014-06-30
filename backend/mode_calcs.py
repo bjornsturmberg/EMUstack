@@ -477,4 +477,12 @@ def r_t_mat_tf_ns(an1, sim2):
     T21 = 2 * A * denominator.I
     # T21 = T12.T
 
+    # half_dim = np.asarray(np.shape(R21)[0])/2
+    # print R21[half_dim :, half_dim :]
+    # print T21
+    # print R12
+    # print T12
+
+    # print sim2.J
+
     return np.mat(R12), np.mat(T12), np.mat(R21), np.mat(T21)

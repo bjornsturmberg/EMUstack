@@ -211,6 +211,8 @@ class Stack(object):
     # through air layer at bottom of layer
             if self.shears == None:
                 to_invert      = (I_air - r12_list[i]*rnet)
+                # print 'to_invert', to_invert
+                # print 't21_list[i]', t21_list[i]
                 inverted_t21   = np.linalg.solve(to_invert,t21_list[i])
                 tnet           = tnet*inverted_t21
                 rnet           = r21_list[i] + t12_list[i]*rnet*inverted_t21

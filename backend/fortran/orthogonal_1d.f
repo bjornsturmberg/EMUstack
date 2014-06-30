@@ -86,7 +86,7 @@ c       Matrix of overlap integrals betwween the Lagrange polynomials
 c       Block column 1  -------------   C1
         do j=1,node_P2
           do i=1,node_P2
-            mat_el_2(i,j) = - pp(typ_e) * mat_Mxx_0(i,j)    ! M_xx
+            mat_el_2(i,j) = pp(typ_e) * mat_Mxx_0(i,j)    ! M_xx
           enddo
           do i=1,node_P3
             mat_el_2(i+node_P2,j) = 0
@@ -103,7 +103,7 @@ c       Block column 2  -------------   C2
         enddo
         do j=1,node_P3
           do i=1,node_P3
-            mat_el_2(i+node_P2,j+node_P2) = - pp(typ_e) * mat_Myy_0(i,j)  ! M_yy
+            mat_el_2(i+node_P2,j+node_P2) = pp(typ_e) * mat_Myy_0(i,j)  ! M_yy
           enddo
         enddo
         do j=1,node_P3
@@ -114,13 +114,13 @@ c       Block column 2  -------------   C2
 c       Block column 3  -------------   C3
         do j=1,node_P3
           do i=1,node_P2
-            mat_el_2(i,j+node_P2+node_P3) = pp(typ_e)  ! M_xz
+            mat_el_2(i,j+node_P2+node_P3) = - pp(typ_e)  ! M_xz
      *                            * mat_Kxy_0(i,j)
           enddo
         enddo
         do j=1,node_P3
           do i=1,node_P3
-            mat_el_2(i+node_P2,j+node_P2+node_P3) = ii * bloch_vec_y  ! M_yz
+            mat_el_2(i+node_P2,j+node_P2+node_P3) = - ii * bloch_vec_y  ! M_yz
      *                           * pp(typ_e) * mat_Myy_0(i,j)
           enddo
         enddo

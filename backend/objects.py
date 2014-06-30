@@ -422,8 +422,8 @@ class NanoStruct(object):
 
         elif self.periodicity == '1D_array':
             # Unit cell length normalized to unity
-            x_min = -0.5
-            x_max =  0.5
+            x_min = 0.0
+            x_max = 1.0
             # Mesh elements and points
             nel = int(np.round(1.0/self.lc))
             npt = 2 * nel + 1
@@ -679,11 +679,12 @@ class NanoStruct(object):
                 for i_el in el_list:
                     x_1 = ls_x[2*i_el-1]
                     x_2 = ls_x[2*i_el+1]
-                    if abs(x_1) <= rad_1 and abs(x_2) <= rad_1:
+                    if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
+                    and  x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
                         type_el[i_el] = 2
-                    elif x_1 <= -rad_1-small_space and x_2 <= -rad_1-small_space:
+                    elif x_1 <= 0.5-rad_1-small_space and x_2 <= 0.5-rad_1-small_space:
                         type_el[i_el] = 3
-                    elif abs(x_1) >= large_d+rad_1 and abs(x_2) >= large_d+rad_1:
+                    elif x_1 >= 0.5+large_d+rad_1 and x_2 >= 0.5+large_d+rad_1:
                         type_el[i_el] = 3
                     else:
                         type_el[i_el] = 1
@@ -695,7 +696,8 @@ class NanoStruct(object):
                 for i_el in el_list:
                     x_1 = ls_x[2*i_el-1]
                     x_2 = ls_x[2*i_el+1]
-                    if abs(x_1) <= rad_1 and abs(x_2) <= rad_1:
+                    if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
+                    and  x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
                         type_el[i_el] = 2
                     else:
                         type_el[i_el] = 1
@@ -709,6 +711,15 @@ class NanoStruct(object):
             self.type_el   = type_el[1:]
             self.x_arr     = ls_x[1:]
             self.mesh_file = msh_name
+
+            import matplotlib
+            import matplotlib.pyplot as plt
+            fig = plt.figure()
+            ax1 = fig.add_subplot(1,1,1)
+            ax1.plot(el_list,self.type_el)
+            ax1.set_xlabel('Element Number')
+            ax1.set_ylabel('Material Type')
+            plt.savefig(msh_name)
 
             # Then clean up local variables.
             del nel, npt, table_nod, ls_x, type_el, el_list
