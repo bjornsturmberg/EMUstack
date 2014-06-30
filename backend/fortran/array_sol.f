@@ -312,10 +312,15 @@ c       Normalization so that the maximum field component is 1
             enddo
             i1 = table_nod(inod,iel)
             if (i1 .eq. i_sol_max .and. debug .eq. 1) then
-              write(*,*) ival, i1, iel
-              write(*,*) ival, i1, iel, 
+              write(*,*) "array_sol:"
+              write(*,*) "ival, i1, iel = ", ival, i1, iel
+              write(*,*) "array_sol: Field normalisaion point:"
+              write(*,*) "x = ", dble(x(1,i1))
+              write(*,*) "y = ", dble(x(2,i1))
+              write(*,*) "i_sol_max = ", i_sol_max
+              write(*,*) ival, i1, iel,
      *                   (dble(sol(j,inod,ival,iel)),j=1,3)
-              write(*,*) ival, i1, iel, 
+              write(*,*) ival, i1, iel,
      *                   (imag(sol(j,inod,ival,iel)),j=1,3)
             endif
           enddo
