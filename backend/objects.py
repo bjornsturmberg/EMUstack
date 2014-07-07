@@ -448,7 +448,6 @@ class NanoStruct(object):
                 table_nod[2,i_el] = 2*i_el  # Mid-node
 
 
-
             if self.diameter6 > 0:
                 msh_name  =  '%(d)s_%(di)s_%(dis)s_%(diss)s_%(disss)s_%(dissss)s_%(disssss)s' % {
                'd' : dec_float_str(self.period), 'di' : dec_float_str(self.diameter1), 
@@ -463,8 +462,7 @@ class NanoStruct(object):
                 rad_5 = self.diameter5/(2.0*self.period)
                 rad_6 = self.diameter6/(2.0*self.period)
                 if self.edge_spacing == True:
-                    i_d = (1.0 - self.diameter1 - self.diameter2 - self.diameter3 - \
-                        self.diameter4 - self.diameter5 - self.diameter6)/6.0
+                    i_d = 2.0*(0.5 - rad_1 - rad_2 - rad_3 - rad_4 - rad_5 - rad_6)/6.0
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
@@ -483,11 +481,11 @@ class NanoStruct(object):
                         elif 0.5 + 2.0*i_d + 2.0*rad_3 + rad_1 <= x_1 and x_1 <= 0.5 + 2.0*i_d + 2.0*rad_3 + 2.0*rad_5 + rad_1 \
                         and  0.5 + 2.0*i_d + 2.0*rad_3 + rad_1 <= x_2 and x_2 <= 0.5 + 2.0*i_d + 2.0*rad_3 + 2.0*rad_5 + rad_1:
                             type_el[i_el] = 3
-                        elif x_1 >= 0.5 + 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5\
-                        and  x_2 >= 0.5 + 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5:
+                        elif x_1 <= 0.5 - 3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4 and x_1 >= 0.5 - 3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4 - rad_5\
+                        and  x_2 <= 0.5 - 3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4 and x_2 >= 0.5 - 3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4 - rad_5:
                             type_el[i_el] = 3
-                        elif x_1 <= 0.5 - 3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4\
-                        and  x_2 <= 0.5 - 3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4:
+                        elif x_1 >= 0.5 + 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5 and x_1 <= 0.5 + 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5 + 2.0*rad_6\
+                        and  x_2 >= 0.5 + 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5 and x_2 <= 0.5 + 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5 + 2.0*rad_6:
                             type_el[i_el] = 3
                         else:
                             type_el[i_el] = 1
@@ -511,11 +509,9 @@ class NanoStruct(object):
                         elif 0.5 + 2.0*i_d - rad_5 <= x_1 and x_1 <= 0.5 + 2.0*i_d + rad_5 \
                         and  0.5 + 2.0*i_d - rad_5 <= x_2 and x_2 <= 0.5 + 2.0*i_d + rad_5:
                             type_el[i_el] = 3
-                        elif x_1 <= rad_6 \
-                        and  x_2 <= rad_6:
+                        elif x_1 <= rad_6 and x_2 <= rad_6:
                             type_el[i_el] = 3
-                        elif x_1 >= 1.0 - rad_6 \
-                        and  x_2 >= 1.0 - rad_6:
+                        elif x_1 >= 1.0 - rad_6 and x_2 >= 1.0 - rad_6:
                             type_el[i_el] = 3
                         else:
                             type_el[i_el] = 1
@@ -531,8 +527,7 @@ class NanoStruct(object):
                 rad_4 = self.diameter4/(2.0*self.period)
                 rad_5 = self.diameter5/(2.0*self.period)
                 if self.edge_spacing == True:
-                    i_d = (1.0 - self.diameter1 - self.diameter2 - self.diameter3 \
-                        - self.diameter4 - self.diameter5)/5.0
+                    i_d = 2.0*(0.5 - rad_1 - rad_2 - rad_3 - rad_4 - rad_5)/5.0
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
@@ -567,11 +562,11 @@ class NanoStruct(object):
                         elif 0.5 + i_d - rad_3 <= x_1 and x_1 <= 0.5 + i_d + rad_3 \
                         and  0.5 + i_d - rad_3 <= x_2 and x_2 <= 0.5 + i_d + rad_3:
                             type_el[i_el] = 3
-                        elif 0.5 - i_d - rad_4 <= x_1 and x_1 <= 0.5 - i_d + rad_4 \
-                        and  0.5 - i_d - rad_4 <= x_2 and x_2 <= 0.5 - i_d + rad_4:
+                        elif 0.5 - 2.0*i_d - rad_4 <= x_1 and x_1 <= 0.5 - 2.0*i_d + rad_4 \
+                        and  0.5 - 2.0*i_d - rad_4 <= x_2 and x_2 <= 0.5 - 2.0*i_d + rad_4:
                             type_el[i_el] = 3
-                        elif 0.5 + i_d - rad_5 <= x_1 and x_1 <= 0.5 + i_d + rad_5 \
-                        and  0.5 + i_d - rad_5 <= x_2 and x_2 <= 0.5 + i_d + rad_5:
+                        elif 0.5 + 2.0*i_d - rad_5 <= x_1 and x_1 <= 0.5 + 2.0*i_d + rad_5 \
+                        and  0.5 + 2.0*i_d - rad_5 <= x_2 and x_2 <= 0.5 + 2.0*i_d + rad_5:
                             type_el[i_el] = 3
                         else:
                             type_el[i_el] = 1
@@ -586,8 +581,7 @@ class NanoStruct(object):
                 rad_3 = self.diameter3/(2.0*self.period)
                 rad_4 = self.diameter4/(2.0*self.period)
                 if self.edge_spacing == True:
-                    i_d = (1.0 - self.diameter1 - self.diameter2 - self.diameter3 - \
-                        self.diameter4)/4.0
+                    i_d = 2.0*(0.5 - rad_1 - rad_2 - rad_3 - rad_4)/4.0
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
@@ -603,8 +597,8 @@ class NanoStruct(object):
                         elif x_1 >= 0.5 + 2.0*i_d + rad_1 + 2.0*rad_3 \
                         and  x_2 >= 0.5 + 2.0*i_d + rad_1 + 2.0*rad_3:
                             type_el[i_el] = 3
-                        elif x_1 <= 0.5 + 2.0*i_d - rad_1 - 2.0*rad_2 \
-                        and  x_2 <= 0.5 + 2.0*i_d - rad_1 - 2.0*rad_2:
+                        elif x_1 <= 0.5 - 2.0*i_d - rad_1 - 2.0*rad_2 \
+                        and  x_2 <= 0.5 - 2.0*i_d - rad_1 - 2.0*rad_2:
                             type_el[i_el] = 3
                         else:
                             type_el[i_el] = 1
@@ -622,11 +616,9 @@ class NanoStruct(object):
                         elif 0.5 + i_d - rad_3 <= x_1 and x_1 <= 0.5 + i_d + rad_3 \
                         and  0.5 + i_d - rad_3 <= x_2 and x_2 <= 0.5 + i_d + rad_3:
                             type_el[i_el] = 3
-                        elif 0.5 + x_1 <= -0.5 + rad_4 \
-                        and  0.5 + x_2 <= -0.5 + rad_4:
+                        elif x_1 <= rad_4 and x_2 <= rad_4:
                             type_el[i_el] = 3
-                        elif 0.5 + x_1 >= 0.5 - rad_4 \
-                        and  0.5 + x_2 >= 0.5 - rad_4:
+                        elif x_1 >= 1.0 - rad_4 and x_2 >= 1.0 - rad_4:
                             type_el[i_el] = 3
                         else:
                             type_el[i_el] = 1
@@ -725,21 +717,17 @@ class NanoStruct(object):
             fig = plt.figure()
             ax1 = fig.add_subplot(1,1,1)
             ax1.plot(el_list,self.type_el)
+            ax1.fill_between(el_list,self.type_el,0)
+            ax1.set_xlim(el_list[0],el_list[-1])
+            ax1.set_ylim(1,3)
+            ax1.set_yticks([1,2,3])
+            ax1.set_yticklabels(['bkg', 'inc_a', 'inc_b'])
             ax1.set_xlabel('Element Number')
             ax1.set_ylabel('Material Type')
-            plt.savefig(msh_name)
+            plt.savefig(msh_name, bbox_inches='tight')
 
             # Then clean up local variables.
             del nel, npt, table_nod, ls_x, type_el, el_list
-
-
-# # Latency of semi-old 1D grating meshing.
-#             self.mesh_file = msh_name + '.txt'
-#             mesh_file = msh_location + msh_name + '.txt'
-            
-#             rad1 = self.diameter1/(2.0*self.period)
-#             EMUstack.mesh_1d_p2(rad1, nel, mesh_file)
-
 
 # Latency of old 1D grating meshed in 2D.
 

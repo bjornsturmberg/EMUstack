@@ -369,14 +369,14 @@ class Simmo(Modes):
 
         if not self.structure.plotting3d:
             del self.sol1
-            # del self.table_nod
-            # del self.type_el
-            # del self.x_arr
-            # del self.n_msh_pts
-            # del self.n_msh_el
-            # del self.n_effs
-            # del self.E_H_field
-            # del self.nb_typ_el
+            del self.n_effs
+            del self.E_H_field
+            if self.structure.periodicity == '2D_array':
+                del self.table_nod
+                del self.type_el
+                del self.x_arr
+                del self.n_msh_pts
+                del self.n_msh_el
 
 
 

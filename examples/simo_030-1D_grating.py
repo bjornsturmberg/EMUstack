@@ -74,7 +74,7 @@ substrate   = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
 # See Fortran Backends section of tutorial for more details.
 grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
     background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j), 
-    loss = True, lc_bkg = 0.01)
+    loss = True, lc_bkg = 0.0051)
 
 def simulate_stack(light):    
     ################ Evaluate each layer individually ##############

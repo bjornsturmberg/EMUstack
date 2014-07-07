@@ -72,14 +72,14 @@ grating = objects.NanoStruct('1D_array', period, int(round(0.15*period)),
     diameter2 = int(round(0.27*period)), height_nm = 2900, 
     background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
     inclusion_b = materials.Material(3.0 + 0.0j), 
-    loss = True, lc_bkg = 0.01)
+    loss = True, lc_bkg = 0.0051)
 # To dictate the seperation of the inclusions set the Keyword Arg small_space to the 
 # distance (in nm) between between the inclusions edges.
 grating_2 = objects.NanoStruct('1D_array', period, int(round(0.15*period)), 
     diameter2 = int(round(0.27*period)), small_space = 50, height_nm = 2900, 
     background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
     inclusion_b = materials.Material(3.0 + 0.0j), 
-    loss = True, lc_bkg = 0.01)
+    loss = True, lc_bkg = 0.0051)
 
 def simulate_stack(light):    
     ################ Evaluate each layer individually ##############

@@ -236,34 +236,39 @@ def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1, active_layer_nu =
         params_2_print += r' mA/cm$^2$'
         out.append(J)
 
-    total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
-    # Plot t,r,a for each layer
-    layers_plot('Lay_Absorb', a_list, xvalues, xlabel,total_h,params_2_print,\
-        stack_label, add_name,save_pdf,save_txt)
-    layers_plot('Lay_Trans',  t_list, xvalues, xlabel,total_h,params_2_print,\
-        stack_label, add_name,save_pdf,save_txt)
-    layers_plot('Lay_Reflec', r_list, xvalues, xlabel,total_h,params_2_print,\
-        stack_label, add_name,save_pdf,save_txt)
-    # Also plot total t,r,a on a single plot
-    plot_name = 'Total_Spectra'
-    total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel, params_2_print, stack_label, add_name)
+    if save_txt == True or save_pdf == True:
+        total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
+        # Plot t,r,a for each layer.
+        layers_plot('Lay_Absorb', a_list, xvalues, xlabel, total_h, params_2_print, \
+            stack_label, add_name, save_pdf, save_txt)
+        layers_plot('Lay_Trans',  t_list, xvalues, xlabel, total_h, params_2_print, \
+            stack_label, add_name, save_pdf, save_txt)
+        layers_plot('Lay_Reflec', r_list, xvalues, xlabel, total_h, params_2_print, \
+            stack_label, add_name, save_pdf, save_txt)
+
+    # Plot total t,r,a on a single plot.
+    if save_pdf == True:
+        plot_name = 'Total_Spectra'
+        total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel, params_2_print,\
+            stack_label, add_name)
 
     if weight_spec == True:
-        # Also plot totals weighted by solar irradiance
+        # Plot totals weighted by solar irradiance.
         Irrad_spec_file = '../backend/data/ASTMG173'
-        i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
-        i_spec       = np.interp(xvalues, i_data[:,0], i_data[:,3])
-        bandgap_wl   = xvalues[-1]
-        weighting = i_spec/i_spec.max()*(xvalues/bandgap_wl)
+        i_data          = np.loadtxt('%s.txt' % Irrad_spec_file)
+        i_spec          = np.interp(xvalues, i_data[:,0], i_data[:,3])
+        bandgap_wl      = xvalues[-1]
+        weighting  = i_spec/i_spec.max()*(xvalues/bandgap_wl)
         a_weighted = a_tot*weighting
         t_weighted = t_tot*weighting
         r_weighted = r_tot*weighting
-        plot_name = 'Weighted_Total_Spectra'
+        plot_name  = 'Weighted_Total_Spectra'
         total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, xvalues, 
             xlabel, params_2_print, stack_label, add_name)
 
     if extinct == True:
         extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
+
     if J_sc == True or ult_eta == True:
         return out
     else:
@@ -343,6 +348,8 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_prin
         if save_pdf == True:
             plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s': spectra_name, 'bon': stack_label,\
                 'add' : add_name})
+
+        del layer_spec
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, params_2_print,\
     stack_label, add_name):
@@ -501,6 +508,7 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
 
     if  extinct == True:
         extinction_plot(t_tot, wavelengths, params_2_print, stack_label, add_name)
+    if ult_eta == True or J_sc == True: del active_abs
     return
 
 def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
@@ -911,6 +919,7 @@ def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
     # Uncomment if you wish to save the dispersion data of a simulation to file.
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
+
 def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, params_layer=1,\
     stack_label=1):
     """ Plots the energy concentration (epsilon E_cyl / epsilon E_cell) of given layer. 
@@ -1041,50 +1050,59 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
     ax1 = fig.add_subplot(1,1,1)
 
-    # Create arrays of grating order indexes (-p, ..., p)
-    max_ords = stacks_list[0].layers[-1].max_order_PWs
-    pxs = np.arange(-max_ords, max_ords + 1)
-
     # vec_coef sorted from top of stack, everything else is sorted from bottom
     vec_index = len(stacks_list[0].layers) - lay_interest - 1
+
+# Old code if selecting betas = beta0 + 0 value out of 2D PW basis.
+    # # Create arrays of grating order indexes (-p, ..., p)
+    # max_ords = stacks_list[0].layers[-1].max_order_PWs
+    # pxs = np.arange(-max_ords, max_ords + 1)
 
     store_alphas = []
     store_k_trans = []
     for stack in stacks_list:
-        k0 = stack.layers[0].k()
         n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
-        # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
-        alpha0, beta0 = stack.layers[0].k_pll_norm()
-        alphas = alpha0 + pxs * 2 * np.pi
-        on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
-        full_k_space = stack.layers[0].k_z
-        # consider singular polarization
-        one_pol_k_space = full_k_space[0:n_PW_p_pols]
+        sort_order = stack.layers[lay_interest].sort_order
 
-        axis_indices = []
-        for a in on_axis_kzs:
-            ix = np.in1d(one_pol_k_space.ravel(), a).reshape(one_pol_k_space.shape)
-            axis_indices = np.append(axis_indices, np.ravel(np.array(np.where(ix))))
-        axis_indices = axis_indices.astype(int)
-
-        # Outgoing TE polarisation 
-        if pol=='TE': trans_k = np.abs(stack.vec_coef_down[vec_index][0:n_PW_p_pols]).reshape(-1,)
-        # Outgoing TM polarisation
-        if pol=='TM': trans_k = np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols-1:-1]).reshape(-1,) 
-        trans_k_array = np.array(trans_k).reshape(-1,)
-
-        select_trans = trans_k_array[axis_indices]
-        store_alphas = np.append(store_alphas,alphas)
+        select_trans  = abs(stack.vec_coef_down[vec_index][0:n_PW_p_pols])
+        store_alphas  = np.append(store_alphas,stack.layers[lay_interest].alphas[sort_order])
         store_k_trans = np.append(store_k_trans,select_trans)
+
+# Old code if selecting betas = beta0 + 0 value out of 2D PW basis.
+        # k0 = stack.layers[0].k()
+        # # Calculate k_x that correspond to k_y = beta0 (in normalized units)
+        # alpha0, beta0 = stack.layers[0].k_pll_norm()
+        # alphas = alpha0 + pxs * 2 * np.pi
+        # on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
+        # full_k_space = stack.layers[0].k_z
+        # # consider singular polarisation
+        # n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
+        # one_pol_k_space = full_k_space[0:n_PW_p_pols]
+
+        # axis_indices = []
+        # for a in on_axis_kzs:
+        #     ix = np.in1d(one_pol_k_space.ravel(), a).reshape(one_pol_k_space.shape)
+        #     axis_indices = np.append(axis_indices, np.ravel(np.array(np.where(ix))))
+        # axis_indices = axis_indices.astype(int)
+
+        # # Outgoing TE polarisation 
+        # if pol=='TE': trans_k = np.abs(stack.vec_coef_down[vec_index][0:n_PW_p_pols]).reshape(-1,)
+        # # Outgoing TM polarisation
+        # if pol=='TM': trans_k = np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols-1:-1]).reshape(-1,) 
+        # trans_k_array = np.array(trans_k).reshape(-1,)
+
+        # select_trans = trans_k_array[axis_indices]
+        # store_alphas = np.append(store_alphas,alphas)
+        # store_k_trans = np.append(store_k_trans,select_trans)
 
     sort_indices = np.argsort(store_alphas)
     plot_alphas = store_alphas[sort_indices]
     plot_k_trans = store_k_trans[sort_indices]
 
-    ax1.plot(plot_alphas,plot_k_trans, linewidth=linesstrength)
+    ax1.plot(plot_alphas,plot_k_trans, linewidth=1.5)
 
     min_k_label = np.max(np.abs(plot_alphas))
-    k0 = abs(k0)
+    k0 = abs(stack.layers[lay_interest].k())
     min_k_l_k0  = np.max(np.abs(plot_alphas))/k0
 
     n_H = max_n(stacks_list)
@@ -1182,6 +1200,7 @@ def amps_of_orders(stacks_list, xvalues = None, chosen_PW_order = None,\
     add_name = str(lay_interest) + add_name
     plt.savefig('PW_orders-lay_%s' % add_name, \
         fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+
 
 def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
     lay_interest = 0, add_height = None, add_name = '', \
@@ -1293,6 +1312,7 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
         store_mean_ev = np.append(store_mean_ev,sum_p_amps/sum_amps)
 
     if add_height!= None: add_name += '_'+zeros_int_str(add_height)
+    add_name = str(lay_interest) + add_name
     if save_pdf == True:
         if len(store_m_p)  != 0: ax1.plot(store_x_p,store_m_p, 'b', label="prop")
         if len(store_m_ne) != 0: ax1.plot(store_x_ne,store_m_ne, 'g', label="near ev")
@@ -1304,10 +1324,8 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
         ax1.set_ylabel('Ev FoM')
         ax1.set_xlabel(xlabel)
         plt.suptitle(add_name)
-        add_name = str(lay_interest) + add_name
         plt.savefig('evanescent_merit-lay_%s' % add_name, \
             fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
-
 
     if save_txt == True:
         av_diff = [np.mean(store_m_p)]

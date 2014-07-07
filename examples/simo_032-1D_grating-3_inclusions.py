@@ -72,18 +72,20 @@ substrate   = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
 # Inclusion 1 is still centered in the center and by default all inclusions are 
 # seperated by period/(# inclusions) so in this case perid/3.
 # See Fortran Backends section of tutorial for more details.
-grating = objects.NanoStruct('1D_array', period, int(round(0.15*period)), 
-    diameter2 = int(round(0.27*period)), diameter3 = int(round(0.03*period)), height_nm = 2900, 
+grating = objects.NanoStruct('1D_array', period, int(round(0.05*period)), 
+    diameter2 = int(round(0.17*period)), diameter3 = int(round(0.03*period)),
+    diameter4 = int(round(0.07*period)), height_nm = 2900, 
     background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
     inclusion_b = materials.Material(3.0 + 0.0j), 
-    loss = True, lc_bkg = 0.01)
+    loss = True, lc_bkg = 0.0071)
 # To instead seperate the inclusions with an equal distance between their edges use 
 # the Keyword Arg edge_spacing = True.
 grating = objects.NanoStruct('1D_array', period, int(round(0.15*period)), 
-    diameter2 = int(round(0.27*period)), diameter3 = int(round(0.03*period)), height_nm = 2900, 
+    diameter2 = int(round(0.27*period)), diameter3 = int(round(0.03*period)), 
+    edge_spacing = True, height_nm = 2900, 
     background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
     inclusion_b = materials.Material(3.0 + 0.0j), 
-    loss = True, lc_bkg = 0.01)
+    loss = True, lc_bkg = 0.0071)
 
 def simulate_stack(light):    
     ################ Evaluate each layer individually ##############
