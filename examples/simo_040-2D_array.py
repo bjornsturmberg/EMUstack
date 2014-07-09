@@ -36,7 +36,7 @@ from stack import *
 start = time.time()
 ################ Simulation parameters ################
 
-# Number of CPUs to use im simulation
+# Number of CPUs to use in simulation
 num_cores = 7
 
 # Remove results of previous simulations
@@ -53,7 +53,6 @@ no_wl_1  = 3
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 light_list  = [objects.Light(wl, max_order_PWs = 2, theta = 0.0, phi = 0.0) \
     for wl in wavelengths]
-
 
 # Period must be consistent throughout simulation!!!
 period = 600

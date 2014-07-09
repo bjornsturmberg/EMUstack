@@ -1,5 +1,5 @@
 """
-    simo_040-2D_array.py is a simulation example for EMUstack.
+    simo_041-combining_1D_and_2D_array.py is a simulation example for EMUstack.
 
     Copyright (C) 2013  Bjorn Sturmberg
 
@@ -36,7 +36,7 @@ from stack import *
 start = time.time()
 ################ Simulation parameters ################
 
-# Number of CPUs to use im simulation
+# Number of CPUs to use in simulation
 num_cores = 7
 
 # Remove results of previous simulations
@@ -51,7 +51,7 @@ wl_2     = 1127
 no_wl_1  = 3
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 2, theta = 0.0, phi = 0.0) \
+light_list  = [objects.Light(wl, max_order_PWs = 4, theta = 0.0, phi = 0.0) \
     for wl in wavelengths]
 
 
@@ -78,7 +78,7 @@ NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
 # to be combined with 2D_arrays.
 grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
     background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j), 
-    loss = True, lc_bkg = 0.01)
+    loss = True, lc_bkg = 0.01, world_1d = False)
 
 
 def simulate_stack(light):
@@ -108,14 +108,8 @@ np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Plotting ########################
 
-# We here wish to know the photovoltaic performance of the structure,
-# where all light absorbed in the NW layer is considered to produce exactly
-# one electron-hole pair.
-# To do this we specify which layer of the stack is the PV active layer
-# (default active_layer_nu=1), and indicate that we want to calculate
-# the ideal short circuit current (J_sc) of the cell.
-# We could also calculate the 'ultimate efficiency' by setting ult_eta=True.
-plotting.t_r_a_plots(stacks_list, active_layer_nu=1, J_sc=True) 
+# Plot the transmission, reflection and absorption.
+plotting.t_r_a_plots(stacks_list, active_layer_nu=1) 
 
 # We also plot the dispersion relation for the NW layer.
 plotting.omega_plot(stacks_list, wavelengths) 

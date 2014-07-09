@@ -1344,9 +1344,23 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
 
 
 ####Field plotting routines############################################################
-def fields_2d(pstack, Struc_lay = 1, TF_lay=0):
+def fields_in_plane(pstack, Struc_lay = 1, z_value = 0.0, semi_inf = False):
     """
-    Plot fields in the x-y plane at chosen values of z.
+    Plot fields in the x-y plane at chosen values of z, where z is 
+    calculated from the top of chosen layer.
+
+        Args:
+            pstack  : Stack object containing data to plot.
+
+        Keyword Args:
+            Struc_lay  (int): the index of the layer considered within \
+                the stack.
+
+            z_value  (float): distance from top surface of layer at which \
+                to calculate fields.
+
+            semi_inf  (bool): does the considered layer have semi-infinite \
+                thickness.
     """
     from fortran import EMUstack
 
@@ -1355,930 +1369,1042 @@ def fields_2d(pstack, Struc_lay = 1, TF_lay=0):
         subprocess.call('rm %s -r' %dir_name, shell = True)
     os.mkdir(dir_name)
 
-    #
-    # plot fields inside nanostructure (Bloch Mode Basis)
-    #
-    meat = pstack.layers[Struc_lay]
-    gmsh_file_pos = meat.structure.mesh_file[0:-5]
-    eps_eff = meat.n_effs**2
-    h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-    wl_normed = pstack.layers[Struc_lay].wl_norm()
+    # If selected z location is within a NanoStruct layer
+    # plot fields in Bloch Mode Basis using fortran routine.
+    if isinstance(pstack.layers[Struc_lay],objects.NanoStruct):
+        meat = pstack.layers[Struc_lay]
+        gmsh_file_pos = meat.structure.mesh_file[0:-5]
+        eps_eff = meat.n_effs**2
+        h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+        wl_normed = pstack.layers[Struc_lay].wl_norm()
 
-    nnodes=6
-    if meat.E_H_field == 1:
-        EH_name = "E_"
+        nnodes=6
+        if meat.E_H_field == 1:
+            EH_name = "E_"
+        else:
+            EH_name = "H_"
+        extra_name = EH_name + "Lay" + zeros_int_str(Struc_lay)
+
+        # vec_coef sorted from top of stack, everything else is sorted from bottom
+        vec_index = len(pstack.layers) - Struc_lay - 1
+        vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+
+        EMUstack.gmsh_plot_field (meat.num_BM, 
+            meat.n_msh_el, meat.n_msh_pts, nnodes, meat.nb_typ_el, meat.table_nod, meat.type_el,
+            eps_eff, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, z_value, 
+            gmsh_file_pos, meat.structure.plot_real, 
+            meat.structure.plot_imag, meat.structure.plot_abs, extra_name)
+
+    # If selected z location is within a ThinFilm layer
+    # plot fields in Plane Wave Basis using python routine.
     else:
-        EH_name = "H_"
-    extra_name = EH_name + "Lay" + zeros_int_str(Struc_lay)
+        extra_name = EH_name + "Lay" + zeros_int_str(TF_lay)
+        select_h = 0.0
+        lat_vec = [[1.0, 0.0], [0.0, 1.0]]
+        bun = pstack.layers[TF_lay] # superstrate # substrate
+        n_eff_0 = bun.n()
+        neq_PW = bun.structure.num_pw_per_pol
+        bloch_vec = bun.k_pll_norm()
+        ordre_ls = bun.max_order_PWs
+        index_pw = bun.sort_order
+        index_pw_inv = np.zeros(shape=(np.shape(index_pw)),dtype='int')
+        for s in range(len(index_pw)):
+            s2 = index_pw[s]
+            index_pw_inv[s2] = s
+        index_pw_inv += 1 # convert to fortran indices (starting from 1)
 
-    if Struc_lay < TF_lay: select_h = 0.0   # top interface
-    else: select_h = h_normed               # bottom interface
+        # vec_coef sorted from top of stack, everything else is sorted from bottom
+        vec_index = len(pstack.layers) - TF_lay - 1
+        vec_coef_down = pstack.vec_coef_down[vec_index]
+        if TF_lay == 0: vec_coef_up = np.zeros(shape=(np.shape(vec_coef_down)),dtype='complex128')
+        else: vec_coef_up = pstack.vec_coef_up[vec_index]
 
-    # vec_coef sorted from top of stack, everything else is sorted from bottom
-    vec_index = len(pstack.layers) - Struc_lay - 1
-    vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+        EMUstack.gmsh_plot_pw(meat.n_msh_el, meat.n_msh_pts, nnodes, neq_PW,
+            bloch_vec, meat.table_nod, meat.x_arr, lat_vec, wl_normed,
+            n_eff_0, vec_coef_down, vec_coef_up, 
+            index_pw_inv, ordre_ls, select_h,
+            gmsh_file_pos, meat.structure.plot_real, meat.structure.plot_imag,
+            meat.structure.plot_abs, extra_name)
 
-    EMUstack.gmsh_plot_field (meat.num_BM, 
-        meat.n_msh_el, meat.n_msh_pts, nnodes, meat.nb_typ_el, meat.table_nod, meat.type_el,
-        eps_eff, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, select_h, 
-        gmsh_file_pos, meat.structure.plot_real, 
-        meat.structure.plot_imag, meat.structure.plot_abs, extra_name)
+        # # Semi-inf case
+        # vec_coef_up = meat.R12[:,0] # TE polarisation
+        # vec_coef_up = meat.R12[:,neq_PW] # TM polarisation
 
-
-    #
-    # plot fields in Thin Film (Plane Wave Basis)
-    #
-    extra_name = EH_name + "Lay" + zeros_int_str(TF_lay)
-    select_h = 0.0
-    lat_vec = [[1.0, 0.0], [0.0, 1.0]]
-    bun = pstack.layers[TF_lay] # superstrate # substrate
-    n_eff_0 = bun.n()
-    neq_PW = bun.structure.num_pw_per_pol
-    bloch_vec = bun.k_pll_norm()
-    ordre_ls = bun.max_order_PWs
-    index_pw = bun.sort_order
-    index_pw_inv = np.zeros(shape=(np.shape(index_pw)),dtype='int')
-    for s in range(len(index_pw)):
-        s2 = index_pw[s]
-        index_pw_inv[s2] = s
-    index_pw_inv += 1 # convert to fortran indices (starting from 1)
-
-    # vec_coef sorted from top of stack, everything else is sorted from bottom
-    vec_index = len(pstack.layers) - TF_lay - 1
-    vec_coef_down = pstack.vec_coef_down[vec_index]
-    if TF_lay == 0: vec_coef_up = np.zeros(shape=(np.shape(vec_coef_down)),dtype='complex128')
-    else: vec_coef_up = pstack.vec_coef_up[vec_index]
-
-    EMUstack.gmsh_plot_pw(meat.n_msh_el, meat.n_msh_pts, nnodes, neq_PW,
-        bloch_vec, meat.table_nod, meat.x_arr, lat_vec, wl_normed,
-        n_eff_0, vec_coef_down, vec_coef_up, 
-        index_pw_inv, ordre_ls, select_h,
-        gmsh_file_pos, meat.structure.plot_real, meat.structure.plot_imag,
-        meat.structure.plot_abs, extra_name)
-
-    # # Semi-inf case
-    # vec_coef_up = meat.R12[:,0] # TE polarisation
-    # vec_coef_up = meat.R12[:,neq_PW] # TM polarisation
-
-    # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
-    # vec_coef_down[neq_PW] = 1.0
+        # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
+        # vec_coef_down[neq_PW] = 1.0
 
 
-def E_PW_fields(stack, nu_calc_pts = 51, max_height = 3,\
-    nu_slices = 5, gradient = 1.5, Substrate = True, Superstrate = True,):
+def E_PW_fields(stack_list,stack_num_list = [0], nu_calc_pts = 51, max_height = 3,\
+    nu_slices = 5, gradient = 1.5,dir_name = "PW_Fields",\
+    E_calc_pts_x = [],E_calc_pts_y = [],E_calc_pts_z = [], save_pdf = True):
     """
     Plot fields along z direction at slices through x-y plane.
     Written by Dale Grant.
     """
-
-    wl = stack.layers[-1].light.wl_nm
-    pw = stack.layers[-1].max_order_PWs
-    period = stack.layers[-1].structure.period
-
-    bm = 0
-    for lay in stack.layers[:]:
-        if isinstance(lay.structure,objects.NanoStruct):
-            bm = lay.num_BM
-
-    dir_name = "PW_Fields"
+    
+    dir_name = dir_name
     if os.path.exists(dir_name):
         subprocess.call('rm %s -r' %dir_name, shell = True)
     os.mkdir(dir_name)
-    
-    dir_name_2 = "external_PW_Fields"
-    if os.path.exists(dir_name_2):
-        subprocess.call('rm %s -r' %dir_name_2, shell = True)
-    os.mkdir(dir_name_2)
-    
-    calc_lay = []
-    name_lay = []
-    num_lays = len(stack.layers)
-    part = ['real','imag']
-    
-    if Substrate == True: 
-        calc_lay.append(0)
-        name_lay.append("Substrate")
+   
+    for stack_num in stack_num_list:
+        stack = stack_list[stack_num]
+        wl = np.around(stack.layers[-1].light.wl_nm,decimals=2)
+        pw = stack.layers[-1].max_order_PWs
+        period = stack.layers[-1].structure.period
+        diameter_list = []
+        heights_list = []
+        num_lays = len(stack.layers)
         
-    if Superstrate == True: 
-        calc_lay.append(num_lays-1)
-        name_lay.append("Superstrate")
-    
-  
-    #######################################################################################################################################
-    ###########################################      Plotting Variables      ##############################################################
+        for i in xrange(np.size(stack.layers)):
+            try:
+                stack.layers[i].structure.diameter1
+                diameter = stack.layers[i].structure.diameter1
+                diameter_list.append(diameter)
+            except:pass
+            if i == 0 or i == num_lays-1:pass
+            else: heights_list.append(stack.layers[i].structure.height_nm)
+        bm = 0
+        for lay in stack.layers[:]:
+            if isinstance(lay.structure,objects.NanoStruct):
+                bm = lay.num_BM
 
-    nu_calc_pts = nu_calc_pts        #always make odd,
-    max_height = max_height      #distance away from nanostructure interface (units of normalised period)
-    nu_slices = nu_slices          #number of xy slices taken between interface and max_height
-    if nu_slices > nu_calc_pts:
-        nu_slices = nu_calc_pts
-
-    x_range = np.linspace(0,1.0,nu_calc_pts)
-    y_range = np.linspace(0,1.0,nu_calc_pts)
-    z_range = np.linspace(0,max_height,nu_calc_pts)
-
-    # z_of_xy_array = np.floor(np.linspace(0,nu_calc_pts-1,nu_slices))
-    # y_of_xz_array = [0,(nu_calc_pts-1)/2]
-    # x_of_yz_array = [0,(nu_calc_pts-1)/2]
-    
-    gradient = gradient
-
-    #########################################################################################################################################
-    #########################################################################################################################################
-
-    for l in calc_lay:
-        if l == num_lays-1: ll = -1
-        else: ll = l
-        s = stack.layers[l].sort_order
-        alpha_unsrt = np.array(stack.layers[l].alphas)
-        beta_unsrt = np.array(stack.layers[l].betas)
-        alpha = alpha_unsrt[s]
-        if stack.layers[l].structure.world_1d == True:
-            beta = beta_unsrt
-        else:
-            beta = beta_unsrt[s]
-        gamma = np.array(stack.layers[l].calc_kz())
-        n = stack.layers[l].n()
-        PWordtot = stack.layers[l].structure.num_pw_per_pol
-        prop = 2*np.count_nonzero(np.real(gamma))
-        evan = 2*PWordtot - prop
+        calc_lay = []
+        name_lay = []
+        part = ['real','imag']
         
-        vec_coef_down = np.array(stack.vec_coef_down[num_lays-1-l]).flatten()
-        vec_coef_down_TE = vec_coef_down[0:PWordtot]
-        vec_coef_down_TM = vec_coef_down[PWordtot::]
-        if l == 0:
-            vec_coef_up = np.zeros((2*PWordtot), dtype = 'complex')
-        else:
-            vec_coef_up = np.array(stack.vec_coef_up[num_lays-1-l]).flatten()
-            
-        vec_coef_up_TE = vec_coef_up[0:PWordtot]
-        vec_coef_up_TM = vec_coef_up[PWordtot::]
+        for check in xrange(np.size(stack.layers)):
+            try:stack.layers[check].structure.diameter1
+            except:
+                calc_lay.append(check)
+                if check == 0:name_lay.append("Substrate")
+                elif check == num_lays-1:name_lay.append("Superstrate")
+                else: name_lay.append("Thin_Film_%(check)s"%{'check':check})
+      
+        #######################################################################################################################################
+        ###########################################      Plotting Variables      ##############################################################
+
+        nu_calc_pts = nu_calc_pts        #always make odd,
+        max_height = max_height      #distance away from nanostructure interface (units of normalised period)
+        user_max_height = 0
+        user_max_height = max_height
+        nu_slices = nu_slices          #number of xy slices taken between interface and max_height
+        if nu_slices > nu_calc_pts:
+            nu_slices = nu_calc_pts
+
+        x_range = np.linspace(0.0,1.0,nu_calc_pts)
+        y_range = np.linspace(0.0,1.0,nu_calc_pts)
+        z_range = np.linspace(0.0,max_height,nu_calc_pts)
         
-        norm = np.sqrt(alpha**2+beta**2)
-        k = np.sqrt(alpha**2+beta**2+gamma**2)
-        chi_TE = np.sqrt((n*gamma)/k)
-        chi_TM = np.sqrt((n*k)/gamma)
-        E_TE_x = beta/norm
-        E_TE_y = -1*alpha/norm
-        E_TE_z = np.array(np.zeros(np.size(E_TE_x)))
-        E_TM_x = alpha/norm
-        E_TM_y = beta/norm
-        E_TM_z = -1*norm/gamma
-        
-        eta_TE_x_down = (vec_coef_down_TE*E_TE_x)/chi_TE
-        eta_TE_y_down = (vec_coef_down_TE*E_TE_y)/chi_TE
-        eta_TE_z_down = (vec_coef_down_TE*E_TE_z)/chi_TE
-        eta_TM_x_down = (vec_coef_down_TM*E_TM_x)/chi_TM
-        eta_TM_y_down = (vec_coef_down_TM*E_TM_y)/chi_TM
-        eta_TM_z_down = (vec_coef_down_TM*E_TM_z)/chi_TM
+        gradient = gradient
 
-        eta_TE_x_up = (vec_coef_up_TE*E_TE_x)/chi_TE
-        eta_TE_y_up = (vec_coef_up_TE*E_TE_y)/chi_TE
-        eta_TE_z_up = (vec_coef_up_TE*E_TE_z)/chi_TE
-        eta_TM_x_up = (vec_coef_up_TM*E_TM_x)/chi_TM
-        eta_TM_y_up = (vec_coef_up_TM*E_TM_y)/chi_TM
-        eta_TM_z_up = (vec_coef_up_TM*E_TM_z)/chi_TM
+        #########################################################################################################################################
+        #########################################################################################################################################
 
-
-        #2D Version
-        x_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
-        y_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
-        if stack.layers[l].structure.world_1d == True:
-            slice_type = ['xz']
-        else:
-            slice_type = ['xy','xz','yz','diag+','diag-','spec+','spec-']
-        for s in slice_type:
-            if s == 'xy':
-                x1 = x_range
-                y1 = y_range
-                z1 = np.linspace(0,max_height,nu_slices)
-                (y_axis,x_axis) = np.meshgrid(y1,x1)
-            elif s == 'xz':
-                x1 = x_range
-                y1 = np.array([0,0.5])
-                z1 = z_range
-                (y_axis,x_axis) = np.meshgrid(z1,x1)
-            elif s == 'yz':
-                x1 = np.array([0,0.5])
-                y1= y_range
-                z1 = z_range
-                (y_axis,x_axis) = np.meshgrid(z1,y1)
-            elif s == 'diag+':
-                x1 = x_range
-                y1 = np.array([0])
-                y2 = x_range
-                z1 = z_range
-                (y_axis,x_axis) = np.meshgrid(z1,sqrt(2)*x1)
-            elif s == 'diag-':
-                x1 = x_range[::-1]
-                y1 = np.array([0])
-                y2 = x_range
-                z1 = z_range
-                (y_axis,x_axis) = np.meshgrid(z1,sqrt(2)*x1[::-1])
-            elif s == 'spec+':
-                x1 = x_range
-                y1 = np.array([0])
-                y2 = gradient*x_range
-                for i in xrange(np.size(y2)):
-                        if y2[i] > 1:
-                            y2 = np.resize(y2,(i,))
-                            x1 = np.resize(x1,(i,))
-                            break
-                z1 = z_range
-                (y_axis,x_axis) = np.meshgrid(z1,sqrt(1+gradient**2)*x1)
-            elif s == 'spec-':
-                x1 = x_range[::-1]
-                y1 = np.array([0])
-                y2 = gradient*x_range
-                for i in xrange(np.size(y2)):
-                        if y2[i] > 1:
-                            y2 = np.resize(y2,(i,))
-                            x1 = np.resize(x1,(i,))
-                            break
-                z1 = z_range
-                (y_axis,x_axis) = np.meshgrid(z1,sqrt(1+gradient**2)*(x1[::-1]-x1[-1]))
+        for l in calc_lay:
+            if l == num_lays-1: ll = -1
+            else: ll = l
+            if l == 0 or l == num_lays-1: 
+                max_height = user_max_height
+                z_range = np.linspace(0,max_height,nu_calc_pts)
+            else:
+                max_height = np.around(float(stack.layers[l].structure.height_nm)/period,decimals=4)
+                z_range = np.linspace(0,max_height,nu_calc_pts)
                 
-            E_TE_x_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-            E_TE_y_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-            E_TE_z_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-            E_TM_x_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-            E_TM_y_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-            E_TM_z_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-        
-            for z in xrange(np.size(z1)):
-                for y in xrange(np.size(y1)):
-                    for x in xrange(np.size(x1)):
-                        if s == 'diag+' or s == 'diag-' or s == 'spec+' or s == 'spec-':
-                            if l == 0:
-                                expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]+gamma*z1[z]))
-                            else:
-                                expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*z1[z]))
-                            expo_up = np.exp(1j*(alpha*x1[x]+beta*y2[x]+gamma*z1[z]))
+            s = stack.layers[l].sort_order
+            alpha_unsrt = np.array(stack.layers[l].alphas)
+            beta_unsrt = np.array(stack.layers[l].betas)
+            alpha = alpha_unsrt[s]
+            if stack.layers[l].structure.world_1d == True:
+                beta = beta_unsrt
+            else:
+                beta = beta_unsrt[s]
+            gamma = np.array(stack.layers[l].calc_kz())
+            n = stack.layers[l].n()
+            PWordtot = stack.layers[l].structure.num_pw_per_pol
+            prop = 2*(gamma.imag == 0).sum()
+            evan = 2*PWordtot - prop
+            
+            vec_coef_down = np.array(stack.vec_coef_down[num_lays-1-l]).flatten()
+            vec_coef_down_TE = vec_coef_down[0:PWordtot]
+            vec_coef_down_TM = vec_coef_down[PWordtot::]
+            if l == 0:
+                vec_coef_up = np.zeros((2*PWordtot), dtype = 'complex')
+            else:
+                vec_coef_up = np.array(stack.vec_coef_up[num_lays-1-l]).flatten()
+                
+            vec_coef_up_TE = vec_coef_up[0:PWordtot]
+            vec_coef_up_TM = vec_coef_up[PWordtot::]
+            
+            norm = np.sqrt(alpha**2+beta**2)
+            k = np.sqrt(alpha**2+beta**2+gamma**2)
+            chi_TE = np.sqrt((n*gamma)/k)
+            chi_TM = np.sqrt((n*k)/gamma)
+            E_TE_x = beta/norm
+            E_TE_y = -1*alpha/norm
+            E_TE_z = np.array(np.zeros(np.size(E_TE_x)))
+            E_TM_x = alpha/norm
+            E_TM_y = beta/norm
+            E_TM_z = -1*norm/gamma
+            k = np.around(k,decimals=4)
+            n = np.around(n,decimals=4)
+            
+            eta_TE_x_down = (vec_coef_down_TE*E_TE_x)/chi_TE
+            eta_TE_y_down = (vec_coef_down_TE*E_TE_y)/chi_TE
+            eta_TE_z_down = (vec_coef_down_TE*E_TE_z)/chi_TE
+            eta_TM_x_down = (vec_coef_down_TM*E_TM_x)/chi_TM
+            eta_TM_y_down = (vec_coef_down_TM*E_TM_y)/chi_TM
+            eta_TM_z_down = (vec_coef_down_TM*E_TM_z)/chi_TM
+
+            eta_TE_x_up = (vec_coef_up_TE*E_TE_x)/chi_TE
+            eta_TE_y_up = (vec_coef_up_TE*E_TE_y)/chi_TE
+            eta_TE_z_up = (vec_coef_up_TE*E_TE_z)/chi_TE
+            eta_TM_x_up = (vec_coef_up_TM*E_TM_x)/chi_TM
+            eta_TM_y_up = (vec_coef_up_TM*E_TM_y)/chi_TM
+            eta_TM_z_up = (vec_coef_up_TM*E_TM_z)/chi_TM
+
+            if np.size(E_calc_pts_x)>0 and np.size(E_calc_pts_y)>0 and np.size(E_calc_pts_x)>0:
+                calc_E_TE_x_array = np.zeros(np.size(E_calc_pts_x),dtype='complex')
+                calc_E_TE_y_array = np.zeros(np.size(E_calc_pts_x),dtype='complex')
+                calc_E_TE_z_array = np.zeros(np.size(E_calc_pts_x),dtype='complex')
+                calc_E_TM_x_array = np.zeros(np.size(E_calc_pts_x),dtype='complex')
+                calc_E_TM_y_array = np.zeros(np.size(E_calc_pts_x),dtype='complex')
+                calc_E_TM_z_array = np.zeros(np.size(E_calc_pts_x),dtype='complex')
+
+                for i in xrange(np.size(E_calc_pts_x)):
+                    if l == 0:
+                        calc_expo_down = np.exp(1j*(alpha*E_calc_pts_x[i]+beta*E_calc_pts_y[i]+gamma*E_calc_pts_z[i]))
+                    else:
+                        if stack.layers[l].structure.height_nm == 'Semi-inf':
+                            calc_expo_down = np.exp(1j*(alpha*E_calc_pts_x[i]+beta*E_calc_pts_y[i]-gamma*E_calc_pts_z[i]))
                         else:
-                            if l == 0:
-                                expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]+gamma*z1[z]))
-                            else:
-                                expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*z1[z]))
-                            expo_up = np.exp(1j*(alpha*x1[x]+beta*y1[y]+gamma*z1[z]))
-                        E_TE_x = np.sum(eta_TE_x_down*expo_down + eta_TE_x_up*expo_up)
-                        E_TE_y = np.sum(eta_TE_y_down*expo_down + eta_TE_y_up*expo_up)
-                        E_TE_z = np.sum(eta_TE_z_down*expo_down + eta_TE_z_up*expo_up)
-                        E_TM_x = np.sum(eta_TM_x_down*expo_down + eta_TM_x_up*expo_up)
-                        E_TM_y = np.sum(eta_TM_y_down*expo_down + eta_TM_y_up*expo_up)
-                        E_TM_z = np.sum(eta_TM_z_down*expo_down + eta_TM_z_up*expo_up)
-                        E_TE_x_array[x,y,z] = E_TE_x 
-                        E_TE_y_array[x,y,z] = E_TE_y
-                        E_TE_z_array[x,y,z] = E_TE_z
-                        E_TM_x_array[x,y,z] = E_TM_x 
-                        E_TM_y_array[x,y,z] = E_TM_y
-                        E_TM_z_array[x,y,z] = E_TM_z
-            E_x_array = E_TE_x_array + E_TM_x_array
-            E_y_array = E_TE_y_array + E_TM_y_array
-            E_z_array = E_TE_z_array + E_TM_z_array
-            E_tot_array = np.sqrt(E_x_array*np.conj(E_x_array) + E_y_array*np.conj(E_y_array) + E_z_array*np.conj(E_z_array))
+                            calc_expo_down = np.exp(1j*(alpha*E_calc_pts_x[i]+beta*E_calc_pts_y[i]-gamma*(E_calc_pts_z[i]-max_height)))
+                    calc_expo_up = np.exp(1j*(alpha*E_calc_pts_x[i]+beta*E_calc_pts_y[i]+gamma*E_calc_pts_z[i]))
+
+                    calc_E_TE_x = np.sum(eta_TE_x_down*calc_expo_down + eta_TE_x_up*calc_expo_up)
+                    calc_E_TE_y = np.sum(eta_TE_y_down*calc_expo_down + eta_TE_y_up*calc_expo_up)
+                    calc_E_TE_z = np.sum(eta_TE_z_down*calc_expo_down + eta_TE_z_up*calc_expo_up)
+                    calc_E_TM_x = np.sum(eta_TM_x_down*calc_expo_down + eta_TM_x_up*calc_expo_up)
+                    calc_E_TM_y = np.sum(eta_TM_y_down*calc_expo_down + eta_TM_y_up*calc_expo_up)
+                    calc_E_TM_z = np.sum(eta_TM_z_down*calc_expo_down + eta_TM_z_up*calc_expo_up)
+                    calc_E_TE_x_array[i] = calc_E_TE_x 
+                    calc_E_TE_y_array[i] = calc_E_TE_y
+                    calc_E_TE_z_array[i] = calc_E_TE_z
+                    calc_E_TM_x_array[i] = calc_E_TM_x 
+                    calc_E_TM_y_array[i] = calc_E_TM_y
+                    calc_E_TM_z_array[i] = calc_E_TM_z
+                calc_E_x_array = calc_E_TE_x_array + calc_E_TM_x_array
+                calc_E_y_array = calc_E_TE_y_array + calc_E_TM_y_array
+                calc_E_z_array = calc_E_TE_z_array + calc_E_TM_z_array
+                calc_E_tot_array = np.sqrt(calc_E_x_array*np.conj(calc_E_x_array) \
+                                    +calc_E_y_array*np.conj(calc_E_y_array)+calc_E_z_array*np.conj(calc_E_z_array))
+
+                np.savez('%(dir_name)s/%(stack_num)s_E_calc_points_%(name)s_wl_%(wl)s'% \
+                                    {'dir_name':dir_name, 'wl':wl,'name' : name_lay[ll],'stack_num':stack_num},\
+                                    calc_E_x_array=calc_E_x_array,calc_E_y_array=calc_E_y_array,\
+                                    calc_E_z_array=calc_E_z_array,calc_E_tot_array=calc_E_tot_array)
+
+            x_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
+            y_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
             
-            for p in part:
+            if stack.layers[l].structure.world_1d == True:
+                slice_type = ['xz']
+            else:
+                slice_type = ['xy','xz','yz','diag+','diag-','spec+','spec-']
+
+            for s in slice_type:
                 if s == 'xy':
-                    for z_of_xy in xrange(np.size(z1)):
-                        fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                        ax1 = fig1.add_subplot(411)
-                        if p == 'real':
-                            Ex_slice = np.real(E_x_array[:,:,z_of_xy])
-                        elif p == 'imag':
-                            Ex_slice = np.imag(E_x_array[:,:,z_of_xy])
-                        x_min = x_range[0]
-                        x_max = x_range[-1]
-                        y_min = y_range[0]
-                        y_max = y_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        # circle = plt.Circle((0.5,0.5), radius=r_a/period, fc='none', ec = 'w',fill = False)
-                        # ax1.add_artist(circle)
-                        plt.axis([x_min,x_max,y_min,y_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'%(part)s E_x'%{'part' : p})
-                        ax1.set_xlabel('x (normalised period)')
-                        ax1.set_ylabel('y (normalised period)')
-                        ax1.axis('scaled')
-                        
-                        ax1 = fig1.add_subplot(412)
-                        if p == 'real':
-                            Ex_slice = np.real(E_y_array[:,:,z_of_xy])
-                        elif p == 'imag':
-                            Ex_slice = np.imag(E_y_array[:,:,z_of_xy])
-                        x_min = x_range[0]
-                        x_max = x_range[-1]
-                        y_min = y_range[0]
-                        y_max = y_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        # circle = plt.Circle((0.5,0.5), radius=r_a/period, fc='none', ec = 'w',fill = False)
-                        # ax1.add_artist(circle)
-                        plt.axis([x_min,x_max,y_min,y_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'%(part)s E_y'%{'part' : p})
-                        ax1.set_xlabel('x (normalised period)')
-                        ax1.set_ylabel('y (normalised period)')
-                        ax1.axis('scaled')
-                        
-                        ax1 = fig1.add_subplot(413)
-                        if p == 'real':
-                            Ex_slice = np.real(E_z_array[:,:,z_of_xy])
-                        elif p == 'imag':
-                            Ex_slice = np.imag(E_z_array[:,:,z_of_xy])
-                        x_min = x_range[0]
-                        x_max = x_range[-1]
-                        y_min = y_range[0]
-                        y_max = y_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        # circle = plt.Circle((0.5,0.5), radius=r_a/period, fc='none', ec = 'w',fill = False)
-                        # ax1.add_artist(circle)
-                        plt.axis([x_min,x_max,y_min,y_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'%(part)s E_z'%{'part' : p})
-                        ax1.set_xlabel('x (normalised period)')
-                        ax1.set_ylabel('y (normalised period)')
-                        ax1.axis('scaled')
-                        
-                        ax1 = fig1.add_subplot(414)
-                        Ex_slice = np.real(E_tot_array[:,:,z_of_xy])
-                        x_min = x_range[0]
-                        x_max = x_range[-1]
-                        y_min = y_range[0]
-                        y_max = y_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        # circle = plt.Circle((0.5,0.5), radius=r_a/period, fc='none', ec = 'w',fill = False)
-                        # ax1.add_artist(circle)
-                        plt.axis([x_min,x_max,y_min,y_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'|E|')
-                        ax1.set_xlabel('x (normalised period)')
-                        ax1.set_ylabel('y (normalised period)')
-                        ax1.axis('scaled')
-                        ax1.set_ylim((y_min,y_max))
-
-                        plt.suptitle('%(name)s \n E_xy_slice_%(p)s, z = %(z_pos)s \n \
-                            $\lambda$ = %(wl)snm, period = %(d)s, PW = %(pw)s, # BM = %(bm)s,' % \
-                            {'name' : name_lay[ll], 'p' : p, 'z_pos' : z1[z_of_xy],'wl' : wl, \
-                            'd' : period, 'pw' : pw, 'bm' : bm} + '\n' 
-                            + '# prop. ords = %(prop)s, # evan. ords = %(evan)s, n = %(n)s,k = %(k)s'\
-                            % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                        plt.savefig('%(dir_name)s/E_%(name)s_xy_slice_%(z_pos)s_%(wl)s_contour_%(p)s.pdf'% \
-                            {'dir_name' : dir_name, 'wl' : wl, 'p' : p, 'z_pos' : z1[z_of_xy], \
-                            'name' : name_lay[ll]})
-                        
+                    x1 = x_range
+                    y1 = y_range
+                    z1 = np.linspace(0,max_height,nu_slices)
+                    (y_axis,x_axis) = np.meshgrid(y1,x1)
                 elif s == 'xz':
-                    for y_of_xz in xrange(np.size(y1)):
-                        fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                        ax1 = fig1.add_subplot(411)
-                        if p == 'real':
-                            Ex_slice = np.real(E_x_array[:,y_of_xz,:])
-                        elif p == 'imag':
-                            Ex_slice = np.imag(E_x_array[:,y_of_xz,:])
-                        x_min = x_range[0]
-                        x_max = x_range[-1]
-                        z_min = z_range[0]
-                        z_max = z_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        plt.axis([x_min,x_max,z_min,z_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                        ax1.set_xlabel('x (normalised period)')
-                        ax1.set_ylabel('z (normalised period)')
-                        ax1.axis('scaled')
-                        ax1.xaxis.set_ticks([x_min,x_max])
-                        ax1.set_ylim((z_min,z_max))
-
-                        ax1 = fig1.add_subplot(412)
-                        if p == 'real':
-                            Ex_slice = np.real(E_y_array[:,y_of_xz,:])
-                        elif p == 'imag':
-                            Ex_slice = np.imag(E_y_array[:,y_of_xz,:])
-                        x_min = x_range[0]
-                        x_max = x_range[-1]
-                        z_min = z_range[0]
-                        z_max = z_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        plt.axis([x_min,x_max,z_min,z_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                        ax1.set_xlabel('x (normalised period)')
-                        ax1.set_ylabel('z (normalised period)')
-                        ax1.axis('scaled')
-                        ax1.xaxis.set_ticks([x_min,x_max])
-                        ax1.set_ylim((z_min,z_max))
-                        
-                        ax1 = fig1.add_subplot(413)
-                        if p == 'real':
-                            Ex_slice = np.real(E_z_array[:,y_of_xz,:])
-                        elif p == 'imag':
-                            Ex_slice = np.imag(E_z_array[:,y_of_xz,:])
-                        x_min = x_range[0]
-                        x_max = x_range[-1]
-                        z_min = z_range[0]
-                        z_max = z_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        plt.axis([x_min,x_max,z_min,z_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                        ax1.set_xlabel('x (normalised period)')
-                        ax1.set_ylabel('z (normalised period)')
-                        ax1.axis('scaled')
-                        ax1.xaxis.set_ticks([x_min,x_max])
-                        ax1.set_ylim((z_min,z_max))
-                        
-                        ax1 = fig1.add_subplot(414)
-                        Ex_slice = np.real(E_tot_array[:,y_of_xz,:])
-                        x_min = x_range[0]
-                        x_max = x_range[-1]
-                        z_min = z_range[0]
-                        z_max = z_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        plt.axis([x_min,x_max,z_min,z_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'|E|')
-                        ax1.set_xlabel('x (normalised period)')
-                        ax1.set_ylabel('z (normalised period)')
-                        ax1.axis('scaled')
-                        ax1.xaxis.set_ticks([x_min,x_max])
-                        ax1.set_ylim((z_min,z_max))
-
-                        plt.suptitle('%(name)s \n E_xz_slice_%(p)s, y = %(y_pos)s \n \
-                        $\lambda$ = %(wl)s,period = %(d)s, PW = %(pw)s, # BM = %(bm)s'\
-                            % {'name' : name_lay[ll],'p':p,'y_pos' : y1[y_of_xz],'wl' : wl,\
-                            'd' : period, 'pw' : pw, 'bm' : bm} + '\n' 
-                            + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
-                            'prop' : prop, 'n' : n, 'k' : k[0]})
-                        plt.savefig('%(dir_name)s/E_%(name)s_xz_slice_%(y_pos)s_%(wl)s_contour_%(p)s.pdf'% \
-                            {'dir_name' : dir_name,'p':p, 'wl' : wl, 'y_pos' : y1[y_of_xz], \
-                            'name' : name_lay[ll]})
-              
+                    x1 = x_range
+                    if stack.layers[l].structure.world_1d == True:
+                        y1 = np.array([0])
+                    else:
+                        y1 = np.array([0,0.5])
+                    z1 = z_range
+                    (y_axis,x_axis) = np.meshgrid(z1,x1)
                 elif s == 'yz':
-                    for x_of_yz in xrange(np.size(x1)):
-                        fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                        ax1 = fig1.add_subplot(411)
-                        if p == 'real':
-                            Ex_slice = np.real(E_x_array[x_of_yz,:,:])
-                        elif p == 'imag':
-                            Ex_slice = np.imag(E_x_array[x_of_yz,:,:])
-                        y_min = y_range[0]
-                        y_max = y_range[-1]
-                        z_min = z_range[0]
-                        z_max = z_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        plt.axis([y_min,y_max,z_min,z_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                        ax1.set_xlabel('y (normalised period)')
-                        ax1.set_ylabel('z (normalised period)')
-                        ax1.axis('scaled')
-                        ax1.xaxis.set_ticks([x_min,x_max])
-                        ax1.set_ylim((z_min,z_max))
-
-                        ax1 = fig1.add_subplot(412)
-                        if p == 'real':
-                            Ex_slice = np.real(E_y_array[x_of_yz,:,:])
-                        elif p == 'imag':
-                            Ex_slice = np.imag(E_y_array[x_of_yz,:,:])
-                        y_min = y_range[0]
-                        y_max = y_range[-1]
-                        z_min = z_range[0]
-                        z_max = z_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        plt.axis([y_min,y_max,z_min,z_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                        ax1.set_xlabel('y (normalised period)')
-                        ax1.set_ylabel('z (normalised period)')
-                        ax1.axis('scaled')
-                        ax1.xaxis.set_ticks([x_min,x_max])
-                        ax1.set_ylim((z_min,z_max))
-                        
-                        ax1 = fig1.add_subplot(413)
-                        if p == 'real':
-                            Ex_slice = np.real(E_z_array[x_of_yz,:,:])
-                        elif p == 'imag':
-                            Ex_slice = np.imag(E_z_array[x_of_yz,:,:])
-                        y_min = y_range[0]
-                        y_max = y_range[-1]
-                        z_min = z_range[0]
-                        z_max = z_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        plt.axis([y_min,y_max,z_min,z_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                        ax1.set_xlabel('y (normalised period)')
-                        ax1.set_ylabel('z (normalised period)')
-                        ax1.axis('scaled')
-                        ax1.xaxis.set_ticks([x_min,x_max])
-                        ax1.set_ylim((z_min,z_max))
-                        
-                        ax1 = fig1.add_subplot(414)
-                        Ex_slice = np.real(E_tot_array[x_of_yz,:,:])
-                        y_min = y_range[0]
-                        y_max = y_range[-1]
-                        z_min = z_range[0]
-                        z_max = z_range[-1]
-                        cmap = plt.get_cmap('jet')
-                        CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                        plt.axis([y_min,y_max,z_min,z_max])
-                        cbar = plt.colorbar()
-                        cbar.ax.set_ylabel(r'|E|')
-                        ax1.set_xlabel('y (normalised period)')
-                        ax1.set_ylabel('z (normalised period)')
-                        ax1.axis('scaled')
-                        ax1.xaxis.set_ticks([x_min,x_max])
-                        ax1.set_ylim((z_min,z_max))
-
-                        plt.suptitle('%(name)s \n E_yz_slice_%(p)s, z = %(x_pos)s \n \
-                            $\lambda$ = %(wl)s,period = %(d)s, PW = %(pw)s, # BM = %(bm)s'\
-                            % {'name' : name_lay[ll],'p':p, \
-                            'x_pos' : x1[x_of_yz],'wl' : wl, 'd' : period, 'pw' : pw, \
-                            'bm' : bm} + '\n' + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , \
-                            n = %(n)s, k = %(k)s' % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                        plt.savefig('%(dir_name)s/E_%(name)s_yz_slice_%(x_pos)s_%(wl)s_contour_%(p)s.pdf'% \
-                            {'dir_name' : dir_name, 'p':p, 'wl' : wl, 'x_pos' : x1[x_of_yz], 'name' : name_lay[ll]})
-              
+                    x1 = np.array([0,0.5])
+                    y1= y_range
+                    z1 = z_range
+                    (y_axis,x_axis) = np.meshgrid(z1,y1)
                 elif s == 'diag+':
-                    diag = 1
-                    fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                    ax1 = fig1.add_subplot(411)
-                    if p == 'real':
-                        Ex_slice = np.real(E_x_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_x_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                    ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_xlim((y_min,y_max))
-                    ax1.set_ylim((z_min,z_max))
-
-                    ax1 = fig1.add_subplot(412)
-                    if p == 'real':
-                        Ex_slice = np.real(E_y_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_y_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                    ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_xlim((y_min,y_max))
-                    ax1.set_ylim((z_min,z_max))
-                    
-                    ax1 = fig1.add_subplot(413)
-                    if p == 'real':
-                        Ex_slice = np.real(E_z_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_z_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                    ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_xlim((y_min,y_max))
-                    ax1.set_ylim((z_min,z_max))
-                    
-                    ax1 = fig1.add_subplot(414)
-                    Ex_slice = np.real(E_tot_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'|E|')
-                    ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_xlim((y_min,y_max))
-                    ax1.set_ylim((z_min,z_max))
-
-                    plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx \n\
-                        $\lambda$ = %(wl)s,period = %(d)s, PW = %(pw)s, # BM = %(bm)s' % \
-                        {'name' : name_lay[ll], 'p':p,'diag' : diag,'wl' : wl, 'd' : period, \
-                        'pw' : pw, 'bm' : bm} + '\n' + 
-                        '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
-                        {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                    plt.savefig('%(dir_name)s/E_%(name)s_diag_slice_y=%(diag)sx_%(wl)s_contour_%(p)s.pdf'% \
-                        {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, 'name' : name_lay[ll]})
-                            
+                    x1 = x_range
+                    y1 = np.array([0])
+                    y2 = x_range
+                    z1 = z_range
+                    (y_axis,x_axis) = np.meshgrid(z1,sqrt(2)*x1)
                 elif s == 'diag-':
-                    diag = -1
-                    fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                    ax1 = fig1.add_subplot(411)
-                    if p == 'real':
-                        Ex_slice = np.real(E_x_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_x_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                    ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_xlim((y_min,y_max))
-                    ax1.set_ylim((z_min,z_max))
-
-                    ax1 = fig1.add_subplot(412)
-                    if p == 'real':
-                        Ex_slice = np.real(E_y_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_y_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                    ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_xlim((y_min,y_max))
-                    ax1.set_ylim((z_min,z_max))
-                    
-                    ax1 = fig1.add_subplot(413)
-                    if p == 'real':
-                        Ex_slice = np.real(E_z_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_z_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                    ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_xlim((y_min,y_max))
-                    ax1.set_ylim((z_min,z_max))
-                    
-                    ax1 = fig1.add_subplot(414)
-                    Ex_slice = np.real(E_tot_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'|E|')
-                    ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_xlim((y_min,y_max))
-                    ax1.set_ylim((z_min,z_max))
-
-                    plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx \n\
-                        $\lambda$ = %(wl)s,period = %(d)s, PW = %(pw)s, # BM = %(bm)s' % \
-                        {'name' : name_lay[ll], 'p':p,'diag' : diag,'wl' : wl, 'd' : period, \
-                        'pw' : pw, 'bm' : bm} + '\n' + 
-                        '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
-                        {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                    plt.savefig('%(dir_name)s/E_%(name)s_diag_slice_y=%(diag)sx_%(wl)s_contour_%(p)s.pdf'% \
-                        {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, 'name' : name_lay[ll]})
-            
+                    x1 = x_range[::-1]
+                    y1 = np.array([0])
+                    y2 = x_range
+                    z1 = z_range
+                    (y_axis,x_axis) = np.meshgrid(z1,sqrt(2)*x1[::-1])
                 elif s == 'spec+':
-                    diag = 1
-                    fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                    ax1 = fig1.add_subplot(411)
-                    if p == 'real':
-                        Ex_slice = np.real(E_x_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_x_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(sqrt(1+gradient**2)*x1[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                    ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_ylim((z_min,z_max))
-                    ax1.set_xlim((y_min,y_max))
-
-                    ax1 = fig1.add_subplot(412)
-                    if p == 'real':
-                        Ex_slice = np.real(E_y_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_y_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(sqrt(1+gradient**2)*x1[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                    ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_ylim((z_min,z_max))
-                    ax1.set_xlim((y_min,y_max))
-                    
-                    ax1 = fig1.add_subplot(413)
-                    if p == 'real':
-                        Ex_slice = np.real(E_z_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_z_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(sqrt(1+gradient**2)*x1[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                    ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_ylim((z_min,z_max))
-                    ax1.set_xlim((y_min,y_max))
-                    
-                    ax1 = fig1.add_subplot(414)
-                    Ex_slice = np.real(E_tot_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(sqrt(1+gradient**2)*x1[-1],decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'|E|')
-                    ax1.set_xlabel('y=%(grad)sx (normalised period)'%{'grad':diag*gradient})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_ylim((z_min,z_max))
-                    ax1.set_xlim((y_min,y_max))
-
-                    plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(0,0) to (%(x)s,1) \n\
-                        $\lambda$ = %(wl)s, period = %(d)s, PW = %(pw)s, # BM = %(bm)s' % \
-                        {'name' : name_lay[ll],'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
-                        'pw' : pw, 'bm' : bm, 'x':x1[-1]} + '\n' + 
-                        '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
-                        {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                    plt.savefig('%(dir_name)s/E_%(name)s_speci_diag_slice_y=%(diag*gradient)sx_%(wl)s_contour_%(p)s.pdf'% \
-                        {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,'name' : name_lay[ll]})
-                        
+                    x1 = x_range
+                    y1 = np.array([0])
+                    y2 = gradient*x_range
+                    for i in xrange(np.size(y2)):
+                            if y2[i] > 1:
+                                y2 = np.resize(y2,(i,))
+                                x1 = np.resize(x1,(i,))
+                                break
+                    z1 = z_range
+                    (y_axis,x_axis) = np.meshgrid(z1,sqrt(1+gradient**2)*x1)
                 elif s == 'spec-':
-                    diag = -1
-                    fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                    ax1 = fig1.add_subplot(411)
-                    if p == 'real':
-                        Ex_slice = np.real(E_x_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_x_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(sqrt(1+gradient**2)*(x1[0]-x1[-1]),decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                    ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_ylim((z_min,z_max))
-                    ax1.set_xlim((y_min,y_max))
-
-                    ax1 = fig1.add_subplot(412)
-                    if p == 'real':
-                        Ex_slice = np.real(E_y_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_y_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(sqrt(1+gradient**2)*(x1[0]-x1[-1]),decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                    ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_ylim((z_min,z_max))
-                    ax1.set_xlim((y_min,y_max))
+                    x1 = x_range[::-1]
+                    y1 = np.array([0])
+                    y2 = gradient*x_range
+                    for i in xrange(np.size(y2)):
+                            if y2[i] > 1:
+                                y2 = np.resize(y2,(i,))
+                                x1 = np.resize(x1,(i,))
+                                break
+                    z1 = z_range
+                    (y_axis,x_axis) = np.meshgrid(z1,sqrt(1+gradient**2)*(x1[::-1]-x1[-1]))
                     
-                    ax1 = fig1.add_subplot(413)
-                    if p == 'real':
-                        Ex_slice = np.real(E_z_array[:,0,:])
-                    elif p == 'imag':
-                        Ex_slice = np.imag(E_z_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(sqrt(1+gradient**2)*(x1[0]-x1[-1]),decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                    ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_ylim((z_min,z_max))
-                    ax1.set_xlim((y_min,y_max))
-                    
-                    ax1 = fig1.add_subplot(414)
-                    Ex_slice = np.real(E_tot_array[:,0,:])
-                    y_min = y_range[0]
-                    y_max = np.around(sqrt(1+gradient**2)*(x1[0]-x1[-1]),decimals=2)
-                    z_min = z_range[0]
-                    z_max = z_range[-1]
-                    cmap = plt.get_cmap('jet')
-                    CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
-                    plt.axis([y_min,y_max,z_min,z_max])
-                    cbar = plt.colorbar()
-                    cbar.ax.set_ylabel(r'|E|')
-                    ax1.set_xlabel('y=%(grad)sx (normalised period)'%{'grad':diag*gradient})
-                    ax1.set_ylabel('z (normalised period)')
-                    ax1.axis('scaled')
-                    ax1.xaxis.set_ticks([y_min,y_max])
-                    ax1.set_ylim((z_min,z_max))
-                    ax1.set_xlim((y_min,y_max))
+                E_TE_x_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
+                E_TE_y_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
+                E_TE_z_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
+                E_TM_x_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
+                E_TM_y_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
+                E_TM_z_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
+            
+                for z in xrange(np.size(z1)):
+                    for y in xrange(np.size(y1)):
+                        for x in xrange(np.size(x1)):
+                            if s == 'diag+' or s == 'diag-' or s == 'spec+' or s == 'spec-':
+                                if l == 0:
+                                    expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]+gamma*z1[z]))
+                                else:
+                                    if stack.layers[l].structure.height_nm == 'Semi-inf':
+                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[x]-gamma*z1[z]))
+                                    else:
+                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[x]-gamma*(z1[z]-max_height)))
+                                expo_up = np.exp(1j*(alpha*x1[x]+beta*y2[x]+gamma*z1[z]))
+                            else:
+                                if l == 0:
+                                    expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]+gamma*z1[z]))
+                                else:
+                                    if stack.layers[l].structure.height_nm == 'Semi-inf':
+                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*z1[z]))
+                                    else:
+                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*(z1[z]-max_height)))
+                                expo_up = np.exp(1j*(alpha*x1[x]+beta*y1[y]+gamma*z1[z]))
 
-                    plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(1,0) to (%(x)s,1) \n\
-                        $\lambda$ = %(wl)s, period = %(d)s, PW = %(pw)s, # BM = %(bm)s' % \
-                        {'name' : name_lay[ll],'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
-                        'pw' : pw, 'bm' : bm,'x':x1[-1]} + '\n' + 
-                        '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
-                        {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                    plt.savefig('%(dir_name)s/E_%(name)s_speci_diag_slice_y=%(diag*gradient)sx_%(wl)s_contour_%(p)s.pdf'% \
-                        {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,'name' : name_lay[ll]})
+                            E_TE_x = np.sum(eta_TE_x_down*expo_down + eta_TE_x_up*expo_up)
+                            E_TE_y = np.sum(eta_TE_y_down*expo_down + eta_TE_y_up*expo_up)
+                            E_TE_z = np.sum(eta_TE_z_down*expo_down + eta_TE_z_up*expo_up)
+                            E_TM_x = np.sum(eta_TM_x_down*expo_down + eta_TM_x_up*expo_up)
+                            E_TM_y = np.sum(eta_TM_y_down*expo_down + eta_TM_y_up*expo_up)
+                            E_TM_z = np.sum(eta_TM_z_down*expo_down + eta_TM_z_up*expo_up)
+                            E_TE_x_array[x,y,z] = E_TE_x 
+                            E_TE_y_array[x,y,z] = E_TE_y
+                            E_TE_z_array[x,y,z] = E_TE_z
+                            E_TM_x_array[x,y,z] = E_TM_x 
+                            E_TM_y_array[x,y,z] = E_TM_y
+                            E_TM_z_array[x,y,z] = E_TM_z
+                E_x_array = E_TE_x_array + E_TM_x_array
+                E_y_array = E_TE_y_array + E_TM_y_array
+                E_z_array = E_TE_z_array + E_TM_z_array
+                E_tot_array = np.sqrt(E_x_array*np.conj(E_x_array) + E_y_array*np.conj(E_y_array) + E_z_array*np.conj(E_z_array))
+                
+                if save_pdf == False: pass
+                else:
+                    for p in part:
+                        if s == 'xy':
+                            for z_of_xy in xrange(np.size(z1)):
+                                fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                                ax1 = fig1.add_subplot(411)
+                                if p == 'real':
+                                    Ex_slice = np.real(E_x_array[:,:,z_of_xy])
+                                elif p == 'imag':
+                                    Ex_slice = np.imag(E_x_array[:,:,z_of_xy])
+                                x_min = x_range[0]
+                                x_max = x_range[-1]
+                                y_min = y_range[0]
+                                y_max = y_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                # circle = plt.Circle((0.5,0.5), radius=r_a/period, fc='none', ec = 'w',fill = False)
+                                # ax1.add_artist(circle)
+                                plt.axis([x_min,x_max,y_min,y_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'%(part)s E_x'%{'part' : p})
+                                ax1.set_xlabel('x (normalised period)')
+                                ax1.set_ylabel('y (normalised period)')
+                                ax1.axis('scaled')
+                                
+                                ax1 = fig1.add_subplot(412)
+                                if p == 'real':
+                                    Ex_slice = np.real(E_y_array[:,:,z_of_xy])
+                                elif p == 'imag':
+                                    Ex_slice = np.imag(E_y_array[:,:,z_of_xy])
+                                x_min = x_range[0]
+                                x_max = x_range[-1]
+                                y_min = y_range[0]
+                                y_max = y_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                # circle = plt.Circle((0.5,0.5), radius=r_a/period, fc='none', ec = 'w',fill = False)
+                                # ax1.add_artist(circle)
+                                plt.axis([x_min,x_max,y_min,y_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'%(part)s E_y'%{'part' : p})
+                                ax1.set_xlabel('x (normalised period)')
+                                ax1.set_ylabel('y (normalised period)')
+                                ax1.axis('scaled')
+                                
+                                ax1 = fig1.add_subplot(413)
+                                if p == 'real':
+                                    Ex_slice = np.real(E_z_array[:,:,z_of_xy])
+                                elif p == 'imag':
+                                    Ex_slice = np.imag(E_z_array[:,:,z_of_xy])
+                                x_min = x_range[0]
+                                x_max = x_range[-1]
+                                y_min = y_range[0]
+                                y_max = y_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                # circle = plt.Circle((0.5,0.5), radius=r_a/period, fc='none', ec = 'w',fill = False)
+                                # ax1.add_artist(circle)
+                                plt.axis([x_min,x_max,y_min,y_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'%(part)s E_z'%{'part' : p})
+                                ax1.set_xlabel('x (normalised period)')
+                                ax1.set_ylabel('y (normalised period)')
+                                ax1.axis('scaled')
+                                
+                                ax1 = fig1.add_subplot(414)
+                                Ex_slice = np.real(E_tot_array[:,:,z_of_xy])
+                                x_min = x_range[0]
+                                x_max = x_range[-1]
+                                y_min = y_range[0]
+                                y_max = y_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                # circle = plt.Circle((0.5,0.5), radius=r_a/period, fc='none', ec = 'w',fill = False)
+                                # ax1.add_artist(circle)
+                                plt.axis([x_min,x_max,y_min,y_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'|E|')
+                                ax1.set_xlabel('x (normalised period)')
+                                ax1.set_ylabel('y (normalised period)')
+                                ax1.axis('scaled')
+                                ax1.set_ylim((y_min,y_max))
+
+                                plt.suptitle('%(name)s \n E_xy_slice_%(p)s, z = %(z_pos)s, heights = %(h)s \n \
+                                    $\lambda$ = %(wl)snm, period = %(d)s, diameter = %(dia)s, PW = %(pw)s, # BM = %(bm)s,' % \
+                                    {'name' : name_lay[ll], 'h':heights_list, 'p' : p, 'z_pos' : z1[z_of_xy],'wl' : wl, \
+                                    'd' : period, 'dia': diameter_list, 'pw' : pw, 'bm' : bm} + '\n' 
+                                    + '# prop. ords = %(prop)s, # evan. ords = %(evan)s, n = %(n)s,k = %(k)s'\
+                                    % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                                plt.savefig('%(dir_name)s/%(stack_num)s_E_%(name)s_xy_slice_%(z_pos)s_%(wl)s_contour_%(p)s.pdf'% \
+                                    {'dir_name' : dir_name, 'wl' : wl, 'p' : p, 'z_pos' : z1[z_of_xy], \
+                                    'name' : name_lay[ll],'stack_num':stack_num})
+                                
+                        elif s == 'xz':
+                            for y_of_xz in xrange(np.size(y1)):
+                                fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                                ax1 = fig1.add_subplot(411)
+                                if p == 'real':
+                                    Ex_slice = np.real(E_x_array[:,y_of_xz,:])
+                                elif p == 'imag':
+                                    Ex_slice = np.imag(E_x_array[:,y_of_xz,:])
+                                x_min = x_range[0]
+                                x_max = x_range[-1]
+                                z_min = z_range[0]
+                                z_max = z_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                plt.axis([x_min,x_max,z_min,z_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
+                                ax1.set_xlabel('x (normalised period)')
+                                ax1.set_ylabel('z (normalised period)')
+                                ax1.axis('scaled')
+                                ax1.xaxis.set_ticks([x_min,x_max])
+                                ax1.set_ylim((z_min,z_max))
+
+                                ax1 = fig1.add_subplot(412)
+                                if p == 'real':
+                                    Ex_slice = np.real(E_y_array[:,y_of_xz,:])
+                                elif p == 'imag':
+                                    Ex_slice = np.imag(E_y_array[:,y_of_xz,:])
+                                x_min = x_range[0]
+                                x_max = x_range[-1]
+                                z_min = z_range[0]
+                                z_max = z_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                plt.axis([x_min,x_max,z_min,z_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
+                                ax1.set_xlabel('x (normalised period)')
+                                ax1.set_ylabel('z (normalised period)')
+                                ax1.axis('scaled')
+                                ax1.xaxis.set_ticks([x_min,x_max])
+                                ax1.set_ylim((z_min,z_max))
+                                
+                                ax1 = fig1.add_subplot(413)
+                                if p == 'real':
+                                    Ex_slice = np.real(E_z_array[:,y_of_xz,:])
+                                elif p == 'imag':
+                                    Ex_slice = np.imag(E_z_array[:,y_of_xz,:])
+                                x_min = x_range[0]
+                                x_max = x_range[-1]
+                                z_min = z_range[0]
+                                z_max = z_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                plt.axis([x_min,x_max,z_min,z_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
+                                ax1.set_xlabel('x (normalised period)')
+                                ax1.set_ylabel('z (normalised period)')
+                                ax1.axis('scaled')
+                                ax1.xaxis.set_ticks([x_min,x_max])
+                                ax1.set_ylim((z_min,z_max))
+                                
+                                ax1 = fig1.add_subplot(414)
+                                Ex_slice = np.real(E_tot_array[:,y_of_xz,:])
+                                x_min = x_range[0]
+                                x_max = x_range[-1]
+                                z_min = z_range[0]
+                                z_max = z_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                plt.axis([x_min,x_max,z_min,z_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'|E|')
+                                ax1.set_xlabel('x (normalised period)')
+                                ax1.set_ylabel('z (normalised period)')
+                                ax1.axis('scaled')
+                                ax1.xaxis.set_ticks([x_min,x_max])
+                                ax1.set_ylim((z_min,z_max))
+
+                                plt.suptitle('%(name)s \n E_xz_slice_%(p)s, y = %(y_pos)s, heights = %(h)s \n \
+                                $\lambda$ = %(wl)snm, period = %(d)s, diameter = %(dia)s, PW = %(pw)s, # BM = %(bm)s,' % \
+                                    {'name' : name_lay[ll], 'h':heights_list, 'p' : p, 'y_pos' : y1[y_of_xz],'wl' : wl, \
+                                    'd' : period, 'dia': diameter_list[0::], 'pw' : pw, 'bm' : bm} + '\n' 
+                                    + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
+                                    'prop' : prop, 'n' : n, 'k' : k[0]})
+                                plt.savefig('%(dir_name)s/%(stack_num)s_E_%(name)s_xz_slice_%(y_pos)s_%(wl)s_contour_%(p)s.pdf'% \
+                                    {'dir_name' : dir_name,'p':p, 'wl' : wl, 'y_pos' : y1[y_of_xz], \
+                                    'name' : name_lay[ll],'stack_num':stack_num})
+                                
+                                if stack.layers[l].structure.world_1d == True:
+                                    if p == 'real':
+                                        fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                                        ax1 = fig1.add_subplot(411)
+                                        E_slice = E_x_array[:,y_of_xz,0]
+                                        ax1.plot(x1,np.real(E_slice),linewidth=linesstrength)
+                                        ax1.plot(x1,np.imag(E_slice),linewidth=linesstrength)
+                                        ax1.set_xlabel('x (normalised period)')
+                                        ax1.set_ylabel('E_x')
+                                        ax1.set_xlim((x1[0],x1[-1]))
+                                        
+                                        ax1 = fig1.add_subplot(412)
+                                        E_slice = E_y_array[:,y_of_xz,0]
+                                        ax1.plot(x1,np.real(E_slice),linewidth=linesstrength)
+                                        ax1.plot(x1,np.imag(E_slice),linewidth=linesstrength)
+                                        ax1.set_xlabel('x (normalised period)')
+                                        ax1.set_ylabel('E_y')
+                                        ax1.set_xlim((x1[0],x1[-1]))
+                                        
+                                        ax1 = fig1.add_subplot(413)
+                                        E_slice = E_z_array[:,y_of_xz,0]
+                                        ax1.plot(x1,np.real(E_slice),linewidth=linesstrength)
+                                        ax1.plot(x1,np.imag(E_slice),linewidth=linesstrength)
+                                        ax1.set_xlabel('x (normalised period)')
+                                        ax1.set_ylabel('E_z')
+                                        ax1.set_xlim((x1[0],x1[-1]))
+                                        
+                                        ax1 = fig1.add_subplot(414)
+                                        E_slice = E_tot_array[:,y_of_xz,0]
+                                        ax1.plot(x1,np.real(E_slice),linewidth=linesstrength)
+                                        ax1.set_xlabel('x (normalised period)')
+                                        ax1.set_ylabel('|E|')
+                                        ax1.set_xlim((x1[0],x1[-1]))
+
+                                        plt.suptitle('%(name)s \n E_@z=0, y = %(y_pos)s, heights = %(h)s \n\
+                                        $\lambda$ = %(wl)snm, period = %(d)s, diameter = %(dia)s, PW = %(pw)s, # BM = %(bm)s,' % \
+                                            {'name' : name_lay[ll], 'h':heights_list, 'y_pos' : y1[y_of_xz],'wl' : wl, \
+                                            'd' : period, 'dia': diameter_list[0::], 'pw' : pw, 'bm' : bm} + '\n' 
+                                            + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
+                                            'prop' : prop, 'n' : n, 'k' : k[0]})
+                                        plt.savefig('%(dir_name)s/%(stack_num)s_E_%(name)s_z=0_%(y_pos)s_%(wl)s_line_curve.pdf'% \
+                                            {'dir_name' : dir_name, 'wl' : wl, 'y_pos' : y1[y_of_xz], \
+                                            'name' : name_lay[ll],'stack_num':stack_num})
+                      
+                        elif s == 'yz':
+                            for x_of_yz in xrange(np.size(x1)):
+                                fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                                ax1 = fig1.add_subplot(411)
+                                if p == 'real':
+                                    Ex_slice = np.real(E_x_array[x_of_yz,:,:])
+                                elif p == 'imag':
+                                    Ex_slice = np.imag(E_x_array[x_of_yz,:,:])
+                                y_min = y_range[0]
+                                y_max = y_range[-1]
+                                z_min = z_range[0]
+                                z_max = z_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                plt.axis([y_min,y_max,z_min,z_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
+                                ax1.set_xlabel('y (normalised period)')
+                                ax1.set_ylabel('z (normalised period)')
+                                ax1.axis('scaled')
+                                ax1.xaxis.set_ticks([x_min,x_max])
+                                ax1.set_ylim((z_min,z_max))
+
+                                ax1 = fig1.add_subplot(412)
+                                if p == 'real':
+                                    Ex_slice = np.real(E_y_array[x_of_yz,:,:])
+                                elif p == 'imag':
+                                    Ex_slice = np.imag(E_y_array[x_of_yz,:,:])
+                                y_min = y_range[0]
+                                y_max = y_range[-1]
+                                z_min = z_range[0]
+                                z_max = z_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                plt.axis([y_min,y_max,z_min,z_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
+                                ax1.set_xlabel('y (normalised period)')
+                                ax1.set_ylabel('z (normalised period)')
+                                ax1.axis('scaled')
+                                ax1.xaxis.set_ticks([x_min,x_max])
+                                ax1.set_ylim((z_min,z_max))
+                                
+                                ax1 = fig1.add_subplot(413)
+                                if p == 'real':
+                                    Ex_slice = np.real(E_z_array[x_of_yz,:,:])
+                                elif p == 'imag':
+                                    Ex_slice = np.imag(E_z_array[x_of_yz,:,:])
+                                y_min = y_range[0]
+                                y_max = y_range[-1]
+                                z_min = z_range[0]
+                                z_max = z_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                plt.axis([y_min,y_max,z_min,z_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
+                                ax1.set_xlabel('y (normalised period)')
+                                ax1.set_ylabel('z (normalised period)')
+                                ax1.axis('scaled')
+                                ax1.xaxis.set_ticks([x_min,x_max])
+                                ax1.set_ylim((z_min,z_max))
+                                
+                                ax1 = fig1.add_subplot(414)
+                                Ex_slice = np.real(E_tot_array[x_of_yz,:,:])
+                                y_min = y_range[0]
+                                y_max = y_range[-1]
+                                z_min = z_range[0]
+                                z_max = z_range[-1]
+                                cmap = plt.get_cmap('jet')
+                                CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                                plt.axis([y_min,y_max,z_min,z_max])
+                                cbar = plt.colorbar()
+                                cbar.ax.set_ylabel(r'|E|')
+                                ax1.set_xlabel('y (normalised period)')
+                                ax1.set_ylabel('z (normalised period)')
+                                ax1.axis('scaled')
+                                ax1.xaxis.set_ticks([x_min,x_max])
+                                ax1.set_ylim((z_min,z_max))
+
+                                plt.suptitle('%(name)s \n E_yz_slice_%(p)s, x = %(x_pos)s, heights = %(h)s \n \
+                                    $\lambda$ = %(wl)snm, period = %(d)s, diameter = %(dia)s, PW = %(pw)s, # BM = %(bm)s,' % \
+                                    {'name' : name_lay[ll], 'h':heights_list, 'p' : p, 'x_pos' : x1[x_of_yz],'wl' : wl, \
+                                    'd' : period, 'dia': diameter_list[0::], 'pw' : pw, 'bm' : bm} + '\n' 
+                                    + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , \
+                                    n = %(n)s, k = %(k)s' % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                                plt.savefig('%(dir_name)s/%(stack_num)s_E_%(name)s_yz_slice_%(x_pos)s_%(wl)s_contour_%(p)s.pdf'% \
+                                    {'dir_name' : dir_name, 'p':p, 'wl' : wl, 'x_pos' : x1[x_of_yz],\
+                                    'name' : name_lay[ll],'stack_num':stack_num})
+                      
+                        elif s == 'diag+':
+                            diag = 1
+                            fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                            ax1 = fig1.add_subplot(411)
+                            if p == 'real':
+                                Ex_slice = np.real(E_x_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_x_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
+                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_xlim((y_min,y_max))
+                            ax1.set_ylim((z_min,z_max))
+
+                            ax1 = fig1.add_subplot(412)
+                            if p == 'real':
+                                Ex_slice = np.real(E_y_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_y_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
+                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_xlim((y_min,y_max))
+                            ax1.set_ylim((z_min,z_max))
+                            
+                            ax1 = fig1.add_subplot(413)
+                            if p == 'real':
+                                Ex_slice = np.real(E_z_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_z_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
+                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_xlim((y_min,y_max))
+                            ax1.set_ylim((z_min,z_max))
+                            
+                            ax1 = fig1.add_subplot(414)
+                            Ex_slice = np.real(E_tot_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'|E|')
+                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_xlim((y_min,y_max))
+                            ax1.set_ylim((z_min,z_max))
+
+                            plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
+                                $\lambda$ = %(wl)s,period = %(d)s, diameter = %(dia)s, PW = %(pw)s, # BM = %(bm)s' % \
+                                {'name' : name_lay[ll], 'h':heights_list, 'p':p,'diag' : diag,'wl' : wl, 'd' : period, \
+                                'pw' : pw, 'bm' : bm,'dia': diameter_list[0::]} + '\n' 
+                                + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
+                                {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                            plt.savefig('%(dir_name)s/%(stack_num)s_E_%(name)s_diag_slice_y=%(diag)sx_%(wl)s_contour_%(p)s.pdf'% \
+                                {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, \
+                                'name' : name_lay[ll],'stack_num':stack_num})
+                                    
+                        elif s == 'diag-':
+                            diag = -1
+                            fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                            ax1 = fig1.add_subplot(411)
+                            if p == 'real':
+                                Ex_slice = np.real(E_x_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_x_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
+                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_xlim((y_min,y_max))
+                            ax1.set_ylim((z_min,z_max))
+
+                            ax1 = fig1.add_subplot(412)
+                            if p == 'real':
+                                Ex_slice = np.real(E_y_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_y_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
+                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_xlim((y_min,y_max))
+                            ax1.set_ylim((z_min,z_max))
+                            
+                            ax1 = fig1.add_subplot(413)
+                            if p == 'real':
+                                Ex_slice = np.real(E_z_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_z_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
+                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_xlim((y_min,y_max))
+                            ax1.set_ylim((z_min,z_max))
+                            
+                            ax1 = fig1.add_subplot(414)
+                            Ex_slice = np.real(E_tot_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'|E|')
+                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_xlim((y_min,y_max))
+                            ax1.set_ylim((z_min,z_max))
+
+                            plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
+                                $\lambda$ = %(wl)snm, period = %(d)s, diameter = %(dia)s, PW = %(pw)s, # BM = %(bm)s,' % \
+                                    {'name' : name_lay[ll], 'h':heights_list, 'p' : p,'wl' : wl, \
+                                    'd' : period, 'dia': diameter_list[0::], 'pw' : pw, 'bm' : bm} + '\n'  + 
+                                '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
+                                {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                            plt.savefig('%(dir_name)s/%(stack_num)s_E_%(name)s_diag_slice_y=%(diag)sx_%(wl)s_contour_%(p)s.pdf'% \
+                                {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, \
+                                'name' : name_lay[ll],'stack_num':stack_num})
+                    
+                        elif s == 'spec+':
+                            diag = 1
+                            fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                            ax1 = fig1.add_subplot(411)
+                            if p == 'real':
+                                Ex_slice = np.real(E_x_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_x_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(sqrt(1+gradient**2)*x1[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
+                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_ylim((z_min,z_max))
+                            ax1.set_xlim((y_min,y_max))
+
+                            ax1 = fig1.add_subplot(412)
+                            if p == 'real':
+                                Ex_slice = np.real(E_y_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_y_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(sqrt(1+gradient**2)*x1[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
+                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_ylim((z_min,z_max))
+                            ax1.set_xlim((y_min,y_max))
+                            
+                            ax1 = fig1.add_subplot(413)
+                            if p == 'real':
+                                Ex_slice = np.real(E_z_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_z_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(sqrt(1+gradient**2)*x1[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
+                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_ylim((z_min,z_max))
+                            ax1.set_xlim((y_min,y_max))
+                            
+                            ax1 = fig1.add_subplot(414)
+                            Ex_slice = np.real(E_tot_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(sqrt(1+gradient**2)*x1[-1],decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'|E|')
+                            ax1.set_xlabel('y=%(grad)sx (normalised period)'%{'grad':diag*gradient})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_ylim((z_min,z_max))
+                            ax1.set_xlim((y_min,y_max))
+
+                            plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(0,0) to (%(x)s,1), heights = %(h)s \n\
+                                $\lambda$ = %(wl)s, period = %(d)s, diameter = %(dia)s, PW = %(pw)s, # BM = %(bm)s' % \
+                                {'name' : name_lay[ll], 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
+                                'pw' : pw, 'bm' : bm, 'x':x1[-1],'dia': diameter_list[0::],} + '\n' + 
+                                '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
+                                {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                            plt.savefig('%(dir_name)s/%(stack_num)s_E_%(name)s_speci_diag_slice_y=%(diag*gradient)sx_%(wl)s_contour_%(p)s.pdf'% \
+                                {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
+                                'name' : name_lay[ll],'stack_num':stack_num})
+                                
+                        elif s == 'spec-':
+                            diag = -1
+                            fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                            ax1 = fig1.add_subplot(411)
+                            if p == 'real':
+                                Ex_slice = np.real(E_x_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_x_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(sqrt(1+gradient**2)*(x1[0]-x1[-1]),decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
+                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_ylim((z_min,z_max))
+                            ax1.set_xlim((y_min,y_max))
+
+                            ax1 = fig1.add_subplot(412)
+                            if p == 'real':
+                                Ex_slice = np.real(E_y_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_y_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(sqrt(1+gradient**2)*(x1[0]-x1[-1]),decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
+                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_ylim((z_min,z_max))
+                            ax1.set_xlim((y_min,y_max))
+                            
+                            ax1 = fig1.add_subplot(413)
+                            if p == 'real':
+                                Ex_slice = np.real(E_z_array[:,0,:])
+                            elif p == 'imag':
+                                Ex_slice = np.imag(E_z_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(sqrt(1+gradient**2)*(x1[0]-x1[-1]),decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
+                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_ylim((z_min,z_max))
+                            ax1.set_xlim((y_min,y_max))
+                            
+                            ax1 = fig1.add_subplot(414)
+                            Ex_slice = np.real(E_tot_array[:,0,:])
+                            y_min = y_range[0]
+                            y_max = np.around(sqrt(1+gradient**2)*(x1[0]-x1[-1]),decimals=2)
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,Ex_slice,15,cmap=cmap)
+                            plt.axis([y_min,y_max,z_min,z_max])
+                            cbar = plt.colorbar()
+                            cbar.ax.set_ylabel(r'|E|')
+                            ax1.set_xlabel('y=%(grad)sx (normalised period)'%{'grad':diag*gradient})
+                            ax1.set_ylabel('z (normalised period)')
+                            ax1.axis('scaled')
+                            ax1.xaxis.set_ticks([y_min,y_max])
+                            ax1.set_ylim((z_min,z_max))
+                            ax1.set_xlim((y_min,y_max))
+
+                            plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(1,0) to (%(x)s,1), heights = %(h)s \n\
+                                $\lambda$ = %(wl)s, period = %(d)s, diameter = %(dia)s, PW = %(pw)s, # BM = %(bm)s' % \
+                                {'name' : name_lay[ll], 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
+                                'pw' : pw, 'bm' : bm,'x':x1[-1],'dia': diameter_list[0::],} + '\n' + 
+                                '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
+                                {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                            plt.savefig('%(dir_name)s/%(stack_num)s_E_%(name)s_speci_diag_slice_y=%(diag*gradient)sx_%(wl)s_contour_%(p)s.pdf'% \
+                                {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
+                                'name' : name_lay[ll],'stack_num':stack_num})
 
 
 
