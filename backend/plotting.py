@@ -1344,7 +1344,7 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
 
 
 ####Field plotting routines############################################################
-def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
+def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
     nu_calc_pts = 51):
     """
     Plot fields in the x-y plane at chosen values of z.
@@ -1356,13 +1356,13 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
             lay_interest  (int): the index of the layer considered within \
                 the stack.
 
-            z_values  (float): distance from bottom surface of layer at which \
-                to calculate fields. If layer is semi-inf substrate then \
-                z_value is distance from top of this layer (i.e. bottom \
+            z_values  (float): distance in nm from bottom surface of layer \
+                at which to calculate fields. If layer is semi-inf substrate \
+                then z_value is distance from top of this layer (i.e. bottom \
                 interface of stack).
 
             nu_calc_pts  (int): fields are calculated over a mesh of \
-                nu_calc_pts * nu_calc_pts points. Should be odd.
+                nu_calc_pts * nu_calc_pts points.
     """
     from fortran import EMUstack
 
@@ -1372,8 +1372,11 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
     # always make odd
     if nu_calc_pts % 2 == 0: nu_calc_pts += 1 
 
+
     stack_num = 0
     for pstack in stacks_list:
+        z_values = np.array(z_values)/float(pstack.layers[lay_interest].structure.period)
+        num_lays = len(pstack.layers)
         # If selected z location is within a NanoStruct layer
         # plot fields in Bloch Mode Basis using fortran routine.
         if isinstance(pstack.layers[lay_interest],mode_calcs.Simmo):
@@ -1382,7 +1385,8 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
             eps_eff = meat.n_effs**2
             h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
             for z_value in z_values:
-                z_value = h_normed - z_value # fortran routine naturally measure z top down
+                # fortran routine naturally measure z top down
+                z_value = h_normed - z_value
                 wl_normed = pstack.layers[lay_interest].wl_norm()
 
                 nnodes=6
@@ -1393,7 +1397,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
                 extra_name = EH_name + "Lay" + zeros_int_str(lay_interest)
 
                 # vec_coef sorted from top of stack, everything else is sorted from bottom
-                vec_index = len(pstack.layers) - lay_interest - 1
+                vec_index = num_lays - lay_interest - 1
                 vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
 
                 EMUstack.gmsh_plot_field (meat.num_BM, 
@@ -1408,22 +1412,20 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
             wl = np.around(pstack.layers[-1].light.wl_nm,decimals=2)
             pw = pstack.layers[-1].max_order_PWs
             period = pstack.layers[-1].structure.period
-            diameter_list = []
             heights_list = []
-            num_lays = len(pstack.layers)
+            name_lay = ''
             
-            for i in xrange(np.size(pstack.layers)):
+            for i in xrange(num_lays):
+                if i == 0 or i == num_lays-1:pass
+                else: heights_list.append(pstack.layers[i].structure.height_nm)
                 try:
                     pstack.layers[i].structure.diameter1
                     diameter = pstack.layers[i].structure.diameter1
-                    diameter_list.append(diameter)
                 except:pass
-                if i == 0 or i == num_lays-1:pass
-                else: heights_list.append(pstack.layers[i].structure.height_nm)
             
             if lay_interest == 0: name_lay = "0_Substrate"
-            elif lay_interest == num_lays-1: name_lay = "%i_Superstrate" % num_lays-1
-            else: name_lay = "Thin_Film_%i" % lay_interest
+            elif lay_interest == num_lays-1: name_lay = "%(i)s_Superstrate" %{'i':num_lays-1}
+            else: name_lay = "Thin_Film_%(i)s" %{'i':lay_interest}
 
             x_range = np.linspace(0.0,1.0,nu_calc_pts)
             y_range = np.linspace(0.0,1.0,nu_calc_pts)
@@ -1484,7 +1486,8 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
             x_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
             y_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
 
-            if lay_interest == 0: z_range = -1.0*z_range
+            if lay_interest == 0: z_range = -1*z_range
+            else: z_range = np.abs(z_range)
 
             x1 = x_range
             y1 = y_range
@@ -1503,8 +1506,11 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
                     for x in xrange(np.size(x1)):
                         if pstack.layers[lay_interest].structure.height_nm == 'semi_inf':
                             expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*z1[z]))
-                        elif z1[z] <= pstack.layers[lay_interest].structure.height_nm:
-                            expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*(z1[z]-pstack.layers[lay_interest].structure.height_nm)))
+                        elif z1[z] <= float(pstack.layers[lay_interest].structure.height_nm)/period:
+                            expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*(z1[z]-float(pstack.layers[lay_interest].structure.height_nm)/period)))
+                        else:
+                            raise ValueError, \
+                            "fields_in_plane: z_value exceeds thickness of layer, reduce it. "
                         expo_up = np.exp(1j*(alpha*x1[x]+beta*y1[y]+gamma*z1[z]))
 
                         E_TE_x = np.sum(eta_TE_x_down*expo_down + eta_TE_x_up*expo_up)
@@ -1544,8 +1550,8 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
                     plt.axis([x_min,x_max,y_min,y_max])
                     cbar = plt.colorbar()
                     cbar.ax.set_ylabel(r'%(part)s E_x'%{'part' : p})
-                    ax1.set_xlabel('x (normalised period)')
-                    ax1.set_ylabel('y (normalised period)')
+                    ax1.set_xlabel('x (d)')
+                    ax1.set_ylabel('y (d)')
                     ax1.axis('scaled')
                     
                     ax1 = fig1.add_subplot(412)
@@ -1564,8 +1570,8 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
                     plt.axis([x_min,x_max,y_min,y_max])
                     cbar = plt.colorbar()
                     cbar.ax.set_ylabel(r'%(part)s E_y'%{'part' : p})
-                    ax1.set_xlabel('x (normalised period)')
-                    ax1.set_ylabel('y (normalised period)')
+                    ax1.set_xlabel('x (d)')
+                    ax1.set_ylabel('y (d)')
                     ax1.axis('scaled')
                     
                     ax1 = fig1.add_subplot(413)
@@ -1584,8 +1590,8 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
                     plt.axis([x_min,x_max,y_min,y_max])
                     cbar = plt.colorbar()
                     cbar.ax.set_ylabel(r'%(part)s E_z'%{'part' : p})
-                    ax1.set_xlabel('x (normalised period)')
-                    ax1.set_ylabel('y (normalised period)')
+                    ax1.set_xlabel('x (d)')
+                    ax1.set_ylabel('y (d)')
                     ax1.axis('scaled')
                     
                     ax1 = fig1.add_subplot(414)
@@ -1601,20 +1607,20 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
                     plt.axis([x_min,x_max,y_min,y_max])
                     cbar = plt.colorbar()
                     cbar.ax.set_ylabel(r'|E|')
-                    ax1.set_xlabel('x (normalised period)')
-                    ax1.set_ylabel('y (normalised period)')
+                    ax1.set_xlabel('x (d)')
+                    ax1.set_ylabel('y (d)')
                     ax1.axis('scaled')
                     ax1.set_ylim((y_min,y_max))
 
                     plt.suptitle('%(name)s \n E_xy_slice_%(p)s, z = %(z_pos)s, heights = %(h)s \n \
-                        $\lambda$ = %(wl)snm, period = %(d)s, diameter = %(dia)s, PW = %(pw)s,' % \
-                        {'name' : name_lay[0], 'h':heights_list, 'p' : p, 'z_pos' : z1[z_of_xy],'wl' : wl, \
-                        'd' : period, 'dia': diameter_list, 'pw' : pw} + '\n' 
+                        $\lambda$ = %(wl)f nm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i,' % \
+                        {'name' : name_lay, 'h':heights_list, 'p' : p, 'z_pos' : z1[z_of_xy],'wl' : wl, \
+                        'd' : period, 'dia': diameter, 'pw' : pw} + '\n' 
                         + '# prop. ords = %(prop)s, # evan. ords = %(evan)s, n = %(n)s,k = %(k)s'\
                         % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                     plt.savefig('%(dir_name)s/stack_%(stack_num)s_E_%(name)s_xy_slice_%(z_pos)s_%(wl)s_contour_%(p)s.pdf'% \
                         {'dir_name' : dir_name, 'wl' : wl, 'p' : p, 'z_pos' : z1[z_of_xy], \
-                        'name' : name_lay[0],'stack_num':stack_num})
+                        'name' : name_lay,'stack_num':stack_num})
 
         stack_num += 1
 
@@ -1655,7 +1661,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0,10.0], \
             # # vec_coef_down[neq_PW] = 1.0
 
 
-def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
+def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
     gradient = 1.5):
     """
     Plot fields in the x-y plane at chosen values of z, where z is \
@@ -1668,7 +1674,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
             nu_calc_pts  (int): fields are calculated over a mesh of \
                 nu_calc_pts * nu_calc_pts points.
 
-            max_height  (float): 
+            max_height  (float): distance to which fields are plotting in \
+                semi-infinite (sub)superstrates.
 
             gradient  (float): 
 
@@ -1682,9 +1689,11 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
 
     # always make odd
     if nu_calc_pts % 2 == 0: nu_calc_pts += 1 
+    user_max_height = max_height
 
     stack_num = 0
     for pstack in stacks_list:
+        num_lays = len(pstack.layers)
         for lay in xrange(np.size(pstack.layers)):
             # If NanoStruct layer plot fields using fortran routine.
             if isinstance(pstack.layers[lay],mode_calcs.Simmo):
@@ -1693,24 +1702,21 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                 print "bugger not implemented yet"
 
             else:
-                name_lay = "%i_ThinFilm"% lay
+                if lay == 0: name_lay = "%i_Substrate"% lay
+                elif lay == num_lays-1: name_lay = "%i_Superstrate"% lay
+                else: name_lay = "%i_ThinFilm"% lay
                 wl = np.around(pstack.layers[-1].light.wl_nm,decimals=2)
                 pw = pstack.layers[-1].max_order_PWs
                 period = pstack.layers[-1].structure.period
-                diameter_list = []
                 heights_list = []
-                num_lays = len(pstack.layers)
                 
-                for i in xrange(np.size(pstack.layers)):
+                for i in xrange(num_lays):
+                    if i == 0 or i == num_lays-1:pass
+                    else: heights_list.append(pstack.layers[i].structure.height_nm)
                     try:
                         pstack.layers[i].structure.diameter1
                         diameter = pstack.layers[i].structure.diameter1
-                        diameter_list.append(diameter)
                     except:pass
-                    if i == 0 or i == num_lays-1:pass
-                    else: heights_list.append(pstack.layers[i].structure.height_nm)
-
-                user_max_height = max_height
 
                 x_range = np.linspace(0.0,1.0,nu_calc_pts)
                 y_range = np.linspace(0.0,1.0,nu_calc_pts)
@@ -1850,13 +1856,13 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                                     if pstack.layers[lay].structure.height_nm == 'semi_inf':
                                         expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*z1[z]))
                                     else:
-                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*(z1[z]-max_height)))
+                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*(z1[z]-float(pstack.layers[lay].structure.height_nm)/period)))
                                     expo_up = np.exp(1j*(alpha*x1[x]+beta*y2[x]+gamma*z1[z]))
                                 else:
                                     if pstack.layers[lay].structure.height_nm == 'semi_inf':
                                         expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*z1[z]))
                                     else:
-                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*(z1[z]-max_height)))
+                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*(z1[z]-float(pstack.layers[lay].structure.height_nm)/period)))
                                     expo_up = np.exp(1j*(alpha*x1[x]+beta*y1[y]+gamma*z1[z]))
 
                                 E_TE_x = np.sum(eta_TE_x_down*expo_down + eta_TE_x_up*expo_up)
@@ -1894,8 +1900,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                                 plt.axis([x_min,x_max,z_min,z_max])
                                 cbar = plt.colorbar()
                                 cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                                ax1.set_xlabel('x (normalised period)')
-                                ax1.set_ylabel('z (normalised period)')
+                                ax1.set_xlabel('x (d)')
+                                ax1.set_ylabel('z (d)')
                                 ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([x_min,x_max])
                                 ax1.set_ylim((z_min,z_max))
@@ -1914,8 +1920,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                                 plt.axis([x_min,x_max,z_min,z_max])
                                 cbar = plt.colorbar()
                                 cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                                ax1.set_xlabel('x (normalised period)')
-                                ax1.set_ylabel('z (normalised period)')
+                                ax1.set_xlabel('x (d)')
+                                ax1.set_ylabel('z (d)')
                                 ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([x_min,x_max])
                                 ax1.set_ylim((z_min,z_max))
@@ -1934,8 +1940,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                                 plt.axis([x_min,x_max,z_min,z_max])
                                 cbar = plt.colorbar()
                                 cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                                ax1.set_xlabel('x (normalised period)')
-                                ax1.set_ylabel('z (normalised period)')
+                                ax1.set_xlabel('x (d)')
+                                ax1.set_ylabel('z (d)')
                                 ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([x_min,x_max])
                                 ax1.set_ylim((z_min,z_max))
@@ -1951,16 +1957,16 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                                 plt.axis([x_min,x_max,z_min,z_max])
                                 cbar = plt.colorbar()
                                 cbar.ax.set_ylabel(r'|E|')
-                                ax1.set_xlabel('x (normalised period)')
-                                ax1.set_ylabel('z (normalised period)')
+                                ax1.set_xlabel('x (d)')
+                                ax1.set_ylabel('z (d)')
                                 ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([x_min,x_max])
                                 ax1.set_ylim((z_min,z_max))
 
                                 plt.suptitle('%(name)s \n E_xz_slice_%(p)s, y = %(y_pos)s, heights = %(h)s \n \
-                                $\lambda$ = %(wl)snm, period = %(d)s, diameter = %(dia)s, PW = %(pw)s,' % \
+                                $\lambda$ = %(wl)f nm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i,' % \
                                     {'name' : name_lay, 'h':heights_list, 'p' : p, 'y_pos' : y1[y_of_xz],'wl' : wl, \
-                                    'd' : period, 'dia': diameter_list[0::], 'pw' : pw,} + '\n' 
+                                    'd' : period, 'dia': diameter, 'pw' : pw,} + '\n' 
                                     + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
                                     'prop' : prop, 'n' : n, 'k' : k[0]})
                                 plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_xz_slice_%(y_pos)s_%(wl)s_contour_%(p)s.pdf'% \
@@ -1984,8 +1990,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                                 plt.axis([y_min,y_max,z_min,z_max])
                                 cbar = plt.colorbar()
                                 cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                                ax1.set_xlabel('y (normalised period)')
-                                ax1.set_ylabel('z (normalised period)')
+                                ax1.set_xlabel('y (d)')
+                                ax1.set_ylabel('z (d)')
                                 ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([x_min,x_max])
                                 ax1.set_ylim((z_min,z_max))
@@ -2004,8 +2010,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                                 plt.axis([y_min,y_max,z_min,z_max])
                                 cbar = plt.colorbar()
                                 cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                                ax1.set_xlabel('y (normalised period)')
-                                ax1.set_ylabel('z (normalised period)')
+                                ax1.set_xlabel('y (d)')
+                                ax1.set_ylabel('z (d)')
                                 ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([x_min,x_max])
                                 ax1.set_ylim((z_min,z_max))
@@ -2024,8 +2030,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                                 plt.axis([y_min,y_max,z_min,z_max])
                                 cbar = plt.colorbar()
                                 cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                                ax1.set_xlabel('y (normalised period)')
-                                ax1.set_ylabel('z (normalised period)')
+                                ax1.set_xlabel('y (d)')
+                                ax1.set_ylabel('z (d)')
                                 ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([x_min,x_max])
                                 ax1.set_ylim((z_min,z_max))
@@ -2041,16 +2047,16 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                                 plt.axis([y_min,y_max,z_min,z_max])
                                 cbar = plt.colorbar()
                                 cbar.ax.set_ylabel(r'|E|')
-                                ax1.set_xlabel('y (normalised period)')
-                                ax1.set_ylabel('z (normalised period)')
+                                ax1.set_xlabel('y (d)')
+                                ax1.set_ylabel('z (d)')
                                 ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([x_min,x_max])
                                 ax1.set_ylim((z_min,z_max))
 
                                 plt.suptitle('%(name)s \n E_yz_slice_%(p)s, x = %(x_pos)s, heights = %(h)s \n \
-                                    $\lambda$ = %(wl)snm, period = %(d)s, diameter = %(dia)s, PW = %(pw)s,' % \
+                                    $\lambda$ = %(wl)snm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i,' % \
                                     {'name' : name_lay, 'h':heights_list, 'p' : p, 'x_pos' : x1[x_of_yz],'wl' : wl, \
-                                    'd' : period, 'dia': diameter_list[0::], 'pw' : pw} + '\n' 
+                                    'd' : period, 'dia': diameter, 'pw' : pw} + '\n' 
                                     + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , \
                                     n = %(n)s, k = %(k)s' % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                                 plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_yz_slice_%(x_pos)s_%(wl)s_contour_%(p)s.pdf'% \
@@ -2074,8 +2080,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_xlim((y_min,y_max))
@@ -2095,8 +2101,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_xlim((y_min,y_max))
@@ -2116,8 +2122,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_xlim((y_min,y_max))
@@ -2134,17 +2140,17 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'|E|')
-                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_xlim((y_min,y_max))
                             ax1.set_ylim((z_min,z_max))
 
                             plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
-                                $\lambda$ = %(wl)s,period = %(d)s, diameter = %(dia)s, PW = %(pw)s' % \
+                                $\lambda$ = %(wl)f, period = %(d)f, diameter = %(dia)f, PW = %(pw)i' % \
                                 {'name' : name_lay, 'h':heights_list, 'p':p,'diag' : diag,'wl' : wl, 'd' : period, \
-                                'pw' : pw,'dia': diameter_list[0::]} + '\n' 
+                                'pw' : pw,'dia': diameter} + '\n' 
                                 + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_%(wl)s_contour_%(p)s.pdf'% \
@@ -2168,8 +2174,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_xlim((y_min,y_max))
@@ -2189,8 +2195,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_xlim((y_min,y_max))
@@ -2210,8 +2216,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_xlim((y_min,y_max))
@@ -2228,17 +2234,17 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'|E|')
-                            ax1.set_xlabel('x=%(diag)sy (normalised period)'%{'diag':diag})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_xlim((y_min,y_max))
                             ax1.set_ylim((z_min,z_max))
 
                             plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
-                                $\lambda$ = %(wl)snm, period = %(d)s, diameter = %(dia)s, PW = %(pw)s' % \
+                                $\lambda$ = %(wl)f nm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i' % \
                                     {'name' : name_lay, 'h':heights_list,'diag' : diag, 'p' : p,'wl' : wl, \
-                                    'd' : period, 'dia': diameter_list[0::], 'pw' : pw} + '\n'  + 
+                                    'd' : period, 'dia': diameter, 'pw' : pw} + '\n'  + 
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_%(wl)s_contour_%(p)s.pdf'% \
@@ -2262,8 +2268,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_ylim((z_min,z_max))
@@ -2283,8 +2289,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_ylim((z_min,z_max))
@@ -2304,8 +2310,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_ylim((z_min,z_max))
@@ -2322,17 +2328,17 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'|E|')
-                            ax1.set_xlabel('y=%(grad)sx (normalised period)'%{'grad':diag*gradient})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('y=%(grad)sx (d)'%{'grad':diag*gradient})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_ylim((z_min,z_max))
                             ax1.set_xlim((y_min,y_max))
 
                             plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(0,0) to (%(x)s,1), heights = %(h)s \n\
-                                $\lambda$ = %(wl)s, period = %(d)s, diameter = %(dia)s, PW = %(pw)s' % \
+                                $\lambda$ = %(wl)f, period = %(d)f, diameter = %(dia)f, PW = %(pw)i' % \
                                 {'name' : name_lay, 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
-                                'pw' : pw, 'x':x1[-1],'dia': diameter_list[0::],} + '\n' + 
+                                'pw' : pw, 'x':x1[-1],'dia': diameter,} + '\n' + 
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_speci_diag_slice_y=%(diag*gradient)sx_%(wl)s_contour_%(p)s.pdf'% \
@@ -2356,8 +2362,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_ylim((z_min,z_max))
@@ -2377,8 +2383,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_y'%{'p':p})
-                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_ylim((z_min,z_max))
@@ -2398,8 +2404,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'%(p)s E_z'%{'p':p})
-                            ax1.set_xlabel('y=%(diag)sx (normalised period)'%{'diag':diag*gradient})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_ylim((z_min,z_max))
@@ -2416,17 +2422,17 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                             plt.axis([y_min,y_max,z_min,z_max])
                             cbar = plt.colorbar()
                             cbar.ax.set_ylabel(r'|E|')
-                            ax1.set_xlabel('y=%(grad)sx (normalised period)'%{'grad':diag*gradient})
-                            ax1.set_ylabel('z (normalised period)')
+                            ax1.set_xlabel('y=%(grad)sx (d)'%{'grad':diag*gradient})
+                            ax1.set_ylabel('z (d)')
                             ax1.axis('scaled')
                             ax1.xaxis.set_ticks([y_min,y_max])
                             ax1.set_ylim((z_min,z_max))
                             ax1.set_xlim((y_min,y_max))
 
                             plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(1,0) to (%(x)s,1), heights = %(h)s \n\
-                                $\lambda$ = %(wl)s, period = %(d)s, diameter = %(dia)s, PW = %(pw)s' % \
+                                $\lambda$ = %(wl)f, period = %(d)f, diameter = %(dia)f, PW = %(pw)i' % \
                                 {'name' : name_lay, 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
-                                'pw' : pw,'x':x1[-1],'dia': diameter_list[0::],} + '\n' + 
+                                'pw' : pw,'x':x1[-1],'dia': diameter,} + '\n' + 
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_speci_diag_slice_y=%(diag*gradient)sx_%(wl)s_contour_%(p)s.pdf'% \
@@ -2434,11 +2440,6 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 5.0,\
                                 'name' : name_lay,'stack_num':stack_num})
     
     stack_num += 1
-
-
-
-
-
 
 
 def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
@@ -2466,18 +2467,19 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
     os.mkdir(dir_name)
 
     stack_num = 0
-    for pstack in stacks_list:
+    for pstack in stacks_list:        
         if isinstance(pstack.layers[lay_interest],mode_calcs.Simmo):
             raise ValueError, "field_values can only handle ThinFilm layers."
-
+        
         num_lays = len(pstack.layers)
         wl = np.around(pstack.layers[-1].light.wl_nm,decimals=2)
 
-        if lay_interest == 0: name_lay = "Substrate"
-        elif lay_interest == num_lays-1: name_lay = "Superstrate"
-        else: name_lay = "Thin_Film_%i" % lay_interest
+        if lay_interest == 0: name_lay = "0_Substrate"
+        elif lay_interest == num_lays-1: name_lay = "%i_Superstrate" % num_lays-1
+        else: name_lay = "%i_Thin_Film" % lay_interest
 
         n = pstack.layers[lay_interest].n()
+        period = pstack.layers[-1].structure.period
         PWordtot = pstack.layers[lay_interest].structure.num_pw_per_pol
         s = pstack.layers[lay_interest].sort_order
         alpha_unsrt = np.array(pstack.layers[lay_interest].alphas)
@@ -2525,27 +2527,26 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
         eta_TM_y_up = (vec_coef_up_TM*E_TM_y)/chi_TM
         eta_TM_z_up = (vec_coef_up_TM*E_TM_z)/chi_TM
 
-        calc_E_TE_x_array = np.zeros(np.size(xyz_values),dtype='complex')
-        calc_E_TE_y_array = np.zeros(np.size(xyz_values),dtype='complex')
-        calc_E_TE_z_array = np.zeros(np.size(xyz_values),dtype='complex')
-        calc_E_TM_x_array = np.zeros(np.size(xyz_values),dtype='complex')
-        calc_E_TM_y_array = np.zeros(np.size(xyz_values),dtype='complex')
-        calc_E_TM_z_array = np.zeros(np.size(xyz_values),dtype='complex')
+        calc_E_TE_x_array = np.zeros(len(xyz_values),dtype='complex')
+        calc_E_TE_y_array = np.zeros(len(xyz_values),dtype='complex')
+        calc_E_TE_z_array = np.zeros(len(xyz_values),dtype='complex')
+        calc_E_TM_x_array = np.zeros(len(xyz_values),dtype='complex')
+        calc_E_TM_y_array = np.zeros(len(xyz_values),dtype='complex')
+        calc_E_TM_z_array = np.zeros(len(xyz_values),dtype='complex')
 
         for i in xrange(len(xyz_values)):
 
-            (x1,y1,z1) = xyz_values[i]
+            (x1,y1,z1) = np.array(xyz_values[i])/float(pstack.layers[lay_interest].structure.period)
 
             if pstack.layers[lay_interest].structure.world_1d == True: y1 = 0
-            else: pass
 
             if lay_interest == 0: z1 = -1*z1
-            else:pass
+            else:z1 = np.abs(z1)
 
             if pstack.layers[lay_interest].structure.height_nm == 'semi_inf':
                 calc_expo_down = np.exp(1j*(alpha*x1+beta*y1-gamma*z1))
             else:
-                calc_expo_down = np.exp(1j*(alpha*x1+beta*y1-gamma*(z1-pstack.layers[lay_interest].structure.height_nm)))
+                calc_expo_down = np.exp(1j*(alpha*x1+beta*y1-gamma*(z1-float(pstack.layers[lay_interest].structure.height_nm)/period)))
             calc_expo_up = np.exp(1j*(alpha*x1+beta*y1+gamma*z1))
 
             calc_E_TE_x = np.sum(eta_TE_x_down*calc_expo_down + eta_TE_x_up*calc_expo_up)
@@ -2567,13 +2568,14 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
                             +calc_E_y_array*np.conj(calc_E_y_array)+calc_E_z_array*np.conj(calc_E_z_array))
 
         np.savez('%(dir_name)s/%(stack_num)s_E_calc_points_%(name)s_wl_%(wl)s'% \
-                            {'dir_name':dir_name, 'wl':wl,'name' : name_lay[0],'stack_num':stack_num},\
+                            {'dir_name':dir_name, 'wl':wl,'name' : name_lay,'stack_num':stack_num},\
                             calc_E_x_array=calc_E_x_array,calc_E_y_array=calc_E_y_array,\
                             calc_E_z_array=calc_E_z_array,calc_E_tot_array=calc_E_tot_array)
         
         np.savetxt('%(dir_name)s/%(stack_num)s_E_calc_points_%(name)s_wl_%(wl)s.txt'% \
-                            {'dir_name':dir_name, 'wl':wl,'name' : name_lay[0],'stack_num':stack_num},\
-                            np.array([calc_E_x_array, calc_E_y_array, calc_E_z_array, calc_E_tot_array]))
+                            {'dir_name':dir_name, 'wl':wl,'name' : name_lay,'stack_num':stack_num},\
+                            np.array([np.real(calc_E_x_array), np.imag(calc_E_x_array), np.real(calc_E_y_array),\
+                            np.imag(calc_E_y_array), np.real(calc_E_z_array), np.imag(calc_E_z_array), np.real(calc_E_tot_array)]))
         
         stack_num += 1
 

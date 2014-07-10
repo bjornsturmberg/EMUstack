@@ -56,7 +56,10 @@ superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.SiO2_a, loss = False)
+    material = materials.Air, loss = False)
+
+spacer  = objects.ThinFilm(period, height_nm = 200,
+    material = materials.SiO2_a, loss = True)
 
 NW_diameter = 120
 NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
@@ -71,13 +74,14 @@ def simulate_stack(light):
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
     sim_NWs         = NW_array.calc_modes(light)
+    sim_spacer      = spacer.calc_modes(light)
 
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
     stack list MUST be ordered from bottom to top!
     """
 
-    stack = Stack((sim_substrate, sim_NWs, sim_superstrate))
+    stack = Stack((sim_substrate, sim_spacer, sim_NWs, sim_superstrate))
     stack.calc_scat(pol = 'TE')
 
     return stack
@@ -87,7 +91,7 @@ def simulate_stack(light):
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-np.savez('Simo_results', stacks_list=stacks_list)
+np.savez('Simo_results', stacks_list = stacks_list)
 
 
 ######################## Plotting ########################
@@ -100,16 +104,17 @@ np.savez('Simo_results', stacks_list=stacks_list)
 # results that you wish to keep into a different folder, ideally copying the 
 # whole simo directory to future reference to simo parameters.
 #
-# plotting.fields_vertically(stacks_list)
+plotting.fields_vertically(stacks_list)
 
 # Plot fields in the x-y plane at a list of specified heights.
-plotting.fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0, 10.0])
+plotting.fields_in_plane(stacks_list, lay_interest = 2, z_values = [0.0, 2.0])
+plotting.fields_in_plane(stacks_list, lay_interest = 1, z_values = [1.0, 3.2])
 
 # Plot fields inside nanostructures in 3D which are viewed using gmsh.
-plotting.fields_3d(stacks_list)
+plotting.fields_3d(stacks_list, lay_interest = 2)
 
 # Save electric field values (all components) at a list of selected point.
-plotting.field_values(stacks_list, lay_interest = 1, xyz_values = [(4.0, 2.5, 7.0), (4.0, 2.5, 7.0)])
+plotting.field_values(stacks_list, lay_interest = 0, xyz_values = [(4.0, 2.5, 7.0), (1.0, 1.5, 3.0)])
 
 ######################## Wrapping up ########################
 # Calculate and record the (real) time taken for simulation
