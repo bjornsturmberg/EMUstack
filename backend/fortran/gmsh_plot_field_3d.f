@@ -70,7 +70,7 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c
-      dir_name = "3D_Fields"
+      dir_name = "3d_fields"
 C
 c  ii = sqrt(-1)
       ii = cmplx(0.0d0, 1.0d0)
@@ -444,7 +444,7 @@ c
       nFrame = 50
 
       tchar=dir_name(1:namelen_dir)// '/' // 
-     *           "Anim/" 
+     *           "anim/" 
      *           // 'view_' // tE_H // '_v_3d.geo'
       open (unit=29,file=tchar)
 
@@ -462,7 +462,7 @@ c       Exponential time dependence: Exp(-i omega t)
         namelen_tchar = len_trim(tchar)
         write(29,*) " Include """, tchar(1:namelen_tchar), """;"
         tchar=dir_name(1:namelen_dir)// '/' // 
-     *           "Anim/" 
+     *           "anim/" 
      *           // 'view_' // tval // '_v_3d.pos'
         open (unit=30,file=tchar)
         write(30,*) "View.IntervalsType = 3;"

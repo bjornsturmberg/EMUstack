@@ -31,6 +31,13 @@ OFFICIALLY SUPPORTED PLATFORMS
 EMUstack has been developed for use on Linux and Unix-like operating systems. It may be easily ported to other operating systems, but there are no current plans for doing so. If you are willing and able to do so, please get in contact!
 
 
+SETUP
+-------
+
+EMUstack has been developed on Ubuntu and is easiest to install on this platform. Simply sudo apt-get install the packages listed in the dependencies.txt file and then run setup.sh.
+On other linux distributions you may have to install some packages manually, hints for which are given in the documentation.
+
+
 TESTING
 -------
 

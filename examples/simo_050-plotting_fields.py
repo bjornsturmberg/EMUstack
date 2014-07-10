@@ -61,7 +61,8 @@ substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
 NW_diameter = 120
 NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
     inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
-    make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 2.0)
+    make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 2.0, \
+    plot_BMs = True, plotting3d = True)
 
 
 def simulate_stack(light):
@@ -91,16 +92,24 @@ np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Plotting ########################
 
-# Plot fields along slices through stack along the x & y axis, 
+# Plot fields on slices through stack along the x & y axis, 
 # and along the diagonals.
 # This is done through all layers of the stack and saved as png files.
-plotting.fields_vertically(stacks_list[0], wl):
+#
+# Note that all field plots of previous simulations are deleted! Move any
+# results that you wish to keep into a different folder, ideally copying the 
+# whole simo directory to future reference to simo parameters.
+#
+# plotting.fields_vertically(stacks_list)
 
-# Plot fields in the x-y plane at specified heights.
-plotting.fields_in_plane(stacks_list[0], wl):
+# Plot fields in the x-y plane at a list of specified heights.
+plotting.fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.0, 10.0])
 
 # Plot fields inside nanostructures in 3D which are viewed using gmsh.
-plotting.fields_3d(stacks_list[0], wl):
+plotting.fields_3d(stacks_list)
+
+# Save electric field values (all components) at a list of selected point.
+plotting.field_values(stacks_list, lay_interest = 1, xyz_values = [(4.0, 2.5, 7.0), (4.0, 2.5, 7.0)])
 
 ######################## Wrapping up ########################
 # Calculate and record the (real) time taken for simulation

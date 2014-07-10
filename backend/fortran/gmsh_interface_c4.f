@@ -107,7 +107,7 @@ c
       do k=i,5
         xyz(3,i) = 0.0d0  ! Z-coordinate = 0
       enddo
-      open (unit=26,file="Bloch_Fields/interface_c4.geo")
+      open (unit=26,file="Bloch_fields/interface_c4.geo")
           write(26,*) "lc = 0.101;"
           write(26,*) "x_max = ", x_max, ";"
           write(26,*) "y_max = ",  y_max, ";"

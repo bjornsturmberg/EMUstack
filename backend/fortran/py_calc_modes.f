@@ -725,7 +725,7 @@ C  Orthogonal integral
 C
 C    Save Original solution
       if (plot_modes .eq. 1) then
-        dir_name = "Bloch_Fields"
+        dir_name = "Bloch_fields"
         q_average = 0
 C        call write_sol (nval, nel, nnodes, E_H_field, lambda,
 C     *       beta1, sol1, mesh_file, dir_name)
@@ -733,7 +733,7 @@ C        call write_param (E_H_field, lambda, npt, nel, i_cond,
 C     *       nval, nvect, itermax, tol, shift, lx, ly, 
 C     *       mesh_file, mesh_format, n_conv, nb_typ_el, eps_eff,
 C     *       bloch_vec, dir_name)
-        tchar = "Bloch_Fields/PNG/All_plots_png_abs2_eE.geo"
+        tchar = "Bloch_fields/PNG/All_plots_png_abs2_eE.geo"
         open (unit=34,file=tchar)
           do i=1,nval
             call gmsh_post_process (i, E_H_field, nval, nel, npt, 

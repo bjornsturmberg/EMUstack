@@ -319,7 +319,7 @@ class Simmo(Modes):
                 struct.n_msh_el, struct.table_nod,
                 struct.type_el, struct.x_arr, itermax, FEM_debug, 
                 struct.mesh_file, self.n_effs, self.k_pll_norm()[0],
-                self.k_pll_norm()[1], shift, struct.plot_modes, 
+                self.k_pll_norm()[1], shift, struct.plot_BMs, 
                 struct.plot_real, struct.plot_imag, struct.plot_abs,
                 num_pw_per_pol, num_pw_per_pol_2d, world_1d )
 
@@ -347,7 +347,7 @@ class Simmo(Modes):
                 self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
                 self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
                 self.E_H_field, i_cond, itermax, 
-                self.structure.plot_modes, self.structure.plot_real, 
+                self.structure.plot_BMs, self.structure.plot_real, 
                 self.structure.plot_imag, self.structure.plot_abs,
                 num_pw_per_pol, cmplx_max)
 
@@ -378,9 +378,11 @@ class Simmo(Modes):
                 del self.n_msh_pts
                 del self.n_msh_el
 
-
-
-
+        ## To do, work out how to automagically process to png
+        # if self.structure.plot_BMs:
+        #     gmsh_cmd = 'gmsh '+ 'Bloch_fields/PNG/' + '*.geo'
+        #     os.system(gmsh_cmd)
+            
 
 
 def r_t_mat(lay1, lay2):

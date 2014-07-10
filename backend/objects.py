@@ -30,11 +30,11 @@ from fortran import EMUstack
 msh_location = '../backend/fortran/msh/'
 
 # Acknowledgements
-print '\n#################################################################\n' + \
+print '\n####################################################################\n' + \
       'EMUstack is brought to you by Bjorn Sturmberg, Kokou Dossou, \n' + \
       'Felix Lawrence and Lindsay Botton, with support from CUDOS and ARENA\n' + \
       'Starting EMUstack calculation ...\n' + \
-      '#################################################################\n'
+      '####################################################################\n'
 
 
 
@@ -49,20 +49,20 @@ class NanoStruct(object):
             diameter1  (float): The diameter of the inclusion in nm.
 
         Keyword Args:
-            inc_shape  (str): Shape of inclusions that have template mesh,\
+            inc_shape  (str): Shape of inclusions that have template mesh, \
                 currently; 'circle', 'ellipse', 'square', 'SRR'.
 
-            ellipticity  (float): If != 0, inclusion has given ellipticity,\
+            ellipticity  (float): If != 0, inclusion has given ellipticity, \
                 with b = diameter, a = diameter-ellipticity * diameter. \
                 NOTE: only implemented for a single inclusion.
 
             len_vertical  (float): Vertical length of split ring resonator \
                 (if inc_shape = 'SRR').
 
-            len_horizontal  (float): Horizontal length of split ring resonator\
+            len_horizontal  (float): Horizontal length of split ring resonator \
                 (if inc_shape = 'SRR').
 
-            diameter2-16  (float): The diameters of further inclusions in nm.\
+            diameter2-16  (float): The diameters of further inclusions in nm. \
                 Implemented up to diameter6 for 1D_arrays.
 
             inclusion_a  : A :Material: instance for first inclusion, \
@@ -130,15 +130,17 @@ class NanoStruct(object):
             lc_bkg  (float): Length constant of meshing of background medium \
                 (smaller = finer mesh)
 
-            lc2  (float): factor by which lc_bkg will be reduced on inclusion\
+            lc2  (float): factor by which lc_bkg will be reduced on inclusion \
                 surfaces; lc_surface = cl_bkg / lc2.
 
             lc3-6'  (float): factor by which lc_bkg will be reduced at center \
                 of inclusions.
 
-            plot_modes  (bool): Plot modes (ie. FEM solutions) in gmsh format,\
+            plot_BMs  (bool): Plot modes (ie. FEM solutions) in gmsh format, \
                 you get epsilon*|E|^2 & either real/imag/abs of \
-                x,y,z components, field vectors.
+                x,y,z components, field vectors. Fields are saved as gmsh \
+                files, but can be converted by running the .geo file found in \
+                Bloch_fields/PNG/ 
 
             plot_real  (bool): Plot the real part of modal fields.
 
@@ -166,7 +168,7 @@ class NanoStruct(object):
         make_mesh_now = True, force_mesh = False, 
         mesh_file = 'NEED_FILE.mail',
         lc_bkg = 0.09, lc2 = 1.0, lc3 = 1.0, lc4 = 1.0, lc5 = 1.0, lc6 = 1.0,
-        plot_modes = False, plot_real = 1, plot_imag = 0, plot_abs = 0,
+        plot_BMs = False, plot_real = 1, plot_imag = 0, plot_abs = 0,
         plotting3d = False, plot_field_conc=False):
         self.periodicity    = periodicity
         self.period         = period
@@ -239,11 +241,11 @@ class NanoStruct(object):
             self.make_mesh()
         else:
             self.mesh_file = mesh_file
-        if plot_modes == True:
-            self.plot_modes = 1
-            if not os.path.exists("Bloch_Fields"): os.mkdir("Bloch_Fields")
-            if not os.path.exists("Bloch_Fields/PNG"): os.mkdir("Bloch_Fields/PNG")
-        else: self.plot_modes = 0
+        if plot_BMs == True:
+            self.plot_BMs = 1
+            if not os.path.exists("Bloch_fields"): os.mkdir("Bloch_fields")
+            if not os.path.exists("Bloch_fields/PNG"): os.mkdir("Bloch_fields/PNG")
+        else: self.plot_BMs = 0
         self.plot_real       = plot_real
         self.plot_imag       = plot_imag
         self.plot_abs        = plot_abs 

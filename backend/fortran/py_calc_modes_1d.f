@@ -537,11 +537,11 @@ C
 C    Save Original solution
       if (plot_modes .eq. 1) then
         call array_sol_P2_1d (nval, nel, sol_1, sol_P2)
-        dir_name = "Bloch_Fields"
+        dir_name = "Bloch_fields"
 C        call write_sol_P2_1d (nval, nel, E_H_field,
 C     *     lambda, beta_1, sol_P2, mesh_file, dir_name)
         q_average = 0
-        tchar = "Bloch_Fields/PNG/All_plots_png_abs2_eE.geo"
+        tchar = "Bloch_fields/PNG/All_plots_png_abs2_eE.geo"
         open (unit=34,file=tchar)
         do i=1,nval
           call gmsh_post_process_1d (i, E_H_field, nval, 

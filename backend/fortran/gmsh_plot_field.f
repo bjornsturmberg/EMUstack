@@ -62,7 +62,7 @@ Cf2py depend(vec_coef) nval
 Cf2py depend(beta) nval
 
 
-      dir_name = "2D_Fields"
+      dir_name = "in_plane_fields"
 c
 c  ii = sqrt(-1)
       ii = cmplx(0.0d0, 1.0d0)
