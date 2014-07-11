@@ -4,7 +4,7 @@ c   evecs(i) : contains the values of the solution for all points
       subroutine gmsh_plot_slice (E_H_field, nval, nel, npt, nnodes, 
      *     type_el, nb_typ_el, n_eff, 
      *     table_nod, x, beta, evecs, vec_coef, h,  lambda,
-     *     gmsh_file_pos, dir_name)
+     *     gmsh_file_pos)
 
 
       implicit none
@@ -16,7 +16,8 @@ c   evecs(i) : contains the values of the solution for all points
 c     evecs(3, 1..nnodes,nval, nel)          contains the values of the 3 components at P2 interpolation nodes
 c     evecs(3, nnodes+1..nnodes+7,nval, nel) contains the values of Ez component at P3 interpolation nodes (per element: 6 edge-nodes and 1 interior node)
       complex*16 evecs(3,nnodes+7,nval,nel)
-      character*(*) gmsh_file_pos, dir_name
+      character(*) gmsh_file_pos
+      character*20 dir_name
 c
 c     Local variables
       integer alloc_stat
@@ -33,23 +34,28 @@ c     Local variables
       integer*8, allocatable :: nb_visit_D_1(:,:)
       integer*8, allocatable :: nb_visit_D_2(:,:)
 
-cc      complex*16, dimension(:,:,:,:), allocatable :: sol_3d
+      integer*8, allocatable :: info_elem(:)
       integer*8, dimension(:), allocatable :: map_p1, inv_map_p1
 
       integer*8 nnodes_0, n_quad
       parameter (nnodes_0 = 6, n_quad=4)
       double precision xel_2d(2,nnodes_0)
-      double precision xel(3,n_quad)  ! Quadrangle element
+C      Quadrangle element
+      double precision xel(3,n_quad)  
       complex*16 sol_el(3,n_quad)
       double precision sol_el_abs2(n_quad)
+
 
       complex*16 P_down, P_up, coef_down, coef_up, coef_t, coef_z
       complex*16 ii, z_tmp1, r_index
       double precision hz, dz, zz, r_tmp
 
-      integer*8 nel_3d, npt_3d  ! prism elements
-      integer*8 npt_p1  ! Number of vertices of the 2D FEM mesh
-      integer*8 npt_h, i_h, npt_3d_p1  ! Resolution: number of points over the thickness h
+C      prism elements
+      integer*8 nel_3d, npt_3d  
+C      Number of vertices of the 2D FEM mesh
+      integer*8 npt_p1  
+C      Resolution: number of points over the thickness h
+      integer*8 npt_h, i_h, npt_3d_p1  
       integer*8 i1, i, j, k, j1, iel, inod, ival, debug, ui
       integer*8 namelen_gmsh, namelen_dir, namelen_tchar
 
@@ -71,8 +77,20 @@ cc      integer*8, dimension(:), allocatable :: type_data
       double precision x_min, x_max, y_min, y_max, ls_edge(4)
       double precision dx_1, dy_1, dx_2, dy_2
       double precision dx_3, dy_3, dx_4, dy_4
-      double precision d, lx, ly, xx, yy
+      double precision d, lx, ly, xx, yy, rx, ry
 
+Cf2py intent(in) E_H_field, nval, nel, npt, nnodes
+Cf2py intent(in) type_el, nb_typ_el, n_eff, table_nod, x, beta
+Cf2py intent(in) evecs, vec_coef, h, lambda
+Cf2py intent(in) gmsh_file_pos
+
+Cf2py depend(table_nod) nnodes, nel
+Cf2py depend(type_el) nel
+Cf2py depend(x) npt
+Cf2py depend(n_eff) nb_typ_el
+Cf2py depend(evecs) nnodes, nval, nel
+Cf2py depend(vec_coef) nval
+Cf2py depend(beta) nval
 
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -83,6 +101,7 @@ c  ii = sqrt(-1)
 c
       ui = 6
       debug = 0
+      dir_name = "fields_vertically"
 
       npt_h = 10 * (h/lambda + 1) ! At least 10 nodes per wavelength
       npt_3d = npt * npt_h
@@ -107,8 +126,6 @@ c
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-      nx = 10
-      ny = 10
       x_min = x(1,1)
       x_max = x(1,1)
       do i=1,npt
@@ -128,6 +145,28 @@ c
       ls_edge(2) = x_max
       ls_edge(3) = y_min
       ls_edge(4) = y_max
+
+
+      lx = x_max - x_min  !  Length in the x direction
+      ly = y_max - y_min  !  Length in the y direction
+
+      rx = sqrt(nel * lx / (2.0d0 * ly))
+      ry = rx * ly/lx
+c     rx and ry and such that : rx * ry = 2 * nel
+
+      nx = anint(rx)
+      ny = anint(ry)
+
+      if (debug .eq. 1) then
+        write(ui,*)
+        write(ui,*) "gmsh_plot_slice: nx, ny = ", nx, ny
+        write(ui,*) "gmsh_plot_slice: rx, ry = ", rx, ry
+        write(ui,*) "gmsh_plot_slice: lx, ly = ", lx, ly
+        write(ui,*) "gmsh_plot_slice:  2 rx * ry = ", 2 * rx * ry
+        write(ui,*) "gmsh_plot_slice:   nel = ", nel
+        write(ui,*)
+      endif
+
 
       nel_X = nx
       nel_Y = ny
@@ -193,12 +232,21 @@ c
         write(*,*) "gmsh_plot_slice: Aborting..."
         stop
       endif
+
+      allocate(info_elem(nel),STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*)
+        write(*,*) "gmsh_plot_slice: ",
+     *     "The allocation is unsuccessful"
+        write(*,*) "alloc_stat = ", alloc_stat
+        write(*,*) "Not enough memory for the array info_elem"
+        write(*,*) "nel = ", nel
+        write(*,*) "gmsh_plot_slice: Aborting..."
+        stop
+      endif
+
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c
-
-      lx = x_max - x_min  !  Length in the x direction
-      ly = y_max - y_min  !  Length in the y direction
 c
       dx_1 = lx/dble(nel_X)
       dy_1 = 0
@@ -296,6 +344,10 @@ c    Initialise sol
           nb_visit_D_2(inod,iel) = 0
         enddo
       enddo
+
+      do iel=1,nel
+        info_elem(iel) = 0
+      enddo
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
@@ -315,12 +367,14 @@ c
               xel_2d(1,j) = x(1,j1)
               xel_2d(2,j) = x(2,j1)
             enddo
-            call slice_interp(nel, nval, iel, ival, i_h,
-     *       nnodes, nx, ny, nel_X, nel_Y, nel_D_1, nel_D_2, 
-     *       npt_h, ls_edge, xel_2d, evecs, coef_t, coef_z,
-     *     sol_3d_X, sol_3d_Y, sol_3d_D_1, sol_3d_D_2,
-     *     nb_visit_X, nb_visit_Y, nb_visit_D_1, nb_visit_D_2)
-
+            if (info_elem(iel) >= 0) then
+              call slice_interp(nel, nval, iel, ival, i_h,
+     *         nnodes, nx, ny, nel_X, nel_Y, nel_D_1, nel_D_2, 
+     *         npt_h, ls_edge, xel_2d, evecs, coef_t, coef_z,
+     *        sol_3d_X, sol_3d_Y, sol_3d_D_1, sol_3d_D_2,
+     *        nb_visit_X, nb_visit_Y, nb_visit_D_1, nb_visit_D_2,
+     *        info_elem)
+            endif
           enddo
         enddo
       enddo
@@ -489,30 +543,319 @@ c
       close(28)
       close(29)
       close(30)
-
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // '_abs2_sl_Y.pos'
+      open (unit=26,file=tchar)
+        write(26,*) "View.IntervalsType = 3;"
+        write(26,*) "View ""|",tE_H,"_t|^2 ", 
+     *     " "" {"
 
-      open (unit=63, file="Output/sol_3d_X.txt",
-     *         status="unknown")
-        do i_h=1,npt_h
-          do iel=1,nel_X
-            do inod=1,2
-            write(63,*) i_h, iel, inod,
-     *                 (sol_3d_X(j,inod,iel,i_h),j=1,3)
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'x_re_sl_Y.pos'
+      open (unit=27,file=tchar)
+        write(27,*) "View.IntervalsType = 3;"
+        write(27,*) "View ""Re ",tE_H,"x ", 
+     *     " "" {"
+
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'y_re_sl_Y.pos'
+      open (unit=28,file=tchar)
+        write(28,*) "View.IntervalsType = 3;"
+        write(28,*) "View ""Re ",tE_H,"y ", 
+     *     " "" {" 
+
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'z_re_sl_Y.pos'
+      open (unit=29,file=tchar)
+        write(29,*) "View.IntervalsType = 3;"
+        write(29,*) "View ""Re ",tE_H,"z ", 
+     *     " "" {"
+
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'v_re_sl_Y.pos'
+      open (unit=30,file=tchar)
+        write(30,*) "View.IntervalsType = 3;"
+        write(30,*) "View.Axes = 2;"
+        write(30,*) "View ""Re ",tE_H, " "" {"
+
+
+      dz = h/dble(npt_h-1)
+      do i_h=1,npt_h-1
+        zz = - (i_h-1)*dz  ! hz=0 => top interface; hz=-h => bottom interface
+        do iel=1,nel_Y
+          do inod=1,2
+            xel(1,inod) = x_P1_Y(1,iel+inod-1)
+            xel(2,inod) = x_P1_Y(2,iel+inod-1)
+            xel(3,inod) = zz
+          enddo
+            xel(1,3) = xel(1,2)  ! Quadrangle element
+            xel(2,3) = xel(2,2)
+            xel(3,3) = zz - dz
+            xel(1,4) = xel(1,1)  ! Quadrangle element
+            xel(2,4) = xel(2,1)
+            xel(3,4) = zz - dz
+
+
+          do inod=1,2
+            sol_el_abs2(inod) = 0.0
+            do j=1,3
+              z_tmp1 = sol_3d_Y(j,inod,iel,i_h)
+              sol_el(j,inod) = z_tmp1
+              sol_el_abs2(inod) = sol_el_abs2(inod) + 
+     *           abs(z_tmp1)**2
+            enddo
+            sol_el_abs2(5-inod) = 0.0
+            do j=1,3
+              z_tmp1 = sol_3d_Y(j,inod,iel,i_h+1)
+              sol_el(j,5-inod) = z_tmp1
+              sol_el_abs2(5-inod) = sol_el_abs2(5-inod) + 
+     *           abs(z_tmp1)**2
             enddo
           enddo
+          write(26,10) xel, sol_el_abs2
+          write(27,10) xel, (dble(sol_el(1,j)),j=1,n_quad)
+          write(28,10) xel, (dble(sol_el(2,j)),j=1,n_quad)
+          write(29,10) xel, (dble(sol_el(3,j)),j=1,n_quad)
+          write(30,11) xel, 
+     *     ((dble(sol_el(i,j)),i=1,3),j=1,n_quad)
         enddo
-      close(63)
+      enddo
+      write(26,*) "};"
+      write(27,*) "};"
+      write(28,*) "};"
+      write(29,*) "};"
+      write(30,*) "};"
+      close(26)
+      close(27)
+      close(28)
+      close(29)
+      close(30)
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // '_abs2_sl_D_1.pos'
+      open (unit=26,file=tchar)
+        write(26,*) "View.IntervalsType = 3;"
+        write(26,*) "View ""|",tE_H,"_t|^2 ", 
+     *     " "" {"
 
-      open (unit=64, file="Output/nb_visit_D_2.txt",
-     *         status="unknown")
-        do iel=1,nel_X
-          write(64,*) iel, (nb_visit_X(inod,iel),inod=1,2)
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'x_re_sl_D_1.pos'
+      open (unit=27,file=tchar)
+        write(27,*) "View.IntervalsType = 3;"
+        write(27,*) "View ""Re ",tE_H,"x ", 
+     *     " "" {"
+
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'y_re_sl_D_1.pos'
+      open (unit=28,file=tchar)
+        write(28,*) "View.IntervalsType = 3;"
+        write(28,*) "View ""Re ",tE_H,"y ", 
+     *     " "" {" 
+
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'z_re_sl_D_1.pos'
+      open (unit=29,file=tchar)
+        write(29,*) "View.IntervalsType = 3;"
+        write(29,*) "View ""Re ",tE_H,"z ", 
+     *     " "" {"
+
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'v_re_sl_D_1.pos'
+      open (unit=30,file=tchar)
+        write(30,*) "View.IntervalsType = 3;"
+        write(30,*) "View.Axes = 2;"
+        write(30,*) "View ""Re ",tE_H, " "" {"
+
+
+      dz = h/dble(npt_h-1)
+      do i_h=1,npt_h-1
+        zz = - (i_h-1)*dz  ! hz=0 => top interface; hz=-h => bottom interface
+        do iel=1,nel_D_1
+          do inod=1,2
+            xel(1,inod) = x_P1_D_1(1,iel+inod-1)
+            xel(2,inod) = x_P1_D_1(2,iel+inod-1)
+            xel(3,inod) = zz
+          enddo
+            xel(1,3) = xel(1,2)  ! Quadrangle element
+            xel(2,3) = xel(2,2)
+            xel(3,3) = zz - dz
+            xel(1,4) = xel(1,1)  ! Quadrangle element
+            xel(2,4) = xel(2,1)
+            xel(3,4) = zz - dz
+
+
+          do inod=1,2
+            sol_el_abs2(inod) = 0.0
+            do j=1,3
+              z_tmp1 = sol_3d_D_1(j,inod,iel,i_h)
+              sol_el(j,inod) = z_tmp1
+              sol_el_abs2(inod) = sol_el_abs2(inod) + 
+     *           abs(z_tmp1)**2
+            enddo
+            sol_el_abs2(5-inod) = 0.0
+            do j=1,3
+              z_tmp1 = sol_3d_D_1(j,inod,iel,i_h+1)
+              sol_el(j,5-inod) = z_tmp1
+              sol_el_abs2(5-inod) = sol_el_abs2(5-inod) + 
+     *           abs(z_tmp1)**2
+            enddo
+          enddo
+          write(26,10) xel, sol_el_abs2
+          write(27,10) xel, (dble(sol_el(1,j)),j=1,n_quad)
+          write(28,10) xel, (dble(sol_el(2,j)),j=1,n_quad)
+          write(29,10) xel, (dble(sol_el(3,j)),j=1,n_quad)
+          write(30,11) xel, 
+     *     ((dble(sol_el(i,j)),i=1,3),j=1,n_quad)
         enddo
-      close(64)
+      enddo
+      write(26,*) "};"
+      write(27,*) "};"
+      write(28,*) "};"
+      write(29,*) "};"
+      write(30,*) "};"
+      close(26)
+      close(27)
+      close(28)
+      close(29)
+      close(30)
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // '_abs2_sl_D_2.pos'
+      open (unit=26,file=tchar)
+        write(26,*) "View.IntervalsType = 3;"
+        write(26,*) "View ""|",tE_H,"_t|^2 ", 
+     *     " "" {"
 
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'x_re_sl_D_2.pos'
+      open (unit=27,file=tchar)
+        write(27,*) "View.IntervalsType = 3;"
+        write(27,*) "View ""Re ",tE_H,"x ", 
+     *     " "" {"
+
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'y_re_sl_D_2.pos'
+      open (unit=28,file=tchar)
+        write(28,*) "View.IntervalsType = 3;"
+        write(28,*) "View ""Re ",tE_H,"y ", 
+     *     " "" {" 
+
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'z_re_sl_D_2.pos'
+      open (unit=29,file=tchar)
+        write(29,*) "View.IntervalsType = 3;"
+        write(29,*) "View ""Re ",tE_H,"z ", 
+     *     " "" {"
+
+      tchar=dir_name(1:namelen_dir)// '/' // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // '_field_' // tE_H // 'v_re_sl_D_2.pos'
+      open (unit=30,file=tchar)
+        write(30,*) "View.IntervalsType = 3;"
+        write(30,*) "View.Axes = 2;"
+        write(30,*) "View ""Re ",tE_H, " "" {"
+
+
+      dz = h/dble(npt_h-1)
+      do i_h=1,npt_h-1
+        zz = - (i_h-1)*dz  ! hz=0 => top interface; hz=-h => bottom interface
+        do iel=1,nel_D_2
+          do inod=1,2
+            xel(1,inod) = x_P1_D_2(1,iel+inod-1)
+            xel(2,inod) = x_P1_D_2(2,iel+inod-1)
+            xel(3,inod) = zz
+          enddo
+            xel(1,3) = xel(1,2)  ! Quadrangle element
+            xel(2,3) = xel(2,2)
+            xel(3,3) = zz - dz
+            xel(1,4) = xel(1,1)  ! Quadrangle element
+            xel(2,4) = xel(2,1)
+            xel(3,4) = zz - dz
+
+
+          do inod=1,2
+            sol_el_abs2(inod) = 0.0
+            do j=1,3
+              z_tmp1 = sol_3d_D_2(j,inod,iel,i_h)
+              sol_el(j,inod) = z_tmp1
+              sol_el_abs2(inod) = sol_el_abs2(inod) + 
+     *           abs(z_tmp1)**2
+            enddo
+            sol_el_abs2(5-inod) = 0.0
+            do j=1,3
+              z_tmp1 = sol_3d_D_2(j,inod,iel,i_h+1)
+              sol_el(j,5-inod) = z_tmp1
+              sol_el_abs2(5-inod) = sol_el_abs2(5-inod) + 
+     *           abs(z_tmp1)**2
+            enddo
+          enddo
+          write(26,10) xel, sol_el_abs2
+          write(27,10) xel, (dble(sol_el(1,j)),j=1,n_quad)
+          write(28,10) xel, (dble(sol_el(2,j)),j=1,n_quad)
+          write(29,10) xel, (dble(sol_el(3,j)),j=1,n_quad)
+          write(30,11) xel, 
+     *     ((dble(sol_el(i,j)),i=1,3),j=1,n_quad)
+        enddo
+      enddo
+      write(26,*) "};"
+      write(27,*) "};"
+      write(28,*) "};"
+      write(29,*) "};"
+      write(30,*) "};"
+      close(26)
+      close(27)
+      close(28)
+      close(29)
+      close(30)
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+cc      open (unit=63, file="Output/sol_3d_X.txt",
+cc     *         status="unknown")
+cc        do i_h=1,npt_h
+cc          do iel=1,nel_X
+cc            do inod=1,2
+cc            write(63,*) i_h, iel, inod,
+cc     *                 (sol_3d_X(j,inod,iel,i_h),j=1,3)
+cc            enddo
+cc          enddo
+cc        enddo
+cc      close(63)
+cc
+cc      open (unit=64, file="Output/nb_visit_D_2.txt",
+cc     *         status="unknown")
+cc        do iel=1,nel_X
+cc          write(64,*) iel, (nb_visit_X(inod,iel),inod=1,2)
+cc        enddo
+cc      close(64)
+cc
+cc      open (unit=63, file="Output/info_elem.txt",
+cc     *         status="unknown")
+cc        do iel=1,nel
+cc          write(63,*) iel, info_elem(iel)
+cc        enddo
+cc      close(63)
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c

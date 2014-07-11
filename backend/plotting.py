@@ -977,18 +977,24 @@ def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, params_layer
 
 
 ####Visualise scattering matrices######################################################
-def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,add_name=''):
+def vis_scat_mats(scat_mat, nu_prop_PWs = 0, wl = None, add_name = '', \
+        max_scale = None):
     """ Plot given scattering matrix as greyscale images.
 
         Args:
-            scat_mat  (np.matrix): A scattering matrix.
+            scat_mat  (np.matrix): A scattering matrix, which is \
+                organised as \
+                | TE -> TE | TM -> TE | \
+                | TE -> TM | TM -> TM |
 
         Keyword Args:
             nu_prop_PWs  (int): Number of propagating PWs.
 
             wl  (int): Index in case of calling in a loop.
 
-            add_name  (str): Add add_name to title. 
+            add_name  (str): Add add_name to title.
+
+            max_scale  (float): Limit maximum amplitude shown.
     """
 
     fig = plt.figure(num=None, figsize=(14, 6), dpi=80, facecolor='w', edgecolor='k')
@@ -998,7 +1004,10 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,add_name=''):
         ax1 = fig.add_subplot(1,2,i)
         if i==0: image = abs(np.abs(scat_mat))
         if i==1: image = abs(np.real(scat_mat))
-        mat = ax1.matshow(image,cmap=plt.cm.gray)
+        if max_scale != None: 
+            mat = ax1.matshow(image, vmax = max_scale, cmap=plt.cm.gray)
+        else: 
+            mat = ax1.matshow(image, cmap=plt.cm.gray)
         scat_mat_dim_x = np.shape(scat_mat)[0]
         scat_mat_dim_y = np.shape(scat_mat)[1]
         half_dim_x = scat_mat_dim_x/2-0.5
@@ -1024,8 +1033,8 @@ def vis_scat_mats(scat_mat,nu_prop_PWs=0,wl=None,add_name=''):
         if i==2: ax1.set_title('|Imag(matrix)|')
         ax1.set_xticklabels('')
         ax1.set_yticklabels('')
-        ax1.set_xlabel('Incoming Orders')
-        ax1.set_ylabel('Outgoing Orders')
+        ax1.set_xlabel('Incoming Orders \nTE       |        TM', fontsize=14)
+        ax1.set_ylabel('Outgoing Orders \nTM       |        TE', fontsize=14)
         
 
     plt.suptitle('Scattering Matrices' + add_name)
@@ -1232,9 +1241,6 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
             save_txt  (bool): If True, saves average value of \
                 mean PW order to file.
     """
-
-    fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-    ax1 = fig.add_subplot(1,1,1)
     # vec_coef sorted from top of stack, everything else is sorted from bottom
     vec_index = len(stacks_list[-1].layers) - lay_interest - 1
     if chosen_PW_order == None:
@@ -1257,13 +1263,14 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
             print "evanescent_merit is guessing you have a single wavelength, else specify xvalues."
 
 
-    store_m_p     = []
-    store_m_ne    = []
-    store_m_fe    = []
-    store_x_p     = []
-    store_x_ne    = []
-    store_x_fe    = []
-    store_mean_ev = []
+    store_m_p      = []
+    store_m_ne     = []
+    store_m_fe     = []
+    store_x_p      = []
+    store_x_ne     = []
+    store_x_fe     = []
+    store_tot_amps = []
+    store_mean_ev  = []
     s = 0
     for stack in stacks_list:
         assert isinstance(stack.layers[lay_interest],objects.Anallo), \
@@ -1309,20 +1316,27 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
             store_m_fe = np.append(store_m_fe,merit_far_ev)
             store_x_fe = np.append(store_x_fe,xvalues[s])
         s+=1
-        store_mean_ev = np.append(store_mean_ev,sum_p_amps/sum_amps)
+        store_tot_amps = np.append(store_tot_amps,sum_amps)
+        store_mean_ev  = np.append(store_mean_ev,sum_p_amps/sum_amps)
 
     if add_height!= None: add_name += '_'+zeros_int_str(add_height)
     add_name = str(lay_interest) + add_name
     if save_pdf == True:
+        fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+        ax1 = fig.add_subplot(2,1,1)
         if len(store_m_p)  != 0: ax1.plot(store_x_p,store_m_p, 'b', label="prop")
         if len(store_m_ne) != 0: ax1.plot(store_x_ne,store_m_ne, 'g', label="near ev")
         if len(store_m_fe) != 0: ax1.plot(store_x_fe,store_m_fe, 'r', label="far ev")
         ax1.plot(xvalues,store_mean_ev, 'k', label=r'$\Sigma|p| |a_p| / \Sigma|a_p|$')
+        ax2 = fig.add_subplot(2,1,2)
+        ax2.plot(xvalues,store_tot_amps, 'k', label="prop")
 
         handles, labels = ax1.get_legend_handles_labels()
-        lgd = ax1.legend(handles, labels, ncol=4, loc='upper center', bbox_to_anchor=(0.5,1.2))
+        lgd = ax1.legend(handles, labels, ncol=4, loc='upper center', bbox_to_anchor=(0.5,1.6))
         ax1.set_ylabel('Ev FoM')
-        ax1.set_xlabel(xlabel)
+        ax1.set_xticklabels( () )
+        ax2.set_ylabel(r'$\Sigma|a_p|$')
+        ax2.set_xlabel(xlabel)
         plt.suptitle(add_name)
         plt.savefig('evanescent_merit-lay_%s' % add_name, \
             fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
@@ -1694,12 +1708,28 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
     stack_num = 0
     for pstack in stacks_list:
         num_lays = len(pstack.layers)
+        nnodes=6
         for lay in xrange(np.size(pstack.layers)):
+            meat = pstack.layers[lay]
             # If NanoStruct layer plot fields using fortran routine.
-            if isinstance(pstack.layers[lay],mode_calcs.Simmo):
+            if isinstance(meat,mode_calcs.Simmo):
                 name_lay = "%i_NanoStruct"% lay
-                # meat = pstack.layers[lay_interest]
-                print "bugger not implemented yet"
+
+                h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+                wl_normed = pstack.layers[lay].wl_norm()
+                gmsh_file_pos = meat.structure.mesh_file[0:-5]
+                # eps_eff = meat.n_effs**2
+                n_eff = meat.n_effs
+
+                # vec_coef sorted from top of stack, everything else is sorted from bottom
+                vec_index = num_lays - lay - 1
+                vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+
+                EMUstack.gmsh_plot_slice (meat.E_H_field, meat.num_BM, meat.n_msh_el, 
+                    meat.n_msh_pts, nnodes, meat.type_el, meat.structure.nb_typ_el, 
+                    n_eff, meat.table_nod, meat.x_arr, meat.k_z, meat.sol1, vec_coef, 
+                    h_normed, wl_normed, gmsh_file_pos)
+
 
             else:
                 if lay == 0: name_lay = "%i_Substrate"% lay
@@ -1726,20 +1756,20 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                     max_height = user_max_height
                     z_range = np.linspace(0,max_height,nu_calc_pts)
                 else:
-                    max_height = np.around(float(pstack.layers[lay].structure.height_nm)/period,decimals=4)
+                    max_height = np.around(float(meat.structure.height_nm)/period,decimals=4)
                     z_range = np.linspace(0,max_height,nu_calc_pts)
                     
-                s = pstack.layers[lay].sort_order
-                alpha_unsrt = np.array(pstack.layers[lay].alphas)
-                beta_unsrt = np.array(pstack.layers[lay].betas)
+                s = meat.sort_order
+                alpha_unsrt = np.array(meat.alphas)
+                beta_unsrt = np.array(meat.betas)
                 alpha = alpha_unsrt[s]
-                if pstack.layers[lay].structure.world_1d == True:
+                if meat.structure.world_1d == True:
                     beta = beta_unsrt
                 else:
                     beta = beta_unsrt[s]
-                gamma = np.array(pstack.layers[lay].calc_kz())
-                n = pstack.layers[lay].n()
-                PWordtot = pstack.layers[lay].structure.num_pw_per_pol
+                gamma = np.array(meat.calc_kz())
+                n = meat.n()
+                PWordtot = meat.structure.num_pw_per_pol
                 prop = 2*(gamma.imag == 0).sum()
                 evan = 2*PWordtot - prop
                 
@@ -1784,7 +1814,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                 x_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
                 y_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
                 
-                if pstack.layers[lay].structure.world_1d == True:
+                if meat.structure.world_1d == True:
                     slice_type = ['xz']
                 else:
                     slice_type = ['xz','yz','diag+','diag-','spec+','spec-']
@@ -1796,7 +1826,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                 for s in slice_type:
                     if s == 'xz':
                         x1 = x_range
-                        if pstack.layers[lay].structure.world_1d == True:
+                        if meat.structure.world_1d == True:
                             y1 = np.array([0])
                         else:
                             y1 = np.array([0,0.5])
@@ -1853,16 +1883,16 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                         for y in xrange(np.size(y1)):
                             for x in xrange(np.size(x1)):
                                 if s == 'diag+' or s == 'diag-' or s == 'spec+' or s == 'spec-':
-                                    if pstack.layers[lay].structure.height_nm == 'semi_inf':
+                                    if meat.structure.height_nm == 'semi_inf':
                                         expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*z1[z]))
                                     else:
-                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*(z1[z]-float(pstack.layers[lay].structure.height_nm)/period)))
+                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*(z1[z]-float(meat.structure.height_nm)/period)))
                                     expo_up = np.exp(1j*(alpha*x1[x]+beta*y2[x]+gamma*z1[z]))
                                 else:
-                                    if pstack.layers[lay].structure.height_nm == 'semi_inf':
+                                    if meat.structure.height_nm == 'semi_inf':
                                         expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*z1[z]))
                                     else:
-                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*(z1[z]-float(pstack.layers[lay].structure.height_nm)/period)))
+                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*(z1[z]-float(meat.structure.height_nm)/period)))
                                     expo_up = np.exp(1j*(alpha*x1[x]+beta*y1[y]+gamma*z1[z]))
 
                                 E_TE_x = np.sum(eta_TE_x_down*expo_down + eta_TE_x_up*expo_up)
@@ -2625,7 +2655,7 @@ def fields_3d(stacks_list, lay_interest = 1):
         EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,   
             meat.E_H_field, meat.n_msh_el, meat.n_msh_pts, 
             nnodes, meat.type_el, meat.structure.nb_typ_el, meat.table_nod,
-        meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos, layer_name)
+            meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos, layer_name)
 
         stack_num += 1
 #######################################################################################
