@@ -46,22 +46,23 @@ plotting.clear_previous('.pdf')
 plotting.clear_previous('.log')
 
 ################ Light parameters #####################
-wavelengths = np.linspace(1500,1600,10)
-light_list  = [objects.Light(wl, max_order_PWs = 6, theta = 0.0, phi = 0.0) \
-    for wl in wavelengths]
+azi_angles = np.linspace(-50,50,11)
+wl = 1600
+light_list  = [objects.Light(wl, max_order_PWs = 4, theta = p, phi = 0.0) \
+    for p in azi_angles]
 
 
 ################ Grating parameters #####################
 # The period must be consistent throughout a simulation!
 period = 700
 
-superstrate = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d = True,
+superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
-substrate  = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d = True,
+substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
-absorber    = objects.ThinFilm(period, height_nm = 10, world_1d = True,
+absorber    = objects.ThinFilm(period, height_nm = 10,
     material = materials.Material(2.0 + 0.05j), loss = True)
 
 grating_1 = objects.NanoStruct('1D_array', period, int(round(0.75*period)),
@@ -93,30 +94,18 @@ def simulate_stack(light):
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-np.savez('Simo_results', stacks_list = stacks_list)
+np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Post Processing ########################
-# We can plot the amplitudes of each transmitted plane wave order as a 
-# function of angle. 
-plotting.PW_amplitudes(stacks_list, add_name = '-default_substrate')
-# By default this will plot the amplitudes in the substrate, however we can also give
-# the index in the stack of a different homogeneous layer and calculate them here.
-# We here chose a subset of orders to plot.
-plotting.PW_amplitudes(stacks_list, chosen_PW_order = [-1,0,2], \
-    lay_interest = 1)
-
-# When many plane wave orders are included these last plots can become confusing,
-# so instead one may wish to sum together the amplitudes of all propagating orders,
-# of all evanescent orders, and all far-evanescent orders 
-# (which have in plane k>n_H * k0).
-plotting.evanescent_merit(stacks_list, lay_interest = 0)
-
-
-plotting.BM_amplitudes(stacks_list, lay_interest = 2)
+# We can represent the strength with which different orders are excited 
+# in k-space.
+plotting.t_func_k_plot_1D(stacks_list)
+# This corresponds to Fig 2 of Handmer et al. Optics Lett. 35, 2010.
+# (The PW_amplitudes plots correspond to Fig 1 of this paper).
 
 # Lastly we also plot the transmission, reflection and absorption of each 
 # layer and the stack.
-plotting.t_r_a_plots(stacks_list, xvalues = wavelengths)
+plotting.t_r_a_plots(stacks_list, xvalues=azi_angles)
 
 
 ######################## Wrapping up ########################

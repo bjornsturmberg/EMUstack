@@ -1128,9 +1128,72 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
 #######################################################################################
 
 
-####Plot amplitudes of PW orders#######################################################
-def amps_of_orders(stacks_list, xvalues = None, chosen_PW_order = None,\
-    lay_interest=0, add_height=None, add_name=''):
+####Plot amplitudes of modes###########################################################
+def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
+    lay_interest = 1, add_height = None, add_name = ''):
+    """ Plot the amplitudes of Bloch modes in selected layer.
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+        Keyword Args:
+            xvalues  (list): The values stacks_list is to be plotted as a \
+                function of.
+
+            chosen_BMs  (list): Bloch Modes to include, identified by their \
+                indices in the scattering matrices (order most propagating \
+                to most evanescent) eg. [0,2,4].
+
+            lay_interest  (int): The index in stacks_list of the layer in \
+                which amplitudes are calculated.
+
+            add_height  (float): Print the heights of :Stack: layer in title.
+
+            add_name  (str): Add add_name to title.
+    """
+
+    fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
+    ax1 = fig.add_subplot(1,1,1)
+    # vec_coef sorted from top of stack, everything else is sorted from bottom
+    vec_index = len(stacks_list[-1].layers) - lay_interest - 1
+
+    xlabel = 'xvalues'
+    if xvalues==None:
+        if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
+            xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
+            xlabel = r'$\lambda$ (nm)'
+        elif set(stacks_list[0].layers[0].light.k_pll) != set(stacks_list[-1].layers[0].light.k_pll):
+            xvalues = [np.sqrt(s.layers[0].light.k_pll[0]**2 + s.layers[0].light.k_pll[1]**2) for s in stacks_list]
+            xlabel = r'$|k_\parallel|$'
+        else:
+            xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
+            xlabel = r'$\lambda$ (nm)'
+            print "BM_amplitudes is guessing you have a single wavelength, else specify xvalues."
+
+    for BM in chosen_BMs:
+        store_trans = []
+        for stack in stacks_list:
+            assert isinstance(stack.layers[lay_interest],objects.Simmo), \
+            "BM_amplitudes only works in NanoStruct layers, change lay_interest input."
+
+            trans = np.abs(stack.vec_coef_down[vec_index][BM])
+            store_trans = np.append(store_trans,trans)
+
+        ax1.plot(xvalues,store_trans, label="m = %i" % BM)#, linewidth=linesstrength)
+
+    handles, labels = ax1.get_legend_handles_labels()
+    lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
+    ax1.set_ylabel('Amplitude')
+    ax1.set_xlabel(xlabel)
+    plt.suptitle(add_name)
+    if add_height!= None: add_name += '_' + zeros_int_str(add_height)
+    add_name = str(lay_interest) + add_name
+    plt.savefig('BM_amplitudes-lay_%s' % add_name, \
+        fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+
+
+def PW_amplitudes(stacks_list, xvalues = None, chosen_PW_order = None,\
+    lay_interest = 0, add_height = None, add_name = ''):
     """ Plot the amplitudes of plane wave orders in selected layer.
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
@@ -1173,13 +1236,13 @@ def amps_of_orders(stacks_list, xvalues = None, chosen_PW_order = None,\
         else:
             xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
             xlabel = r'$\lambda$ (nm)'
-            print "amps_of_orders is guessing you have a single wavelength, else specify xvalues."
+            print "PW_amplitudes is guessing you have a single wavelength, else specify xvalues."
 
     for pxs in chosen_PW_order:
         store_trans = []
         for stack in stacks_list:
             assert isinstance(stack.layers[lay_interest],objects.Anallo), \
-            "amps_of_orders only works in ThinFilm layers, change lay_interest input."
+            "PW_amplitudes only works in ThinFilm layers, change lay_interest input."
             k0 = stack.layers[0].k()
             n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
             # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
@@ -1198,7 +1261,7 @@ def amps_of_orders(stacks_list, xvalues = None, chosen_PW_order = None,\
             trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) 
             store_trans = np.append(store_trans,trans)
 
-        ax1.plot(xvalues,store_trans, label="m = %s" %str(pxs))#, linewidth=linesstrength)
+        ax1.plot(xvalues,store_trans, label="m = %i" % pxs)#, linewidth=linesstrength)
 
     handles, labels = ax1.get_legend_handles_labels()
     lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
@@ -1207,7 +1270,7 @@ def amps_of_orders(stacks_list, xvalues = None, chosen_PW_order = None,\
     plt.suptitle(add_name)
     if add_height!= None: add_name += '_' + zeros_int_str(add_height)
     add_name = str(lay_interest) + add_name
-    plt.savefig('PW_orders-lay_%s' % add_name, \
+    plt.savefig('PW_amplitudes-lay_%s' % add_name, \
         fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
