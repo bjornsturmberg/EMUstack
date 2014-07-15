@@ -17,7 +17,7 @@ c     evecs(3, 1..nnodes,nval, nel)          contains the values of the 3 compon
 c     evecs(3, nnodes+1..nnodes+7,nval, nel) contains the values of Ez component at P3 interpolation nodes (per element: 6 edge-nodes and 1 interior node)
       complex*16 evecs(3,nnodes+7,nval,nel)
       character(*) gmsh_file_pos
-      character*20 dir_name
+      character*30 dir_name
 c
 c     Local variables
       integer alloc_stat
@@ -101,7 +101,7 @@ c  ii = sqrt(-1)
 c
       ui = 6
       debug = 0
-      dir_name = "fields_vertically"
+      dir_name = "fields_vertically/gmsh_BMs"
 
       npt_h = 10 * (h/lambda + 1) ! At least 10 nodes per wavelength
       npt_3d = npt * npt_h
@@ -456,6 +456,11 @@ c
      *           // '_field_' // tE_H // '_abs2_sl_X.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.IntervalsType = 3;"
+        write(26,*) "General.Trackball = 0;"
+        write(26,*) "General.RotationX = -90;"
+        write(26,*) "General.RotationY = 0;"
+        write(26,*) "General.RotationZ = 0;"
+        write(29,*) "View.Axes = 2;"
         write(26,*) "View ""|",tE_H,"_t|^2 ", 
      *     " "" {"
 
@@ -464,6 +469,11 @@ c
      *           // '_field_' // tE_H // 'x_re_sl_X.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.IntervalsType = 3;"
+        write(27,*) "General.Trackball = 0;"
+        write(27,*) "General.RotationX = -90;"
+        write(27,*) "General.RotationY = 0;"
+        write(27,*) "General.RotationZ = 0;"
+        write(29,*) "View.Axes = 2;"
         write(27,*) "View ""Re ",tE_H,"x ", 
      *     " "" {"
 
@@ -472,6 +482,11 @@ c
      *           // '_field_' // tE_H // 'y_re_sl_X.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.IntervalsType = 3;"
+        write(28,*) "General.Trackball = 0;"
+        write(28,*) "General.RotationX = -90;"
+        write(28,*) "General.RotationY = 0;"
+        write(28,*) "General.RotationZ = 0;"
+        write(29,*) "View.Axes = 2;"
         write(28,*) "View ""Re ",tE_H,"y ", 
      *     " "" {" 
 
@@ -480,6 +495,11 @@ c
      *           // '_field_' // tE_H // 'z_re_sl_X.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.IntervalsType = 3;"
+        write(29,*) "General.Trackball = 0;"
+        write(29,*) "General.RotationX = -90;"
+        write(29,*) "General.RotationY = 0;"
+        write(29,*) "General.RotationZ = 0;"
+        write(29,*) "View.Axes = 2;"
         write(29,*) "View ""Re ",tE_H,"z ", 
      *     " "" {"
 
@@ -488,6 +508,10 @@ c
      *           // '_field_' // tE_H // 'v_re_sl_X.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.IntervalsType = 3;"
+        write(30,*) "General.Trackball = 0;"
+        write(30,*) "General.RotationX = -90;"
+        write(30,*) "General.RotationY = 0;"
+        write(30,*) "General.RotationZ = 0;"
         write(30,*) "View.Axes = 2;"
         write(30,*) "View ""Re ",tE_H, " "" {"
 
@@ -551,6 +575,11 @@ c
      *           // '_field_' // tE_H // '_abs2_sl_Y.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.IntervalsType = 3;"
+        write(26,*) "General.Trackball = 0;"
+        write(26,*) "General.RotationX = -90;"
+        write(26,*) "General.RotationY = 0;"
+        write(26,*) "General.RotationZ = -90;"
+        write(29,*) "View.Axes = 2;"
         write(26,*) "View ""|",tE_H,"_t|^2 ", 
      *     " "" {"
 
@@ -559,6 +588,11 @@ c
      *           // '_field_' // tE_H // 'x_re_sl_Y.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.IntervalsType = 3;"
+        write(27,*) "General.Trackball = 0;"
+        write(27,*) "General.RotationX = -90;"
+        write(27,*) "General.RotationY = 0;"
+        write(27,*) "General.RotationZ = -90;"
+        write(29,*) "View.Axes = 2;"
         write(27,*) "View ""Re ",tE_H,"x ", 
      *     " "" {"
 
@@ -567,6 +601,11 @@ c
      *           // '_field_' // tE_H // 'y_re_sl_Y.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.IntervalsType = 3;"
+        write(28,*) "General.Trackball = 0;"
+        write(28,*) "General.RotationX = -90;"
+        write(28,*) "General.RotationY = 0;"
+        write(28,*) "General.RotationZ = -90;"
+        write(29,*) "View.Axes = 2;"
         write(28,*) "View ""Re ",tE_H,"y ", 
      *     " "" {" 
 
@@ -575,6 +614,11 @@ c
      *           // '_field_' // tE_H // 'z_re_sl_Y.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.IntervalsType = 3;"
+        write(29,*) "General.Trackball = 0;"
+        write(29,*) "General.RotationX = -90;"
+        write(29,*) "General.RotationY = 0;"
+        write(29,*) "General.RotationZ = -90;"
+        write(29,*) "View.Axes = 2;"
         write(29,*) "View ""Re ",tE_H,"z ", 
      *     " "" {"
 
@@ -583,6 +627,10 @@ c
      *           // '_field_' // tE_H // 'v_re_sl_Y.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.IntervalsType = 3;"
+        write(30,*) "General.Trackball = 0;"
+        write(30,*) "General.RotationX = -90;"
+        write(30,*) "General.RotationY = 0;"
+        write(30,*) "General.RotationZ = -90;"
         write(30,*) "View.Axes = 2;"
         write(30,*) "View ""Re ",tE_H, " "" {"
 
@@ -646,6 +694,11 @@ c
      *           // '_field_' // tE_H // '_abs2_sl_D_1.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.IntervalsType = 3;"
+        write(26,*) "General.Trackball = 0;"
+        write(26,*) "General.RotationX = -90;"
+        write(26,*) "General.RotationY = 0;"
+        write(26,*) "General.RotationZ = 0;"
+        write(29,*) "View.Axes = 2;"
         write(26,*) "View ""|",tE_H,"_t|^2 ", 
      *     " "" {"
 
@@ -654,6 +707,11 @@ c
      *           // '_field_' // tE_H // 'x_re_sl_D_1.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.IntervalsType = 3;"
+        write(27,*) "General.Trackball = 0;"
+        write(27,*) "General.RotationX = -90;"
+        write(27,*) "General.RotationY = 0;"
+        write(27,*) "General.RotationZ = 0;"
+        write(29,*) "View.Axes = 2;"
         write(27,*) "View ""Re ",tE_H,"x ", 
      *     " "" {"
 
@@ -662,6 +720,11 @@ c
      *           // '_field_' // tE_H // 'y_re_sl_D_1.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.IntervalsType = 3;"
+        write(28,*) "General.Trackball = 0;"
+        write(28,*) "General.RotationX = -90;"
+        write(28,*) "General.RotationY = 0;"
+        write(28,*) "General.RotationZ = 0;"
+        write(29,*) "View.Axes = 2;"
         write(28,*) "View ""Re ",tE_H,"y ", 
      *     " "" {" 
 
@@ -670,6 +733,11 @@ c
      *           // '_field_' // tE_H // 'z_re_sl_D_1.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.IntervalsType = 3;"
+        write(29,*) "General.Trackball = 0;"
+        write(29,*) "General.RotationX = -90;"
+        write(29,*) "General.RotationY = 0;"
+        write(29,*) "General.RotationZ = 0;"
+        write(29,*) "View.Axes = 2;"
         write(29,*) "View ""Re ",tE_H,"z ", 
      *     " "" {"
 
@@ -678,6 +746,10 @@ c
      *           // '_field_' // tE_H // 'v_re_sl_D_1.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.IntervalsType = 3;"
+        write(30,*) "General.Trackball = 0;"
+        write(30,*) "General.RotationX = -90;"
+        write(30,*) "General.RotationY = 0;"
+        write(30,*) "General.RotationZ = 0;"
         write(30,*) "View.Axes = 2;"
         write(30,*) "View ""Re ",tE_H, " "" {"
 
@@ -741,6 +813,11 @@ c
      *           // '_field_' // tE_H // '_abs2_sl_D_2.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.IntervalsType = 3;"
+        write(26,*) "General.Trackball = 0;"
+        write(26,*) "General.RotationX = 90;"
+        write(26,*) "General.RotationY = 180;"
+        write(26,*) "General.RotationZ = 90;"
+        write(29,*) "View.Axes = 2;"
         write(26,*) "View ""|",tE_H,"_t|^2 ", 
      *     " "" {"
 
@@ -749,6 +826,11 @@ c
      *           // '_field_' // tE_H // 'x_re_sl_D_2.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.IntervalsType = 3;"
+        write(27,*) "General.Trackball = 0;"
+        write(27,*) "General.RotationX = 90;"
+        write(27,*) "General.RotationY = 180;"
+        write(27,*) "General.RotationZ = 90;"
+        write(29,*) "View.Axes = 2;"
         write(27,*) "View ""Re ",tE_H,"x ", 
      *     " "" {"
 
@@ -757,6 +839,11 @@ c
      *           // '_field_' // tE_H // 'y_re_sl_D_2.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.IntervalsType = 3;"
+        write(28,*) "General.Trackball = 0;"
+        write(28,*) "General.RotationX = 90;"
+        write(28,*) "General.RotationY = 180;"
+        write(28,*) "General.RotationZ = 90;"
+        write(29,*) "View.Axes = 2;"
         write(28,*) "View ""Re ",tE_H,"y ", 
      *     " "" {" 
 
@@ -765,6 +852,11 @@ c
      *           // '_field_' // tE_H // 'z_re_sl_D_2.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.IntervalsType = 3;"
+        write(29,*) "General.Trackball = 0;"
+        write(29,*) "General.RotationX = 90;"
+        write(29,*) "General.RotationY = 180;"
+        write(29,*) "General.RotationZ = 90;"
+        write(29,*) "View.Axes = 2;"
         write(29,*) "View ""Re ",tE_H,"z ", 
      *     " "" {"
 
@@ -773,6 +865,10 @@ c
      *           // '_field_' // tE_H // 'v_re_sl_D_2.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.IntervalsType = 3;"
+        write(30,*) "General.Trackball = 0;"
+        write(30,*) "General.RotationX = 90;"
+        write(30,*) "General.RotationY = 180;"
+        write(30,*) "General.RotationZ = 90;"
         write(30,*) "View.Axes = 2;"
         write(30,*) "View ""Re ",tE_H, " "" {"
 
@@ -828,6 +924,260 @@ c
       close(28)
       close(29)
       close(30)
+
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      tchar = "fields_vertically/All_plots_png_abs2_sl.geo"
+      open (unit=34,file=tchar)
+
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "_abs2_sl_X.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar= gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "_abs2_sl_X.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "x_re_sl_X.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "x_re_sl_X.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "y_re_sl_X.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "y_re_sl_X.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "z_re_sl_X.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "z_re_sl_X.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "v_re_sl_X.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "v_re_sl_X.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "_abs2_sl_Y.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar= gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "_abs2_sl_Y.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "x_re_sl_Y.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "x_re_sl_Y.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "y_re_sl_Y.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "y_re_sl_Y.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "z_re_sl_Y.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "z_re_sl_Y.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "v_re_sl_Y.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "v_re_sl_Y.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "_abs2_sl_D_1.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar= gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "_abs2_sl_D_1.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "x_re_sl_D_1.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "x_re_sl_D_1.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "y_re_sl_D_1.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "y_re_sl_D_1.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "z_re_sl_D_1.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "z_re_sl_D_1.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "v_re_sl_D_1.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "v_re_sl_D_1.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "_abs2_sl_D_2.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar= gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "_abs2_sl_D_2.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "x_re_sl_D_2.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "x_re_sl_D_2.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "y_re_sl_D_2.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "y_re_sl_D_2.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "z_re_sl_D_2.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "z_re_sl_D_2.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../"//dir_name(1:namelen_dir)// "/" // 
+     *           gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "v_re_sl_D_2.pos"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen_tchar), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh) 
+     *           // "_field_" // tE_H // "v_re_sl_D_2.png"
+      namelen_tchar = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
+
+
+      close (unit=34)
+
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c

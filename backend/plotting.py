@@ -1699,7 +1699,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                 semi-infinite (sub)superstrates.
 
             gradient  (float): further slices calculated with given gradient \
-                and -gradient. It is entitled 'specified_diagonal_slice'.
+                and -gradient. It is entitled 'specified_diagonal_slice'.\
+                These slices are only calculated for ThinFilm layers.
 
     """
     from fortran import EMUstack
@@ -1708,6 +1709,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
     if os.path.exists(dir_name):
         subprocess.call('rm %s -r' %dir_name, shell = True)
     os.mkdir(dir_name)
+    os.mkdir(dir_name+"/gmsh_BMs")
 
     # always make odd
     if nu_calc_pts % 2 == 0: nu_calc_pts += 1 
@@ -1723,20 +1725,25 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
             if isinstance(meat,mode_calcs.Simmo):
                 name_lay = "%i_NanoStruct"% lay
 
-                h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-                wl_normed = pstack.layers[lay].wl_norm()
-                gmsh_file_pos = meat.structure.mesh_file[0:-5]
-                # eps_eff = meat.n_effs**2
-                n_eff = meat.n_effs
+                if meat.structure.periodicity == '1D_array':
+                    print "Sorry, field plotting inside 1D_arrays not yet implemented."
+                    print ""
 
-                # vec_coef sorted from top of stack, everything else is sorted from bottom
-                vec_index = num_lays - lay - 1
-                vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+                else:
+                    h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+                    wl_normed = pstack.layers[lay].wl_norm()
+                    gmsh_file_pos = meat.structure.mesh_file[0:-5]
+                    # eps_eff = meat.n_effs**2
+                    n_eff = meat.n_effs
 
-                EMUstack.gmsh_plot_slice (meat.E_H_field, meat.num_BM, meat.n_msh_el, 
-                    meat.n_msh_pts, nnodes, meat.type_el, meat.structure.nb_typ_el, 
-                    n_eff, meat.table_nod, meat.x_arr, meat.k_z, meat.sol1, vec_coef, 
-                    h_normed, wl_normed, gmsh_file_pos)
+                    # vec_coef sorted from top of stack, everything else is sorted from bottom
+                    vec_index = num_lays - lay - 1
+                    vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+
+                    EMUstack.gmsh_plot_slice (meat.E_H_field, meat.num_BM, meat.n_msh_el, 
+                        meat.n_msh_pts, nnodes, meat.type_el, meat.structure.nb_typ_el, 
+                        n_eff, meat.table_nod, meat.x_arr, meat.k_z, meat.sol1, vec_coef, 
+                        h_normed, wl_normed, gmsh_file_pos)
 
 
             else:
