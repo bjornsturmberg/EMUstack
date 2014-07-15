@@ -1639,7 +1639,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
                         'd' : period, 'dia': diameter, 'pw' : pw} + '\n' 
                         + '# prop. ords = %(prop)s, # evan. ords = %(evan)s, n = %(n)s,k = %(k)s'\
                         % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                    plt.savefig('%(dir_name)s/stack_%(stack_num)s_E_%(name)s_slice=%(z_pos)s_%(wl)s_contour_%(p)s.pdf'% \
+                    plt.savefig('%(dir_name)s/stack_%(stack_num)s_E_%(name)s_slice=%(z_pos)s_%(wl)s_%(p)s.pdf'% \
                         {'dir_name' : dir_name, 'wl' : wl, 'p' : p, 'z_pos' : z1[z_of_xy], \
                         'name' : name_lay,'stack_num':stack_num})
 
@@ -1732,7 +1732,9 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                 else:
                     h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
                     wl_normed = pstack.layers[lay].wl_norm()
-                    gmsh_file_pos = meat.structure.mesh_file[0:-5]
+                    # gmsh_file_pos = meat.structure.mesh_file[0:-5]
+                    gmsh_file_pos = 'stack_%(stack_num)s_lay_%(name)s_'% \
+                                    {'name' : name_lay,'stack_num':stack_num}
                     # eps_eff = meat.n_effs**2
                     n_eff = meat.n_effs
 
@@ -1963,7 +1965,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                     'd' : period, 'dia': diameter, 'pw' : pw,} + '\n' 
                                     + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
                                     'prop' : prop, 'n' : n, 'k' : k[0]})
-                                plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_xz_slice=%(y_pos)s_%(wl)s_contour_%(p)s.pdf'% \
+                                plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_xz_slice=%(y_pos)s_%(wl)s_%(p)s.pdf'% \
                                     {'dir_name' : dir_name,'p':p, 'wl' : wl, 'y_pos' : y1[y_of_xz], \
                                     'name' : name_lay,'stack_num':stack_num})
                       
@@ -1998,7 +2000,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                     'd' : period, 'dia': diameter, 'pw' : pw} + '\n' 
                                     + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , \
                                     n = %(n)s, k = %(k)s' % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                                plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_yz_slice=%(x_pos)s_%(wl)s_contour_%(p)s.pdf'% \
+                                plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_yz_slice=%(x_pos)s_%(wl)s_%(p)s.pdf'% \
                                     {'dir_name' : dir_name, 'p':p, 'wl' : wl, 'x_pos' : x1[x_of_yz],\
                                     'name' : name_lay,'stack_num':stack_num})
                       
@@ -2034,7 +2036,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 'pw' : pw,'dia': diameter} + '\n' 
                                 + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_%(wl)s_contour_%(p)s.pdf'% \
+                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_%(wl)s_%(p)s.pdf'% \
                                 {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, \
                                 'name' : name_lay,'stack_num':stack_num})
                                     
@@ -2070,7 +2072,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                     'd' : period, 'dia': diameter, 'pw' : pw} + '\n'  + 
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_%(wl)s_contour_%(p)s.pdf'% \
+                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_%(wl)s_%(p)s.pdf'% \
                                 {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, \
                                 'name' : name_lay,'stack_num':stack_num})
 
@@ -2106,7 +2108,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 'pw' : pw, 'x':x1[-1],'dia': diameter,} + '\n' + 
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_%(wl)s_contour_%(p)s.pdf'% \
+                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_%(wl)s_%(p)s.pdf'% \
                                 {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
                                 'name' : name_lay,'stack_num':stack_num})
                                 
@@ -2142,7 +2144,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 'pw' : pw,'x':x1[-1],'dia': diameter,} + '\n' + 
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_%(wl)s_contour_%(p)s.pdf'% \
+                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_%(wl)s_%(p)s.pdf'% \
                                 {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
                                 'name' : name_lay,'stack_num':stack_num})
     

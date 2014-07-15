@@ -453,7 +453,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // '_abs2_sl_X.pos'
+     *           // tE_H // '_abs2_sl_X.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.IntervalsType = 3;"
         write(26,*) "General.Trackball = 0;"
@@ -466,7 +466,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'x_re_sl_X.pos'
+     *           // tE_H // 'x_re_sl_X.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "General.Trackball = 0;"
@@ -479,7 +479,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'y_re_sl_X.pos'
+     *           // tE_H // 'y_re_sl_X.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "General.Trackball = 0;"
@@ -492,7 +492,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'z_re_sl_X.pos'
+     *           // tE_H // 'z_re_sl_X.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "General.Trackball = 0;"
@@ -505,7 +505,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'v_re_sl_X.pos'
+     *           // tE_H // 'v_re_sl_X.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.IntervalsType = 3;"
         write(30,*) "General.Trackball = 0;"
@@ -572,7 +572,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // '_abs2_sl_Y.pos'
+     *           // tE_H // '_abs2_sl_Y.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.IntervalsType = 3;"
         write(26,*) "General.Trackball = 0;"
@@ -585,7 +585,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'x_re_sl_Y.pos'
+     *           // tE_H // 'x_re_sl_Y.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "General.Trackball = 0;"
@@ -598,7 +598,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'y_re_sl_Y.pos'
+     *           // tE_H // 'y_re_sl_Y.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "General.Trackball = 0;"
@@ -611,7 +611,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'z_re_sl_Y.pos'
+     *           // tE_H // 'z_re_sl_Y.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "General.Trackball = 0;"
@@ -624,7 +624,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'v_re_sl_Y.pos'
+     *           // tE_H // 'v_re_sl_Y.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.IntervalsType = 3;"
         write(30,*) "General.Trackball = 0;"
@@ -691,7 +691,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // '_abs2_sl_D_1.pos'
+     *           // tE_H // '_abs2_sl_D_1.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.IntervalsType = 3;"
         write(26,*) "General.Trackball = 0;"
@@ -704,7 +704,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'x_re_sl_D_1.pos'
+     *           // tE_H // 'x_re_sl_D_1.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "General.Trackball = 0;"
@@ -717,7 +717,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'y_re_sl_D_1.pos'
+     *           // tE_H // 'y_re_sl_D_1.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "General.Trackball = 0;"
@@ -730,7 +730,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'z_re_sl_D_1.pos'
+     *           // tE_H // 'z_re_sl_D_1.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "General.Trackball = 0;"
@@ -743,7 +743,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'v_re_sl_D_1.pos'
+     *           // tE_H // 'v_re_sl_D_1.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.IntervalsType = 3;"
         write(30,*) "General.Trackball = 0;"
@@ -810,7 +810,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // '_abs2_sl_D_2.pos'
+     *           // tE_H // '_abs2_sl_D_2.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.IntervalsType = 3;"
         write(26,*) "General.Trackball = 0;"
@@ -823,7 +823,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'x_re_sl_D_2.pos'
+     *           // tE_H // 'x_re_sl_D_2.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "General.Trackball = 0;"
@@ -836,7 +836,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'y_re_sl_D_2.pos'
+     *           // tE_H // 'y_re_sl_D_2.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "General.Trackball = 0;"
@@ -849,7 +849,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'z_re_sl_D_2.pos'
+     *           // tE_H // 'z_re_sl_D_2.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "General.Trackball = 0;"
@@ -862,7 +862,7 @@ c
 
       tchar=dir_name(1:namelen_dir)// '/' // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // '_field_' // tE_H // 'v_re_sl_D_2.pos'
+     *           // tE_H // 'v_re_sl_D_2.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.IntervalsType = 3;"
         write(30,*) "General.Trackball = 0;"
@@ -933,11 +933,11 @@ c
 
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "_abs2_sl_X.pos"
+     *           // tE_H // "_abs2_sl_X.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar= gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "_abs2_sl_X.png"
+     *           // tE_H // "_abs2_sl_X.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -945,11 +945,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "x_re_sl_X.pos"
+     *           // tE_H // "x_re_sl_X.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "x_re_sl_X.png"
+     *           // tE_H // "x_re_sl_X.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -957,11 +957,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "y_re_sl_X.pos"
+     *           // tE_H // "y_re_sl_X.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "y_re_sl_X.png"
+     *           // tE_H // "y_re_sl_X.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -969,11 +969,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "z_re_sl_X.pos"
+     *           // tE_H // "z_re_sl_X.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "z_re_sl_X.png"
+     *           // tE_H // "z_re_sl_X.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -981,11 +981,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "v_re_sl_X.pos"
+     *           // tE_H // "v_re_sl_X.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "v_re_sl_X.png"
+     *           // tE_H // "v_re_sl_X.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 c
@@ -995,11 +995,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "_abs2_sl_Y.pos"
+     *           // tE_H // "_abs2_sl_Y.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar= gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "_abs2_sl_Y.png"
+     *           // tE_H // "_abs2_sl_Y.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1007,11 +1007,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "x_re_sl_Y.pos"
+     *           // tE_H // "x_re_sl_Y.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "x_re_sl_Y.png"
+     *           // tE_H // "x_re_sl_Y.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1019,11 +1019,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "y_re_sl_Y.pos"
+     *           // tE_H // "y_re_sl_Y.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "y_re_sl_Y.png"
+     *           // tE_H // "y_re_sl_Y.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1031,11 +1031,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "z_re_sl_Y.pos"
+     *           // tE_H // "z_re_sl_Y.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "z_re_sl_Y.png"
+     *           // tE_H // "z_re_sl_Y.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1043,11 +1043,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "v_re_sl_Y.pos"
+     *           // tE_H // "v_re_sl_Y.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "v_re_sl_Y.png"
+     *           // tE_H // "v_re_sl_Y.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 c
@@ -1057,11 +1057,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "_abs2_sl_D_1.pos"
+     *           // tE_H // "_abs2_sl_D_1.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar= gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "_abs2_sl_D_1.png"
+     *           // tE_H // "_abs2_sl_D_1.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1069,11 +1069,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "x_re_sl_D_1.pos"
+     *           // tE_H // "x_re_sl_D_1.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "x_re_sl_D_1.png"
+     *           // tE_H // "x_re_sl_D_1.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1081,11 +1081,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "y_re_sl_D_1.pos"
+     *           // tE_H // "y_re_sl_D_1.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "y_re_sl_D_1.png"
+     *           // tE_H // "y_re_sl_D_1.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1093,11 +1093,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "z_re_sl_D_1.pos"
+     *           // tE_H // "z_re_sl_D_1.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "z_re_sl_D_1.png"
+     *           // tE_H // "z_re_sl_D_1.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1105,11 +1105,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "v_re_sl_D_1.pos"
+     *           // tE_H // "v_re_sl_D_1.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "v_re_sl_D_1.png"
+     *           // tE_H // "v_re_sl_D_1.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 c
@@ -1119,11 +1119,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "_abs2_sl_D_2.pos"
+     *           // tE_H // "_abs2_sl_D_2.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar= gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "_abs2_sl_D_2.png"
+     *           // tE_H // "_abs2_sl_D_2.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1131,11 +1131,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "x_re_sl_D_2.pos"
+     *           // tE_H // "x_re_sl_D_2.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "x_re_sl_D_2.png"
+     *           // tE_H // "x_re_sl_D_2.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1143,11 +1143,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "y_re_sl_D_2.pos"
+     *           // tE_H // "y_re_sl_D_2.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "y_re_sl_D_2.png"
+     *           // tE_H // "y_re_sl_D_2.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1155,11 +1155,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "z_re_sl_D_2.pos"
+     *           // tE_H // "z_re_sl_D_2.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "z_re_sl_D_2.png"
+     *           // tE_H // "z_re_sl_D_2.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
@@ -1167,11 +1167,11 @@ c
       write(34,*) "Delete View[0];"
       tchar = "../"//dir_name(1:namelen_dir)// "/" // 
      *           gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "v_re_sl_D_2.pos"
+     *           // tE_H // "v_re_sl_D_2.pos"
       namelen_tchar = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen_tchar), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh) 
-     *           // "_field_" // tE_H // "v_re_sl_D_2.png"
+     *           // tE_H // "v_re_sl_D_2.png"
       namelen_tchar = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen_tchar), """);"
 
