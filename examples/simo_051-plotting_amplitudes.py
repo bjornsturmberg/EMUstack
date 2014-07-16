@@ -102,7 +102,7 @@ plotting.PW_amplitudes(stacks_list, add_name = '-default_substrate')
 # By default this will plot the amplitudes in the substrate, however we can also give
 # the index in the stack of a different homogeneous layer and calculate them here.
 # We here chose a subset of orders to plot.
-plotting.PW_amplitudes(stacks_list, chosen_PW_order = [-1,0,2], \
+plotting.PW_amplitudes(stacks_list, chosen_PWs = [-1,0,2], \
     lay_interest = 1)
 
 # When many plane wave orders are included these last plots can become confusing,
@@ -112,7 +112,7 @@ plotting.PW_amplitudes(stacks_list, chosen_PW_order = [-1,0,2], \
 plotting.evanescent_merit(stacks_list, lay_interest = 0)
 
 
-plotting.BM_amplitudes(stacks_list, lay_interest = 2)
+plotting.BM_amplitudes(stacks_list, lay_interest = 2, chosen_BMs = [0,1,2,3,4,5])
 
 # Lastly we also plot the transmission, reflection and absorption of each 
 # layer and the stack.

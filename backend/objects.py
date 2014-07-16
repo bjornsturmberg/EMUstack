@@ -731,7 +731,7 @@ class NanoStruct(object):
             # Then clean up local variables.
             del nel, npt, table_nod, ls_x, type_el, el_list
 
-# Latency of old 1D grating meshed in 2D.
+        # Latency of old 1D grating meshed in 2D.
 
         # elif self.periodicity == '1D_array':
         #     if self.diameter2 > 0:

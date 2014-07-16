@@ -840,7 +840,8 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
 
 ####Plot dispersion diagrams & field concentrations as function of wavelength##########
 def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
-    """ Plots the dispersion diagram of each layer in one plot. 
+    """ Plots the dispersion diagram of each layer in one plot. \
+        k_z has units nm^-1.
 
         Args:
             stacks_list  (list): Stack objects containing data to plot.
@@ -887,12 +888,12 @@ def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
             ax3.plot(real_k_zs,om,'bo', linewidth=linesstrength)
             om = np.ones(len(imag_k_zs))*normed_omegas[i]
             ax4.plot(imag_k_zs, om,'ro', linewidth=linesstrength)
-        ax1.set_ylabel(r'Real $k_zd$'), ax2.set_ylabel(r'Imaginary $k_zd$')
+        ax1.set_ylabel(r'Real $k_z$'), ax2.set_ylabel(r'Imaginary $k_z$')
         ax3.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)'), ax4.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)')
         if l == 0: 
             ax1.set_ylabel('Bottom Layer'), ax2.set_ylabel('Bottom Layer')
             ax3.set_ylabel('Bottom Layer'), ax4.set_ylabel('Bottom Layer')
-            ax3.set_xlabel(r'Real $k_zd$'), ax4.set_xlabel(r'Imaginary $k_zd$')
+            ax3.set_xlabel(r'Real $k_z$'), ax4.set_xlabel(r'Imaginary $k_z$')
             ax1.set_xlabel('Wavelength (nm)'), ax2.set_xlabel('Wavelength (nm)')
         else:
             ax1.set_xticklabels( () )
@@ -1133,6 +1134,8 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
     lay_interest = 1, add_height = None, add_name = ''):
     """ Plot the amplitudes of Bloch modes in selected layer.
 
+        Takes the average of up & downward propagating modes.
+
         Args:
             stacks_list  (list): Stack objects containing data to plot.
 
@@ -1177,13 +1180,15 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
             "BM_amplitudes only works in NanoStruct layers, change lay_interest input."
 
             trans = np.abs(stack.vec_coef_down[vec_index][BM])
-            store_trans = np.append(store_trans,trans)
+            trans += np.abs(stack.vec_coef_up[vec_index][BM])
+            # Take average of up & downward propagating modes.
+            store_trans = np.append(store_trans,trans/2) 
 
-        ax1.plot(xvalues,store_trans, label="m = %i" % BM)#, linewidth=linesstrength)
+        ax1.plot(xvalues,store_trans, label="BM %i" % BM)
 
     handles, labels = ax1.get_legend_handles_labels()
     lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
-    ax1.set_ylabel('Amplitude')
+    ax1.set_ylabel('BM Amplitude')
     ax1.set_xlabel(xlabel)
     plt.suptitle(add_name)
     if add_height!= None: add_name += '_' + zeros_int_str(add_height)
@@ -1192,11 +1197,12 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
         fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
-def PW_amplitudes(stacks_list, xvalues = None, chosen_PW_order = None,\
+def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
     lay_interest = 0, add_height = None, add_name = ''):
     """ Plot the amplitudes of plane wave orders in selected layer.
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
+        Takes the average of up & downward propagating modes.
 
         Args:
             stacks_list  (list): Stack objects containing data to plot.
@@ -1205,7 +1211,7 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PW_order = None,\
             xvalues  (list): The values stacks_list is to be plotted as a \
                 function of.
 
-            chosen_PW_order  (list): PW diffraction orders to include. \
+            chosen_PWs  (list): PW diffraction orders to include. \
                 eg. [-1,0,2]. If 'None' are given all are plotted.
 
             lay_interest  (int): The index in stacks_list of the layer in \
@@ -1220,10 +1226,10 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PW_order = None,\
     ax1 = fig.add_subplot(1,1,1)
     # vec_coef sorted from top of stack, everything else is sorted from bottom
     vec_index = len(stacks_list[-1].layers) - lay_interest - 1
-    if chosen_PW_order == None:
+    if chosen_PWs == None:
         # Create arrays of grating order indexes (-p, ..., p)
         max_ords = stacks_list[0].layers[-1].max_order_PWs
-        chosen_PW_order = np.arange(-max_ords, max_ords + 1)
+        chosen_PWs = np.arange(-max_ords, max_ords + 1)
 
     xlabel = 'xvalues'
     if xvalues==None:
@@ -1238,7 +1244,7 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PW_order = None,\
             xlabel = r'$\lambda$ (nm)'
             print "PW_amplitudes is guessing you have a single wavelength, else specify xvalues."
 
-    for pxs in chosen_PW_order:
+    for pxs in chosen_PWs:
         store_trans = []
         for stack in stacks_list:
             assert isinstance(stack.layers[lay_interest],objects.Anallo), \
@@ -1257,9 +1263,14 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PW_order = None,\
             axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
             # Outgoing TE polarisation
             trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
+            if vec_index != len(stacks_list[-1].layers) - 1: # no upward mode in substrate
+                trans += np.abs(stack.vec_coef_up[vec_index][axis_indices]).reshape(-1,)
             # Outgoing TM polarisation
-            trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) 
-            store_trans = np.append(store_trans,trans)
+            trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
+            if vec_index != len(stacks_list[-1].layers) - 1: # no upward mode in substrate
+                trans += np.abs(stack.vec_coef_up[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) 
+            # Take average of up & downward propagating modes.
+            store_trans = np.append(store_trans,trans/2)
 
         ax1.plot(xvalues,store_trans, label="m = %i" % pxs)#, linewidth=linesstrength)
 
@@ -1274,7 +1285,7 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PW_order = None,\
         fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
-def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
+def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,\
     lay_interest = 0, add_height = None, add_name = '', \
     save_pdf = True, save_txt = False):
     """ Plot a figure of merit for the 'evanescent-ness' of excited fields. 
@@ -1288,7 +1299,7 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
             xvalues  (list): The values stacks_list is to be plotted as a \
                 function of.
 
-            chosen_PW_order  (list): PW diffraction orders to include. \
+            chosen_PWs  (list): PW diffraction orders to include. \
                 eg. [-1,0,2].
 
             lay_interest  (int): The index in stacks_list of the layer in \
@@ -1306,10 +1317,10 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
     """
     # vec_coef sorted from top of stack, everything else is sorted from bottom
     vec_index = len(stacks_list[-1].layers) - lay_interest - 1
-    if chosen_PW_order == None:
+    if chosen_PWs == None:
         # Create arrays of grating order indexes (-p, ..., p)
         max_ords = stacks_list[0].layers[-1].max_order_PWs
-        chosen_PW_order = np.arange(-max_ords, max_ords + 1)
+        chosen_PWs = np.arange(-max_ords, max_ords + 1)
     n_H = max_n(stacks_list)
 
     xlabel = 'xvalues'
@@ -1343,7 +1354,7 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PW_order = None,\
         merit_far_ev  = 0.0
         sum_p_amps    = 0.0
         sum_amps      = 0.0
-        for pxs in chosen_PW_order:
+        for pxs in chosen_PWs:
             k0 = stack.layers[-1].k() # Incident k0
             k = stack.layers[lay_interest].k() # k in film
             n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
