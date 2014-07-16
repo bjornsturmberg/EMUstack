@@ -1131,10 +1131,8 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
 
 ####Plot amplitudes of modes###########################################################
 def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
-    lay_interest = 1, add_height = None, add_name = ''):
+    lay_interest = 1, up_and_down = False, add_height = None, add_name = ''):
     """ Plot the amplitudes of Bloch modes in selected layer.
-
-        Takes the average of up & downward propagating modes.
 
         Args:
             stacks_list  (list): Stack objects containing data to plot.
@@ -1149,6 +1147,9 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
 
             lay_interest  (int): The index in stacks_list of the layer in \
                 which amplitudes are calculated.
+
+            up_and_down  (bool): If True average the amplitudes of up & \
+                downward propagating modes.
 
             add_height  (float): Print the heights of :Stack: layer in title.
 
@@ -1180,9 +1181,11 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
             "BM_amplitudes only works in NanoStruct layers, change lay_interest input."
 
             trans = np.abs(stack.vec_coef_down[vec_index][BM])
-            trans += np.abs(stack.vec_coef_up[vec_index][BM])
-            # Take average of up & downward propagating modes.
-            store_trans = np.append(store_trans,trans/2) 
+            if up_and_down == True: # Take average of up & downward propagating modes.
+                trans += np.abs(stack.vec_coef_up[vec_index][BM])
+                store_trans = np.append(store_trans,trans/2) 
+            else:
+                store_trans = np.append(store_trans,trans)
 
         ax1.plot(xvalues,store_trans, label="BM %i" % BM)
 
@@ -1198,7 +1201,7 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
 
 
 def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
-    lay_interest = 0, add_height = None, add_name = ''):
+    lay_interest = 0, up_and_down = False, add_height = None, add_name = ''):
     """ Plot the amplitudes of plane wave orders in selected layer.
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
@@ -1216,6 +1219,9 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
 
             lay_interest  (int): The index in stacks_list of the layer in \
                 which amplitudes are calculated.
+
+            up_and_down  (bool): If True average the amplitudes of up & \
+                downward propagating modes.
 
             add_height  (float): Print the heights of :Stack: layer in title.
 
@@ -1263,16 +1269,17 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
             axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
             # Outgoing TE polarisation
             trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
-            if vec_index != len(stacks_list[-1].layers) - 1: # no upward mode in substrate
-                trans += np.abs(stack.vec_coef_up[vec_index][axis_indices]).reshape(-1,)
             # Outgoing TM polarisation
             trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
-            if vec_index != len(stacks_list[-1].layers) - 1: # no upward mode in substrate
-                trans += np.abs(stack.vec_coef_up[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) 
-            # Take average of up & downward propagating modes.
-            store_trans = np.append(store_trans,trans/2)
+            if up_and_down == True: # Take average of up & downward propagating modes.
+                if vec_index != len(stacks_list[-1].layers) - 1: # no upward mode in substrate
+                    trans += np.abs(stack.vec_coef_up[vec_index][axis_indices]).reshape(-1,)
+                    trans += np.abs(stack.vec_coef_up[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) 
+                store_trans = np.append(store_trans,trans/2)
+            else:
+                store_trans = np.append(store_trans,trans)
 
-        ax1.plot(xvalues,store_trans, label="m = %i" % pxs)#, linewidth=linesstrength)
+        ax1.plot(xvalues,store_trans, label="m = %i" % pxs)
 
     handles, labels = ax1.get_legend_handles_labels()
     lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
@@ -1650,7 +1657,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
                         'd' : period, 'dia': diameter, 'pw' : pw} + '\n' 
                         + '# prop. ords = %(prop)s, # evan. ords = %(evan)s, n = %(n)s,k = %(k)s'\
                         % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                    plt.savefig('%(dir_name)s/stack_%(stack_num)s_E_%(name)s_slice=%(z_pos)s_%(wl)s_%(p)s.pdf'% \
+                    plt.savefig('%(dir_name)s/stack_%(stack_num)s_E_%(name)s_slice=%(z_pos)s_wl=%(wl)s_%(p)s.pdf'% \
                         {'dir_name' : dir_name, 'wl' : wl, 'p' : p, 'z_pos' : z1[z_of_xy], \
                         'name' : name_lay,'stack_num':stack_num})
 
@@ -1694,7 +1701,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
 
 
 def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
-    gradient = None):
+    gradient = None, scale_axis = True):
     """
     Plot fields in the x-y plane at chosen values of z, where z is \
     calculated from the bottom of chosen layer.
@@ -1713,6 +1720,9 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                 and -gradient. It is entitled 'specified_diagonal_slice'.\
                 These slices are only calculated for ThinFilm layers.
 
+            scale_axis  (bool): scale vertical axis in proportion to unit \
+                cell. Set to False if you wish to see greater detail in thin \
+                film etc.
     """
     from fortran import EMUstack
 
@@ -1965,7 +1975,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                     cbar.ax.set_ylabel(p + E_sup_labels[i])
                                     ax1.set_xlabel('x (d)')
                                     ax1.set_ylabel('z (d)')
-                                    ax1.axis('scaled')
+                                    if scale_axis == True: ax1.axis('scaled')
                                     ax1.xaxis.set_ticks([x_min,x_max])
                                     ax1.set_ylim((z_min,z_max))
                                     if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
@@ -1976,7 +1986,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                     'd' : period, 'dia': diameter, 'pw' : pw,} + '\n' 
                                     + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
                                     'prop' : prop, 'n' : n, 'k' : k[0]})
-                                plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_xz_slice=%(y_pos)s_%(wl)s_%(p)s.pdf'% \
+                                plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_xz_slice=%(y_pos)s_wl=%(wl)s_%(p)s.pdf'% \
                                     {'dir_name' : dir_name,'p':p, 'wl' : wl, 'y_pos' : y1[y_of_xz], \
                                     'name' : name_lay,'stack_num':stack_num})
                       
@@ -2000,7 +2010,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                     cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
                                     ax1.set_xlabel('y (d)')
                                     ax1.set_ylabel('z (d)')
-                                    ax1.axis('scaled')
+                                    if scale_axis == True: ax1.axis('scaled')
                                     ax1.xaxis.set_ticks([x_min,x_max])
                                     ax1.set_ylim((z_min,z_max))
                                     if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
@@ -2011,7 +2021,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                     'd' : period, 'dia': diameter, 'pw' : pw} + '\n' 
                                     + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , \
                                     n = %(n)s, k = %(k)s' % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                                plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_yz_slice=%(x_pos)s_%(wl)s_%(p)s.pdf'% \
+                                plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_yz_slice=%(x_pos)s_wl=%(wl)s_%(p)s.pdf'% \
                                     {'dir_name' : dir_name, 'p':p, 'wl' : wl, 'x_pos' : x1[x_of_yz],\
                                     'name' : name_lay,'stack_num':stack_num})
                       
@@ -2035,7 +2045,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
                                 ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
                                 ax1.set_ylabel('z (d)')
-                                ax1.axis('scaled')
+                                if scale_axis == True: ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([y_min,y_max])
                                 ax1.set_xlim((y_min,y_max))
                                 ax1.set_ylim((z_min,z_max))
@@ -2047,7 +2057,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 'pw' : pw,'dia': diameter} + '\n' 
                                 + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_%(wl)s_%(p)s.pdf'% \
+                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_wl=%(wl)s_%(p)s.pdf'% \
                                 {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, \
                                 'name' : name_lay,'stack_num':stack_num})
                                     
@@ -2071,7 +2081,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
                                 ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
                                 ax1.set_ylabel('z (d)')
-                                ax1.axis('scaled')
+                                if scale_axis == True: ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([y_min,y_max])
                                 ax1.set_xlim((y_min,y_max))
                                 ax1.set_ylim((z_min,z_max))
@@ -2083,7 +2093,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                     'd' : period, 'dia': diameter, 'pw' : pw} + '\n'  + 
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_%(wl)s_%(p)s.pdf'% \
+                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_wl=%(wl)s_%(p)s.pdf'% \
                                 {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, \
                                 'name' : name_lay,'stack_num':stack_num})
 
@@ -2107,7 +2117,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
                                 ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
                                 ax1.set_ylabel('z (d)')
-                                ax1.axis('scaled')
+                                if scale_axis == True: ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([y_min,y_max])
                                 ax1.set_ylim((z_min,z_max))
                                 ax1.set_xlim((y_min,y_max))
@@ -2119,7 +2129,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 'pw' : pw, 'x':x1[-1],'dia': diameter,} + '\n' + 
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_%(wl)s_%(p)s.pdf'% \
+                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_wl=%(wl)s_%(p)s.pdf'% \
                                 {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
                                 'name' : name_lay,'stack_num':stack_num})
                                 
@@ -2143,7 +2153,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
                                 ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
                                 ax1.set_ylabel('z (d)')
-                                ax1.axis('scaled')
+                                if scale_axis == True: ax1.axis('scaled')
                                 ax1.xaxis.set_ticks([y_min,y_max])
                                 ax1.set_ylim((z_min,z_max))
                                 ax1.set_xlim((y_min,y_max))
@@ -2155,7 +2165,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 'pw' : pw,'x':x1[-1],'dia': diameter,} + '\n' + 
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_%(wl)s_%(p)s.pdf'% \
+                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_wl=%(wl)s_%(p)s.pdf'% \
                                 {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
                                 'name' : name_lay,'stack_num':stack_num})
     

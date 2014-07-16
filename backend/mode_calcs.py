@@ -325,8 +325,6 @@ class Simmo(Modes):
 
             self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1, self.sol2 = resm
 
-            self.k_z = self.k_z / st.period # make k_z have units nm^-1
-
             if self.structure.world_1d == True:
                 self.J, self.J_dag = np.mat(J), np.mat(J_dag)
             else:
@@ -356,8 +354,6 @@ class Simmo(Modes):
             self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
             self.table_nod, self.type_el, self.x_arr = resm
             self.J, self.J_dag = np.mat(J), np.mat(J_dag)
-
-            self.k_z = self.k_z / st.period # make k_z have units nm^-1
             
         else:
             raise ValueError,  "NanoStruct layer must have periodicity of \
