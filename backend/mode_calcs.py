@@ -1,9 +1,8 @@
 """
-    mode_calcs.py is a subroutine of EMUstack that contains methods to 
-    calculate the modes of a given layer, either analytically 
+    mode_calcs.py is a subroutine of EMUstack that contains methods to
+    calculate the modes of a given layer, either analytically
     (class 'Anallo') or from the FEM routine (class 'Simmo').
-"""
-"""
+
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
@@ -97,7 +96,7 @@ class Modes(object):
 class Anallo(Modes):
     """ Interaction of one :Light: object with one :ThinFilm: object.
 
-        Like a :Simmo:, but for a thin film, and calculated analytically. 
+        Like a :Simmo:, but for a thin film, and calculated analytically.
     """
     def __init__(self, thin_film, light):
         self.structure     = thin_film
@@ -118,7 +117,7 @@ class Anallo(Modes):
         if self.structure.world_1d == True:
             # Calculate vectors of pxs
             pxs = self.calc_1d_grating_orders(self.max_order_PWs)
-            # Calculate k_x (alphas) and k_y (betas) components of 
+            # Calculate k_x (alphas) and k_y (betas) components of
             # scattered PWs using the grating equation.
             alpha0, beta0 = self.k_pll_norm()
             alphas = alpha0 + pxs * 2 * pi / d
@@ -153,7 +152,7 @@ class Anallo(Modes):
         else:
             s = self.air_ref().sort_order
             self.sort_order = s
-            assert s.shape == k_z_unsrt.shape, (s.shape, 
+            assert s.shape == k_z_unsrt.shape, (s.shape,
                 k_z_unsrt.shape)
 
         # Find element of k_z_unsrt corresponding to zeroth order
@@ -241,7 +240,7 @@ class Anallo(Modes):
 class Simmo(Modes):
     """ Interaction of one :Light: object with one :NanoStruc: object.
 
-        Inherits knowledge of :NanoStruc:, :Light: objects 
+        Inherits knowledge of :NanoStruc:, :Light: objects
         Stores the calculated modes of :NanoStruc: for illumination by :Light:
     """
     def __init__(self, structure, light):
@@ -256,7 +255,7 @@ class Simmo(Modes):
         structured layer. """
         st = self.structure
         wl = self.light.wl_nm
-        self.n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl), 
+        self.n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl),
             st.inclusion_b.n(wl)])
         self.n_effs = self.n_effs[:self.structure.nb_typ_el]
         if self.structure.loss == False:
@@ -277,7 +276,7 @@ class Simmo(Modes):
         assert self.num_BM > num_pw_per_pol * 2, \
         "You must include at least as many BMs as PWs. \n" + \
         "Currently you have %(bm)i BMs < %(np)i PWs." % {
-            'bm': self.num_BM, 'np': num_pw_per_pol * 2} 
+            'bm': self.num_BM, 'np': num_pw_per_pol * 2}
 
         # Parameters that control how FEM routine runs
         self.E_H_field = 1  # Selected formulation (1=E-Field, 2=H-Field)
@@ -293,7 +292,7 @@ class Simmo(Modes):
                 os.mkdir("Output")
 
         # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
-        max_n = np.real(self.n_effs).max() # Take real part so that complex conjugate pair 
+        max_n = np.real(self.n_effs).max() # Take real part so that complex conjugate pair
         # Eigenvalues are equal distance from shift and invert point and therefore both found.
         k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
         if self.structure.hyperbolic == True:
@@ -312,14 +311,14 @@ class Simmo(Modes):
                 world_1d = 0
                 pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
                 num_pw_per_pol_2d = pxs.size
-            
+
             struct = self.structure
-            resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BM, 
-                self.max_order_PWs, struct.nb_typ_el, struct.n_msh_pts, 
+            resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BM,
+                self.max_order_PWs, struct.nb_typ_el, struct.n_msh_pts,
                 struct.n_msh_el, struct.table_nod,
-                struct.type_el, struct.x_arr, itermax, FEM_debug, 
+                struct.type_el, struct.x_arr, itermax, FEM_debug,
                 struct.mesh_file, self.n_effs, self.k_pll_norm()[0],
-                self.k_pll_norm()[1], shift, struct.plot_BMs, 
+                self.k_pll_norm()[1], shift, struct.plot_BMs,
                 struct.plot_real, struct.plot_imag, struct.plot_abs,
                 num_pw_per_pol, num_pw_per_pol_2d, world_1d )
 
@@ -343,18 +342,18 @@ class Simmo(Modes):
             cmplx_max = 2**27#30
 
             resm = EMUstack.calc_2d_modes(
-                self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
+                self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug,
                 self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
                 self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
-                self.E_H_field, i_cond, itermax, 
-                self.structure.plot_BMs, self.structure.plot_real, 
+                self.E_H_field, i_cond, itermax,
+                self.structure.plot_BMs, self.structure.plot_real,
                 self.structure.plot_imag, self.structure.plot_abs,
                 num_pw_per_pol, cmplx_max)
 
             self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
             self.table_nod, self.type_el, self.x_arr = resm
             self.J, self.J_dag = np.mat(J), np.mat(J_dag)
-            
+
         else:
             raise ValueError,  "NanoStruct layer must have periodicity of \
                 either '1D_array' or '2D_array'."
@@ -382,7 +381,7 @@ class Simmo(Modes):
         # if self.structure.plot_BMs:
         #     gmsh_cmd = 'gmsh '+ 'Bloch_fields/PNG/' + '*.geo'
         #     os.system(gmsh_cmd)
-            
+
 
 
 def r_t_mat(lay1, lay2):
@@ -410,12 +409,12 @@ def r_t_mat(lay1, lay2):
         ref_trans = r_t_mat_tf_ns(lay1, lay2)
     elif isinstance(lay1, Simmo) and isinstance(lay2, Anallo):
         R21, T21, R12, T12 = r_t_mat_tf_ns(lay2, lay1)
-        ref_trans = R12, T12, R21, T21 
+        ref_trans = R12, T12, R21, T21
     elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
         raise NotImplementedError, \
             "Sorry! For, now you can put an extremely thin film between your \
             NanoStructs"
-    
+
     # Store its R and T matrices for later use
     _interfaces_i_have_known[id(lay1), id(lay2)] = ref_trans
     return ref_trans
@@ -455,7 +454,7 @@ def r_t_mat_tf_ns(an1, sim2):
         `Dossou et al., JOSA A, Vol. 29, Issue 5, pp. 817-831 (2012)\
          <http://dx.doi.org/10.1364/JOSAA.29.000817>`_
 
-        But we use Zw = 1/(Zcr X) instead of X, so that an1 does not 
+        But we use Zw = 1/(Zcr X) instead of X, so that an1 does not
         have to be free space.
     """
     Z1_sqrt_inv = np.sqrt(1/an1.Z()).reshape((1,-1))

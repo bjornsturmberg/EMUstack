@@ -1,9 +1,8 @@
 """
     materials.py is a subroutine of EMUstack that defines Material objects,
-    these represent dispersive lossy refractive indices and possess 
+    these represent dispersive lossy refractive indices and possess
     methods to interpolate n from tabulated data.
-"""
-"""
+
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
@@ -29,7 +28,7 @@ class Material(object):
     """ Represents a material with a refractive index n.
 
         If the material is dispersive, the refractive index at a given
-        wavelength is calculated by linear interpolation from the 
+        wavelength is calculated by linear interpolation from the
         initially given data `n`. Materials may also have `n` calculated
         from a Drude model with input parameters.
 
@@ -139,7 +138,7 @@ class Material(object):
             self._n = lambda x: self.data_ns
         elif self.data_wls == 'Drude':
             self._n = lambda x: np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
-        else:                   
+        else:
             self._n = interp1d(self.data_wls, self.data_ns)
 
 
@@ -178,7 +177,7 @@ Cu         = Material(np.loadtxt('%sCu_Palik.txt'% data_location))    # Palik
 Au_drude   = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
 
 
-# Use the below to plot the interpolated refractive indices 
+# Use the below to plot the interpolated refractive indices
 
 # import matplotlib
 # matplotlib.use('pdf')
@@ -188,7 +187,7 @@ Au_drude   = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
 #     ax1 = fig.add_subplot(2,1,1)
 #     ax1.plot(wavelengths, np.real(data))
 #     ax1.set_xlabel('Wavelength (nm)')
-#     ax1.set_ylabel('n')    
+#     ax1.set_ylabel('n')
 #     ax1 = fig.add_subplot(2,1,2)
 #     ax1.plot(wavelengths, np.imag(data))
 #     ax1.set_xlabel('Wavelength (nm)')

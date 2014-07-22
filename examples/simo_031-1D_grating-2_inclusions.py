@@ -86,13 +86,13 @@ def simulate_stack(light):
     sim_superstrate = superstrate.calc_modes(light)
     sim_grating     = grating.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
-    ################ Evaluate stacked structure ##############
-    """ Now when defining full structure order is critical and
-    stack MUST be ordered from bottom to top!
+    ###################### Evaluate structure ######################
+    """ Now define full structure. Here order is critical and
+        stack list MUST be ordered from bottom to top!
     """
     # For demonstration we only simulate one of the gratings defined above.
     stack = Stack((sim_substrate, sim_grating, sim_superstrate))
-    stack.calc_scat(pol = 'TM')
+    stack.calc_scat(pol = 'TE')
 
     return stack
 

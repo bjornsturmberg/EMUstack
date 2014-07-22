@@ -80,9 +80,9 @@ def simulate_stack(light):
     sim_TF_2 = TF_2.calc_modes(light)
     sim_TF_3 = TF_3.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
-    ################ Evaluate stacked structure ##############
-    """ Now when defining full structure order is critical and
-    stack MUST be ordered from bottom to top!
+    ###################### Evaluate structure ######################
+    """ Now define full structure. Here order is critical and
+        stack list MUST be ordered from bottom to top!
     """
 # Put semi-inf substrate below thick mirror so that propagating energy is defined.
     stack = Stack((sim_substrate, sim_mirror, sim_TF_3, sim_TF_2, sim_superstrate))

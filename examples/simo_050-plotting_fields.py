@@ -76,9 +76,9 @@ def simulate_stack(light):
     sim_NWs         = NW_array.calc_modes(light)
     sim_spacer      = spacer.calc_modes(light)
 
-    ################ Evaluate full solar cell structure ##############
-    """ Now when defining full structure order is critical and
-    stack list MUST be ordered from bottom to top!
+    ###################### Evaluate structure ######################
+    """ Now define full structure. Here order is critical and
+        stack list MUST be ordered from bottom to top!
     """
 
     stack = Stack((sim_substrate, sim_spacer, sim_NWs, sim_superstrate))

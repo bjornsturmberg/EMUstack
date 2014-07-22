@@ -1,10 +1,9 @@
 """
     objects.py is a subroutine of EMUstack that contains the NanoStruct,
-    ThinFilm and Light objects. These represent the properties of a 
+    ThinFilm and Light objects. These represent the properties of a
     structured layer, a homogeneous layer and the incident light
     respectively.
-"""
-"""
+
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
@@ -97,13 +96,13 @@ class NanoStruct(object):
             ff_rand  (bool): If True, diameters overwritten with random \
                 diameters, s.t. the ff is as assigned. Must provide non-zero \
                 dummy diameters.
-            
+
             posx  (float): Shift NWs laterally towards center (each other), \
                 posx is a fraction of the distance possible before NWs touch.
 
             posy  (float): Shift NWs vertically towards center (each other), \
                 posx is a fraction of the distance possible before NWs touch.
-     
+
             small_space  (float): Only for 1D_arrays with 2 interleaved \
                 inclusions. Sets distance between edges of inclusions. \
                 By default (d_in_nm - diameter1 - diameter2) / 2. \
@@ -140,7 +139,7 @@ class NanoStruct(object):
                 you get epsilon*|E|^2 & either real/imag/abs of \
                 x,y,z components, field vectors. Fields are saved as gmsh \
                 files, but can be converted by running the .geo file found in \
-                Bloch_fields/PNG/ 
+                Bloch_fields/PNG/
 
             plot_real  (bool): Plot the real part of modal fields.
 
@@ -153,19 +152,19 @@ class NanoStruct(object):
 
 
     def __init__(self, periodicity, period, diameter1,
-        inc_shape = 'circle', ellipticity = 0.0, 
-        ff = 0, ff_rand=False, small_space = None, edge_spacing = False, 
+        inc_shape = 'circle', ellipticity = 0.0,
+        ff = 0, ff_rand=False, small_space = None, edge_spacing = False,
         len_vertical = 0, len_horizontal = 0,
-        inclusion_a = materials.Material(3.0 + 0.1j), 
+        inclusion_a = materials.Material(3.0 + 0.1j),
         inclusion_b = materials.Material(3.0 + 0.1j),
         background = materials.Material(1.0 + 0.0j),
-        loss = True, height_nm = 100, 
-        diameter2 = 0,  diameter3 = 0, diameter4 = 0, diameter5 = 0,  
-        diameter6 = 0, diameter7 = 0, diameter8 = 0, diameter9 = 0, 
+        loss = True, height_nm = 100,
+        diameter2 = 0,  diameter3 = 0, diameter4 = 0, diameter5 = 0,
+        diameter6 = 0, diameter7 = 0, diameter8 = 0, diameter9 = 0,
         diameter10 = 0, diameter11 = 0, diameter12 = 0, diameter13 = 0,
-        diameter14 = 0, diameter15 = 0, diameter16 = 0, 
+        diameter14 = 0, diameter15 = 0, diameter16 = 0,
         hyperbolic = False, world_1d = None, posx = 0, posy = 0,
-        make_mesh_now = True, force_mesh = False, 
+        make_mesh_now = True, force_mesh = False,
         mesh_file = 'NEED_FILE.mail',
         lc_bkg = 0.09, lc2 = 1.0, lc3 = 1.0, lc4 = 1.0, lc5 = 1.0, lc6 = 1.0,
         plot_BMs = False, plot_real = 1, plot_imag = 0, plot_abs = 0,
@@ -219,7 +218,7 @@ class NanoStruct(object):
             else:
                 self.diameter1 = 2*np.sqrt((ff*(period)**2)/np.pi)
         self.ff_rand       = ff_rand
-        if world_1d == None: 
+        if world_1d == None:
             if periodicity == '1D_array':
                 self.world_1d = True
             if periodicity == '2D_array':
@@ -248,7 +247,7 @@ class NanoStruct(object):
         else: self.plot_BMs = 0
         self.plot_real       = plot_real
         self.plot_imag       = plot_imag
-        self.plot_abs        = plot_abs 
+        self.plot_abs        = plot_abs
         self.plotting3d      = plotting3d
         self.plot_field_conc = plot_field_conc
 
@@ -258,21 +257,21 @@ class NanoStruct(object):
                 if self.diameter10 > 0:
                     supercell = 16
                     msh_name  =  '%(d)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s_%(diassss)s' % {
-                   'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1), 
-                   'dias' : dec_float_str(self.diameter2), 'dias' : dec_float_str(self.diameter2), 
-                   'diass' : dec_float_str(self.diameter3),'diasss' : dec_float_str(self.diameter4), 
+                   'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1),
+                   'dias' : dec_float_str(self.diameter2), 'dias' : dec_float_str(self.diameter2),
+                   'diass' : dec_float_str(self.diameter3),'diasss' : dec_float_str(self.diameter4),
                    'diassss' : dec_float_str(self.diameter5)}
                 elif self.diameter5 > 0:
                     supercell = 9
                     msh_name  =  '%(d)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s_%(diassss)s' % {
-                   'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1), 
+                   'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1),
                    'dias' : dec_float_str(self.diameter2), 'diass' : dec_float_str(self.diameter3),
                    'diasss' : dec_float_str(self.diameter4), 'diassss' : dec_float_str(self.diameter5)}
                 elif self.diameter4 > 0:
                     supercell = 4
                     msh_name  =  '%(d)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s' % {
-                   'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1), 
-                   'dias' : dec_float_str(self.diameter2), 'diass' : dec_float_str(self.diameter3), 
+                   'd' : dec_float_str(self.period), 'dia' : dec_float_str(self.diameter1),
+                   'dias' : dec_float_str(self.diameter2), 'diass' : dec_float_str(self.diameter3),
                    'diasss' : dec_float_str(self.diameter4)}
                 elif self.diameter3 > 0:
                     supercell = 3
@@ -281,11 +280,11 @@ class NanoStruct(object):
                    'dias' : dec_float_str(self.diameter2), 'diass' : dec_float_str(self.diameter3)}
                 elif self.diameter2 > 0:
                     supercell = 2
-                    msh_name  =  '%(d)s_%(dia)s_%(dias)s' % {'d' : dec_float_str(self.period), 
+                    msh_name  =  '%(d)s_%(dia)s_%(dias)s' % {'d' : dec_float_str(self.period),
                     'dia' : dec_float_str(self.diameter1), 'diameters' : dec_float_str(self.diameter2)}
                 elif self.diameter1 > 0:
                     supercell = 1
-                    msh_name  =  '%(d)s_%(dia)s' % {'d' : dec_float_str(self.period), 
+                    msh_name  =  '%(d)s_%(dia)s' % {'d' : dec_float_str(self.period),
                     'dia' : dec_float_str(self.diameter1)}
                 else:
                     raise ValueError, "must have at least one cylinder of nonzero diameter."
@@ -406,7 +405,7 @@ class NanoStruct(object):
                     geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
                     geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
 
-            else: 
+            else:
                 raise NotImplementedError, "\n Selected inc_shape = '%s' \n \
                 is not currently implemented. Please make a mesh with gmsh, & \n \
                 consider contributing this to EMUstack via github." % self.inc_shape
@@ -452,7 +451,7 @@ class NanoStruct(object):
 
             if self.diameter6 > 0:
                 msh_name  =  '%(d)s_%(di)s_%(dis)s_%(diss)s_%(disss)s_%(dissss)s_%(disssss)s' % {
-               'd' : dec_float_str(self.period), 'di' : dec_float_str(self.diameter1), 
+               'd' : dec_float_str(self.period), 'di' : dec_float_str(self.diameter1),
                'dis' : dec_float_str(self.diameter2), 'diss' : dec_float_str(self.diameter3),
                'disss' : dec_float_str(self.diameter4), 'dissss' : dec_float_str(self.diameter5),
                'disssss' : dec_float_str(self.diameter6)}
@@ -519,7 +518,7 @@ class NanoStruct(object):
                             type_el[i_el] = 1
             elif self.diameter5 > 0:
                 msh_name  =  '%(d)s_%(di)s_%(dis)s_%(diss)s_%(disss)s_%(dissss)s' % {
-               'd' : dec_float_str(self.period), 'di' : dec_float_str(self.diameter1), 
+               'd' : dec_float_str(self.period), 'di' : dec_float_str(self.diameter1),
                'dis' : dec_float_str(self.diameter2), 'diss' : dec_float_str(self.diameter3),
                'disss' : dec_float_str(self.diameter4), 'dissss' : dec_float_str(self.diameter5)}
                 # End-points of the elements
@@ -574,8 +573,8 @@ class NanoStruct(object):
                             type_el[i_el] = 1
             elif self.diameter4 > 0:
                 msh_name  =  '%(d)s_%(di)s_%(dis)s_%(diss)s_%(disss)s' % {
-               'd' : dec_float_str(self.period), 'di' : dec_float_str(self.diameter1), 
-               'dis' : dec_float_str(self.diameter2), 'diss' : dec_float_str(self.diameter3), 
+               'd' : dec_float_str(self.period), 'di' : dec_float_str(self.diameter1),
+               'dis' : dec_float_str(self.diameter2), 'diss' : dec_float_str(self.diameter3),
                'disss' : dec_float_str(self.diameter4)}
                 # End-points of the elements
                 rad_1 = self.diameter1/(2.0*self.period)
@@ -674,7 +673,7 @@ class NanoStruct(object):
                 # End-points of the elements
                 rad_1 = self.diameter1/(2.0*self.period)
                 rad_2 = self.diameter2/(2.0*self.period)
-                if self.small_space == None: 
+                if self.small_space == None:
                     small_space = large_d = 0.5 - rad_1 - rad_2
                 else:
                     large_d = 1.0 - small_space - (2*rad_1) - (2*rad_2)
@@ -691,7 +690,7 @@ class NanoStruct(object):
                     else:
                         type_el[i_el] = 1
             elif self.diameter1 > 0:
-                msh_name  =  '1D_%(d)s_%(diameter)s' % {'d' : dec_float_str(self.period), 
+                msh_name  =  '1D_%(d)s_%(diameter)s' % {'d' : dec_float_str(self.period),
                     'diameter' : dec_float_str(self.diameter1)}
                 # End-points of the elements
                 rad_1 = self.diameter1/(2.0*self.period)
@@ -741,14 +740,14 @@ class NanoStruct(object):
         #        'diameters' : dec_float_str(self.diameter2)}
         #     elif self.diameter1 > 0:
         #         supercell = 1
-        #         msh_name  =  '1D_%(d)s_%(diameter)s' % {'d' : dec_float_str(self.period), 
+        #         msh_name  =  '1D_%(d)s_%(diameter)s' % {'d' : dec_float_str(self.period),
         #             'diameter' : dec_float_str(self.diameter1)}
         #     else:
         #         raise ValueError, "must have at least one grating of nonzero width."
 
-        #     self.mesh_file = msh_name + '.mail'    
+        #     self.mesh_file = msh_name + '.mail'
 
-            
+
         #     if not os.path.exists(msh_location + msh_name + '.mail') or force_mesh == True:
         #         geo_tmp = open(msh_location + '1D_%s_msh_template.geo' % supercell, "r").read()
         #         geo = geo_tmp.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
@@ -777,7 +776,7 @@ class NanoStruct(object):
         #         #     geo = geo.replace('lc5 = lc/1;', "lc5 = lc/%f;" % self.lc5)
 
 
-        #         open(msh_location + msh_name + '.geo', "w").write(geo)              
+        #         open(msh_location + msh_name + '.geo', "w").write(geo)
         #         EMUstack.conv_gmsh(msh_location+msh_name)
         #         # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.msh'
         #         # gmsh_cmd = 'gmsh '+ msh_location + msh_name + '.geo'
@@ -797,7 +796,7 @@ class NanoStruct(object):
             Returns:
                 :Simmo: object
         """
-        simmo = Simmo(self, light) 
+        simmo = Simmo(self, light)
 
         simmo.calc_modes(**args)
         return simmo
@@ -830,7 +829,7 @@ class ThinFilm(object):
 
             loss  (bool): If False sets Im(n) = 0, if True leaves n as is.
     """
-    def __init__(self, period, height_nm = 1000, num_pw_per_pol=0, 
+    def __init__(self, period, height_nm = 1000, num_pw_per_pol=0,
         world_1d = False, material = materials.Material(3.0 + 0.001), loss = True):
         self.period         = period
         self.world_1d       = world_1d
@@ -838,7 +837,7 @@ class ThinFilm(object):
         self.num_pw_per_pol = num_pw_per_pol
         self.material       = material
         self.loss           = loss
-    
+
     def calc_modes(self, light):
         """ Run a simulation to find the ThinFilm's modes.
 
@@ -868,8 +867,8 @@ class Light(object):
 
         `wl_nm` and `k_pll` are both in unnormalised units.
 
-        At normal incidence and TE polarisation the E-field is aligned 
-        vertically (parallel to the y-axis).
+        At normal incidence and TE polarisation the E-field is aligned
+        with the y-axis.
 
         At normal incidence some plane waves and Bloch modes become degenerate.
         This causes problems for the FEM solver and the ordering of the plane
@@ -887,9 +886,10 @@ class Light(object):
 
             theta  (float): Polar angle of incidence in degrees.
 
-            phi  (float): Azimuthal angle of incidence in degrees.
+            phi  (float): Azimuthal angle of incidence in degrees \
+                measured from x-axis.
     """
-    def __init__(self, wl_nm, max_order_PWs = 2, k_parallel = [0.,0.], 
+    def __init__(self, wl_nm, max_order_PWs = 2, k_parallel = [0.,0.],
         theta = None, phi = None, n_inc = 1.):
         self.wl_nm = float(wl_nm)
         self._air_anallos = {}
@@ -977,12 +977,12 @@ def calculate_ff(inc_shape, d, a1, a2=0, a3=0, a4=0, a5=0, a6=0, a7=0, a8=0,
     """
 
     if inc_shape == 'circle' or inc_shape == 'ellipse':
-        ff = np.pi*((a1/2)**2*np.sqrt(1-el1) + (a2/2)**2 + (a3/2)**2 + (a4/2)**2 + (a5/2)**2 + (a6/2)**2 + 
-            (a7/2)**2 + (a8/2)**2 + (a9/2)**2 + (a10/2)**2 + (a11/2)**2 + (a12/2)**2 + (a13/2)**2 + 
+        ff = np.pi*((a1/2)**2*np.sqrt(1-el1) + (a2/2)**2 + (a3/2)**2 + (a4/2)**2 + (a5/2)**2 + (a6/2)**2 +
+            (a7/2)**2 + (a8/2)**2 + (a9/2)**2 + (a10/2)**2 + (a11/2)**2 + (a12/2)**2 + (a13/2)**2 +
             (a14/2)**2 + (a15/2)**2 + (a16/2)**2)/(d)**2
     elif inc_shape == 'square':
         ff = ((a1)**2 + (a2)**2 + (a3)**2 + (a4)**2 + (a5)**2 + (a6)**2 + (a7)**2 + (a8)**2 + (a9)**2
-            + (a10)**2 + (a11)**2 + (a12)**2 + (a13)**2 + (a14)**2 + (a15)**2 + (a16)**2)/(d)**2 
+            + (a10)**2 + (a11)**2 + (a12)**2 + (a13)**2 + (a14)**2 + (a15)**2 + (a16)**2)/(d)**2
     else:
         ff = 0.0
     return ff

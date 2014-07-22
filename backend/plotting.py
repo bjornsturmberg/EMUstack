@@ -1,8 +1,7 @@
 """
     plotting.py is a subroutine of EMUstack that contains numerous plotting
     routines.
-"""
-"""
+
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
@@ -41,15 +40,15 @@ linesstrength = 2.5
 title_font = 10
 
 
-####Natural constants##################################################################
+####Natural constants##########################################################
 ASTM15_tot_I   = 900.084            # Integral of ASTM 1.5 solar irradiance in W/m**2
 Plancks_h      = 6.62606957*1e-34   # Planck's constant
 speed_c        = 299792458          # Speed of light in vacuum
 charge_e       = 1.602176565*1e-19  # Charge of an electron
-#######################################################################################
+###############################################################################
 
 
-####Short utility functions############################################################
+#### Short utility functions ##################################################
 def clear_previous(file_type):
     """ Delete all files of specified type 'file_type'. """
 
@@ -77,22 +76,22 @@ def max_n(stacks_list):
     ns = []
     for s in stacks_list:
         for l in s.layers:
-            if isinstance(l,objects.Anallo):
+            if isinstance(l, objects.Anallo):
                 ns.append(l.n())
-            if isinstance(l,objects.Simmo):
+            if isinstance(l, objects.Simmo):
                 wl = l.light.wl_nm
                 ns.append(l.structure.background.n(wl))
                 ns.append(l.structure.inclusion_a.n(wl))
                 ns.append(l.structure.inclusion_b.n(wl))
     return np.real(np.max(ns))
 
-def gen_params_string(stack, layer=1):
+def gen_params_string(stack, layer = 1):
     """ Generate the string of simulation info that is to be printed \
-        at the top of plots. 
+        at the top of plots.
     """
     param_layer = stack[0].layers[layer].structure
     # Plot t,r,a for each layer & total, then save each to text files
-    if isinstance(param_layer,objects.NanoStruct):
+    if isinstance(param_layer, objects.NanoStruct):
         params_2_print = 'ff = %5.3f, '% param_layer.ff
         params_2_print += 'd = %(period)d, a1 = %(diameter)d, '% {
         'period'        : param_layer.period, 'diameter' : param_layer.diameter1,}
@@ -116,27 +115,30 @@ def gen_params_string(stack, layer=1):
             if param_layer.inc_shape == 'ellipse': params_2_print += '\nEllipticity = %(rad)5.3f '% {'rad' : param_layer.ellipticity}
         elif param_layer.periodicity == '1D_array':
             params_2_print += ''
-        params_2_print += '%(BMs)dBMs, PW_radius = %(PWs)d, '% {
-        'BMs' : stack[0].layers[layer].num_BM,'PWs' : stack[0].layers[layer].max_order_PWs, }
+        params_2_print += '%(BMs)dBMs, PW_radius = %(PWs)d, '% \
+        {'BMs' : stack[0].layers[layer].num_BM, \
+        'PWs' : stack[0].layers[layer].max_order_PWs}
     else:
-        params_2_print = 'PW_radius = %(PWs)d, '% {'PWs' : stack[0].layers[layer].max_order_PWs, }
+        params_2_print = 'PW_radius = %(PWs)d, ' \
+        % {'PWs' : stack[0].layers[layer].max_order_PWs, }
 
     # light = stack[0].layers[layer].light
     # k_pll = light.k_pll * param_layer.period
     # params_2_print += r'$k_\parallel d$ = '
     # tmp3 = '(%(kx)1.4f, %(ky)1.4f), '% {'kx' : k_pll[0], 'ky' : k_pll[1]}
     # params_2_print += r'$\theta$ = %(theta)6.2f, $\phi$ = %(phi)6.2f, '% {
-    # 'theta' : light.theta,'phi' : light.phi, } 
+    # 'theta' : light.theta,'phi' : light.phi, }
 
     return params_2_print
-#######################################################################################
+###############################################################################
 
 
-####Standard plotting of spectra#######################################################
-def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1, active_layer_nu = 1,\
-    stack_label = 1, ult_eta = False, J_sc = False, weight_spec = False, extinct = False,\
-    add_height = 0, add_name = '', save_pdf = True, save_txt = False):
-    """ Plot t, r, a for each layer & in total. 
+#### Standard plotting of spectra #############################################
+def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1, \
+    active_layer_nu = 1, stack_label = 1, ult_eta = False, J_sc = False, \
+    weight_spec = False, extinct = False, add_height = 0, add_name = '', \
+    save_pdf = True, save_txt = False):
+    """ Plot t, r, a for each layer & in total.
 
         Args:
             stacks_list  (list): Stack objects containing data to plot.
@@ -151,18 +153,18 @@ def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1, active_layer_nu =
 
             active_layer_nu  (int): The index in stacks_list (from bottom) \
                 of the layer for which the ult_eta and/or J_sc are calculated.
-            
+
             stack_label  (int): Label to differentiate plots of different \
                 :Stack:s.
-            
+
             ult_eta  (bool): If True, calculate the 'ultimate efficiency'.
 
             J_sc  (bool): If True, calculate the idealised short circuit \
                 current.
-            
+
             weight_spec  (bool): If True, plot t, r, a spectra weighted by \
                 the ASTM 1.5 solar spectrum.
-            
+
             extinct  (bool): If True, calculate the extinction ratio in \
                 transmission.
 
@@ -197,7 +199,7 @@ def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1, active_layer_nu =
 
     if add_height!=0: add_name += "_" + zeros_int_str(add_height)
     stack_label = zeros_int_str(stack_label)
-    
+
     a_list = []
     t_list = []
     r_list = []
@@ -223,7 +225,7 @@ def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1, active_layer_nu =
         for i in range(len(xvalues)):
             active_abs.append(float(a_list[active_layer_nu - 1 + i*layers_steps]))
         out = []
-    
+
     if ult_eta == True:
         Efficiency = ult_efficiency(active_abs, xvalues, params_2_print, stack_label, add_name)
         params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
@@ -263,7 +265,7 @@ def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1, active_layer_nu =
         t_weighted = t_tot*weighting
         r_weighted = r_tot*weighting
         plot_name  = 'Weighted_Total_Spectra'
-        total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, xvalues, 
+        total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, xvalues,
             xlabel, params_2_print, stack_label, add_name)
 
     if extinct == True:
@@ -274,30 +276,31 @@ def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1, active_layer_nu =
     else:
         return
 
-def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_print,\
-    stack_label, add_name, save_pdf, save_txt):
-    """ Plots one type of spectrum across all layers. 
+def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, \
+    params_2_print, stack_label, add_name, save_pdf, save_txt):
+    """ Plots one type of spectrum across all layers.
 
-        Is called from t_r_a_plots. 
+        Is called from t_r_a_plots.
     """
 
-    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
+    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', \
+        edgecolor='k')
     nu_layers = len(spec_list)/len(xvalues)
     h_array = np.ones(len(xvalues))*total_h
     for i in range(nu_layers):
         layer_spec = []
         for wl in range(len(xvalues)):
-            layer_spec = np.append(layer_spec,spec_list[wl*nu_layers + i])
+            layer_spec = np.append(layer_spec, spec_list[wl*nu_layers + i])
         av_array = zip(xvalues, layer_spec, h_array)
-        ax1 = fig.add_subplot(nu_layers,1,i+1)
+        ax1 = fig.add_subplot(nu_layers, 1, i+1)
         ax1.plot(xvalues, layer_spec, linewidth=linesstrength)
         ax2 = ax1.twiny()
-        new_tick_values = np.linspace(10,0.5,20)
+        new_tick_values = np.linspace(10, 0.5, 20)
         new_tick_locations = tick_function(new_tick_values)
         new_tick_labels = ["%.1f" % z for z in new_tick_values]
         ax2.set_xticks(new_tick_locations)
         ax2.set_xticklabels(new_tick_labels)
-        ax2.set_xlim((xvalues[0], xvalues[-1]))  
+        ax2.set_xlim((xvalues[0], xvalues[-1]))
         if i == 0:
             if xlabel == r'$\lambda$ (nm)': ax2.set_xlabel('Energy (eV)')
         elif i == nu_layers-1:
@@ -309,11 +312,12 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_prin
             ax1.set_xticklabels( () )
         if spectra_name == 'Lay_Absorb':
             if i == 0: ax1.set_ylabel('Top Layer')
-            if i == nu_layers-2: ax1.set_ylabel('Bottom Layer')
-            suptitle_w_params = 'Absorptance in each layer'+add_name+'\n'+params_2_print
-            plt.suptitle(suptitle_w_params,fontsize=title_font)
+            if i == nu_layers - 2: ax1.set_ylabel('Bottom Layer')
+            suptitle_w_params = 'Absorptance in each layer' + add_name + \
+            '\n' + params_2_print
+            plt.suptitle(suptitle_w_params, fontsize = title_font)
             lay_spec_name = 'Lay_Absorb'
-            if i == nu_layers-1: 
+            if i == nu_layers-1:
                 ax1.set_ylabel('Total')
                 lay_spec_name = 'Absorptance'
         elif spectra_name == 'Lay_Trans':
@@ -322,7 +326,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_prin
             suptitle_w_params = 'Transmittance in each layer'+add_name+'\n'+params_2_print
             plt.suptitle(suptitle_w_params,fontsize=title_font)
             lay_spec_name = 'Lay_Trans'
-            if i == nu_layers-1: 
+            if i == nu_layers-1:
                 ax1.set_ylabel('Total')
                 lay_spec_name = 'Transmittance'
         elif spectra_name == 'Lay_Reflec':
@@ -332,59 +336,62 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, params_2_prin
             suptitle_w_params = 'Reflectance in each layer'+add_name+'\n'+params_2_print
             plt.suptitle(suptitle_w_params,fontsize=title_font)
             lay_spec_name = 'Lay_Reflec'
-            if i == nu_layers-1: 
+            if i == nu_layers-1:
                 ax1.set_ylabel('Total')
                 lay_spec_name = 'Reflectance'
             ax1.set_xlim((xvalues[0], xvalues[-1]))
             plt.ylim((0, 1))
 
         if save_txt == True:
-            if i != nu_layers-1: 
-                np.savetxt('%(s)s_%(i)i_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 'i' : i, 
-                    'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
+            if i != nu_layers-1:
+                np.savetxt('%(s)s_%(i)i_stack%(bon)s%(add)s.txt'% \
+                    {'s' : lay_spec_name, 'i' : i, 'bon' : stack_label, \
+                    'add' : add_name}, av_array, fmt = '%18.11f')
             else:
-                np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
-                    'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
+                np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% \
+                    {'s' : lay_spec_name, 'bon' : stack_label, \
+                    'add' : add_name}, av_array, fmt = '%18.11f')
         if save_pdf == True:
-            plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s': spectra_name, 'bon': stack_label,\
-                'add' : add_name})
+            plt.savefig('%(s)s_stack%(bon)s%(add)s'% \
+                {'s': spectra_name, 'bon': stack_label, 'add' : add_name})
 
         del layer_spec
 
-def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, params_2_print,\
-    stack_label, add_name):
-    """ Plots total t, r, a spectra on one plot. 
+def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, \
+    params_2_print, stack_label, add_name):
+    """ Plots total t, r, a spectra on one plot.
 
         Is called from t_r_a_plots, t_r_a_plots_subs
     """
 
-    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-    
-    ax1 = fig.add_subplot(3,1,1)
+    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', \
+    edgecolor='k')
+
+    ax1 = fig.add_subplot(3, 1, 1)
     ax1.plot(xvalues, a_spec, linewidth=linesstrength)
     ax1.set_ylabel('Absorptance')
     ax1.set_xlim((xvalues[0], xvalues[-1]))
     ax2 = ax1.twiny()
-    new_tick_values = np.linspace(10,0.5,20)
+    new_tick_values = np.linspace(10, 0.5, 20)
     new_tick_locations = tick_function(new_tick_values)
     new_tick_labels = ["%.1f" % z for z in new_tick_values]
     ax2.set_xticks(new_tick_locations)
     ax2.set_xticklabels(new_tick_labels)
-    ax2.set_xlim((xvalues[0], xvalues[-1])) 
+    ax2.set_xlim((xvalues[0], xvalues[-1]))
     if xlabel == r'$\lambda$ (nm)': ax2.set_xlabel('Energy (eV)')
     plt.ylim((0, 1))
 
-    ax1 = fig.add_subplot(3,1,2)
+    ax1 = fig.add_subplot(3, 1, 2)
     ax1.plot(xvalues, t_spec, linewidth=linesstrength)
     ax1.set_ylabel('Transmittance')
     ax1.set_xlim((xvalues[0], xvalues[-1]))
     ax2 = ax1.twiny()
     ax2.set_xticklabels( () )
     ax2.set_xticks(new_tick_locations)
-    ax2.set_xlim((xvalues[0], xvalues[-1])) 
+    ax2.set_xlim((xvalues[0], xvalues[-1]))
     plt.ylim((0, 1))
 
-    ax1 = fig.add_subplot(3,1,3)
+    ax1 = fig.add_subplot(3, 1, 3)
     ax1.plot(xvalues, r_spec, linewidth=linesstrength)
     ax1.set_xlabel(xlabel)
     ax1.set_ylabel('Reflectance')
@@ -392,20 +399,22 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, params_2_
     ax2 = ax1.twiny()
     ax2.set_xticklabels( () )
     ax2.set_xticks(new_tick_locations)
-    ax2.set_xlim((xvalues[0], xvalues[-1])) 
+    ax2.set_xlim((xvalues[0], xvalues[-1]))
     plt.ylim((0, 1))
 
-    plt.suptitle(params_2_print,fontsize=title_font)
+    plt.suptitle(params_2_print, fontsize=title_font)
     # plt.suptitle(plot_name+add_name+'\n'+params_2_print)
-    plt.savefig('%(s)s_stack%(bon)s%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
-#######################################################################################
+    plt.savefig('%(s)s_stack%(bon)s%(add)s'% \
+        {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+###############################################################################
 
 
-####Plot spectra indicating Wood anomalies in substrate################################
-def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
-    active_layer_nu=1, stack_label=1, ult_eta=False, J_sc=False, weight_spec=False,\
-    extinct=False, add_height=0, add_name=''):
-    """ Plot t, r, a indicating Wood anomalies in substrate for each layer & total.
+#### Plot spectra indicating Wood anomalies in substrate ######################
+def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, \
+    params_layer = 1, active_layer_nu = 1, stack_label = 1, ult_eta = False, \
+    J_sc = False, weight_spec = False, extinct = False, add_name = ''):
+    """ Plot t, r, a indicating Wood anomalies in substrate for each layer \
+        & total.
 
         Args:
             stacks_list  (list): Stack objects containing data to plot.
@@ -424,24 +433,22 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
 
             active_layer_nu  (int): The index in stacks_list (from bottom) \
                 of the layer for which the ult_eta and/or J_sc are calculated.
-            
+
             stack_label  (int): Label to differentiate plots of different \
                 :Stack:s.
-            
+
             ult_eta  (bool): If True, calculate the 'ultimate efficiency'.
 
             J_sc  (bool): If True, calculate the idealised short circuit \
                 current.
-            
+
             weight_spec  (bool): If True, plot t, r, a spectra weighted by \
                 the ASTM 1.5 solar spectrum.
-            
+
             extinct  (bool): If True, calculate the extinction ratio in \
                 transmission.
 
-            add_height  (float): Print the heights of :Stack: layer in title.
-
-            add_name  (str): Add add_name to title.
+             add_name  (str): Add add_name to title.
     """
 
     height_list = stacks_list[0].heights_nm()[::-1]
@@ -463,7 +470,7 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
     a_tot      = []
     t_tot      = []
     r_tot      = []
-    for i in range(len(wavelengths)): 
+    for i in range(len(wavelengths)):
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
@@ -474,7 +481,8 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
         if not 0 < active_layer_nu < len(stacks_list[0].layers)-1:
             raise ValueError, "active_layer_nu must refer to a finite layer."
         for i in range(len(xvalues)):
-            active_abs.append(float(a_list[active_layer_nu - 1 + i*layers_steps]))
+            active_abs.append(float(a_list[active_layer_nu - 1 + \
+                i*layers_steps]))
 
 
     if ult_eta == True:
@@ -503,7 +511,7 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
         t_weighted = t_tot*weighting
         r_weighted = r_tot*weighting
         plot_name = 'Weighted_Total_Spectra_subs'
-        total_tra_plot_subs(plot_name, a_weighted, t_weighted, r_weighted, wavelengths, 
+        total_tra_plot_subs(plot_name, a_weighted, t_weighted, r_weighted, wavelengths,
             params_2_print, stack_label, add_name, period, sub_n)
 
     if  extinct == True:
@@ -513,7 +521,7 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, params_layer=1, \
 
 def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
     params_2_print, stack_label, add_name, period, sub_n):
-    """ Plots total t, r, a spectra with lines at first 6 Wood anomalies. 
+    """ Plots total t, r, a spectra with lines at first 6 Wood anomalies.
 
         Is called from t_r_a_plots_subs
     """
@@ -544,8 +552,9 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
     sup_line22 = [r_WA_22, r_WA_22]
     v_line = [0, 1]
 
-    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-    ax1 = fig.add_subplot(3,1,1)
+    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', \
+        edgecolor='k')
+    ax1 = fig.add_subplot(3, 1, 1)
     ax1.plot(wavelengths, a_spec)
     ax1.plot(sub_line01, v_line, 'k', linewidth=linesstrength)
     ax1.plot(sub_line11, v_line, 'k', linewidth=linesstrength)
@@ -562,15 +571,15 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
     ax1.set_ylabel('Absorptance')
     ax1.set_xlim((wavelengths[0], wavelengths[-1]))
     ax2 = ax1.twiny()
-    new_tick_values = np.linspace(10,0.5,20)
+    new_tick_values = np.linspace(10, 0.5, 20)
     new_tick_locations = tick_function(new_tick_values)
     new_tick_labels = ["%.1f" % z for z in new_tick_values]
     ax2.set_xticks(new_tick_locations)
     ax2.set_xticklabels(new_tick_labels)
-    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
+    ax2.set_xlim((wavelengths[0], wavelengths[-1]))
     ax2.set_xlabel('Energy (eV)')
     plt.ylim((0, 1))
-    ax1 = fig.add_subplot(3,1,2)
+    ax1 = fig.add_subplot(3, 1, 2)
     ax1.plot(wavelengths, t_spec)
     ax1.plot(sub_line01, v_line, 'k', linewidth=linesstrength)
     ax1.plot(sub_line11, v_line, 'k', linewidth=linesstrength)
@@ -589,9 +598,9 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
     ax2 = ax1.twiny()
     ax2.set_xticklabels( () )
     ax2.set_xticks(new_tick_locations)
-    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
+    ax2.set_xlim((wavelengths[0], wavelengths[-1]))
     plt.ylim((0, 1))
-    ax1 = fig.add_subplot(3,1,3)
+    ax1 = fig.add_subplot(3, 1, 3)
     ax1.plot(wavelengths, r_spec)
     ax1.plot(sub_line01, v_line, 'k', linewidth=linesstrength)
     ax1.plot(sub_line11, v_line, 'k', linewidth=linesstrength)
@@ -610,17 +619,17 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
     ax2 = ax1.twiny()
     ax2.set_xticklabels( () )
     ax2.set_xticks(new_tick_locations)
-    ax2.set_xlim((wavelengths[0], wavelengths[-1])) 
+    ax2.set_xlim((wavelengths[0], wavelengths[-1]))
     plt.ylim((0, 1))
     plt.suptitle(params_2_print,fontsize=title_font)
     # plt.suptitle(plot_name+add_name+'\n'+params_2_print)
     plt.savefig('%(s)s_stack%(bon)s__%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
-#######################################################################################
+###############################################################################
 
 
-####Save J_sc & ult efficiency w/o spectra#############################################
-def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, active_layer_nu=1,\
-    stack_label=1, add_name=''):
+#### Save J_sc & ult efficiency w/o spectra ###################################
+def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, \
+    active_layer_nu=1, stack_label=1, add_name=''):
     """ Calculate J_sc & ultimate efficiency but do not save or plot spectra.
 
         Args:
@@ -635,10 +644,10 @@ def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, active_layer_nu=
 
             active_layer_nu  (int): The index in stacks_list (from bottom) \
                 of the layer for which the ult_eta and/or J_sc are calculated.
-            
+
             stack_label  (int): Label to differentiate plots of different \
                 :Stack:s.
-            
+
             add_name  (str): Add add_name to title.
     """
 
@@ -658,29 +667,29 @@ def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, active_layer_nu=
     active_layer_nu = len(stacks_list[0].layers) - active_layer_nu - 1
     if not 0 < active_layer_nu < len(stacks_list[0].layers)-1:
         raise ValueError, "active_layer_nu must refer to a finite layer."
-    for i in range(len(wavelengths)): 
+    for i in range(len(wavelengths)):
         active_abs.append(float(a_list[active_layer_nu -1 + i*layers_steps]))
 
     Efficiency = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label, add_name)
 
     J = J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_name)
     return
-#######################################################################################
+###############################################################################
 
 
-####Saving spectra to files############################################################
+#### Saving spectra to files ##################################################
 def t_r_a_write_files(stacks_list, wavelengths, stack_label=1, add_name=''):
-    """ Save t, r, a for each layer & total in text files. 
+    """ Save t, r, a for each layer & total in text files.
 
         Args:
             stacks_list  (list): Stack objects containing data to plot.
 
             wavelengths  (list): The wavelengths corresponding to stacks_list.
 
-        Keyword Args:            
+        Keyword Args:
             stack_label  (int): Label to differentiate plots of different \
                 :Stack:s.
-            
+
             add_name  (str): Add add_name to title.
     """
     stack_label = zeros_int_str(stack_label)
@@ -697,7 +706,7 @@ def t_r_a_write_files(stacks_list, wavelengths, stack_label=1, add_name=''):
     a_tot      = []
     t_tot      = []
     r_tot      = []
-    for i in range(len(wavelengths)): 
+    for i in range(len(wavelengths)):
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
@@ -722,28 +731,28 @@ def layers_print(spectra_name, spec_list, wavelengths, total_h, stack_label=1,\
             layer_spec = np.append(layer_spec,spec_list[wl*nu_layers + i])
         if spectra_name == 'Lay_Absorb':
             lay_spec_name = 'Lay_Absorb'
-            if i == nu_layers-1: 
+            if i == nu_layers-1:
                 lay_spec_name = 'Absorptance'
         elif spectra_name == 'Lay_Trans':
             lay_spec_name = 'Lay_Trans'
-            if i == nu_layers-1: 
+            if i == nu_layers-1:
                 lay_spec_name = 'Transmittance'
         elif spectra_name == 'Lay_Reflec':
             lay_spec_name = 'Lay_Reflec'
-            if i == nu_layers-1: 
+            if i == nu_layers-1:
                 lay_spec_name = 'Reflectance'
         av_array = zip(wavelengths, layer_spec, h_array)
 
-        if i != nu_layers-1: 
-            np.savetxt('%(s)s_%(i)i_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 'i' : i, 
+        if i != nu_layers-1:
+            np.savetxt('%(s)s_%(i)i_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 'i' : i,
                 'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
         else:
-            np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 
+            np.savetxt('%(s)s_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name,
                 'bon' : stack_label,'add' : add_name}, av_array, fmt = '%18.11f')
-#######################################################################################
+###############################################################################
 
 
-####Plot spectra on other scales#######################################################
+#### Plot spectra on other scales #############################################
 def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
     """ Plot extinction ratio in transmission extinct = log_10(1/t). """
 
@@ -754,11 +763,13 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
     ax1.set_xlabel('Wavelength (nm)')
     ax1.set_ylabel('Extinction')
     plot_name = 'Extinction'
-    plt.suptitle(plot_name+add_name+'\n'+params_2_print,fontsize=title_font)
-    plt.savefig('%(s)s_stack%(bon)s_%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+    plt.suptitle(plot_name + add_name + '\n' + params_2_print, \
+        fontsize = title_font)
+    plt.savefig('%(s)s_stack%(bon)s_%(add)s'% \
+        {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
 def EOT_plot(stacks_list, wavelengths, params_layer=1, num_pw_per_pol=0, add_name=''):
-    """ Plot T_{00} as in Martin-Moreno PRL 86 2001. 
+    """ Plot T_{00} as in Martin-Moreno PRL 86 2001.
         To plot {9,0} component of TM polarisation set num_pw_per_pol = num_pw_per_pol.
     """
 
@@ -768,21 +779,21 @@ def EOT_plot(stacks_list, wavelengths, params_layer=1, num_pw_per_pol=0, add_nam
     params_2_print += ''.join('%4d, ' % num for num in height_list)
 
     T_00 = []
-    for i in range(len(wavelengths)): 
+    for i in range(len(wavelengths)):
         t00  = stacks_list[i].T_net[num_pw_per_pol,num_pw_per_pol]
         t00c = t00.conjugate()
         T_00.append(np.real(t00*t00c))
 
-    fig = plt.figure()#num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-    ax1 = fig.add_subplot(2,1,1)
-    ax1.plot(wavelengths, T_00, linewidth=linesstrength)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(2, 1, 1)
+    ax1.plot(wavelengths, T_00, linewidth = linesstrength)
     # ax1.set_xlabel('Wavelength (nm)')
     ax1.set_xlabel(r'$\lambda/a$')
     ax1.set_ylabel(r'T$_{00}$')
     # plt.ylim((0, 0.3))
 
     R_00 = []
-    for i in range(len(wavelengths)): 
+    for i in range(len(wavelengths)):
         r00  = stacks_list[i].R_net[num_pw_per_pol,num_pw_per_pol]
         r00c = r00.conjugate()
         R_00.append(np.real(r00*r00c))
@@ -796,10 +807,10 @@ def EOT_plot(stacks_list, wavelengths, params_layer=1, num_pw_per_pol=0, add_nam
     plot_name = 'EOT'
     plt.suptitle(params_2_print,fontsize=title_font)
     plt.savefig('%(s)s_%(add)s'% {'s' : plot_name, 'add' : add_name})
-#######################################################################################
+###############################################################################
 
 
-####Calculate short circuit current and ultimate efficiency############################
+#### Calculate short circuit current and ultimate efficiency ##################
 def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_name):
     """ Calculate the short circuit current J_sc under ASTM 1.5 illumination.
         Assuming every absorbed photon produces a pair of charge carriers.
@@ -810,15 +821,15 @@ def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_na
     i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
     expression   = i_spec*active_abs*wavelengths
     integral_tmp = np.trapz(expression, x=wavelengths)
-    J = (charge_e/(Plancks_h*speed_c)) * integral_tmp *1e-10 # in mA/cm^2  
+    J = (charge_e/(Plancks_h*speed_c)) * integral_tmp *1e-10 # in mA/cm^2
     nums_2_print = params_2_print.split()
     np.savetxt('J_sc_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, \
         np.array([J]), fmt = '%10.6f')
     return J
 
 def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name):
-    """ Calculate the photovoltaic ultimate efficiency achieved in the specified active layer. 
-        
+    """ Calculate the photovoltaic ultimate efficiency achieved in the specified active layer.
+
         For definition see `Sturmberg et al., Optics Express, Vol. 19, Issue S5, pp. A1067-A1081 (2011)\
          <http://dx.doi.org/10.1364/OE.19.0A1067>`_.
     """
@@ -830,15 +841,15 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name
     bandgap_wl   = wavelengths[-1] #have as property of material.
     expression   = i_spec*active_abs*wavelengths
     integral_tmp = np.trapz(expression, x=wavelengths)
-    Efficiency   = integral_tmp/(bandgap_wl*ASTM15_tot_I)   
+    Efficiency   = integral_tmp/(bandgap_wl*ASTM15_tot_I)
     nums_2_print = params_2_print.split()
     np.savetxt('Efficiency_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name},\
         np.array([Efficiency]), fmt = '%8.6f')
     return Efficiency
-#######################################################################################
+###############################################################################
 
 
-####Plot dispersion diagrams & field concentrations as function of wavelength##########
+#### Plot dispersion diagrams & field concentrations function of wavelength ###
 def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
     """ Plots the dispersion diagram of each layer in one plot. \
         k_z has units nm^-1.
@@ -890,7 +901,7 @@ def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
             ax4.plot(imag_k_zs, om,'ro', linewidth=linesstrength)
         ax1.set_ylabel(r'Real $k_z$'), ax2.set_ylabel(r'Imaginary $k_z$')
         ax3.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)'), ax4.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)')
-        if l == 0: 
+        if l == 0:
             ax1.set_ylabel('Bottom Layer'), ax2.set_ylabel('Bottom Layer')
             ax3.set_ylabel('Bottom Layer'), ax4.set_ylabel('Bottom Layer')
             ax3.set_xlabel(r'Real $k_z$'), ax4.set_xlabel(r'Imaginary $k_z$')
@@ -921,9 +932,9 @@ def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
 
-def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, params_layer=1,\
-    stack_label=1):
-    """ Plots the energy concentration (epsilon E_cyl / epsilon E_cell) of given layer. 
+def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, \
+    params_layer = 1, stack_label = 1):
+    """ Plots the energy concentration (epsilon E_cyl / epsilon E_cell) of given layer.
 
         Args:
             stacks_list  (list): Stack objects containing data to plot.
@@ -952,7 +963,7 @@ def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, params_layer
         fig1 = plt.figure(num=None, figsize=(9, 4), dpi=80, facecolor='w', edgecolor='k')
         ax1 = fig1.add_subplot(1,1,1)
         # Uncomment if you wish to have a continuous curve plotted.
-        # ax1 = fig1.add_subplot(1,1,1)       
+        # ax1 = fig1.add_subplot(1,1,1)
         # ax2 = fig1.add_subplot(2,1,2)
         # E_conc = []
         for i in range(len(wavelengths)):
@@ -974,10 +985,10 @@ def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, params_layer
         print "\nERROR: plotting.E_conc_plot; \n" + \
             "Can only calculate energy concentration in NanoStruct layers."
         print repr(stacks_list[0].layers[which_layer])
-#######################################################################################
+###############################################################################
 
 
-####Visualise scattering matrices######################################################
+#### Visualise scattering Matrices ############################################
 def vis_scat_mats(scat_mat, nu_prop_PWs = 0, wl = None, add_name = '', \
         max_scale = None):
     """ Plot given scattering matrix as greyscale images.
@@ -1003,11 +1014,11 @@ def vis_scat_mats(scat_mat, nu_prop_PWs = 0, wl = None, add_name = '', \
 
     for i in [1,2]:
         ax1 = fig.add_subplot(1,2,i)
-        if i==0: image = abs(np.abs(scat_mat))
         if i==1: image = abs(np.real(scat_mat))
-        if max_scale != None: 
+        if i==2: image = abs(np.imag(scat_mat))
+        if max_scale != None:
             mat = ax1.matshow(image, vmax = max_scale, cmap=plt.cm.gray)
-        else: 
+        else:
             mat = ax1.matshow(image, cmap=plt.cm.gray)
         scat_mat_dim_x = np.shape(scat_mat)[0]
         scat_mat_dim_y = np.shape(scat_mat)[1]
@@ -1028,22 +1039,60 @@ def vis_scat_mats(scat_mat, nu_prop_PWs = 0, wl = None, add_name = '', \
         ax1.plot([-0.5, scat_mat_dim_y-0.5],[half_dim_x+nu_prop_PWs,half_dim_x+nu_prop_PWs],'r', linewidth=1)
         ax1.plot([half_dim_y+nu_prop_PWs,half_dim_y+nu_prop_PWs],[-0.5, scat_mat_dim_x-0.5],'r', linewidth=1)
         cbar = fig.colorbar(mat,extend='neither')
-        # if i==1: cbar.ax.set_ylabel('|Re(matrix)|')
-        # if i==2: cbar.ax.set_ylabel('|Imag(matrix)|')
-        if i==1: ax1.set_title('|Re(matrix)|')
-        if i==2: ax1.set_title('|Imag(matrix)|')
+        if i==1: cbar.ax.set_ylabel('|Real(matrix)|', fontsize=14)
+        if i==2: cbar.ax.set_ylabel('|Imag(matrix)|', fontsize=14)
+        # if i==1: ax1.set_title('|Re(matrix)|', fontsize=14)
+        # if i==2: ax1.set_title('|Imag(matrix)|', fontsize=14)
         ax1.set_xticklabels('')
         ax1.set_yticklabels('')
         ax1.set_xlabel('TE        |        TM \n Incoming Orders', fontsize=14)
         ax1.set_ylabel('Outgoing Orders \nTM       |         TE', fontsize=14)
-        
+
 
     plt.suptitle('Scattering Matrices' + add_name)
     plt.savefig('Scat_mat' + add_name)
-#######################################################################################
+
+def vis_matrix(scat_mat, add_name = '', max_scale = None, only_real = True):
+    """ Plot given matrix as a greyscale image.
+
+        Args:
+            scat_mat  (np.matrix): A matrix.
+
+        Keyword Args:
+            add_name  (str): Add add_name to title.
+
+            max_scale  (float): Limit maximum amplitude shown.
+
+            only_real  (bool): Only plot the real part of matrix.
+    """
+
+    fig = plt.figure(num=None, figsize=(14, 6), dpi=80, facecolor='w', edgecolor='k')
+
+    if only_real == True: real_im = [1]
+    else: real_im = [1,2]
+
+    for i in real_im:
+        ax1 = fig.add_subplot(1,len(real_im),1)
+        if i==1: image = abs(np.real(scat_mat))
+        if i==2: image = abs(np.imag(scat_mat))
+        if max_scale != None:
+            mat = ax1.matshow(image, vmax = max_scale, cmap=plt.cm.gray)
+        else:
+            mat = ax1.matshow(image, cmap=plt.cm.gray)
+        cbar = fig.colorbar(mat,extend='neither')
+        if i==1: cbar.ax.set_ylabel('|Real(matrix)|', fontsize=14)
+        if i==2: cbar.ax.set_ylabel('|Imag(matrix)|', fontsize=14)
+        ax1.set_xticklabels('')
+        ax1.set_yticklabels('')
+        # ax1.set_xlabel('TE        |        TM \n Incoming Orders', fontsize=14)
+        # ax1.set_ylabel('Outgoing Orders \nTM       |         TE', fontsize=14)
+
+    plt.suptitle(add_name)
+    plt.savefig('Matrix' + add_name)
+###############################################################################
 
 
-####Plot PW amplitudes function k-vector###############################################
+#### Plot PW amplitudes function k-vector #####################################
 def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
     """ PW amplitudes in transmission as a function of their in-plane k-vector.
 
@@ -1095,10 +1144,10 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
         #     axis_indices = np.append(axis_indices, np.ravel(np.array(np.where(ix))))
         # axis_indices = axis_indices.astype(int)
 
-        # # Outgoing TE polarisation 
+        # # Outgoing TE polarisation
         # if pol=='TE': trans_k = np.abs(stack.vec_coef_down[vec_index][0:n_PW_p_pols]).reshape(-1,)
         # # Outgoing TM polarisation
-        # if pol=='TM': trans_k = np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols-1:-1]).reshape(-1,) 
+        # if pol=='TM': trans_k = np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols-1:-1]).reshape(-1,)
         # trans_k_array = np.array(trans_k).reshape(-1,)
 
         # select_trans = trans_k_array[axis_indices]
@@ -1126,12 +1175,12 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
     ax1.set_xlabel(r'$k_\parallel$')
     ax1.set_ylabel(r'$|E|$')
     plt.savefig('k_vector_excitation-lay_%s' % lay_interest, bbox_inches='tight')
-#######################################################################################
+###############################################################################
 
 
-####Plot amplitudes of modes###########################################################
-def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
-    lay_interest = 1, up_and_down = False, add_height = None, add_name = ''):
+#### Plot amplitudes of modes #################################################
+def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = None,\
+    lay_interest = 1, up_and_down = True, add_height = None, add_name = ''):
     """ Plot the amplitudes of Bloch modes in selected layer.
 
         Args:
@@ -1148,8 +1197,9 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
             lay_interest  (int): The index in stacks_list of the layer in \
                 which amplitudes are calculated.
 
-            up_and_down  (bool): If True average the amplitudes of up & \
-                downward propagating modes.
+            up_and_down  (bool): Average the amplitudes of up & downward \
+                propagating modes. Else include only downward in all layers\
+                except for the superstrate where include only upward.
 
             add_height  (float): Print the heights of :Stack: layer in title.
 
@@ -1174,6 +1224,7 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
             xlabel = r'$\lambda$ (nm)'
             print "BM_amplitudes is guessing you have a single wavelength, else specify xvalues."
 
+    if chosen_BMs == None: chosen_BMs = range(stacks_list[-1].layers[lay_interest].num_BM)
     for BM in chosen_BMs:
         store_trans = []
         for stack in stacks_list:
@@ -1183,7 +1234,7 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
             trans = np.abs(stack.vec_coef_down[vec_index][BM])
             if up_and_down == True: # Take average of up & downward propagating modes.
                 trans += np.abs(stack.vec_coef_up[vec_index][BM])
-                store_trans = np.append(store_trans,trans/2) 
+                store_trans = np.append(store_trans,trans/2)
             else:
                 store_trans = np.append(store_trans,trans)
 
@@ -1201,7 +1252,7 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = [0,1,2],\
 
 
 def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
-    lay_interest = 0, up_and_down = False, add_height = None, add_name = ''):
+    lay_interest = 0, up_and_down = True, add_height = None, add_name = ''):
     """ Plot the amplitudes of plane wave orders in selected layer.
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
@@ -1220,8 +1271,9 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
             lay_interest  (int): The index in stacks_list of the layer in \
                 which amplitudes are calculated.
 
-            up_and_down  (bool): If True average the amplitudes of up & \
-                downward propagating modes.
+            up_and_down  (bool): Average the amplitudes of up & downward \
+                propagating modes. Else include only downward in all layers\
+                except for the superstrate where include only upward.
 
             add_height  (float): Print the heights of :Stack: layer in title.
 
@@ -1262,22 +1314,38 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
             alphas = alpha0 + pxs * 2 * np.pi
             on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
             full_k_space = stack.layers[0].k_z
-            # consider only transmission into singular polarization
+            # Consider only transmission into singular polarization.
             one_pol_k_space = full_k_space[0:n_PW_p_pols]
 
             ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
             axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
-            # Outgoing TE polarisation
-            trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
-            # Outgoing TM polarisation
-            trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
-            if up_and_down == True: # Take average of up & downward propagating modes.
-                if vec_index != len(stacks_list[-1].layers) - 1: # no upward mode in substrate
-                    trans += np.abs(stack.vec_coef_up[vec_index][axis_indices]).reshape(-1,)
-                    trans += np.abs(stack.vec_coef_up[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) 
-                store_trans = np.append(store_trans,trans/2)
-            else:
+            # Substrate - only ever take downward propagating.
+            if vec_index == len(stacks_list[-1].layers) - 1:
+                # Outgoing TE polarisation
+                trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
+                # Outgoing TM polarisation
+                trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
                 store_trans = np.append(store_trans,trans)
+            # Superstrate - if not up & down then take only upwards propagating.
+            elif vec_index == 0:
+                trans  = np.abs(stack.vec_coef_up[vec_index][axis_indices]).reshape(-1,)
+                trans += np.abs(stack.vec_coef_up[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
+                if up_and_down == True: # Take average of up & downward propagating modes.
+                    trans += np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
+                    trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
+                    store_trans = np.append(store_trans,trans/2)
+                else:
+                    store_trans = np.append(store_trans,trans)
+            # Finite layer
+            else:
+                trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
+                trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
+                if up_and_down == True: # Take average of up & downward propagating modes.
+                    trans += np.abs(stack.vec_coef_up[vec_index][axis_indices]).reshape(-1,)
+                    trans += np.abs(stack.vec_coef_up[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
+                    store_trans = np.append(store_trans,trans/2)
+                else:
+                    store_trans = np.append(store_trans,trans)
 
         ax1.plot(xvalues,store_trans, label="m = %i" % pxs)
 
@@ -1295,7 +1363,7 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
 def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,\
     lay_interest = 0, add_height = None, add_name = '', \
     save_pdf = True, save_txt = False):
-    """ Plot a figure of merit for the 'evanescent-ness' of excited fields. 
+    """ Plot a figure of merit for the 'evanescent-ness' of excited fields.
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
 
@@ -1435,10 +1503,10 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,\
         av_diff = [np.mean(store_mean_ev)]
         np.savetxt('average_diff_order-lay_%s.txt' % add_name, \
             av_diff, fmt = '%18.11f')
-#######################################################################################
+###############################################################################
 
 
-####Field plotting routines############################################################
+#### Field plotting routines ##################################################
 def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
     nu_calc_pts = 51):
     """
@@ -1465,7 +1533,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
     if not os.path.exists(dir_name): os.mkdir(dir_name)
 
     # always make odd
-    if nu_calc_pts % 2 == 0: nu_calc_pts += 1 
+    if nu_calc_pts % 2 == 0: nu_calc_pts += 1
 
     stack_num = 0
     for pstack in stacks_list:
@@ -1494,10 +1562,10 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
                 vec_index = num_lays - lay_interest - 1
                 vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
 
-                EMUstack.gmsh_plot_field (meat.num_BM, 
+                EMUstack.gmsh_plot_field (meat.num_BM,
                     meat.n_msh_el, meat.n_msh_pts, nnodes, meat.structure.nb_typ_el, meat.table_nod, meat.type_el,
-                    eps_eff, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, z_value, 
-                    gmsh_file_pos, meat.structure.plot_real, 
+                    eps_eff, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, z_value,
+                    gmsh_file_pos, meat.structure.plot_real,
                     meat.structure.plot_imag, meat.structure.plot_abs, extra_name)
 
         # If selected z location is within a ThinFilm layer
@@ -1508,7 +1576,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
             period = pstack.layers[-1].structure.period
             heights_list = []
             name_lay = ''
-            
+
             for i in xrange(num_lays):
                 if i == 0 or i == num_lays-1:pass
                 else: heights_list.append(pstack.layers[i].structure.height_nm)
@@ -1516,7 +1584,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
                     pstack.layers[i].structure.diameter1
                     diameter = pstack.layers[i].structure.diameter1
                 except:pass
-            
+
             if lay_interest == 0: name_lay = "0_Substrate"
             elif lay_interest == num_lays-1: name_lay = "%(i)s_Superstrate" %{'i':num_lays-1}
             else: name_lay = "Thin_Film_%(i)s" %{'i':lay_interest}
@@ -1524,7 +1592,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
             x_range = np.linspace(0.0,1.0,nu_calc_pts)
             y_range = np.linspace(0.0,1.0,nu_calc_pts)
             z_range = np.array(z_values)
-                  
+
             s = pstack.layers[lay_interest].sort_order
             alpha_unsrt = np.array(pstack.layers[lay_interest].alphas)
             beta_unsrt = np.array(pstack.layers[lay_interest].betas)
@@ -1538,7 +1606,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
             PWordtot = pstack.layers[lay_interest].structure.num_pw_per_pol
             prop = 2*(gamma.imag == 0).sum()
             evan = 2*PWordtot - prop
-            
+
             vec_coef_down = np.array(pstack.vec_coef_down[num_lays-1-lay_interest]).flatten()
             vec_coef_down_TE = vec_coef_down[0:PWordtot]
             vec_coef_down_TM = vec_coef_down[PWordtot::]
@@ -1546,10 +1614,10 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
                 vec_coef_up = np.zeros((2*PWordtot), dtype = 'complex')
             else:
                 vec_coef_up = np.array(pstack.vec_coef_up[num_lays-1-lay_interest]).flatten()
-                
+
             vec_coef_up_TE = vec_coef_up[0:PWordtot]
             vec_coef_up_TM = vec_coef_up[PWordtot::]
-            
+
             norm = np.sqrt(alpha**2+beta**2)
             k = np.sqrt(alpha**2+beta**2+gamma**2)
             chi_TE = np.sqrt((n*gamma)/k)
@@ -1562,7 +1630,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
             E_TM_z = -1*norm/gamma
             k = np.around(k,decimals=4)
             n = np.around(n,decimals=4)
-            
+
             eta_TE_x_down = (vec_coef_down_TE*E_TE_x)/chi_TE
             eta_TE_y_down = (vec_coef_down_TE*E_TE_y)/chi_TE
             eta_TE_z_down = (vec_coef_down_TE*E_TE_z)/chi_TE
@@ -1594,7 +1662,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
             E_TM_x_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
             E_TM_y_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
             E_TM_z_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-            
+
             for z in xrange(np.size(z1)):
                 for y in xrange(np.size(y1)):
                     for x in xrange(np.size(x1)):
@@ -1613,10 +1681,10 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
                         E_TM_x = np.sum(eta_TM_x_down*expo_down + eta_TM_x_up*expo_up)
                         E_TM_y = np.sum(eta_TM_y_down*expo_down + eta_TM_y_up*expo_up)
                         E_TM_z = np.sum(eta_TM_z_down*expo_down + eta_TM_z_up*expo_up)
-                        E_TE_x_array[x,y,z] = E_TE_x 
+                        E_TE_x_array[x,y,z] = E_TE_x
                         E_TE_y_array[x,y,z] = E_TE_y
                         E_TE_z_array[x,y,z] = E_TE_z
-                        E_TM_x_array[x,y,z] = E_TM_x 
+                        E_TM_x_array[x,y,z] = E_TM_x
                         E_TM_y_array[x,y,z] = E_TM_y
                         E_TM_z_array[x,y,z] = E_TM_z
             E_x_array = E_TE_x_array + E_TM_x_array
@@ -1654,7 +1722,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
                     plt.suptitle('%(name)s \n E_xy_slice_%(p)s, z = %(z_pos)s, heights = %(h)s \n \
                         $\lambda$ = %(wl)f nm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i,' % \
                         {'name' : name_lay, 'h':heights_list, 'p' : p, 'z_pos' : z1[z_of_xy],'wl' : wl, \
-                        'd' : period, 'dia': diameter, 'pw' : pw} + '\n' 
+                        'd' : period, 'dia': diameter, 'pw' : pw} + '\n'
                         + '# prop. ords = %(prop)s, # evan. ords = %(evan)s, n = %(n)s,k = %(k)s'\
                         % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                     plt.savefig('%(dir_name)s/stack_%(stack_num)s_E_%(name)s_slice=%(z_pos)s_wl=%(wl)s_%(p)s.pdf'% \
@@ -1687,7 +1755,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
 
             # EMUstack.gmsh_plot_pw(meat.n_msh_el, meat.n_msh_pts, nnodes, neq_PW,
             #     bloch_vec, meat.table_nod, meat.x_arr, lat_vec, wl_normed,
-            #     n_eff_0, vec_coef_down, vec_coef_up, 
+            #     n_eff_0, vec_coef_down, vec_coef_up,
             #     index_pw_inv, ordre_ls, select_h,
             #     gmsh_file_pos, meat.structure.plot_real, meat.structure.plot_imag,
             #     meat.structure.plot_abs, extra_name)
@@ -1700,7 +1768,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
             # # vec_coef_down[neq_PW] = 1.0
 
 
-def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
+def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
     gradient = None, scale_axis = True):
     """
     Plot fields in the x-y plane at chosen values of z, where z is \
@@ -1733,7 +1801,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
     os.mkdir(dir_name+"/gmsh_BMs")
 
     # always make odd
-    if nu_calc_pts % 2 == 0: nu_calc_pts += 1 
+    if nu_calc_pts % 2 == 0: nu_calc_pts += 1
     user_max_height = max_height
 
     stack_num = 0
@@ -1763,9 +1831,9 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                     vec_index = num_lays - lay - 1
                     vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
 
-                    EMUstack.gmsh_plot_slice (meat.E_H_field, meat.num_BM, meat.n_msh_el, 
-                        meat.n_msh_pts, nnodes, meat.type_el, meat.structure.nb_typ_el, 
-                        n_eff, meat.table_nod, meat.x_arr, meat.k_z, meat.sol1, vec_coef, 
+                    EMUstack.gmsh_plot_slice (meat.E_H_field, meat.num_BM, meat.n_msh_el,
+                        meat.n_msh_pts, nnodes, meat.type_el, meat.structure.nb_typ_el,
+                        n_eff, meat.table_nod, meat.x_arr, meat.k_z, meat.sol1, vec_coef,
                         h_normed, wl_normed, gmsh_file_pos)
 
 
@@ -1777,7 +1845,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                 pw = pstack.layers[-1].max_order_PWs
                 period = pstack.layers[-1].structure.period
                 heights_list = []
-                
+
                 for i in xrange(num_lays):
                     if i == 0 or i == num_lays-1:pass
                     else: heights_list.append(pstack.layers[i].structure.height_nm)
@@ -1789,14 +1857,14 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                 x_range = np.linspace(0.0,1.0,nu_calc_pts)
                 y_range = np.linspace(0.0,1.0,nu_calc_pts)
                 z_range = np.linspace(0.0,max_height,nu_calc_pts)
-                
-                if lay == 0 or lay == num_lays-1: 
+
+                if lay == 0 or lay == num_lays-1:
                     max_height = user_max_height
                     z_range = np.linspace(0,max_height,nu_calc_pts)
                 else:
                     max_height = np.around(float(meat.structure.height_nm)/period,decimals=4)
                     z_range = np.linspace(0,max_height,nu_calc_pts)
-                    
+
                 s = meat.sort_order
                 alpha_unsrt = np.array(meat.alphas)
                 beta_unsrt = np.array(meat.betas)
@@ -1810,7 +1878,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                 PWordtot = meat.structure.num_pw_per_pol
                 prop = 2*(gamma.imag == 0).sum()
                 evan = 2*PWordtot - prop
-                
+
                 vec_coef_down = np.array(pstack.vec_coef_down[num_lays-1-lay]).flatten()
                 vec_coef_down_TE = vec_coef_down[0:PWordtot]
                 vec_coef_down_TM = vec_coef_down[PWordtot::]
@@ -1818,10 +1886,10 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                     vec_coef_up = np.zeros((2*PWordtot), dtype = 'complex')
                 else:
                     vec_coef_up = np.array(pstack.vec_coef_up[num_lays-1-lay]).flatten()
-                    
+
                 vec_coef_up_TE = vec_coef_up[0:PWordtot]
                 vec_coef_up_TM = vec_coef_up[PWordtot::]
-                
+
                 norm = np.sqrt(alpha**2+beta**2)
                 k = np.sqrt(alpha**2+beta**2+gamma**2)
                 chi_TE = np.sqrt((n*gamma)/k)
@@ -1834,7 +1902,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                 E_TM_z = -1*norm/gamma
                 k = np.around(k,decimals=4)
                 n = np.around(n,decimals=4)
-                
+
                 eta_TE_x_down = (vec_coef_down_TE*E_TE_x)/chi_TE
                 eta_TE_y_down = (vec_coef_down_TE*E_TE_y)/chi_TE
                 eta_TE_z_down = (vec_coef_down_TE*E_TE_z)/chi_TE
@@ -1851,7 +1919,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
 
                 x_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
                 y_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
-                
+
                 if meat.structure.world_1d == True:
                     slice_type = ['xz']
                 else:
@@ -1910,14 +1978,14 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                     break
                         z1 = z_range
                         (y_axis,x_axis) = np.meshgrid(z1,sqrt(1+gradient**2)*(x1[::-1]-x1[-1]))
-                        
+
                     E_TE_x_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
                     E_TE_y_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
                     E_TE_z_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
                     E_TM_x_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
                     E_TM_y_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
                     E_TM_z_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-                    
+
                     for z in xrange(np.size(z1)):
                         for y in xrange(np.size(y1)):
                             for x in xrange(np.size(x1)):
@@ -1940,10 +2008,10 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 E_TM_x = np.sum(eta_TM_x_down*expo_down + eta_TM_x_up*expo_up)
                                 E_TM_y = np.sum(eta_TM_y_down*expo_down + eta_TM_y_up*expo_up)
                                 E_TM_z = np.sum(eta_TM_z_down*expo_down + eta_TM_z_up*expo_up)
-                                E_TE_x_array[x,y,z] = E_TE_x 
+                                E_TE_x_array[x,y,z] = E_TE_x
                                 E_TE_y_array[x,y,z] = E_TE_y
                                 E_TE_z_array[x,y,z] = E_TE_z
-                                E_TM_x_array[x,y,z] = E_TM_x 
+                                E_TM_x_array[x,y,z] = E_TM_x
                                 E_TM_y_array[x,y,z] = E_TM_y
                                 E_TM_z_array[x,y,z] = E_TM_z
                     E_x_array = E_TE_x_array + E_TM_x_array
@@ -1983,13 +2051,13 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 plt.suptitle('%(name)s \n E_xz_slice_%(p)s, y = %(y_pos)s, heights = %(h)s \n \
                                 $\lambda$ = %(wl)f nm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i,' % \
                                     {'name' : name_lay, 'h':heights_list, 'p' : p, 'y_pos' : y1[y_of_xz],'wl' : wl, \
-                                    'd' : period, 'dia': diameter, 'pw' : pw,} + '\n' 
+                                    'd' : period, 'dia': diameter, 'pw' : pw,} + '\n'
                                     + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
                                     'prop' : prop, 'n' : n, 'k' : k[0]})
                                 plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_xz_slice=%(y_pos)s_wl=%(wl)s_%(p)s.pdf'% \
                                     {'dir_name' : dir_name,'p':p, 'wl' : wl, 'y_pos' : y1[y_of_xz], \
                                     'name' : name_lay,'stack_num':stack_num})
-                      
+
                         elif s == 'yz':
                             for x_of_yz in xrange(np.size(x1)):
                                 fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
@@ -2018,13 +2086,13 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                                 plt.suptitle('%(name)s \n E_yz_slice_%(p)s, x = %(x_pos)s, heights = %(h)s \n \
                                     $\lambda$ = %(wl)snm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i,' % \
                                     {'name' : name_lay, 'h':heights_list, 'p' : p, 'x_pos' : x1[x_of_yz],'wl' : wl, \
-                                    'd' : period, 'dia': diameter, 'pw' : pw} + '\n' 
+                                    'd' : period, 'dia': diameter, 'pw' : pw} + '\n'
                                     + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , \
                                     n = %(n)s, k = %(k)s' % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                                 plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_yz_slice=%(x_pos)s_wl=%(wl)s_%(p)s.pdf'% \
                                     {'dir_name' : dir_name, 'p':p, 'wl' : wl, 'x_pos' : x1[x_of_yz],\
                                     'name' : name_lay,'stack_num':stack_num})
-                      
+
                         elif s == 'diag+':
                             diag = 1
                             fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
@@ -2054,13 +2122,13 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                             plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
                                 $\lambda$ = %(wl)f, period = %(d)f, diameter = %(dia)f, PW = %(pw)i' % \
                                 {'name' : name_lay, 'h':heights_list, 'p':p,'diag' : diag,'wl' : wl, 'd' : period, \
-                                'pw' : pw,'dia': diameter} + '\n' 
+                                'pw' : pw,'dia': diameter} + '\n'
                                 + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_wl=%(wl)s_%(p)s.pdf'% \
                                 {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, \
                                 'name' : name_lay,'stack_num':stack_num})
-                                    
+
                         elif s == 'diag-':
                             diag = -1
                             fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
@@ -2090,7 +2158,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                             plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
                                 $\lambda$ = %(wl)f nm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i' % \
                                     {'name' : name_lay, 'h':heights_list,'diag' : diag, 'p' : p,'wl' : wl, \
-                                    'd' : period, 'dia': diameter, 'pw' : pw} + '\n'  + 
+                                    'd' : period, 'dia': diameter, 'pw' : pw} + '\n'  +
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_wl=%(wl)s_%(p)s.pdf'% \
@@ -2126,13 +2194,13 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                             plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(0,0) to (%(x)s,1), heights = %(h)s \n\
                                 $\lambda$ = %(wl)f, period = %(d)f, diameter = %(dia)f, PW = %(pw)i' % \
                                 {'name' : name_lay, 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
-                                'pw' : pw, 'x':x1[-1],'dia': diameter,} + '\n' + 
+                                'pw' : pw, 'x':x1[-1],'dia': diameter,} + '\n' +
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_wl=%(wl)s_%(p)s.pdf'% \
                                 {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
                                 'name' : name_lay,'stack_num':stack_num})
-                                
+
                         elif s == 'special-':
                             diag = -1
                             fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
@@ -2162,13 +2230,13 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,\
                             plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(1,0) to (%(x)s,1), heights = %(h)s \n\
                                 $\lambda$ = %(wl)f, period = %(d)f, diameter = %(dia)f, PW = %(pw)i' % \
                                 {'name' : name_lay, 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
-                                'pw' : pw,'x':x1[-1],'dia': diameter,} + '\n' + 
+                                'pw' : pw,'x':x1[-1],'dia': diameter,} + '\n' +
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_wl=%(wl)s_%(p)s.pdf'% \
                                 {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
                                 'name' : name_lay,'stack_num':stack_num})
-    
+
     stack_num += 1
 
 
@@ -2197,10 +2265,10 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
     os.mkdir(dir_name)
 
     stack_num = 0
-    for pstack in stacks_list:        
+    for pstack in stacks_list:
         if isinstance(pstack.layers[lay_interest],mode_calcs.Simmo):
             raise ValueError, "field_values can only handle ThinFilm layers."
-        
+
         num_lays = len(pstack.layers)
         wl = np.around(pstack.layers[-1].light.wl_nm,decimals=2)
 
@@ -2220,7 +2288,7 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
         else:
             beta = beta_unsrt[s]
         gamma = np.array(pstack.layers[lay_interest].calc_kz())
-        
+
         vec_coef_down = np.array(pstack.vec_coef_down[num_lays-1-lay_interest]).flatten()
         vec_coef_down_TE = vec_coef_down[0:PWordtot]
         vec_coef_down_TM = vec_coef_down[PWordtot::]
@@ -2228,10 +2296,10 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
             vec_coef_up = np.zeros((2*PWordtot), dtype = 'complex')
         else:
             vec_coef_up = np.array(pstack.vec_coef_up[num_lays-1-lay_interest]).flatten()
-            
+
         vec_coef_up_TE = vec_coef_up[0:PWordtot]
         vec_coef_up_TM = vec_coef_up[PWordtot::]
-        
+
         norm = np.sqrt(alpha**2+beta**2)
         k = np.sqrt(alpha**2+beta**2+gamma**2)
         chi_TE = np.sqrt((n*gamma)/k)
@@ -2242,7 +2310,7 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
         E_TM_x = alpha/norm
         E_TM_y = beta/norm
         E_TM_z = -1*norm/gamma
-        
+
         eta_TE_x_down = (vec_coef_down_TE*E_TE_x)/chi_TE
         eta_TE_y_down = (vec_coef_down_TE*E_TE_y)/chi_TE
         eta_TE_z_down = (vec_coef_down_TE*E_TE_z)/chi_TE
@@ -2285,10 +2353,10 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
             calc_E_TM_x = np.sum(eta_TM_x_down*calc_expo_down + eta_TM_x_up*calc_expo_up)
             calc_E_TM_y = np.sum(eta_TM_y_down*calc_expo_down + eta_TM_y_up*calc_expo_up)
             calc_E_TM_z = np.sum(eta_TM_z_down*calc_expo_down + eta_TM_z_up*calc_expo_up)
-            calc_E_TE_x_array[i] = calc_E_TE_x 
+            calc_E_TE_x_array[i] = calc_E_TE_x
             calc_E_TE_y_array[i] = calc_E_TE_y
             calc_E_TE_z_array[i] = calc_E_TE_z
-            calc_E_TM_x_array[i] = calc_E_TM_x 
+            calc_E_TM_x_array[i] = calc_E_TM_x
             calc_E_TM_y_array[i] = calc_E_TM_y
             calc_E_TM_z_array[i] = calc_E_TM_z
         calc_E_x_array = calc_E_TE_x_array + calc_E_TM_x_array
@@ -2301,12 +2369,12 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
                             {'dir_name':dir_name, 'wl':wl,'name' : name_lay,'stack_num':stack_num},\
                             calc_E_x_array=calc_E_x_array,calc_E_y_array=calc_E_y_array,\
                             calc_E_z_array=calc_E_z_array,calc_E_tot_array=calc_E_tot_array)
-        
+
         np.savetxt('%(dir_name)s/%(stack_num)s_E_calc_points_%(name)s_wl_%(wl)s.txt'% \
                             {'dir_name':dir_name, 'wl':wl,'name' : name_lay,'stack_num':stack_num},\
                             np.array([np.real(calc_E_x_array), np.imag(calc_E_x_array), np.real(calc_E_y_array),\
                             np.imag(calc_E_y_array), np.real(calc_E_z_array), np.imag(calc_E_z_array), np.real(calc_E_tot_array)]))
-        
+
         stack_num += 1
 
 
@@ -2352,16 +2420,16 @@ def fields_3d(stacks_list, lay_interest = 1):
 
         layer_name = 'Lay_' + zeros_int_str(lay_interest) + 'Stack_' + str(stack_num)
 
-        EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,   
-            meat.E_H_field, meat.n_msh_el, meat.n_msh_pts, 
+        EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,
+            meat.E_H_field, meat.n_msh_el, meat.n_msh_pts,
             nnodes, meat.type_el, meat.structure.nb_typ_el, meat.table_nod,
             meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos, layer_name)
 
         stack_num += 1
-#######################################################################################
+###############################################################################
 
 
-####Fabry-Perot resonances#############################################################
+#### Fabry-Perot resonances ###################################################
 def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0, lay_interest=1):
     """ Calculate the Fabry-Perot resonance condition for a resonances within a layer.
 
@@ -2403,8 +2471,8 @@ def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0, lay_interest=1):
     image = np.log(np.abs(plot_mat))
 
     fig = plt.figure()
-    ax1 = fig.add_subplot(1,1,1)
-    cax = ax1.imshow(image,cmap=plt.cm.gray_r, interpolation='none')
+    ax1 = fig.add_subplot(1, 1, 1)
+    cax = ax1.imshow(image, cmap = plt.cm.gray_r, interpolation = 'none')
 
     from matplotlib.ticker import MultipleLocator, FormatStrFormatter
     shape = np.shape(plot_mat)
@@ -2422,5 +2490,5 @@ def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0, lay_interest=1):
     ax1.set_xlabel(r'$k_\perp/k_0$')
     ax1.set_ylabel(r'$f/f_0$')
     ax1.axis('image')
-    plt.savefig('Fabry-Perot_resonances', bbox_inches='tight')
-#######################################################################################
+    plt.savefig('Fabry-Perot_resonances', bbox_inches = 'tight')
+###############################################################################

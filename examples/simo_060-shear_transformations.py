@@ -83,9 +83,9 @@ def simulate_stack(light):
     sim_grating_1   = grating_1.calc_modes(light, num_BM = num_BM)
     sim_grating_2   = grating_2.calc_modes(light, num_BM = num_BM)
 
-    ################ Evaluate full solar cell structure ##############
-    """ Now when defining full structure order is critical and
-    stack MUST be ordered from bottom to top!
+    ###################### Evaluate structure ######################
+    """ Now define full structure. Here order is critical and
+        stack list MUST be ordered from bottom to top!
     """
 
     # Shear is relative to top layer (ie incident light) and in units of d.
