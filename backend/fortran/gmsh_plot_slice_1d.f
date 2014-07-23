@@ -1,0 +1,819 @@
+
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+c     sol_P2(1,1..3,nval, nel)  contains the values of Ex component at P2 interpolation nodes (3 nodes)
+c     sol_P2(2,1..3,nval, nel)  contains the values of Ey component at P2 interpolation nodes
+c     sol_P2(3,1..3,nval, nel)  contains the values of Ez component at P2 interpolation nodes
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+
+      subroutine gmsh_plot_slice_1d (E_H_field, nval, nel, npt_P2,
+     *     type_el, nb_typ_el, n_eff,
+     *     table_nod, x_P2, beta, sol_P2, vec_coef, h,  lambda,
+     *     gmsh_file_pos, dir_name)
+
+      implicit none
+      integer*8 nval, nel, npt_P2, E_H_field, nb_typ_el
+      double precision h,  lambda
+      integer*8 table_nod(3,nel), type_el(nel)
+      double precision x_P2(npt_P2)
+      complex*16 vec_coef(2*nval), n_eff(nb_typ_el)
+      complex*16 sol_P2(3,3,nval,nel), beta(nval)
+      character*(*) gmsh_file_pos, dir_name
+c
+c     Local variables
+
+      integer*8 nnodes_0, n_quad
+      parameter (nnodes_0 = 3, n_quad=4)
+
+      integer alloc_stat, IO_status
+      complex*16, dimension(:,:,:,:), allocatable :: sol_2d
+      integer*8, dimension(:), allocatable :: map_p1, inv_map_p1
+
+      double precision xel(3,n_quad)  ! Quadrangle element
+      complex*16 sol_el(3,n_quad)
+      double precision sol_el_abs2(n_quad)
+      integer*8 table_nod_el_p1(n_quad)
+
+      complex*16 P_down, P_up, coef_down, coef_up, coef_t, coef_z
+      complex*16 ii, z_tmp1, r_index
+      double precision hz, dz, xx, yy, zz, r_tmp
+      double precision dx, x_min, x_max
+
+      integer*8 nel_2d, npt_2d  ! rectangular elements
+      integer*8 npt_p1  ! Number of vertices of the 2D FEM mesh
+      integer*8 npt_h, npt_h_max, i_h, npt_2d_p1  ! Resolution: number of points over the thickness h
+      integer*8 i1, i, j, iel, inod, ival, debug, ui
+      integer*8 namelen_gmsh, namelen_dir, namelen_tchar
+      integer*8 namelen2
+
+      integer*8 gmsh_type_quad, choice_type, typ_e
+      integer*8 number_tags, physic_tag, list_tag(6)
+      integer*8, dimension(:), allocatable :: type_data
+
+      double precision Transf_XX, Transf_YY, Transf_ZZ
+      double precision Offset_Z
+
+      integer*8 n_interface, n_interface_max
+      parameter (n_interface_max = 100)
+      double precision x_interface(n_interface_max)
+      integer*8, allocatable ::  visite(:)
+
+      character*100 tchar
+      character*1 tE_H
+
+      integer*8 iFrame, nFrame
+      double precision pi, phase
+      complex*16 exp_phase
+      character tval*4, buf*3
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+c
+c  ii = sqrt(-1)
+      ii = cmplx(0.0d0, 1.0d0)
+c
+      ui = 6
+      debug = 1
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      x_min = x_P2(1)
+      x_max = x_P2(1)
+      do i=1,npt_P2
+        xx = x_P2(i)
+        if(xx .lt. x_min) x_min = xx
+        if(xx .gt. x_max) x_max = xx
+      enddo
+
+c     Diagonal elements of the coordinate transformation matrix
+c     Saling factor = Transf_XX
+      Transf_XX = 2
+      Transf_YY = Transf_XX
+      Transf_ZZ = Transf_XX
+
+c     Translation of the view along Z-axis
+      Offset_Z = 0.5
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+
+      dx = (x_max - x_min)/dble(nel)
+      npt_h = anint(h/dx) + 1
+
+      npt_h_max = 10 * (h/lambda + 1) ! At most 10 nodes per wavelength
+      if (npt_h > npt_h_max) npt_h = npt_h_max
+      npt_2d = npt_P2 * npt_h
+      nel_2d = nel * (npt_h - 1)
+
+      if (debug .eq. 1) then
+        write(ui,*)
+        write(ui,*) "gmsh_plot_slices_xz_1d:        h = ", h
+        write(ui,*) "gmsh_plot_slices_xz_1d: h/lambda = ", h/lambda
+        write(ui,*) "gmsh_plot_slices_xz_1d:       dx = ", dx
+        write(ui,*) "gmsh_plot_slices_xz_1d:     h/dx = ", h/dx
+        write(ui,*) "gmsh_plot_slices_xz_1d:    npt_h = ", npt_h
+        write(ui,*) "gmsh_plot_slices_xz_1d: npt_h_max = ", npt_h_max
+        write(ui,*) "gmsh_plot_slices_xz_1d:   npt_2d = ", npt_2d
+        write(ui,*) "gmsh_plot_slices_xz_1d:   nel_2d = ", nel_2d
+      endif
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      alloc_stat = 0
+      IO_status = 0
+      allocate(sol_2d(3,nnodes_0,nel,npt_h), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*)
+        write(*,*) "gmsh_plot_slices_xz_1d: ",
+     *     "The allocation is unsuccessful"
+        write(*,*) "alloc_stat = ", alloc_stat
+        write(*,*) "Not enough memory for the array sol_2d"
+        write(*,*) "nel, npt_h = ", nel,npt_h
+        write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+        stop
+      endif
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+c    Initialise sol
+      do i_h=1,npt_h
+        do iel=1,nel
+          do inod=1,nnodes_0
+            do j=1,3
+              sol_2d(j,inod,iel,i_h) = 0.0d0
+            enddo
+          enddo
+        enddo
+      enddo
+c
+      do ival=1,nval
+        dz = h/dble(npt_h-1)
+        do i_h=1,npt_h
+          hz = (i_h-1)*dz
+          P_down = EXP(ii*beta(ival)*hz)   !  Introduce Propagation in -z
+          P_up = EXP(ii*beta(ival)*(h-hz)) !  Introduce Propagation in +z
+          coef_down = vec_coef(ival) * P_down
+          coef_up = vec_coef(ival+nval) * P_up
+          coef_t = coef_up + coef_down
+          coef_z = (coef_up - coef_down)/beta(ival) ! Taking into accout the change of variable for Ez
+          do iel=1,nel
+            do inod=1,nnodes_0
+              do j=1,2
+                z_tmp1 = sol_P2(j,inod,ival,iel) * coef_t
+                sol_2d(j,inod,iel,i_h) = sol_2d(j,inod,iel,i_h) + z_tmp1
+              enddo
+              j=3
+                z_tmp1 = sol_P2(j,inod,ival,iel) * coef_z
+                sol_2d(j,inod,iel,i_h) = sol_2d(j,inod,iel,i_h) + z_tmp1
+            enddo
+          enddo
+        enddo
+      enddo
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      if (E_H_field .eq. 1) then
+        tE_H = "E"
+      elseif(E_H_field .eq. 2) then
+        tE_H = "H"
+      else
+        write(ui,*) "gmsh_plot_slices_xz_1d: ",
+     *   " E_H_field has invalid value: ", E_H_field
+        write(ui,*) "Aborting..."
+        stop
+      endif
+
+      namelen_gmsh = len_trim(gmsh_file_pos)
+      namelen_dir = len_trim(dir_name)
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      tchar=dir_name(1:namelen_dir)// '/' //
+     *           gmsh_file_pos(1:namelen_gmsh)
+     *           // '_field_' // tE_H // '_abs2_xz.pos'
+      open (unit=26,file=tchar, IOSTAT=IO_status)
+       if (IO_status /= 0) then
+         write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
+         write(*,*) "gmsh_plot_slices_xz_1d: File name = ", tchar
+         write(*,*) "gmsh_plot_slices_xz_1d: IO_status = ", IO_status
+         write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+         stop
+       endif
+        write(26,*) "View.IntervalsType = 3;"
+        write(26,*) "General.Trackball = 0;"
+        write(26,*) "General.RotationX = -90;"
+        write(26,*) "General.RotationY = 0;"
+        write(26,*) "General.RotationZ = 0;"
+        write(26,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(26,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(26,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(26,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+        write(26,*) "View ""|",tE_H,"_t|^2 ",
+     *     " "" {"
+
+      tchar=dir_name(1:namelen_dir)// '/' //
+     *           gmsh_file_pos(1:namelen_gmsh)
+     *           // '_field_' // tE_H // 'x_re_xz.pos'
+      open (unit=27,file=tchar, IOSTAT=IO_status)
+       if (IO_status /= 0) then
+         write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
+         write(*,*) "gmsh_plot_slices_xz_1d: File name = ", tchar
+         write(*,*) "gmsh_plot_slices_xz_1d: IO_status = ", IO_status
+         write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+         stop
+       endif
+        write(27,*) "View.IntervalsType = 3;"
+        write(27,*) "General.Trackball = 0;"
+        write(27,*) "General.RotationX = -90;"
+        write(27,*) "General.RotationY = 0;"
+        write(27,*) "General.RotationZ = 0;"
+        write(27,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(27,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(27,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(27,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+        write(27,*) "View ""Re ",tE_H,"x ",
+     *     " "" {"
+
+      tchar=dir_name(1:namelen_dir)// '/' //
+     *           gmsh_file_pos(1:namelen_gmsh)
+     *           // '_field_' // tE_H // 'y_re_xz.pos'
+      open (unit=28,file=tchar, IOSTAT=IO_status)
+       if (IO_status /= 0) then
+         write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
+         write(*,*) "gmsh_plot_slices_xz_1d: File name = ", tchar
+         write(*,*) "gmsh_plot_slices_xz_1d: IO_status = ", IO_status
+         write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+         stop
+       endif
+        write(28,*) "View.IntervalsType = 3;"
+        write(28,*) "General.Trackball = 0;"
+        write(28,*) "General.RotationX = -90;"
+        write(28,*) "General.RotationY = 0;"
+        write(28,*) "General.RotationZ = 0;"
+        write(28,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(28,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(28,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(28,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+        write(28,*) "View ""Re ",tE_H,"y ",
+     *     " "" {"
+
+      tchar=dir_name(1:namelen_dir)// '/' //
+     *           gmsh_file_pos(1:namelen_gmsh)
+     *           // '_field_' // tE_H // 'z_re_xz.pos'
+      open (unit=29,file=tchar, IOSTAT=IO_status)
+       if (IO_status /= 0) then
+         write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
+         write(*,*) "gmsh_plot_slices_xz_1d: File name = ", tchar
+         write(*,*) "gmsh_plot_slices_xz_1d: IO_status = ", IO_status
+         write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+         stop
+       endif
+        write(29,*) "View.IntervalsType = 3;"
+        write(29,*) "General.Trackball = 0;"
+        write(29,*) "General.RotationX = -90;"
+        write(29,*) "General.RotationY = 0;"
+        write(29,*) "General.RotationZ = 0;"
+        write(29,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(29,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(29,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(29,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+        write(29,*) "View ""Re ",tE_H,"z ",
+     *     " "" {"
+
+      tchar=dir_name(1:namelen_dir)// '/' //
+     *           gmsh_file_pos(1:namelen_gmsh)
+     *           // '_field_' // tE_H // 'v_re_xz.pos'
+      open (unit=30,file=tchar, IOSTAT=IO_status)
+       if (IO_status /= 0) then
+         write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
+         write(*,*) "gmsh_plot_slices_xz_1d: File name = ", tchar
+         write(*,*) "gmsh_plot_slices_xz_1d: IO_status = ", IO_status
+         write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+         stop
+       endif
+        write(30,*) "View.IntervalsType = 3;"
+        write(30,*) "View.Axes = 2;"
+        write(30,*) "General.Trackball = 0;"
+        write(30,*) "General.RotationX = -90;"
+        write(30,*) "General.RotationY = 0;"
+        write(30,*) "General.RotationZ = 0;"
+        write(30,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(30,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(30,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(30,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+        write(30,*) "View ""Re ",tE_H, " "" {"
+
+      dz = h/dble(npt_h-1)
+      do i_h=1,npt_h-1
+        yy = 0
+        zz = - (i_h-1)*dz  ! hz=0 => top interface; hz=-h => bottom interface
+        do iel=1,nel
+          do inod=1,2
+            i1 = table_nod(inod,iel)
+            xel(1,inod) = x_P2(i1)
+            xel(2,inod) = yy
+            xel(3,inod) = zz
+          enddo
+            xel(1,3) = xel(1,2)  ! Quadrangle element
+            xel(2,3) = yy
+            xel(3,3) = zz - dz
+            xel(1,4) = xel(1,1)  ! Quadrangle element
+            xel(2,4) = yy
+            xel(3,4) = zz - dz
+          do inod=1,2
+            sol_el_abs2(inod) = 0.0
+            do j=1,3
+              z_tmp1 = sol_2d(j,inod,iel,i_h)
+              sol_el(j,inod) = z_tmp1
+              sol_el_abs2(inod) = sol_el_abs2(inod) +
+     *           abs(z_tmp1)**2
+            enddo
+            sol_el_abs2(5-inod) = 0.0
+            do j=1,3
+              z_tmp1 = sol_2d(j,inod,iel,i_h+1)
+              sol_el(j,5-inod) = z_tmp1
+              sol_el_abs2(5-inod) = sol_el_abs2(5-inod) +
+     *           abs(z_tmp1)**2
+            enddo
+          enddo
+          write(26,10) xel, sol_el_abs2
+          write(27,10) xel, (dble(sol_el(1,j)),j=1,n_quad)
+          write(28,10) xel, (dble(sol_el(2,j)),j=1,n_quad)
+          write(29,10) xel, (dble(sol_el(3,j)),j=1,n_quad)
+          write(30,11) xel,
+     *     ((dble(sol_el(i,j)),i=1,3),j=1,n_quad)
+        enddo
+      enddo
+      write(26,*) "};"
+      write(27,*) "};"
+      write(28,*) "};"
+      write(29,*) "};"
+      write(30,*) "};"
+      close(26)
+      close(27)
+      close(28)
+      close(29)
+      close(30)
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+c         PART 2: GENERATE THE PRISM FINITE ELEMENT MESH IN GMSH FORMAT
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      alloc_stat = 0
+
+      allocate(map_p1(npt_P2), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*)
+        write(*,*) "gmsh_plot_slices_xz_1d: ",
+     *     "The allocation is unsuccessful"
+        write(*,*) "alloc_stat = ", alloc_stat
+        write(*,*) "Not enough memory for the array map_p1"
+        write(*,*) "npt_P2 = ", npt_P2
+        write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+        stop
+      endif
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      do inod=1,npt_P2
+        map_p1(inod) = 0
+      enddo
+      npt_p1 = 0
+      do iel=1,nel
+        do inod=1,2  ! Scan the vertices
+          i1 = table_nod(inod,iel)
+          if(map_p1(i1) .eq. 0) then
+            npt_p1 = npt_p1+1
+            map_p1(i1) = npt_p1
+          endif
+        enddo
+      enddo
+
+      if (debug .eq. 1) then
+        write(ui,*) "gmsh_plot_slices_xz_1d:   npt_p1 = ", npt_p1
+        write(ui,*)
+      endif
+
+      allocate(inv_map_p1(npt_p1), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*)
+        write(*,*) "gmsh_plot_slices_xz_1d: ",
+     *     "The allocation is unsuccessful"
+        write(*,*) "alloc_stat = ", alloc_stat
+        write(*,*) "Not enough memory for the array inv_map_p1"
+        write(*,*) "npt_P2 = ", npt_P2
+        write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+        stop
+      endif
+
+      allocate(type_data(nb_typ_el), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*)
+        write(*,*) "gmsh_plot_slices_xz_1d: ",
+     *     "The allocation is unsuccessful"
+        write(*,*) "alloc_stat = ", alloc_stat
+        write(*,*) "Not enough memory for the array type_data"
+        write(*,*) "nb_typ_el = ", nb_typ_el
+        write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+        stop
+      endif
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      do inod=1,npt_P2
+        if(map_p1(inod) .ne. 0) then
+          inv_map_p1(map_p1(inod)) = inod
+        endif
+      enddo
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+c     elment type: defines the geometrical type
+c     4-node quadrangle.
+      gmsh_type_quad = 3
+
+c     For choice_type = 3, the user provide a map for the types
+      choice_type = 3
+      number_tags = 6
+      physic_tag = 4
+      list_tag(2) = gmsh_type_quad
+      list_tag(3) = number_tags - 3
+      list_tag(5) = 1
+      list_tag(6) = 0
+
+      npt_2d_p1 = npt_p1 * npt_h
+
+      if (nb_typ_el .eq. 1) then
+        type_data(nb_typ_el) = 10
+      else
+        do i=1,nb_typ_el
+          r_tmp = (dble(i-1)/dble(nb_typ_el-1))
+          type_data(i) = 1 + 18.0d0*r_tmp
+        enddo
+      endif
+
+
+c     For choice_type = 3, the user provide a map for the types
+      choice_type = 3
+      number_tags = 6
+      physic_tag = 4
+      list_tag(2) = gmsh_type_quad
+      list_tag(3) = number_tags - 3
+      list_tag(5) = 1
+      list_tag(6) = 0
+
+      npt_2d_p1 = npt_p1 * npt_h
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      tchar=dir_name(1:namelen_dir)// '/' //
+     *           gmsh_file_pos(1:namelen_gmsh)
+     *           // '_abs2_xz.msh'
+      open (unit=26,file=tchar, IOSTAT=IO_status)
+       if (IO_status /= 0) then
+         write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
+         write(*,*) "gmsh_plot_slices_xz_1d: File name = ", tchar
+         write(*,*) "gmsh_plot_slices_xz_1d: IO_status = ", IO_status
+         write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+         stop
+       endif
+      write(26,'(a11)') "$MeshFormat"
+      write(26,'(3(I1,1x))') 2, 0, 8
+      write(26,'(a14)') "$EndMeshFormat"
+      write(26,'(a6)') "$Nodes"
+      write(26,'(I0.1)') npt_2d_p1
+      dz = h/dble(npt_h-1)
+      do i_h=1,npt_h
+        yy = 0
+        zz = - (i_h-1)*dz  ! hz=0 => top interface; hz=-h => bottom interface
+        do inod=1,npt_p1
+          i = inv_map_p1(inod)
+          i1 = inod + (i_h-1) * npt_p1
+          write(26,'(I0.1,3(g25.16))') i1, x_P2(i), yy, zz
+        enddo
+      enddo
+      write(26,'(a9)') "$EndNodes"
+      write(26,'(a9)') "$Elements"
+      write(26,'(I0.1)') nel_2d
+
+      do i_h=1,npt_h-1
+        do iel=1,nel
+          list_tag(1) = iel + (i_h-1) * nel
+          if (choice_type .eq. 1) then
+            list_tag(physic_tag) = type_el(iel)
+            list_tag(physic_tag+1) = type_el(iel)
+          elseif (choice_type .eq. 2) then
+            typ_e = type_el(iel)
+            r_index = n_eff(typ_e)
+            list_tag(physic_tag) = r_index
+            list_tag(physic_tag+1) = r_index
+          elseif (choice_type .eq. 3) then
+            list_tag(physic_tag) = type_data(type_el(iel))
+            list_tag(physic_tag+1) = type_data(type_el(iel))
+          else
+            write(*,*) "mail_to_gmsh: no action is defined when ",
+     *      " choice_type = ", choice_type
+            write(*,*) "mail_to_gmsh: Aborting..."
+            stop
+          endif
+          do inod=1,2  ! Scan the vertices
+            i = table_nod(inod,iel)
+            i1 = map_p1(i)
+            table_nod_el_p1(inod) = i1 + (i_h-1) * npt_p1
+            table_nod_el_p1(5-inod) = i1 + i_h * npt_p1
+          enddo
+          write(26,'(100(I0.1,2x))') (list_tag(j), j=1,number_tags),
+     *      (table_nod_el_p1(j), j=1,n_quad)
+        enddo
+      enddo
+      write(26,'(a12)') "$EndElements"
+      close(26)
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+c         PART 2: GENERATE ANIMATION FILES
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      if (debug .eq. 1) then
+        write(ui,*) "gmsh_plot_slices_xz_1d: ",
+     *      "generating the animation files..."
+        write(ui,*)
+      endif
+
+      pi = 3.141592653589793d0
+      nFrame = 50
+
+      tchar=dir_name(1:namelen_dir)// '/' //
+     *           "Anim/"
+     *           // 'view_' // tE_H // '_v_xz.geo'
+      open (unit=29,file=tchar, IOSTAT=IO_status)
+       if (IO_status /= 0) then
+         write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
+         write(*,*) "gmsh_plot_slices_xz_1d: File name = ", tchar
+         write(*,*) "gmsh_plot_slices_xz_1d: IO_status = ", IO_status
+         write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+         stop
+       endif
+      do iFrame=1,nFrame
+        phase = 2.0d0 * pi * (iFrame -1) / dble(nFrame)
+c       Exponential time dependence: Exp(-i omega t)
+        exp_phase = exp(- ii *  phase)
+        if (iFrame .lt. 1000) then
+          write(buf,'(i3.3)') iFrame
+        else
+          buf = "nnn"
+        endif
+        tval=tE_H//buf
+        tchar = 'view_' // tval // '_v_xz.pos'
+        namelen_tchar = len_trim(tchar)
+        write(29,*) " Include """, tchar(1:namelen_tchar), """;"
+        tchar=dir_name(1:namelen_dir)// '/' //
+     *           "Anim/"
+     *           // 'view_' // tval // '_v_xz.pos'
+        open (unit=30,file=tchar, IOSTAT=IO_status)
+       if (IO_status /= 0) then
+         write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
+         write(*,*) "gmsh_plot_slices_xz_1d: File name = ", tchar
+         write(*,*) "gmsh_plot_slices_xz_1d: IO_status = ", IO_status
+         write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+         stop
+       endif
+        write(30,*) "View.IntervalsType = 3;"
+        write(30,*) "View.Axes = 2;"
+        write(30,*) "General.Trackball = 0;"
+        write(30,*) "General.RotationX = -90;"
+        write(30,*) "General.RotationY = 0;"
+        write(30,*) "General.RotationZ = 0;"
+        write(30,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(30,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(30,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(30,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+        write(30,*) "View ""Vector field ",tE_H, " "" {"
+        dz = h/dble(npt_h-1)
+        do i_h=1,npt_h-1
+          yy = 0
+          zz = - (i_h-1)*dz  ! hz=0 => top interface; hz=-h => bottom interface
+          do iel=1,nel
+            do inod=1,2
+              i1 = table_nod(inod,iel)
+              xel(1,inod) = x_P2(i1)
+              xel(2,inod) = yy
+              xel(3,inod) = zz
+              xel(1,5-inod) = x_P2(i1)  ! Prism element
+              xel(2,5-inod) = yy
+              xel(3,5-inod) = zz - dz
+            enddo
+            do inod=1,2
+              do j=1,3
+                z_tmp1 = sol_2d(j,inod,iel,i_h)
+                sol_el(j,inod) = z_tmp1 * exp_phase
+              enddo
+              do j=1,3
+                z_tmp1 = sol_2d(j,inod,iel,i_h+1)
+                sol_el(j,5-inod) = z_tmp1 * exp_phase
+              enddo
+            enddo
+          write(30,11) xel,
+     *     ((dble(sol_el(i,j)),i=1,3),j=1,n_quad)
+          enddo
+        enddo
+        write(30,*) "};"
+        close(30)
+      enddo
+      write(29,*) "Combine TimeStepsFromAllViews;"
+      close(29)
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+
+      if (debug .eq. 1) then
+        write(ui,*) "gmsh_plot_slices_xz_1d: ",
+     *      "all the animation files are generated."
+        write(ui,*)
+      endif
+
+      allocate(visite(npt_P2), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*) "gmsh_plot_slices_xz_1d: ",
+     *             "Mem. allocation is unseccesfull"
+        write(*,*) "alloc_stat (visite) = ", alloc_stat
+        write(*,*) "npt_P2 = ", npt_P2
+        write(*,*) "Aborting..."
+        stop
+      endif
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+c   Search for the interface points
+      do i=1,npt_P2
+        visite(i) = 0
+      enddo
+
+      n_interface = 0
+      do iel=1,nel
+        typ_e = type_el(iel)
+        do inod=1,2  ! Scan the end-points
+          i1 = table_nod(inod,iel)
+          if (visite(i1) == 0) then
+            visite(i1) = typ_e
+          elseif (visite(i1) /= typ_e) then
+            n_interface = n_interface + 1
+            if(n_interface > n_interface_max) then
+              write(*,*) "gmsh_plot_slices_xz_1d: ",
+     *          "n_interface > n_interface_max : ",
+     *           n_interface, n_interface_max
+              write(*,*) "Aborting..."
+              stop
+
+            endif
+            x_interface(n_interface) = x_P2(i1)
+          endif
+        enddo
+      enddo
+
+      if (debug .eq. 1) then
+        write(ui,*)
+        write(ui,*) "gmsh_plot_slices_xz_1d:"
+        write(ui,*) "n_interface_max = ", n_interface_max
+        write(ui,*) "n_interface = ", n_interface
+        do i=1,n_interface
+          write(ui,*) "i, x_interface(i) = ", i, x_interface(i)
+        enddo
+      endif
+
+      tchar=dir_name(1:namelen_dir)// "/interface_xz.geo"
+      open (unit=26,file=tchar, IOSTAT=IO_status)
+       if (IO_status /= 0) then
+         write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
+         write(*,*) "gmsh_plot_slices_xz_1d: File name = ", tchar
+         write(*,*) "gmsh_plot_slices_xz_1d: IO_status = ", IO_status
+         write(*,*) "gmsh_plot_slices_xz_1d: Aborting..."
+         stop
+       endif
+        write(26,*) "h = ",  h, ";"
+        write(26,*) "n1 = 0;"
+        write(26,*) "n2 = 0;"
+        do i=1,n_interface
+          write(26,*) "lc = 0.101;"
+          write(26,*) "n1 = n1 + 1;"
+          xx = x_interface(i)
+          write(26,*) "xx = ",  xx, ";"
+          write(26,*) "yy = 0;"
+          write(26,*) "zz = 0;"
+          write(26,*) "Point(n1) = {xx, yy, zz, lc};"
+          write(26,*) "n1 = n1 + 1;"
+          write(26,*) "Point(n1) = {xx, yy, zz-h, lc};"
+          write(26,*) "n2 = n2 + 1;"
+          write(26,*) "Line(n2) = {n1-1, n1};"
+        enddo
+        write(26,*) "General.Trackball = 0;"
+        write(26,*) "General.RotationX = -90;"
+        write(26,*) "General.RotationY = 0;"
+        write(26,*) "General.RotationZ = 0;"
+
+        write(26,*) "Geometry.Transform = 1;"
+        write(26,"('Geometry.TransformXX = ',f10.6,';')") Transf_XX
+        write(26,"('Geometry.TransformYY = ',f10.6,';')") Transf_YY
+        write(26,"('Geometry.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(26,"('Geometry.OffsetZ = ',f10.6,';')") Offset_Z
+
+        write(26,*) "Geometry.LineWidth = 2;"
+        write(26,*) "Geometry.Color.Lines = White;"
+        write(26,*) "Geometry.Points = 0;"
+      close(26)
+
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+
+
+c    All_plots.geo (unit=34)
+
+      tchar = "../../"//dir_name(1:namelen_dir)//
+     *  "/interface_xz.geo"
+      namelen2 = len_trim(tchar)
+        write(34,*) "Merge """, tchar(1:namelen2), """;"
+
+      tchar = "../../"//dir_name(1:namelen_dir)// "/" //
+     *           gmsh_file_pos(1:namelen_gmsh)
+     *           // "_field_" // tE_H // "_abs2_xz.pos"
+      namelen2 = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen2), """;"
+      tchar= gmsh_file_pos(1:namelen_gmsh)
+     *           // "_field_" // tE_H // "_abs2_xz.png"
+      namelen2 = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../../"//dir_name(1:namelen_dir)// "/" //
+     *           gmsh_file_pos(1:namelen_gmsh)
+     *           // "_field_" // tE_H // "x_re_xz.pos"
+      namelen2 = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen2), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh)
+     *           // "_field_" // tE_H // "x_re_xz.png"
+      namelen2 = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../../"//dir_name(1:namelen_dir)// "/" //
+     *           gmsh_file_pos(1:namelen_gmsh)
+     *           // "_field_" // tE_H // "y_re_xz.pos"
+      namelen2 = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen2), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh)
+     *           // "_field_" // tE_H // "y_re_xz.png"
+      namelen2 = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../../"//dir_name(1:namelen_dir)// "/" //
+     *           gmsh_file_pos(1:namelen_gmsh)
+     *           // "_field_" // tE_H // "z_re_xz.pos"
+      namelen2 = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen2), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh)
+     *           // "_field_" // tE_H // "z_re_xz.png"
+      namelen2 = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
+
+      write(34,*)
+      write(34,*) "Delete View[0];"
+      tchar = "../../"//dir_name(1:namelen_dir)// "/" //
+     *           gmsh_file_pos(1:namelen_gmsh)
+     *           // "_field_" // tE_H // "v_re_xz.pos"
+      namelen2 = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen2), """;"
+      tchar = gmsh_file_pos(1:namelen_gmsh)
+     *           // "_field_" // tE_H // "v_re_xz.png"
+      namelen2 = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
+
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+c     SQ : Scalar quadrangle
+10    format("SQ(",f10.6,11(",",f10.6),"){",
+     *     g24.16,3(",",g24.16),"};")
+
+c     VQ : Vector quadrangle
+11    format("VQ(",f10.6,11(",",f10.6),"){",
+     *     g24.16,11(",",g24.16),"};")
+c
+      deallocate(sol_2d, map_p1, inv_map_p1, type_data)
+c
+
+      return
+      end
+
+
+

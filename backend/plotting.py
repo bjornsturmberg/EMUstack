@@ -40,7 +40,7 @@ linesstrength = 2.5
 title_font = 10
 
 
-####Natural constants##########################################################
+#### Natural constants ########################################################
 ASTM15_tot_I   = 900.084            # Integral of ASTM 1.5 solar irradiance in W/m**2
 Plancks_h      = 6.62606957*1e-34   # Planck's constant
 speed_c        = 299792458          # Speed of light in vacuum
@@ -1818,6 +1818,38 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
                     print "Sorry, field plotting inside 1D_arrays not yet implemented."
                     print ""
 
+
+                    h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+                    wl_normed = pstack.layers[lay].wl_norm()
+                    # gmsh_file_pos = meat.structure.mesh_file[0:-5]
+                    gmsh_file_pos = 'stack_%(stack_num)s_lay_%(name)s_'% \
+                                    {'name' : name_lay,'stack_num':stack_num}
+                    # eps_eff = meat.n_effs**2
+                    n_eff = meat.n_effs
+
+                    # vec_coef sorted from top of stack, everything else is sorted from bottom
+                    vec_index = num_lays - lay - 1
+                    vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
+                        pstack.vec_coef_up[vec_index]))
+
+                    EMUstack.gmsh_plot_slice_1d(meat.E_H_field, meat.num_BM,
+                        meat.n_msh_el, meat.n_msh_pts, nnodes, meat.type_el,
+                        meat.structure.nb_typ_el, n_eff, meat.table_nod,
+                        meat.x_arr, meat.k_z, meat.sol1, vec_coef,
+                        h_normed, wl_normed, gmsh_file_pos)
+E_H_field, nval, nel, npt, nnodes,
+     *     type_el, nb_typ_el, n_eff,
+     *     table_nod, x, beta, evecs, vec_coef, h,  lambda,
+     *     gmsh_file_pos)
+
+
+E_H_field, nval, nel, npt_P2,
+     *     type_el, nb_typ_el, n_eff,
+     *     table_nod, x_P2, beta, sol_P2, vec_coef, h,  lambda,
+     *     gmsh_file_pos, dir_name)
+
+
+
                 else:
                     h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
                     wl_normed = pstack.layers[lay].wl_norm()
@@ -1829,11 +1861,13 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
 
                     # vec_coef sorted from top of stack, everything else is sorted from bottom
                     vec_index = num_lays - lay - 1
-                    vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+                    vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
+                        pstack.vec_coef_up[vec_index]))
 
-                    EMUstack.gmsh_plot_slice (meat.E_H_field, meat.num_BM, meat.n_msh_el,
-                        meat.n_msh_pts, nnodes, meat.type_el, meat.structure.nb_typ_el,
-                        n_eff, meat.table_nod, meat.x_arr, meat.k_z, meat.sol1, vec_coef,
+                    EMUstack.gmsh_plot_slice(meat.E_H_field, meat.num_BM,
+                        meat.n_msh_el, meat.n_msh_pts, nnodes, meat.type_el,
+                        meat.structure.nb_typ_el, n_eff, meat.table_nod,
+                        meat.x_arr, meat.k_z, meat.sol1, vec_coef,
                         h_normed, wl_normed, gmsh_file_pos)
 
 
