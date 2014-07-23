@@ -1,4 +1,4 @@
-      subroutine calc_2d_modes(
+      subroutine calc_modes_2d(
 c     Explicit inputs
      *    lambda, nval, ordre_ls,
      *    debug, mesh_file, npt, nel,
@@ -16,7 +16,7 @@ C  Program:
 C    FEM component of EMUstack package. This was formerly main.f.
 C     Now this file is compiled by f2py and called as a subroutine from mode_calcs.py
 C     All other Fortran files are subroutines of this routine.
-C     This part of EMUstack is mostly a Finite Element Method routine to calculate the 
+C     This part of EMUstack is mostly a Finite Element Method routine to calculate the
 C     modes of a nanostructured layer, and their overlap integrals with plane waves.
 C
 C  Authors:
@@ -44,7 +44,7 @@ C  Declare the pointers of the integer super-vector
       integer*8 ip_type_N_E_F, ip_eq
       integer*8 ip_period_N, ip_nperiod_N
       integer*8 ip_period_N_E_F, ip_nperiod_N_E_F
-C      integer*8 ip_col_ptr, ip_bandw 
+C      integer*8 ip_col_ptr, ip_bandw
 C  Declare the pointers of the real super-vector
       integer*8 jp_x_N_E_F
 C      integer*8 jp_matD, jp_matL, jp_matU
@@ -145,7 +145,7 @@ C      complex*16 overlap_L(nval_max, nval_max)
 Cf2py intent(in) lambda, nval, ordre_ls
 Cf2py intent(in) debug, mesh_file, npt, nel
 Cf2py intent(in) n_eff, bloch_vec, shift
-Cf2py intent(in) E_H_field, i_cond, itermax, neq_PW 
+Cf2py intent(in) E_H_field, i_cond, itermax, neq_PW
 Cf2py intent(in) plot_modes, plot_real, plot_imag, plot_abs
 Cf2py intent(in) cmplx_max, nb_typ_el
 
@@ -161,7 +161,7 @@ C     !n_64**28 on Vayu, **27 before
 C      cmplx_max=n_64**25
       real_max = n_64**22
       int_max  = n_64**22
-c      3*npt+nel+nnodes*nel 
+c      3*npt+nel+nnodes*nel
 
 C      write(*,*) "cmplx_max = ", cmplx_max
 C      write(*,*) "real_max = ", real_max
@@ -239,7 +239,7 @@ C     clean mesh_format
       if (debug .eq. 1) then
         write(*,*) "mesh_file = ", mesh_file
         write(*,*) "gmsh_file = ", gmsh_file
-      endif    
+      endif
 
 c     Calculate effective permittivity
       do i_32 = 1, int(nb_typ_el)
@@ -259,7 +259,7 @@ CCCCCCCCCCCCCCCCC END POST F2PY CCCCCCCCCCCCCCCCCCCCC
 C     ! initial time  in unit = sec.
       call cpu_time(time1)
       call date_and_time ( start_date, start_time )
-C      
+C
       if (debug .eq. 1) then
         write(ui,*)
         write(ui,*) "start_date = ", start_date
@@ -295,7 +295,7 @@ C
       endif
 C
       call geometry (nel, npt, nnodes, nb_typ_el,
-     *     lx, ly, type_nod, type_el, table_nod, 
+     *     lx, ly, type_nod, type_el, table_nod,
      *     x_arr, mesh_file)
 C
       call lattice_vec (npt, x_arr, lat_vecs)
@@ -317,20 +317,20 @@ C     n_ddl_max = max(N_Vertices) + max(N_Edge) + max(N_Face)
 C     For P2 FEM npt=N_Vertices+N_Edge
 C     note: each element has 1 face, 3 edges and 10 P3 nodes
       n_ddl_max = npt + n_face
-      ip_visite =  ip_table_N_E_F  + 14*nel 
+      ip_visite =  ip_table_N_E_F  + 14*nel
       ip_table_E = ip_visite + n_ddl_max
 C
-      call list_edge (nel, npt, nnodes, n_edge, 
-     *    type_nod, table_nod, 
+      call list_edge (nel, npt, nnodes, n_edge,
+     *    type_nod, table_nod,
      *    a(ip_table_E), a(ip_table_N_E_F), a(ip_visite))
-      call list_node_P3 (nel, npt, nnodes, n_edge, npt_p3, 
+      call list_node_P3 (nel, npt, nnodes, n_edge, npt_p3,
      *    table_nod, a(ip_table_N_E_F), a(ip_visite))
       n_ddl = n_edge + n_face + npt_p3
 C
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes.f: npt, nel = ", npt, nel
         write(ui,*) "py_calc_modes.f: npt_p3 = ", npt_p3
-        write(ui,*) "py_calc_modes.f: n_vertex, n_edge, n_face, nel = ", 
+        write(ui,*) "py_calc_modes.f: n_vertex, n_edge, n_face, nel = ",
      *    (npt - n_edge), n_edge, n_face, nel
         write(ui,*) "py_calc_modes.f: 2D case of the Euler &
      & characteristic: V-E+F=1-(number of holes)"
@@ -345,13 +345,13 @@ c
       ip_type_N_E_F = ip_table_E + 4*n_edge
 C
       jp_x_N_E_F = 1
-      call type_node_edge_face (nel, npt, nnodes, n_ddl, 
-     *      type_nod, table_nod, a(ip_table_N_E_F), 
-     *      a(ip_visite), a(ip_type_N_E_F), 
+      call type_node_edge_face (nel, npt, nnodes, n_ddl,
+     *      type_nod, table_nod, a(ip_table_N_E_F),
+     *      a(ip_visite), a(ip_type_N_E_F),
      *      x_arr, b(jp_x_N_E_F))
 C
-      call get_coord_p3 (nel, npt, nnodes, n_ddl, 
-     *      table_nod, type_nod, a(ip_table_N_E_F), 
+      call get_coord_p3 (nel, npt, nnodes, n_ddl,
+     *      table_nod, type_nod, a(ip_table_N_E_F),
      *      a(ip_type_N_E_F), x_arr, b(jp_x_N_E_F), a(ip_visite))
 C
         ip_period_N = ip_type_N_E_F + 2*n_ddl
@@ -361,20 +361,20 @@ C
         ip_eq = ip_nperiod_N_E_F + n_ddl
 C
       if (i_cond .eq. 0 .or. i_cond .eq. 1) then
-        call bound_cond (i_cond, n_ddl, neq, a(ip_type_N_E_F), 
+        call bound_cond (i_cond, n_ddl, neq, a(ip_type_N_E_F),
      *    a(ip_eq))
       elseif(i_cond .eq. 2) then
         if (debug .eq. 1) then
           write(ui,*) "###### periodic_node"
         endif
-        call periodic_node(nel, npt, nnodes, type_nod, 
+        call periodic_node(nel, npt, nnodes, type_nod,
      *      x_arr, a(ip_period_N), a(ip_nperiod_N),
      *      table_nod, lat_vecs)
         if (debug .eq. 1) then
           write(ui,*) "py_calc_modes.f: ###### periodic_N_E_F"
         endif
-        call periodic_N_E_F (n_ddl, a(ip_type_N_E_F), 
-     *      b(jp_x_N_E_F), a(ip_period_N_E_F), 
+        call periodic_N_E_F (n_ddl, a(ip_type_N_E_F),
+     *      b(jp_x_N_E_F), a(ip_period_N_E_F),
      *      a(ip_nperiod_N_E_F), lat_vecs)
         call periodic_cond (i_cond, n_ddl, neq, a(ip_type_N_E_F),
      *       a(ip_period_N_E_F), a(ip_eq), debug)
@@ -414,7 +414,7 @@ c     Sparse matrix storage
 c
       ip_col_ptr = ip_eq + 3*n_ddl
 
-      call csr_max_length (nel, n_ddl, neq, nnodes, 
+      call csr_max_length (nel, n_ddl, neq, nnodes,
      *  a(ip_table_N_E_F), a(ip_eq), a(ip_col_ptr), nonz_max)
 c
 c      ip = ip_col_ptr + neq + 1 + nonz_max
@@ -430,8 +430,8 @@ c      ip = ip_col_ptr + neq + 1 + nonz_max
 c
       ip_row = ip_col_ptr + neq + 1
 
-      call csr_length (nel, n_ddl, neq, nnodes, a(ip_table_N_E_F), 
-     *  a(ip_eq), a(ip_row), a(ip_col_ptr), nonz_max, 
+      call csr_length (nel, n_ddl, neq, nnodes, a(ip_table_N_E_F),
+     *  a(ip_eq), a(ip_row), a(ip_col_ptr), nonz_max,
      *  nonz, max_row_len, ip, int_max, debug)
 
       ip_work = ip_row + nonz
@@ -439,14 +439,14 @@ c
       ip_work_sort2 = ip_work_sort + max_row_len
 
 c     sorting csr ...
-      call sort_csr (neq, nonz, max_row_len, a(ip_row), 
-     *  a(ip_col_ptr), a(ip_work_sort), a(ip_work), 
+      call sort_csr (neq, nonz, max_row_len, a(ip_row),
+     *  a(ip_col_ptr), a(ip_work_sort), a(ip_work),
      *  a(ip_work_sort2))
 
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes.f: nonz_max = ", nonz_max
         write(ui,*) "py_calc_modes.f: nonz = ", nonz
-        write(ui,*) "py_calc_modes.f: cmplx_max/nonz = ", 
+        write(ui,*) "py_calc_modes.f: cmplx_max/nonz = ",
      *    dble(cmplx_max)/dble(nonz)
       endif
 
@@ -477,7 +477,7 @@ C     ! Eigenvectors
 
       ltrav = 3*nvect*(nvect+2)
       jp_vp = jp_trav + ltrav
- 
+
       cmplx_used = jp_vp + neq*nval
 C
       if (cmplx_max .lt. cmplx_used)  then
@@ -521,7 +521,7 @@ c
       end do
 c
 c
-c     The CSC indexing, i.e., ip_col_ptr, is 1-based 
+c     The CSC indexing, i.e., ip_col_ptr, is 1-based
 c       (but valpr.f will change the CSC indexing to 0-based indexing)
       i_base = 0
 c
@@ -530,13 +530,13 @@ C#####################  End FEM PRE-PROCESSING  #########################
 C
 C
 C
-      write(ui,*) 
+      write(ui,*)
       write(ui,*) "--------------------------------------------",
      *     "-------"
       write(ui,*) " Wavelength : ", lambda, " (d)"
       write(ui,*) "--------------------------------------------",
      *     "-------"
-      write(ui,*) 
+      write(ui,*)
 C
       freq = 1.0d0/lambda
       k_0 = 2.0d0*pi*freq
@@ -574,7 +574,7 @@ C
           pp(i) = 1.0d0/eps_eff(i)
         enddo
       else
-        write(ui,*) "py_calc_modes.f: action indef. avec E_H_field = ", 
+        write(ui,*) "py_calc_modes.f: action indef. avec E_H_field = ",
      *                  E_H_field
         write(ui,*) "Aborting..."
         stop
@@ -592,7 +592,7 @@ C
         sol => sol2
         beta => beta2
         bloch_vec_k = -bloch_vec
-      endif  
+      endif
 C
 C     Assemble the coefficient matrix A and the right-hand side F of the
 C     finite element equations
@@ -601,10 +601,10 @@ C     finite element equations
       endif
       call cpu_time(time1_asmbl)
       call asmbly (i_cond, i_base, nel, npt, n_ddl, neq, nnodes,
-     *  shift, bloch_vec_k, nb_typ_el, pp, qq, table_nod, 
+     *  shift, bloch_vec_k, nb_typ_el, pp, qq, table_nod,
      *  a(ip_table_N_E_F), type_el, a(ip_eq),
-     *   a(ip_period_N), a(ip_period_N_E_F), x_arr, b(jp_x_N_E_F), 
-     *   nonz, a(ip_row), a(ip_col_ptr), c(kp_mat1_re), 
+     *   a(ip_period_N), a(ip_period_N_E_F), x_arr, b(jp_x_N_E_F),
+     *   nonz, a(ip_row), a(ip_col_ptr), c(kp_mat1_re),
      *   c(kp_mat1_im), b(jp_mat2), a(ip_work))
       call cpu_time(time2_asmbl)
 C
@@ -666,12 +666,12 @@ C
       call z_indexx (nval, beta, index)
 C
 C       The eigenvectors will be stored in the array sol
-C       The eigenvalues and eigenvectors will be renumbered  
+C       The eigenvalues and eigenvectors will be renumbered
 C                 using the permutation vector index
-        call array_sol (i_cond, nval, nel, npt, n_ddl, neq, nnodes, 
-     *   n_core, bloch_vec_k, index, table_nod, 
-     *   a(ip_table_N_E_F), type_el, a(ip_eq), a(ip_period_N), 
-     *   a(ip_period_N_E_F), x_arr, b(jp_x_N_E_F), beta, 
+        call array_sol (i_cond, nval, nel, npt, n_ddl, neq, nnodes,
+     *   n_core, bloch_vec_k, index, table_nod,
+     *   a(ip_table_N_E_F), type_el, a(ip_eq), a(ip_period_N),
+     *   a(ip_period_N_E_F), x_arr, b(jp_x_N_E_F), beta,
      *   mode_pol, b(jp_vp), sol)
 C
       if(debug .eq. 1) then
@@ -683,15 +683,15 @@ C
         write(ui,*) (bloch_vec_k(i)/(2.0d0*pi),i=1,2)
         write(ui,*) "sqrt(shift) = ", sqrt(shift)
         do i=1,nval
-          write(ui,"(i4,2(g22.14),2(g18.10))") i, 
+          write(ui,"(i4,2(g22.14),2(g18.10))") i,
      *       beta(i)
         enddo
       endif
 C
 C  Calculate energy in each medium (typ_el)
       if (n_k .eq. 2) then
-        call mode_energy (nval, nel, npt, nnodes, 
-     *     n_core, table_nod, type_el, nb_typ_el, eps_eff, 
+        call mode_energy (nval, nel, npt, nnodes,
+     *     n_core, table_nod, type_el, nb_typ_el, eps_eff,
      *     x_arr, sol, beta, mode_pol)
       endif
 C
@@ -701,13 +701,13 @@ CCCCCCCCCCCCCCCCCCCCCCCC  End Prime, Adjoint Loop  CCCCCCCCCCCCCCCCCCCCCC
 C
 C  Orthogonal integral
       pair_warning = 0
-      if (debug .eq. 1) then 
+      if (debug .eq. 1) then
         write(ui,*) "py_calc_modes.f: Field product"
       endif
       overlap_file = "Normed/Orthogonal.txt"
       call cpu_time(time1_J)
-      call orthogonal (nval, nel, npt, nnodes, 
-     *  nb_typ_el, pp, table_nod, 
+      call orthogonal (nval, nel, npt, nnodes,
+     *  nb_typ_el, pp, table_nod,
      *  type_el, x_arr, beta1, beta2,
      *  sol1, sol2, overlap_L,
      *  overlap_file, PrintAll, pair_warning, k_0)
@@ -721,7 +721,7 @@ C  Orthogonal integral
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes.f: CPU time for orthogonal :",
      *  (time2_J-time1_J)
-      endif     
+      endif
 C
 C    Save Original solution
       if (plot_modes .eq. 1) then
@@ -730,40 +730,40 @@ C    Save Original solution
 C        call write_sol (nval, nel, nnodes, E_H_field, lambda,
 C     *       beta1, sol1, mesh_file, dir_name)
 C        call write_param (E_H_field, lambda, npt, nel, i_cond,
-C     *       nval, nvect, itermax, tol, shift, lx, ly, 
+C     *       nval, nvect, itermax, tol, shift, lx, ly,
 C     *       mesh_file, mesh_format, n_conv, nb_typ_el, eps_eff,
 C     *       bloch_vec, dir_name)
         tchar = "Bloch_fields/PNG/All_plots_png_abs2_eE.geo"
         open (unit=34,file=tchar)
           do i=1,nval
-            call gmsh_post_process (i, E_H_field, nval, nel, npt, 
+            call gmsh_post_process (i, E_H_field, nval, nel, npt,
      *        nnodes, table_nod, type_el, nb_typ_el,
      *        n_eff, x_arr, beta1, sol1,
-     *        a(ip_visite), gmsh_file_pos, dir_name, 
+     *        a(ip_visite), gmsh_file_pos, dir_name,
      *        q_average, plot_real, plot_imag, plot_abs)
           enddo
         close (unit=34)
       endif
-C        
+C
 C  Normalisation
       if(debug .eq. 1) then
         write(ui,*) "py_calc_modes.f: Field  Normalisation"
-      endif 
+      endif
       call cpu_time(time1_J)
-      call normalisation (nval, nel, nnodes, sol1, sol2, overlap_L) 
+      call normalisation (nval, nel, nnodes, sol1, sol2, overlap_L)
       call cpu_time(time2_J)
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes.f: CPU time for normalisation :",
      *  (time2_J-time1_J)
-      endif  
+      endif
 C
 C  Orthonormal integral
       if (PrintAll .eq. 1) then
         write(ui,*) "py_calc_modes.f: Product of normalised field"
         overlap_file = "Normed/Orthogonal_n.txt"
         call cpu_time(time1_J)
-        call orthogonal (nval, nel, npt, nnodes, 
-     *    nb_typ_el, pp, table_nod, 
+        call orthogonal (nval, nel, npt, nnodes,
+     *    nb_typ_el, pp, table_nod,
      *    type_el, x_arr, beta1, beta2,
      *    sol1, sol2, overlap_L,
      *    overlap_file, PrintAll, pair_warning, k_0)
@@ -773,7 +773,7 @@ C  Orthonormal integral
       endif
 C
 C  Plane wave ordering
-      call pw_ordering (neq_PW, lat_vecs, bloch_vec, 
+      call pw_ordering (neq_PW, lat_vecs, bloch_vec,
      *  index_pw_inv, debug, ordre_ls, k_0)
 C
 C  J_overlap
@@ -781,8 +781,8 @@ C  J_overlap
         write(ui,*) "py_calc_modes.f: J_overlap Integral"
       endif
       call cpu_time(time1_J)
-      call J_overlap (nval, nel, npt, nnodes, 
-     *  type_el, table_nod, x_arr, 
+      call J_overlap (nval, nel, npt, nnodes,
+     *  type_el, table_nod, x_arr,
      *  sol1, lat_vecs, lambda, freq,
      *  overlap_J, neq_PW, bloch_vec,
      *  index_pw_inv, PrintAll, ordre_ls)
@@ -797,8 +797,8 @@ C  J_dagger_overlap
         write(ui,*) "py_calc_modes.f: J_dagger_overlap Integral"
       endif
       call cpu_time(time1_J)
-      call J_dagger_overlap (nval, nel, npt, nnodes, 
-     *  type_el, table_nod, x_arr, 
+      call J_dagger_overlap (nval, nel, npt, nnodes,
+     *  type_el, table_nod, x_arr,
      *  sol2, lat_vecs, lambda, freq,
      *  overlap_J_dagger, neq_PW, bloch_vec,
      *  index_pw_inv, PrintAll, ordre_ls)
@@ -815,27 +815,27 @@ C
 C  Completeness Check
 C      if (Checks .eq. 1) then
 C        write(ui,*) "py_calc_modes.f: K_overlap Integral"
-C        call K_overlap(nval, nel, npt, nnodes, 
-C     *    nb_typ_el, type_el, table_nod, x_arr,   
+C        call K_overlap(nval, nel, npt, nnodes,
+C     *    nb_typ_el, type_el, table_nod, x_arr,
 C     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
 C     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
 C     *    PrintAll, k_0, ordre_ls)
 C        write(ui,*) "py_calc_modes.f: Completeness Test"
-C        call Completeness (nval, neq_PW, 
+C        call Completeness (nval, neq_PW,
 C     *    overlap_K, overlap_J)
 C      write(ui,*) "numberprop_N = ", numberprop_N
-C      endif 
+C      endif
 CC
 CC  Completeness Check
 C      if (Checks .eq. 1) then
 C        write(ui,*) "py_calc_modes.f: K_overlap Integral"
-C        call K_overlap(nval, nel, npt, nnodes, 
-C     *    nb_typ_el, type_el, table_nod, x_arr,   
+C        call K_overlap(nval, nel, npt, nnodes,
+C     *    nb_typ_el, type_el, table_nod, x_arr,
 C     *    sol2, pp, qq, lambda, freq, overlap_K, neq_PW,
 C     *    lat_vecs, bloch_vec, beta2, index_pw_inv,
 C     *    PrintAll, k_0, ordre_ls)
 C        write(ui,*) "py_calc_modes.f: Completeness Test"
-C        call Completeness (nval, neq_PW, 
+C        call Completeness (nval, neq_PW,
 C     *    overlap_K, overlap_J)
 C
 C#########################  End Calculations  ###########################
@@ -844,44 +844,44 @@ C
       call cpu_time(time2)
 C
       if (debug .eq. 1) then
-        write(ui,*) 
+        write(ui,*)
         write(ui,*) 'Total CPU time (sec.)  = ', (time2-time1)
 
         open (unit=26,file=log_file)
         write(26,*)
         write(26,*) "Date and time formats = ccyymmdd ; hhmmss.sss"
-        write(26,*) "Start date and time   = ", start_date, 
+        write(26,*) "Start date and time   = ", start_date,
      *    " ; ", start_time
-        write(26,*) "End date and time     = ", end_date, 
+        write(26,*) "End date and time     = ", end_date,
      *    " ; ", end_time
         write(26,*) "Total CPU time (sec.) = ",  (time2-time1)
-        write(26,*) "LU factorisation : CPU time and % Total time = ",  
-     *         (time2_fact-time1_fact), 
+        write(26,*) "LU factorisation : CPU time and % Total time = ",
+     *         (time2_fact-time1_fact),
      *         100*(time2_fact-time1_fact)/(time2-time1),"%"
-        write(26,*) "ARPACK : CPU time and % Total time = ",  
-     *         (time2_arpack-time1_arpack), 
+        write(26,*) "ARPACK : CPU time and % Total time = ",
+     *         (time2_arpack-time1_arpack),
      *         100*(time2_arpack-time1_arpack)/(time2-time1),"%"
-        write(26,*) "Assembly : CPU time and % Total time = ",  
-     *         (time2_asmbl-time1_asmbl), 
+        write(26,*) "Assembly : CPU time and % Total time = ",
+     *         (time2_asmbl-time1_asmbl),
      *         100*(time2_asmbl-time1_asmbl)/(time2-time1),"%"
-        write(26,*) "Post-processsing : CPU time and % Total time = ",  
-     *         (time2-time1_postp), 
+        write(26,*) "Post-processsing : CPU time and % Total time = ",
+     *         (time2-time1_postp),
      *         100*(time2-time1_postp)/(time2-time1),"%"
-        write(26,*) "Pre-Assembly : CPU time and % Total time = ",  
-     *         (time1_asmbl-time1), 
+        write(26,*) "Pre-Assembly : CPU time and % Total time = ",
+     *         (time1_asmbl-time1),
      *         100*(time1_asmbl-time1)/(time2-time1),"%"
         write(26,*)
         write(26,*) "lambda  = ", lambda
         write(26,*) "npt, nel, nnodes  = ", npt, nel, nnodes
         write(26,*) "neq, i_cond = ", neq, i_cond
         if ( E_H_field .eq. 1) then
-          write(26,*) "E_H_field         = ", E_H_field,  
+          write(26,*) "E_H_field         = ", E_H_field,
      *                 " (E-Field formulation)"
         elseif ( E_H_field .eq. 2) then
-          write(26,*) "E_H_field         = ", E_H_field,  
+          write(26,*) "E_H_field         = ", E_H_field,
      *                 " (H-Field formulation)"
        else
-          write(ui,*) "MAIN (B): action indef. avec E_H_field = ", 
+          write(ui,*) "MAIN (B): action indef. avec E_H_field = ",
      *                 E_H_field
           write(ui,*) "Aborting..."
           stop
@@ -891,7 +891,7 @@ C
         z_tmp = sqrt(shift)/(2.0d0*pi)
         write(26,*) "shift             = ", shift, z_tmp
         write(26,*) "integer super-vector :"
-        write(26,*) "int_used, int_max, int_used/int_max         = ", 
+        write(26,*) "int_used, int_max, int_used/int_max         = ",
      *    int_used , int_max, dble(int_used)/dble(int_max)
         write(26,*) "cmplx super-vector : "
         write(26,*) "cmplx_used, cmplx_max, cmplx_used/cmplx_max = ",
@@ -904,24 +904,24 @@ C
         write(26,*) "nval, nvect, n_conv = ", nval, nvect, n_conv
         write(26,*) "nonz, npt*nval, nonz/(npt*nval) = ",
      *  nonz, npt*nval, dble(nonz)/dble(npt*nval)
-        write(26,*) "nonz, nonz_max, nonz_max/nonz = ", 
+        write(26,*) "nonz, nonz_max, nonz_max/nonz = ",
      *  nonz, nonz_max, dble(nonz_max)/dble(nonz)
-        write(26,*) "nonz, int_used, int_used/nonz = ", 
+        write(26,*) "nonz, int_used, int_used/nonz = ",
      *  nonz, int_used, dble(int_used)/dble(nonz)
 c
 c         write(26,*) "len_skyl, npt*nval, len_skyl/(npt*nval) = ",
 c     *   len_skyl, npt*nval, dble(len_skyl)/dble(npt*nval)
 c
-        write(26,*) 
+        write(26,*)
         do i=1,nval
-          write(26,"(i4,2(g22.14),g18.10)") i, 
+          write(26,"(i4,2(g22.14),g18.10)") i,
      *       beta1(i)
         enddo
         write(26,*)
         write(26,*) "n_core = ", n_core
         write(26,*) "eps_eff = ", (eps_eff(i),i=1,nb_typ_el)
         write(26,*) "n_eff = ", (n_eff(i),i=1,nb_typ_el)
-        write(26,*)         
+        write(26,*)
         write(26,*) "conjugate pair problem", pair_warning, "times"
         write(26,*)
         write(26,*) "mesh_file = ", mesh_file
@@ -937,4 +937,4 @@ C
 C
       deallocate(a,b,c,index,overlap_L)
 
-      end subroutine calc_2d_modes
+      end subroutine calc_modes_2d

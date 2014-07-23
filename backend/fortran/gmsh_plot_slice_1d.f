@@ -1,4 +1,3 @@
-
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
@@ -10,9 +9,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 
       subroutine gmsh_plot_slice_1d (E_H_field, nval, nel, npt_P2,
-     *     type_el, nb_typ_el, n_eff,
-     *     table_nod, x_P2, beta, sol_P2, vec_coef, h,  lambda,
-     *     gmsh_file_pos)
+     *     type_el, nb_typ_el, n_eff, table_nod, x_P2,
+     *     beta, sol_P2, vec_coef, h, lambda, gmsh_file_pos)
 
       implicit none
       integer*8 nval, nel, npt_P2, E_H_field, nb_typ_el
@@ -21,10 +19,10 @@ c
       double precision x_P2(npt_P2)
       complex*16 vec_coef(2*nval), n_eff(nb_typ_el)
       complex*16 sol_P2(3,3,nval,nel), beta(nval)
-      character*(*) gmsh_file_pos, dir_name
+      character(*) gmsh_file_pos
+      character*30 dir_name
 c
 c     Local variables
-
       integer*8 nnodes_0, n_quad
       parameter (nnodes_0 = 3, n_quad=4)
 
@@ -32,7 +30,8 @@ c     Local variables
       complex*16, dimension(:,:,:,:), allocatable :: sol_2d
       integer*8, dimension(:), allocatable :: map_p1, inv_map_p1
 
-      double precision xel(3,n_quad)  ! Quadrangle element
+C     Quadrangle element
+      double precision xel(3,n_quad)
       complex*16 sol_el(3,n_quad)
       double precision sol_el_abs2(n_quad)
       integer*8 table_nod_el_p1(n_quad)
@@ -42,9 +41,12 @@ c     Local variables
       double precision hz, dz, xx, yy, zz, r_tmp
       double precision dx, x_min, x_max
 
-      integer*8 nel_2d, npt_2d  ! rectangular elements
-      integer*8 npt_p1  ! Number of vertices of the 2D FEM mesh
-      integer*8 npt_h, npt_h_max, i_h, npt_2d_p1  ! Resolution: number of points over the thickness h
+C     rectangular elements
+      integer*8 nel_2d, npt_2d
+C     Number of vertices of the 2D FEM mesh
+      integer*8 npt_p1
+C     Resolution: number of points over the thickness h
+      integer*8 npt_h, npt_h_max, i_h, npt_2d_p1
       integer*8 i1, i, j, iel, inod, ival, debug, ui
       integer*8 namelen_gmsh, namelen_dir, namelen_tchar
       integer*8 namelen2
@@ -68,6 +70,20 @@ c     Local variables
       double precision pi, phase
       complex*16 exp_phase
       character tval*4, buf*3
+
+Cf2py intent(in) E_H_field, nval, nel, npt_P2
+Cf2py intent(in) type_el, nb_typ_el, n_eff, table_nod, x_P2, beta
+Cf2py intent(in) sol_P2, vec_coef, h, lambda
+Cf2py intent(in) gmsh_file_pos
+
+Cf2py depend(table_nod) nel
+Cf2py depend(type_el) nel
+Cf2py depend(x_P2) npt_P2
+Cf2py depend(n_eff) nb_typ_el
+Cf2py depend(sol_P2) nval, nel
+Cf2py depend(vec_coef) nval
+Cf2py depend(beta) nval
+
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
@@ -76,7 +92,8 @@ c  ii = sqrt(-1)
       ii = cmplx(0.0d0, 1.0d0)
 c
       ui = 6
-      debug = 1
+      debug = 0
+      dir_name = "fields_vertically/gmsh_BMs"
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c

@@ -272,7 +272,7 @@ class Simmo(Modes):
         self.E_H_field = 1  # Selected formulation (1=E-Field, 2=H-Field)
         i_cond         = 2  # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
         itermax        = 30 # Maximum number of iterations for convergence
-        FEM_debug      = 0   # Fortran routines will display and save additional info
+        FEM_debug      = 0   # Fortran routines will display & save add. info
         if FEM_debug == 1:
             if not os.path.exists("Normed"):
                 os.mkdir("Normed")
@@ -338,7 +338,7 @@ class Simmo(Modes):
             cmplx_max = 2**27#30
 
             try:
-                resm = EMUstack.calc_2d_modes(
+                resm = EMUstack.calc_modes_2d(
                     self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug,
                     self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
                     self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
@@ -352,7 +352,7 @@ class Simmo(Modes):
                 self.J, self.J_dag = np.mat(J), np.mat(J_dag)
 
             except KeyboardInterrupt:
-                print "\n\n2D FEM routine calc_2d_modes",\
+                print "\n\n2D FEM routine calc_modes_2d",\
                 "interrupted by keyboard.\n\n"
 
         else:
@@ -369,7 +369,6 @@ class Simmo(Modes):
 
         if not self.structure.plotting3d:
             del self.sol1
-            del self.n_effs
             del self.E_H_field
             if self.structure.periodicity == '2D_array':
                 del self.table_nod
