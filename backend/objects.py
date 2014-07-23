@@ -147,7 +147,7 @@ class NanoStruct(object):
 
             plot_abs  (bool): Plot the absolute value of modal fields.
 
-            plotting3d  (bool): Plot the fields in 3D.
+            plotting_fields  (bool): Unless set to true field data deleted.
     """
 
 
@@ -168,7 +168,7 @@ class NanoStruct(object):
         mesh_file = 'NEED_FILE.mail',
         lc_bkg = 0.09, lc2 = 1.0, lc3 = 1.0, lc4 = 1.0, lc5 = 1.0, lc6 = 1.0,
         plot_BMs = False, plot_real = 1, plot_imag = 0, plot_abs = 0,
-        plotting3d = False, plot_field_conc=False):
+        plotting_fields = False, plot_field_conc=False):
         self.periodicity    = periodicity
         self.period         = period
         self.diameter1      = diameter1
@@ -248,7 +248,7 @@ class NanoStruct(object):
         self.plot_real       = plot_real
         self.plot_imag       = plot_imag
         self.plot_abs        = plot_abs
-        self.plotting3d      = plotting3d
+        self.plotting_fields = plotting_fields
         self.plot_field_conc = plot_field_conc
 
     def make_mesh(self):

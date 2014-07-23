@@ -62,14 +62,14 @@ spacer  = objects.ThinFilm(period, height_nm = 200,
     material = materials.SiO2_a, loss = True)
 
 NW_diameter = 120
-NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
-    inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
-    make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 2.0, \
-    plot_BMs = True, plotting3d = True)
+NW_array = objects.NanoStruct('2D_array', period, NW_diameter,
+    height_nm = 2330, inclusion_a = materials.Si_c, background = materials.Air,
+    loss = True, make_mesh_now = True, force_mesh = True, lc_bkg = 0.1,
+    lc2= 2.0, plot_BMs = True, plotting_fields = True)
 
 
 def simulate_stack(light):
-    
+
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
@@ -96,12 +96,12 @@ np.savez('Simo_results', stacks_list = stacks_list)
 
 ######################## Plotting ########################
 
-# Plot fields on slices through stack along the x & y axis, 
+# Plot fields on slices through stack along the x & y axis,
 # and along the diagonals.
 # This is done through all layers of the stack and saved as png files.
 #
 # Note that all field plots of previous simulations are deleted! Move any
-# results that you wish to keep into a different folder, ideally copying the 
+# results that you wish to keep into a different folder, ideally copying the
 # whole simo directory to future reference to simo parameters.
 #
 plotting.fields_vertically(stacks_list)

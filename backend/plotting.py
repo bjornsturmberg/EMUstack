@@ -1850,11 +1850,12 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
                 vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
                     pstack.vec_coef_up[vec_index]))
 
+                struct = meat.structure
                 if meat.structure.periodicity == '1D_array':
                     EMUstack.gmsh_plot_slice_1d(meat.E_H_field, meat.num_BM,
-                        meat.n_msh_el, meat.n_msh_pts, meat.type_el,
-                        meat.structure.nb_typ_el, n_eff, meat.table_nod,
-                        meat.x_arr, meat.k_z, meat.sol1, vec_coef,
+                        struct.n_msh_el, struct.n_msh_pts, struct.type_el,
+                        struct.nb_typ_el, n_eff, struct.table_nod,
+                        struct.x_arr, meat.k_z, meat.sol_P2, vec_coef,
                         h_normed, wl_normed, gmsh_file_pos)
 
                 else:

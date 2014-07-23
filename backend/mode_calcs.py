@@ -314,7 +314,8 @@ class Simmo(Modes):
                     struct.plot_real, struct.plot_imag, struct.plot_abs,
                     num_pw_per_pol, num_pw_per_pol_2d, world_1d )
 
-                self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1, self.sol2 = resm
+                self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1, self.sol2, \
+                self.sol_P2 = resm
 
                 if self.structure.world_1d == True:
                     self.J, self.J_dag = np.mat(J), np.mat(J_dag)
@@ -338,11 +339,11 @@ class Simmo(Modes):
             cmplx_max = 2**27#30
 
             try:
-                resm = EMUstack.calc_modes_2d(
+                resm = EMUstack.calc_2d_modes(
                     self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug,
                     self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-                    self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
-                    self.E_H_field, i_cond, itermax,
+                    self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(),
+                    shift, self.E_H_field, i_cond, itermax,
                     self.structure.plot_BMs, self.structure.plot_real,
                     self.structure.plot_imag, self.structure.plot_abs,
                     num_pw_per_pol, cmplx_max)
@@ -352,13 +353,12 @@ class Simmo(Modes):
                 self.J, self.J_dag = np.mat(J), np.mat(J_dag)
 
             except KeyboardInterrupt:
-                print "\n\n2D FEM routine calc_modes_2d",\
+                print "\n\n2D FEM routine calc_2d_modes",\
                 "interrupted by keyboard.\n\n"
 
         else:
             raise ValueError,  "NanoStruct layer must have periodicity of \
                 either '1D_array' or '2D_array'."
-
 
 
         if delete_working:
@@ -367,8 +367,9 @@ class Simmo(Modes):
         if not self.structure.plot_field_conc:
             self.mode_pol = None
 
-        if not self.structure.plotting3d:
+        if not self.structure.plotting_fields:
             del self.sol1
+            del self.n_effs
             del self.E_H_field
             if self.structure.periodicity == '2D_array':
                 del self.table_nod
@@ -376,6 +377,8 @@ class Simmo(Modes):
                 del self.x_arr
                 del self.n_msh_pts
                 del self.n_msh_el
+            if self.structure.periodicity == '1D_array':
+            del self.sol_P2
 
         ## To do, work out how to automagically process to png
         # if self.structure.plot_BMs:

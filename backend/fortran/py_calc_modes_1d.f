@@ -4,17 +4,17 @@ c     Explicit inputs
      *    lambda, nval, ordre_ls, nb_typ_el,
      *    npt_P2, nel, table_nod, type_el, x_P2,
      *    itermax, debug, mesh_file, n_eff,
-     *    bloch_vec_x, bloch_vec_y, shift, 
+     *    bloch_vec_x, bloch_vec_y, shift,
      *    plot_modes, plot_real, plot_imag, plot_abs,
-     *    neq_PW, neq_PW_2d, world_1d, 
+     *    neq_PW, neq_PW_2d, world_1d,
 C     Outputs
-     *     beta_1, overlap_J, overlap_J_dagger, overlap_J_2d, 
-     *     overlap_J_dagger_2d, sol_1, sol_2)
+     *     beta_1, overlap_J, overlap_J_dagger, overlap_J_2d,
+     *     overlap_J_dagger_2d, sol_1, sol_2, sol_P2)
 
 C************************************************************************
 C
 C  Program:
-C    Finite Element Method for 1D array of planear waveguides
+C    Finite Element Method for 1D array of planar waveguides
 C
 C************************************************************************
 C
@@ -206,7 +206,7 @@ c
       endif
 
 C      call geometry_1d (nel, npt_P2, nnodes_P2, nb_typ_el,
-C     *     1.0, type_el, table_nod, 
+C     *     1.0, type_el, table_nod,
 C     *     x_P2, mesh_file)
 C
 C      write(ui,*) 'nel', nel
@@ -230,7 +230,7 @@ c
         stop
       endif
 
-      allocate(matrix_1(neq,neq), matrix_2(neq,neq), 
+      allocate(matrix_1(neq,neq), matrix_2(neq,neq),
      *     STAT=allocate_status)
       if (allocate_status /= 0) then
         write(*,*) "The allocation is unsuccessful"
@@ -312,7 +312,7 @@ c
         stop
       endif
 
-      allocate(beta_PW(2*nval+1), index_PW(2*nval+1), 
+      allocate(beta_PW(2*nval+1), index_PW(2*nval+1),
      *     STAT=allocate_status)
       if (allocate_status /= 0) then
         write(*,*) "The allocation is unsuccessful"
@@ -329,7 +329,7 @@ c
         write(*,*) "mesh_file = ", mesh_file
       endif
 
-      call periodic_cond_1d (nel, npt_P2, n_ddl, neq, table_nod, 
+      call periodic_cond_1d (nel, npt_P2, n_ddl, neq, table_nod,
      *      ineq, x_P2, table_ddl, ip_period_ddl, x_ddl, debug,
      *      period_x)
 C
@@ -337,13 +337,13 @@ C
         write(ui,*) "period_x = ", period_x
       endif
 C
-      write(ui,*) 
+      write(ui,*)
       write(ui,*) "--------------------------------------------",
      *     "-------"
       write(ui,*) " Wavelength : ", lambda, " (d)"
       write(ui,*) "--------------------------------------------",
      *     "-------"
-      write(ui,*) 
+      write(ui,*)
 C
 c     Calculate effective permittivity
       do i=1,nb_typ_el
@@ -393,7 +393,7 @@ C
         enddo
       else
         write(ui,*) "py_calc_modes_1d.f: ",
-     *              "action indef. avec E_H_field = ", 
+     *              "action indef. avec E_H_field = ",
      *                  E_H_field
         write(ui,*) "Aborting..."
         stop
@@ -421,9 +421,9 @@ C     finite element equations
         write(ui,*) "py_calc_modes_1d.f: Asmbly: call to asmbly_1d"
       endif
 C
-      call asmbly_1d (nel, npt_P2, n_ddl, neq, 
-     *  shift, bloch_vec_x_k, bloch_vec_y_k, nb_typ_el, 
-     *  pp, qq, table_nod, table_ddl, type_el, ineq, 
+      call asmbly_1d (nel, npt_P2, n_ddl, neq,
+     *  shift, bloch_vec_x_k, bloch_vec_y_k, nb_typ_el,
+     *  pp, qq, table_nod, table_ddl, type_el, ineq,
      *  ip_period_ddl, x_P2, x_ddl, matrix_1, matrix_2)
 
 
@@ -434,8 +434,8 @@ C
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes_1d.f: call to valpr_64_1d"
       endif
-      call valpr_64_1d (nvect, nval, neq, itermax, 
-     *  tol, matrix_1, matrix_2, v, beta, vp,   
+      call valpr_64_1d (nvect, nval, neq, itermax,
+     *  tol, matrix_1, matrix_2, v, beta, vp,
      *  n_conv, ls_data, debug)
 C
 c
@@ -476,25 +476,25 @@ C
       call z_indexx (nval, beta, index)
 c
 C       The eigenvectors will be stored in the array sol
-C       The eigenvalues and eigenvectors will be renumbered  
+C       The eigenvalues and eigenvectors will be renumbered
 C                 using the permutation vector index
-      call array_sol_1d (nval, nel, n_ddl, neq, 
-     *     n_core, bloch_vec_x_k, index, 
-     *     table_ddl, type_el, ineq, 
-     *     ip_period_ddl, x_ddl, 
+      call array_sol_1d (nval, nel, n_ddl, neq,
+     *     n_core, bloch_vec_x_k, index,
+     *     table_ddl, type_el, ineq,
+     *     ip_period_ddl, x_ddl,
      *     beta, mode_pol, vp, sol)
 
 ccc      if (n_k == 1) then
-ccc        call array_sol_1d (nval, nel, n_ddl, neq, 
-ccc     *     n_core, bloch_vec_x_k, index, 
-ccc     *     table_ddl, type_el, ineq, 
-ccc     *     ip_period_ddl, x_ddl, 
+ccc        call array_sol_1d (nval, nel, n_ddl, neq,
+ccc     *     n_core, bloch_vec_x_k, index,
+ccc     *     table_ddl, type_el, ineq,
+ccc     *     ip_period_ddl, x_ddl,
 ccc     *     beta, mode_pol, vp, sol_1)
 ccc      else
-ccc        call array_sol_1d (nval, nel, n_ddl, neq, 
-ccc     *     n_core, bloch_vec_x_k, index, 
-ccc     *     table_ddl, type_el, ineq, 
-ccc     *     ip_period_ddl, x_ddl, 
+ccc        call array_sol_1d (nval, nel, n_ddl, neq,
+ccc     *     n_core, bloch_vec_x_k, index,
+ccc     *     table_ddl, type_el, ineq,
+ccc     *     ip_period_ddl, x_ddl,
 ccc     *     beta, mode_pol, vp, sol_2)
 ccc      endif
 C
@@ -507,7 +507,7 @@ C
         write(ui,*) bloch_vec_x_k/(2.0d0*pi), bloch_vec_y_k/(2.0d0*pi)
         write(ui,*) "sqrt(shift) = ", sqrt(shift)
         do i=1,nval
-          write(ui,"(i4,2(g22.14),2(g18.10))") i, 
+          write(ui,"(i4,2(g22.14),2(g18.10))") i,
      *       beta(i)
         enddo
       endif
@@ -518,12 +518,12 @@ CCCCCCCCCCCCCCCCCCCCCCCC  End Prime, Adjoint Loop  CCCCCCCCCCCCCCCCCCCCCC
 C
 C  Orthogonal integral
       pair_warning = 0
-      if (debug .eq. 1) then 
+      if (debug .eq. 1) then
         write(ui,*) "py_calc_modes_1d.f: Field product"
       endif
       overlap_file = "Normed/Orthogonal.txt"
-      call orthogonal_1d (nval, nel, npt_P2, 
-     *  nb_typ_el, pp, bloch_vec_y, table_nod, 
+      call orthogonal_1d (nval, nel, npt_P2,
+     *  nb_typ_el, pp, bloch_vec_y, table_nod,
      *  type_el, x_P2, beta_1, beta_2,
      *  sol_1, sol_2, overlap_L, overlap_file, debug,
      *  pair_warning, k_0)
@@ -544,15 +544,15 @@ C     *     lambda, beta_1, sol_P2, mesh_file, dir_name)
         tchar = "Bloch_fields/PNG/All_plots_png_abs2_eE.geo"
         open (unit=34,file=tchar)
         do i=1,nval
-          call gmsh_post_process_1d (i, E_H_field, nval, 
-     *       nel, npt_P2, table_nod, type_el, nb_typ_el, 
+          call gmsh_post_process_1d (i, E_H_field, nval,
+     *       nel, npt_P2, table_nod, type_el, nb_typ_el,
      *       n_eff, x_P2, beta_1, sol_P2,
-     *       mesh_file, dir_name, 
+     *       mesh_file, dir_name,
      *       q_average, plot_real, plot_imag, plot_abs)
         enddo
         close (unit=34)
       endif
-C        
+C
 C  Normalisation
       if(debug .eq. 1) then
         write(ui,*) "py_calc_modes_1d.f: Field  Normalisation"
@@ -564,8 +564,8 @@ C  Orthonormal integral
         write(ui,*) "py_calc_modes_1d.f: Product of normalised field"
         overlap_file = "Normed/Orthogonal_n.txt"
         call cpu_time(time1_J)
-        call orthogonal_1d (nval, nel, npt_P2, 
-     *    nb_typ_el, pp, bloch_vec_y, table_nod, 
+        call orthogonal_1d (nval, nel, npt_P2,
+     *    nb_typ_el, pp, bloch_vec_y, table_nod,
      *    type_el, x_P2, beta_1, beta_2,
      *    sol_1, sol_2, overlap_L, overlap_file, debug,
      *    pair_warning, k_0)
@@ -586,7 +586,7 @@ C  J_overlap
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes_1d.f: J_overlap_1d Integral"
       endif
-      call J_overlap_1d(nval, nel, npt_P2, 
+      call J_overlap_1d(nval, nel, npt_P2,
      *  type_el, table_nod, x_P2, sol_1,
      *  period_x, lambda, freq, overlap_J, neq_PW,
      *  bloch_vec_x, bloch_vec_y, index_pw_inv, debug,
@@ -596,18 +596,18 @@ C  J_dagger_overlap
       if (debug .eq. 1) then
         write(ui,*) "py_calc_modes_1d.f: J_dagger_overlap_1d Integral"
       endif
-      call J_dagger_overlap_1d(nval, nel, npt_P2, 
-     *  type_el, table_nod, x_P2, sol_2, 
+      call J_dagger_overlap_1d(nval, nel, npt_P2,
+     *  type_el, table_nod, x_P2, sol_2,
      *  period_x, lambda, freq, overlap_J_dagger, neq_PW,
      *  bloch_vec_x, bloch_vec_y, index_pw_inv, debug, ordre_ls)
 C
-C  Convert overlap integrals from 1D diffraction order basis to 
+C  Convert overlap integrals from 1D diffraction order basis to
 C  2D diffraction order basis (filling with zeros).
       if (world_1d .eq. 0) then
         if (debug .eq. 1) then
           write(ui,*)"py_calc_modes_1d.f: pw_matrix_1d_to_2d conversion"
         endif
-        call pw_matrix_1d_to_2d (neq_PW, neq_PW_2d, nval, 
+        call pw_matrix_1d_to_2d (neq_PW, neq_PW_2d, nval,
      *    period_x, bloch_vec_x, bloch_vec_y, index_pw_inv,
      *    debug, ordre_ls, overlap_J, overlap_J_2d,
      *    overlap_J_dagger, overlap_J_dagger_2d,
@@ -650,9 +650,9 @@ cc        enddo
 cc        write(24,*)
 cc        do i=1,nval
 cc          j = index_PW(i)
-cc          write(24,*)  i, 
+cc          write(24,*)  i,
 cc     *  sqrt((k_0 * n_eff_0)**2 - beta_PW(j)**2
-cc     *  - bloch_vec_y**2), 
+cc     *  - bloch_vec_y**2),
 cc     *  sqrt((k_0 * n_eff_0)**2 - beta_1(i)**2
 cc     *  - bloch_vec_y**2)
 ccc          write(24,*)  i, beta_PW(j)**2, beta_1(i)**2
@@ -660,7 +660,7 @@ cc        enddo
 cc        write(24,*)
 cc        do i=nval+1,2*nval+1
 cc          j = index_PW(i)
-cc          write(24,*)  i, 
+cc          write(24,*)  i,
 cc     *  sqrt((k_0 * n_eff_0)**2 - beta_PW(j)**2
 cc     *  - bloch_vec_y**2)
 ccc          write(24,*)  i, beta_PW(j)**2
