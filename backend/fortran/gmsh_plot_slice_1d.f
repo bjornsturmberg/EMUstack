@@ -12,7 +12,7 @@ c
       subroutine gmsh_plot_slice_1d (E_H_field, nval, nel, npt_P2,
      *     type_el, nb_typ_el, n_eff,
      *     table_nod, x_P2, beta, sol_P2, vec_coef, h,  lambda,
-     *     gmsh_file_pos, dir_name)
+     *     gmsh_file_pos)
 
       implicit none
       integer*8 nval, nel, npt_P2, E_H_field, nb_typ_el

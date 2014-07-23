@@ -41,7 +41,7 @@ title_font = 10
 
 
 #### Natural constants ########################################################
-ASTM15_tot_I   = 900.084            # Integral of ASTM 1.5 solar irradiance in W/m**2
+ASTM15_tot_I   = 900.084            # Integral ASTM 1.5 solar irradiance W/m**2
 Plancks_h      = 6.62606957*1e-34   # Planck's constant
 speed_c        = 299792458          # Speed of light in vacuum
 charge_e       = 1.602176565*1e-19  # Charge of an electron
@@ -1838,62 +1838,31 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
             if isinstance(meat,mode_calcs.Simmo):
                 name_lay = "%i_NanoStruct"% lay
 
+                h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+                wl_normed = pstack.layers[lay].wl_norm()
+                gmsh_file_pos = 'stack_%(stack_num)s_lay_%(name)s_'% \
+                                {'name' : name_lay,'stack_num':stack_num}
+                # eps_eff = meat.n_effs**2
+                n_eff = meat.n_effs
+
+                # vec_coef sorted from top, everything else sorted from bottom
+                vec_index = num_lays - lay - 1
+                vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
+                    pstack.vec_coef_up[vec_index]))
+
                 if meat.structure.periodicity == '1D_array':
-                    print "Sorry, field plotting inside 1D_arrays not yet implemented."
-                    print ""
-
-
-#                     h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-#                     wl_normed = pstack.layers[lay].wl_norm()
-#                     # gmsh_file_pos = meat.structure.mesh_file[0:-5]
-#                     gmsh_file_pos = 'stack_%(stack_num)s_lay_%(name)s_'% \
-#                                     {'name' : name_lay,'stack_num':stack_num}
-#                     # eps_eff = meat.n_effs**2
-#                     n_eff = meat.n_effs
-
-#                     # vec_coef sorted from top of stack, everything else is sorted from bottom
-#                     vec_index = num_lays - lay - 1
-#                     vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
-#                         pstack.vec_coef_up[vec_index]))
-
-#                     EMUstack.gmsh_plot_slice_1d(meat.E_H_field, meat.num_BM,
-#                         meat.n_msh_el, meat.n_msh_pts, nnodes, meat.type_el,
-#                         meat.structure.nb_typ_el, n_eff, meat.table_nod,
-#                         meat.x_arr, meat.k_z, meat.sol1, vec_coef,
-#                         h_normed, wl_normed, gmsh_file_pos)
-# E_H_field, nval, nel, npt, nnodes,
-#      *     type_el, nb_typ_el, n_eff,
-#      *     table_nod, x, beta, evecs, vec_coef, h,  lambda,
-#      *     gmsh_file_pos)
-
-
-# E_H_field, nval, nel, npt_P2,
-#      *     type_el, nb_typ_el, n_eff,
-#      *     table_nod, x_P2, beta, sol_P2, vec_coef, h,  lambda,
-#      *     gmsh_file_pos, dir_name)
-
-
+                    EMUstack.gmsh_plot_slice_1d(meat.E_H_field, meat.num_BM,
+                        meat.n_msh_el, meat.n_msh_pts, meat.type_el,
+                        meat.structure.nb_typ_el, n_eff, meat.table_nod,
+                        meat.x_arr, meat.k_z, meat.sol1, vec_coef,
+                        h_normed, wl_normed, gmsh_file_pos)
 
                 else:
-                    h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-                    wl_normed = pstack.layers[lay].wl_norm()
-                    # gmsh_file_pos = meat.structure.mesh_file[0:-5]
-                    gmsh_file_pos = 'stack_%(stack_num)s_lay_%(name)s_'% \
-                                    {'name' : name_lay,'stack_num':stack_num}
-                    # eps_eff = meat.n_effs**2
-                    n_eff = meat.n_effs
-
-                    # vec_coef sorted from top of stack, everything else is sorted from bottom
-                    vec_index = num_lays - lay - 1
-                    vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
-                        pstack.vec_coef_up[vec_index]))
-
                     EMUstack.gmsh_plot_slice(meat.E_H_field, meat.num_BM,
                         meat.n_msh_el, meat.n_msh_pts, nnodes, meat.type_el,
                         meat.structure.nb_typ_el, n_eff, meat.table_nod,
                         meat.x_arr, meat.k_z, meat.sol1, vec_coef,
                         h_normed, wl_normed, gmsh_file_pos)
-
 
             else:
                 if lay == 0: name_lay = "%i_Substrate"% lay
@@ -1905,12 +1874,12 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
                 heights_list = []
 
                 for i in xrange(num_lays):
-                    if i == 0 or i == num_lays-1:pass
+                    if i == 0 or i == num_lays-1: pass
                     else: heights_list.append(pstack.layers[i].structure.height_nm)
                     try:
                         pstack.layers[i].structure.diameter1
                         diameter = pstack.layers[i].structure.diameter1
-                    except:pass
+                    except: pass
 
                 x_range = np.linspace(0.0,1.0,nu_calc_pts)
                 y_range = np.linspace(0.0,1.0,nu_calc_pts)

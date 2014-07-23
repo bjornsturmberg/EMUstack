@@ -38,7 +38,8 @@ class Modes(object):
     def wl_norm(self):
         """ Return normalised wavelength (wl/period). """
         wl = float(self.light.wl_nm) / self.structure.period
-        if self.light.wl_nm % self.structure.period == 0: # Avoid Wood Anomalies
+        # Avoid Wood Anomalies
+        if self.light.wl_nm % self.structure.period == 0:
             wl += 1e-10
         return wl
 
@@ -83,12 +84,6 @@ class Modes(object):
             for key in _interfaces_i_have_known.keys():
                 if id(self) in key:
                     _interfaces_i_have_known.pop(key)
-
-
-
-
-
-
 
 
 
@@ -232,11 +227,6 @@ class Anallo(Modes):
 
 
 
-
-
-
-
-
 class Simmo(Modes):
     """ Interaction of one :Light: object with one :NanoStruc: object.
 
@@ -291,16 +281,17 @@ class Simmo(Modes):
             if not os.path.exists("Output"):
                 os.mkdir("Output")
 
-        # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
-        max_n = np.real(self.n_effs).max() # Take real part so that complex conjugate pair
-        # Eigenvalues are equal distance from shift and invert point and therefore both found.
+        # Calculate where to center the Eigenmode solver around.
+        # (Shift and invert FEM method)
+        max_n = np.real(self.n_effs).max()
+        # Take real part so that complex conjugate pair Eigenvalues are
+        # equal distance from shift and invert point and therefore both found.
         k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
         if self.structure.hyperbolic == True:
             shift = 1.1*max_n**2 * k_0**2
         else:
             shift = 1.1*max_n**2 * k_0**2  \
             - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
-
 
 
         if self.structure.periodicity == '1D_array':
@@ -471,6 +462,10 @@ def r_t_mat_tf_ns(an1, sim2):
 
     # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
     # Same difference.
+    if np.shape(Z1_sqrt_inv)[1] != np.shape(sim2.J.A)[0]:
+        raise ValueError, "Scattering matrices of layers are not consistent,\
+            \nsome layers are 1D and others 2D. Check that world_1d status."
+
     A = np.mat(Z1_sqrt_inv.T * sim2.J.A)
     B = np.mat(sim2.J_dag.A * Z1_sqrt_inv)
 
