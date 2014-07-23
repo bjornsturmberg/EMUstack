@@ -312,23 +312,28 @@ class Simmo(Modes):
                 pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
                 num_pw_per_pol_2d = pxs.size
 
-            struct = self.structure
-            resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BM,
-                self.max_order_PWs, struct.nb_typ_el, struct.n_msh_pts,
-                struct.n_msh_el, struct.table_nod,
-                struct.type_el, struct.x_arr, itermax, FEM_debug,
-                struct.mesh_file, self.n_effs, self.k_pll_norm()[0],
-                self.k_pll_norm()[1], shift, struct.plot_BMs,
-                struct.plot_real, struct.plot_imag, struct.plot_abs,
-                num_pw_per_pol, num_pw_per_pol_2d, world_1d )
+            try:
+                struct = self.structure
+                resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BM,
+                    self.max_order_PWs, struct.nb_typ_el, struct.n_msh_pts,
+                    struct.n_msh_el, struct.table_nod,
+                    struct.type_el, struct.x_arr, itermax, FEM_debug,
+                    struct.mesh_file, self.n_effs, self.k_pll_norm()[0],
+                    self.k_pll_norm()[1], shift, struct.plot_BMs,
+                    struct.plot_real, struct.plot_imag, struct.plot_abs,
+                    num_pw_per_pol, num_pw_per_pol_2d, world_1d )
 
-            self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1, self.sol2 = resm
+                self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1, self.sol2 = resm
 
-            if self.structure.world_1d == True:
-                self.J, self.J_dag = np.mat(J), np.mat(J_dag)
-            else:
-                self.J, self.J_dag = np.mat(J_2d), np.mat(J_dag_2d)
-            del J_2d, J_dag_2d
+                if self.structure.world_1d == True:
+                    self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+                else:
+                    self.J, self.J_dag = np.mat(J_2d), np.mat(J_dag_2d)
+                del J_2d, J_dag_2d
+
+            except KeyboardInterrupt:
+                print "\n\n1D FEM routine calc_modes_1d",\
+                "interrupted by keyboard.\n\n"
 
 
         elif self.structure.periodicity == '2D_array':
@@ -341,18 +346,23 @@ class Simmo(Modes):
             # on the mesh file to work out RAM requirements
             cmplx_max = 2**27#30
 
-            resm = EMUstack.calc_2d_modes(
-                self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug,
-                self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-                self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
-                self.E_H_field, i_cond, itermax,
-                self.structure.plot_BMs, self.structure.plot_real,
-                self.structure.plot_imag, self.structure.plot_abs,
-                num_pw_per_pol, cmplx_max)
+            try:
+                resm = EMUstack.calc_2d_modes(
+                    self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug,
+                    self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
+                    self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
+                    self.E_H_field, i_cond, itermax,
+                    self.structure.plot_BMs, self.structure.plot_real,
+                    self.structure.plot_imag, self.structure.plot_abs,
+                    num_pw_per_pol, cmplx_max)
 
-            self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
-            self.table_nod, self.type_el, self.x_arr = resm
-            self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+                self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
+                self.table_nod, self.type_el, self.x_arr = resm
+                self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+
+            except KeyboardInterrupt:
+                print "\n\n2D FEM routine calc_2d_modes",\
+                "interrupted by keyboard.\n\n"
 
         else:
             raise ValueError,  "NanoStruct layer must have periodicity of \

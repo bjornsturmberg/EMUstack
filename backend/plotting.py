@@ -1225,30 +1225,34 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = None,\
             print "BM_amplitudes is guessing you have a single wavelength, else specify xvalues."
 
     if chosen_BMs == None: chosen_BMs = range(stacks_list[-1].layers[lay_interest].num_BM)
-    for BM in chosen_BMs:
-        store_trans = []
-        for stack in stacks_list:
-            assert isinstance(stack.layers[lay_interest],objects.Simmo), \
-            "BM_amplitudes only works in NanoStruct layers, change lay_interest input."
+    try:
+        for BM in chosen_BMs:
+            store_trans = []
+            for stack in stacks_list:
+                if not isinstance(stack.layers[lay_interest],objects.Simmo):
+                    raise ValueError
 
-            trans = np.abs(stack.vec_coef_down[vec_index][BM])
-            if up_and_down == True: # Take average of up & downward propagating modes.
-                trans += np.abs(stack.vec_coef_up[vec_index][BM])
-                store_trans = np.append(store_trans,trans/2)
-            else:
-                store_trans = np.append(store_trans,trans)
+                trans = np.abs(stack.vec_coef_down[vec_index][BM])
+                if up_and_down == True: # Take average of up & downward propagating modes.
+                    trans += np.abs(stack.vec_coef_up[vec_index][BM])
+                    store_trans = np.append(store_trans,trans/2)
+                else:
+                    store_trans = np.append(store_trans,trans)
 
-        ax1.plot(xvalues,store_trans, label="BM %i" % BM)
+            ax1.plot(xvalues,store_trans, label="BM %i" % BM)
 
-    handles, labels = ax1.get_legend_handles_labels()
-    lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
-    ax1.set_ylabel('BM Amplitude')
-    ax1.set_xlabel(xlabel)
-    plt.suptitle(add_name)
-    if add_height!= None: add_name += '_' + zeros_int_str(add_height)
-    add_name = str(lay_interest) + add_name
-    plt.savefig('BM_amplitudes-lay_%s' % add_name, \
-        fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+        handles, labels = ax1.get_legend_handles_labels()
+        lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
+        ax1.set_ylabel('BM Amplitude')
+        ax1.set_xlabel(xlabel)
+        plt.suptitle(add_name)
+        if add_height!= None: add_name += '_' + zeros_int_str(add_height)
+        add_name = str(lay_interest) + add_name
+        plt.savefig('BM_amplitudes-lay_%s' % add_name, \
+            fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+    except ValueError:
+        print "BM_amplitudes only works in NanoStruct layers."\
+        "\nPlease select a different lay_interest.\n"
 
 
 def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
@@ -1302,63 +1306,68 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
             xlabel = r'$\lambda$ (nm)'
             print "PW_amplitudes is guessing you have a single wavelength, else specify xvalues."
 
-    for pxs in chosen_PWs:
-        store_trans = []
-        for stack in stacks_list:
-            assert isinstance(stack.layers[lay_interest],objects.Anallo), \
-            "PW_amplitudes only works in ThinFilm layers, change lay_interest input."
-            k0 = stack.layers[0].k()
-            n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
-            # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
-            alpha0, beta0 = stack.layers[0].k_pll_norm()
-            alphas = alpha0 + pxs * 2 * np.pi
-            on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
-            full_k_space = stack.layers[0].k_z
-            # Consider only transmission into singular polarization.
-            one_pol_k_space = full_k_space[0:n_PW_p_pols]
+    try:
+        for pxs in chosen_PWs:
+            store_trans = []
+            for stack in stacks_list:
+                if not isinstance(stack.layers[lay_interest],objects.Anallo):
+                    raise ValueError
 
-            ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
-            axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
-            # Substrate - only ever take downward propagating.
-            if vec_index == len(stacks_list[-1].layers) - 1:
-                # Outgoing TE polarisation
-                trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
-                # Outgoing TM polarisation
-                trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
-                store_trans = np.append(store_trans,trans)
-            # Superstrate - if not up & down then take only upwards propagating.
-            elif vec_index == 0:
-                trans  = np.abs(stack.vec_coef_up[vec_index][axis_indices]).reshape(-1,)
-                trans += np.abs(stack.vec_coef_up[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
-                if up_and_down == True: # Take average of up & downward propagating modes.
-                    trans += np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
+                k0 = stack.layers[0].k()
+                n_PW_p_pols = stack.layers[0].structure.num_pw_per_pol
+                # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
+                alpha0, beta0 = stack.layers[0].k_pll_norm()
+                alphas = alpha0 + pxs * 2 * np.pi
+                on_axis_kzs = sqrt(k0**2 - alphas**2 - beta0**2)
+                full_k_space = stack.layers[0].k_z
+                # Consider only transmission into singular polarization.
+                one_pol_k_space = full_k_space[0:n_PW_p_pols]
+
+                ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
+                axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
+                # Substrate - only ever take downward propagating.
+                if vec_index == len(stacks_list[-1].layers) - 1:
+                    # Outgoing TE polarisation
+                    trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
+                    # Outgoing TM polarisation
                     trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
-                    store_trans = np.append(store_trans,trans/2)
-                else:
                     store_trans = np.append(store_trans,trans)
-            # Finite layer
-            else:
-                trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
-                trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
-                if up_and_down == True: # Take average of up & downward propagating modes.
-                    trans += np.abs(stack.vec_coef_up[vec_index][axis_indices]).reshape(-1,)
+                # Superstrate - if not up & down then take only upwards propagating.
+                elif vec_index == 0:
+                    trans  = np.abs(stack.vec_coef_up[vec_index][axis_indices]).reshape(-1,)
                     trans += np.abs(stack.vec_coef_up[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
-                    store_trans = np.append(store_trans,trans/2)
+                    if up_and_down == True: # Take average of up & downward propagating modes.
+                        trans += np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
+                        trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
+                        store_trans = np.append(store_trans,trans/2)
+                    else:
+                        store_trans = np.append(store_trans,trans)
+                # Finite layer
                 else:
-                    store_trans = np.append(store_trans,trans)
+                    trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,)
+                    trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
+                    if up_and_down == True: # Take average of up & downward propagating modes.
+                        trans += np.abs(stack.vec_coef_up[vec_index][axis_indices]).reshape(-1,)
+                        trans += np.abs(stack.vec_coef_up[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,)
+                        store_trans = np.append(store_trans,trans/2)
+                    else:
+                        store_trans = np.append(store_trans,trans)
 
-        ax1.plot(xvalues,store_trans, label="m = %i" % pxs)
+            ax1.plot(xvalues,store_trans, label="m = %i" % pxs)
 
-    handles, labels = ax1.get_legend_handles_labels()
-    lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
-    ax1.set_ylabel(r'$|E|_{trans}$')
-    ax1.set_xlabel(xlabel)
-    plt.suptitle(add_name)
-    if add_height!= None: add_name += '_' + zeros_int_str(add_height)
-    add_name = str(lay_interest) + add_name
-    plt.savefig('PW_amplitudes-lay_%s' % add_name, \
-        fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+        handles, labels = ax1.get_legend_handles_labels()
+        lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
+        ax1.set_ylabel(r'$|E|_{trans}$')
+        ax1.set_xlabel(xlabel)
+        plt.suptitle(add_name)
+        if add_height!= None: add_name += '_' + zeros_int_str(add_height)
+        add_name = str(lay_interest) + add_name
+        plt.savefig('PW_amplitudes-lay_%s' % add_name, \
+            fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
+    except ValueError:
+        print "PW_amplitudes only works in ThinFilm layers."\
+        "\nPlease select a different lay_interest.\n"
 
 def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,\
     lay_interest = 0, add_height = None, add_name = '', \
@@ -1421,88 +1430,95 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,\
     store_tot_amps = []
     store_mean_ev  = []
     s = 0
-    for stack in stacks_list:
-        assert isinstance(stack.layers[lay_interest],objects.Anallo), \
-        "evanescent_merit only works in ThinFilm layers, change lay_interest input."
-        merit_prop    = 0.0
-        merit_near_ev = 0.0
-        merit_far_ev  = 0.0
-        sum_p_amps    = 0.0
-        sum_amps      = 0.0
-        for pxs in chosen_PWs:
-            k0 = stack.layers[-1].k() # Incident k0
-            k = stack.layers[lay_interest].k() # k in film
-            n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
-            # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
-            alpha0, beta0 = stack.layers[lay_interest].k_pll_norm()
-            alphas = alpha0 + pxs * 2 * np.pi
-            this_k_pll2 = alphas**2 + beta0**2
-            on_axis_kzs = sqrt(k**2 - alphas**2 - beta0**2)
-            full_k_space = stack.layers[lay_interest].k_z
-            # Consider only transmission into singular polarization
-            one_pol_k_space = full_k_space[0:n_PW_p_pols]
+    try:
+        for stack in stacks_list:
+            if not isinstance(stack.layers[lay_interest],objects.Simmo):
+                raise ValueError
 
-            ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
-            axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
+            merit_prop    = 0.0
+            merit_near_ev = 0.0
+            merit_far_ev  = 0.0
+            sum_p_amps    = 0.0
+            sum_amps      = 0.0
+            for pxs in chosen_PWs:
+                k0 = stack.layers[-1].k() # Incident k0
+                k = stack.layers[lay_interest].k() # k in film
+                n_PW_p_pols = stack.layers[lay_interest].structure.num_pw_per_pol
+                # Calculate k_x that correspond to k_y = beta0 = 0 (in normalized units)
+                alpha0, beta0 = stack.layers[lay_interest].k_pll_norm()
+                alphas = alpha0 + pxs * 2 * np.pi
+                this_k_pll2 = alphas**2 + beta0**2
+                on_axis_kzs = sqrt(k**2 - alphas**2 - beta0**2)
+                full_k_space = stack.layers[lay_interest].k_z
+                # Consider only transmission into singular polarization
+                one_pol_k_space = full_k_space[0:n_PW_p_pols]
 
-            trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
-            trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+                ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
+                axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
 
-            if np.abs(this_k_pll2) < np.abs(k**2): merit_prop += trans
-            if np.abs(k**2) < np.abs(this_k_pll2) < np.abs((n_H*k0)**2):
-                merit_near_ev += trans
-            if np.abs(this_k_pll2) > np.abs((n_H*k0)**2): merit_far_ev += trans
-            sum_p_amps += np.abs(pxs) * trans
-            sum_amps += trans
+                trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
+                trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
 
-        if merit_prop != 0.0:
-            store_m_p = np.append(store_m_p,merit_prop)
-            store_x_p = np.append(store_x_p,xvalues[s])
-        if merit_near_ev != 0.0:
-            store_m_ne = np.append(store_m_ne,merit_near_ev)
-            store_x_ne = np.append(store_x_ne,xvalues[s])
-        if merit_far_ev != 0.0:
-            store_m_fe = np.append(store_m_fe,merit_far_ev)
-            store_x_fe = np.append(store_x_fe,xvalues[s])
-        s+=1
-        store_tot_amps = np.append(store_tot_amps,sum_amps)
-        store_mean_ev  = np.append(store_mean_ev,sum_p_amps/sum_amps)
+                if np.abs(this_k_pll2) < np.abs(k**2): merit_prop += trans
+                if np.abs(k**2) < np.abs(this_k_pll2) < np.abs((n_H*k0)**2):
+                    merit_near_ev += trans
+                if np.abs(this_k_pll2) > np.abs((n_H*k0)**2): merit_far_ev += trans
+                sum_p_amps += np.abs(pxs) * trans
+                sum_amps += trans
 
-    if add_height!= None: add_name += '_'+zeros_int_str(add_height)
-    add_name = str(lay_interest) + add_name
-    if save_pdf == True:
-        fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
-        ax1 = fig.add_subplot(2,1,1)
-        if len(store_m_p)  != 0: ax1.plot(store_x_p,store_m_p, 'b', label="prop")
-        if len(store_m_ne) != 0: ax1.plot(store_x_ne,store_m_ne, 'g', label="near ev")
-        if len(store_m_fe) != 0: ax1.plot(store_x_fe,store_m_fe, 'r', label="far ev")
-        ax1.plot(xvalues,store_mean_ev, 'k', label=r'$\Sigma|p| |a_p| / \Sigma|a_p|$')
-        ax2 = fig.add_subplot(2,1,2)
-        ax2.plot(xvalues,store_tot_amps, 'k', label="prop")
+            if merit_prop != 0.0:
+                store_m_p = np.append(store_m_p,merit_prop)
+                store_x_p = np.append(store_x_p,xvalues[s])
+            if merit_near_ev != 0.0:
+                store_m_ne = np.append(store_m_ne,merit_near_ev)
+                store_x_ne = np.append(store_x_ne,xvalues[s])
+            if merit_far_ev != 0.0:
+                store_m_fe = np.append(store_m_fe,merit_far_ev)
+                store_x_fe = np.append(store_x_fe,xvalues[s])
+            s+=1
+            store_tot_amps = np.append(store_tot_amps,sum_amps)
+            store_mean_ev  = np.append(store_mean_ev,sum_p_amps/sum_amps)
 
-        handles, labels = ax1.get_legend_handles_labels()
-        lgd = ax1.legend(handles, labels, ncol=4, loc='upper center', bbox_to_anchor=(0.5,1.6))
-        ax1.set_ylabel('Ev FoM')
-        ax1.set_xticklabels( () )
-        ax2.set_ylabel(r'$\Sigma|a_p|$')
-        ax2.set_xlabel(xlabel)
-        plt.suptitle(add_name)
-        plt.savefig('evanescent_merit-lay_%s' % add_name, \
-            fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+        if add_height!= None: add_name += '_'+zeros_int_str(add_height)
+        add_name = str(lay_interest) + add_name
+        if save_pdf == True:
+            fig = plt.figure(num=None, figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+            ax1 = fig.add_subplot(2,1,1)
+            if len(store_m_p)  != 0: ax1.plot(store_x_p,store_m_p, 'b', label="prop")
+            if len(store_m_ne) != 0: ax1.plot(store_x_ne,store_m_ne, 'g', label="near ev")
+            if len(store_m_fe) != 0: ax1.plot(store_x_fe,store_m_fe, 'r', label="far ev")
+            ax1.plot(xvalues,store_mean_ev, 'k', label=r'$\Sigma|p| |a_p| / \Sigma|a_p|$')
+            ax2 = fig.add_subplot(2,1,2)
+            ax2.plot(xvalues,store_tot_amps, 'k', label="prop")
 
-    if save_txt == True:
-        av_diff = [np.mean(store_m_p)]
-        np.savetxt('prop_diff_order-lay_%s.txt' % add_name, \
-            av_diff, fmt = '%18.11f')
-        av_diff = [np.mean(store_m_ne)]
-        np.savetxt('near_ev_diff_order-lay_%s.txt' % add_name, \
-            av_diff, fmt = '%18.11f')
-        av_diff = [np.mean(store_m_fe)]
-        np.savetxt('far_ev_diff_order-lay_%s.txt' % add_name, \
-            av_diff, fmt = '%18.11f')
-        av_diff = [np.mean(store_mean_ev)]
-        np.savetxt('average_diff_order-lay_%s.txt' % add_name, \
-            av_diff, fmt = '%18.11f')
+            handles, labels = ax1.get_legend_handles_labels()
+            lgd = ax1.legend(handles, labels, ncol=4, loc='upper center', bbox_to_anchor=(0.5,1.6))
+            ax1.set_ylabel('Ev FoM')
+            ax1.set_xticklabels( () )
+            ax2.set_ylabel(r'$\Sigma|a_p|$')
+            ax2.set_xlabel(xlabel)
+            plt.suptitle(add_name)
+            plt.savefig('evanescent_merit-lay_%s' % add_name, \
+                fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+
+        if save_txt == True:
+            av_diff = [np.mean(store_m_p)]
+            np.savetxt('prop_diff_order-lay_%s.txt' % add_name, \
+                av_diff, fmt = '%18.11f')
+            av_diff = [np.mean(store_m_ne)]
+            np.savetxt('near_ev_diff_order-lay_%s.txt' % add_name, \
+                av_diff, fmt = '%18.11f')
+            av_diff = [np.mean(store_m_fe)]
+            np.savetxt('far_ev_diff_order-lay_%s.txt' % add_name, \
+                av_diff, fmt = '%18.11f')
+            av_diff = [np.mean(store_mean_ev)]
+            np.savetxt('average_diff_order-lay_%s.txt' % add_name, \
+                av_diff, fmt = '%18.11f')
+
+    except ValueError:
+        print "PW_amplitudes only works in ThinFilm layers."\
+        "\nPlease select a different lay_interest.\n"
+
 ###############################################################################
 
 
@@ -1543,30 +1559,38 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
         # plot fields in Bloch Mode Basis using fortran routine.
         if isinstance(pstack.layers[lay_interest],mode_calcs.Simmo):
             meat = pstack.layers[lay_interest]
-            gmsh_file_pos = meat.structure.mesh_file[0:-5]
-            eps_eff = meat.n_effs**2
-            h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-            for z_value in z_values:
-                # fortran routine naturally measure z top down
-                z_value = h_normed - z_value
-                wl_normed = pstack.layers[lay_interest].wl_norm()
+            try:
+                if not meat.structure.periodicity == '2D_array':
+                    raise ValueError
+                gmsh_file_pos = meat.structure.mesh_file[0:-5]
+                eps_eff = meat.n_effs**2
+                h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+                for z_value in z_values:
+                    # fortran routine naturally measure z top down
+                    z_value = h_normed - z_value
+                    wl_normed = pstack.layers[lay_interest].wl_norm()
 
-                nnodes=6
-                if meat.E_H_field == 1:
-                    EH_name = "E_"
-                else:
-                    EH_name = "H_"
-                extra_name = EH_name + "Lay" + zeros_int_str(lay_interest)
+                    nnodes=6
+                    if meat.E_H_field == 1:
+                        EH_name = "E_"
+                    else:
+                        EH_name = "H_"
+                    extra_name = EH_name + "Lay" + zeros_int_str(lay_interest)
 
-                # vec_coef sorted from top of stack, everything else is sorted from bottom
-                vec_index = num_lays - lay_interest - 1
-                vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+                    # vec_coef sorted from top of stack, everything else is sorted from bottom
+                    vec_index = num_lays - lay_interest - 1
+                    vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
 
-                EMUstack.gmsh_plot_field (meat.num_BM,
-                    meat.n_msh_el, meat.n_msh_pts, nnodes, meat.structure.nb_typ_el, meat.table_nod, meat.type_el,
-                    eps_eff, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, z_value,
-                    gmsh_file_pos, meat.structure.plot_real,
-                    meat.structure.plot_imag, meat.structure.plot_abs, extra_name)
+                    EMUstack.gmsh_plot_field (meat.num_BM,
+                        meat.n_msh_el, meat.n_msh_pts, nnodes, meat.structure.nb_typ_el, meat.table_nod, meat.type_el,
+                        eps_eff, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, z_value,
+                        gmsh_file_pos, meat.structure.plot_real,
+                        meat.structure.plot_imag, meat.structure.plot_abs, extra_name)
+
+            except ValueError:
+                print "fields_in_plane cannot plot fields in 1D-arrays."\
+                "\nPlease select a different lay_interest.\n"
+
 
         # If selected z location is within a ThinFilm layer
         # plot fields in Plane Wave Basis using python routine.
@@ -1819,34 +1843,34 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
                     print ""
 
 
-                    h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-                    wl_normed = pstack.layers[lay].wl_norm()
-                    # gmsh_file_pos = meat.structure.mesh_file[0:-5]
-                    gmsh_file_pos = 'stack_%(stack_num)s_lay_%(name)s_'% \
-                                    {'name' : name_lay,'stack_num':stack_num}
-                    # eps_eff = meat.n_effs**2
-                    n_eff = meat.n_effs
+#                     h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+#                     wl_normed = pstack.layers[lay].wl_norm()
+#                     # gmsh_file_pos = meat.structure.mesh_file[0:-5]
+#                     gmsh_file_pos = 'stack_%(stack_num)s_lay_%(name)s_'% \
+#                                     {'name' : name_lay,'stack_num':stack_num}
+#                     # eps_eff = meat.n_effs**2
+#                     n_eff = meat.n_effs
 
-                    # vec_coef sorted from top of stack, everything else is sorted from bottom
-                    vec_index = num_lays - lay - 1
-                    vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
-                        pstack.vec_coef_up[vec_index]))
+#                     # vec_coef sorted from top of stack, everything else is sorted from bottom
+#                     vec_index = num_lays - lay - 1
+#                     vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
+#                         pstack.vec_coef_up[vec_index]))
 
-                    EMUstack.gmsh_plot_slice_1d(meat.E_H_field, meat.num_BM,
-                        meat.n_msh_el, meat.n_msh_pts, nnodes, meat.type_el,
-                        meat.structure.nb_typ_el, n_eff, meat.table_nod,
-                        meat.x_arr, meat.k_z, meat.sol1, vec_coef,
-                        h_normed, wl_normed, gmsh_file_pos)
-E_H_field, nval, nel, npt, nnodes,
-     *     type_el, nb_typ_el, n_eff,
-     *     table_nod, x, beta, evecs, vec_coef, h,  lambda,
-     *     gmsh_file_pos)
+#                     EMUstack.gmsh_plot_slice_1d(meat.E_H_field, meat.num_BM,
+#                         meat.n_msh_el, meat.n_msh_pts, nnodes, meat.type_el,
+#                         meat.structure.nb_typ_el, n_eff, meat.table_nod,
+#                         meat.x_arr, meat.k_z, meat.sol1, vec_coef,
+#                         h_normed, wl_normed, gmsh_file_pos)
+# E_H_field, nval, nel, npt, nnodes,
+#      *     type_el, nb_typ_el, n_eff,
+#      *     table_nod, x, beta, evecs, vec_coef, h,  lambda,
+#      *     gmsh_file_pos)
 
 
-E_H_field, nval, nel, npt_P2,
-     *     type_el, nb_typ_el, n_eff,
-     *     table_nod, x_P2, beta, sol_P2, vec_coef, h,  lambda,
-     *     gmsh_file_pos, dir_name)
+# E_H_field, nval, nel, npt_P2,
+#      *     type_el, nb_typ_el, n_eff,
+#      *     table_nod, x_P2, beta, sol_P2, vec_coef, h,  lambda,
+#      *     gmsh_file_pos, dir_name)
 
 
 
@@ -2300,116 +2324,120 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
 
     stack_num = 0
     for pstack in stacks_list:
-        if isinstance(pstack.layers[lay_interest],mode_calcs.Simmo):
-            raise ValueError, "field_values can only handle ThinFilm layers."
+        try:
+            if not isinstance(pstack.layers[lay_interest],mode_calcs.Anallo):
+                raise ValueError
 
-        num_lays = len(pstack.layers)
-        wl = np.around(pstack.layers[-1].light.wl_nm,decimals=2)
+            num_lays = len(pstack.layers)
+            wl = np.around(pstack.layers[-1].light.wl_nm,decimals=2)
 
-        if lay_interest == 0: name_lay = "0_Substrate"
-        elif lay_interest == num_lays-1: name_lay = "%i_Superstrate" % num_lays-1
-        else: name_lay = "%i_Thin_Film" % lay_interest
+            if lay_interest == 0: name_lay = "0_Substrate"
+            elif lay_interest == num_lays-1: name_lay = "%i_Superstrate" % num_lays-1
+            else: name_lay = "%i_Thin_Film" % lay_interest
 
-        n = pstack.layers[lay_interest].n()
-        period = pstack.layers[-1].structure.period
-        PWordtot = pstack.layers[lay_interest].structure.num_pw_per_pol
-        s = pstack.layers[lay_interest].sort_order
-        alpha_unsrt = np.array(pstack.layers[lay_interest].alphas)
-        beta_unsrt = np.array(pstack.layers[lay_interest].betas)
-        alpha = alpha_unsrt[s]
-        if pstack.layers[lay_interest].structure.world_1d == True:
-            beta = beta_unsrt
-        else:
-            beta = beta_unsrt[s]
-        gamma = np.array(pstack.layers[lay_interest].calc_kz())
-
-        vec_coef_down = np.array(pstack.vec_coef_down[num_lays-1-lay_interest]).flatten()
-        vec_coef_down_TE = vec_coef_down[0:PWordtot]
-        vec_coef_down_TM = vec_coef_down[PWordtot::]
-        if lay_interest == 0:
-            vec_coef_up = np.zeros((2*PWordtot), dtype = 'complex')
-        else:
-            vec_coef_up = np.array(pstack.vec_coef_up[num_lays-1-lay_interest]).flatten()
-
-        vec_coef_up_TE = vec_coef_up[0:PWordtot]
-        vec_coef_up_TM = vec_coef_up[PWordtot::]
-
-        norm = np.sqrt(alpha**2+beta**2)
-        k = np.sqrt(alpha**2+beta**2+gamma**2)
-        chi_TE = np.sqrt((n*gamma)/k)
-        chi_TM = np.sqrt((n*k)/gamma)
-        E_TE_x = beta/norm
-        E_TE_y = -1*alpha/norm
-        E_TE_z = np.array(np.zeros(np.size(E_TE_x)))
-        E_TM_x = alpha/norm
-        E_TM_y = beta/norm
-        E_TM_z = -1*norm/gamma
-
-        eta_TE_x_down = (vec_coef_down_TE*E_TE_x)/chi_TE
-        eta_TE_y_down = (vec_coef_down_TE*E_TE_y)/chi_TE
-        eta_TE_z_down = (vec_coef_down_TE*E_TE_z)/chi_TE
-        eta_TM_x_down = (vec_coef_down_TM*E_TM_x)/chi_TM
-        eta_TM_y_down = (vec_coef_down_TM*E_TM_y)/chi_TM
-        eta_TM_z_down = (vec_coef_down_TM*E_TM_z)/chi_TM
-
-        eta_TE_x_up = (vec_coef_up_TE*E_TE_x)/chi_TE
-        eta_TE_y_up = (vec_coef_up_TE*E_TE_y)/chi_TE
-        eta_TE_z_up = (vec_coef_up_TE*E_TE_z)/chi_TE
-        eta_TM_x_up = (vec_coef_up_TM*E_TM_x)/chi_TM
-        eta_TM_y_up = (vec_coef_up_TM*E_TM_y)/chi_TM
-        eta_TM_z_up = (vec_coef_up_TM*E_TM_z)/chi_TM
-
-        calc_E_TE_x_array = np.zeros(len(xyz_values),dtype='complex')
-        calc_E_TE_y_array = np.zeros(len(xyz_values),dtype='complex')
-        calc_E_TE_z_array = np.zeros(len(xyz_values),dtype='complex')
-        calc_E_TM_x_array = np.zeros(len(xyz_values),dtype='complex')
-        calc_E_TM_y_array = np.zeros(len(xyz_values),dtype='complex')
-        calc_E_TM_z_array = np.zeros(len(xyz_values),dtype='complex')
-
-        for i in xrange(len(xyz_values)):
-
-            (x1,y1,z1) = np.array(xyz_values[i])/float(pstack.layers[lay_interest].structure.period)
-
-            if pstack.layers[lay_interest].structure.world_1d == True: y1 = 0
-
-            if lay_interest == 0: z1 = -1*z1
-            else:z1 = np.abs(z1)
-
-            if pstack.layers[lay_interest].structure.height_nm == 'semi_inf':
-                calc_expo_down = np.exp(1j*(alpha*x1+beta*y1-gamma*z1))
+            n = pstack.layers[lay_interest].n()
+            period = pstack.layers[-1].structure.period
+            PWordtot = pstack.layers[lay_interest].structure.num_pw_per_pol
+            s = pstack.layers[lay_interest].sort_order
+            alpha_unsrt = np.array(pstack.layers[lay_interest].alphas)
+            beta_unsrt = np.array(pstack.layers[lay_interest].betas)
+            alpha = alpha_unsrt[s]
+            if pstack.layers[lay_interest].structure.world_1d == True:
+                beta = beta_unsrt
             else:
-                calc_expo_down = np.exp(1j*(alpha*x1+beta*y1-gamma*(z1-float(pstack.layers[lay_interest].structure.height_nm)/period)))
-            calc_expo_up = np.exp(1j*(alpha*x1+beta*y1+gamma*z1))
+                beta = beta_unsrt[s]
+            gamma = np.array(pstack.layers[lay_interest].calc_kz())
 
-            calc_E_TE_x = np.sum(eta_TE_x_down*calc_expo_down + eta_TE_x_up*calc_expo_up)
-            calc_E_TE_y = np.sum(eta_TE_y_down*calc_expo_down + eta_TE_y_up*calc_expo_up)
-            calc_E_TE_z = np.sum(eta_TE_z_down*calc_expo_down + eta_TE_z_up*calc_expo_up)
-            calc_E_TM_x = np.sum(eta_TM_x_down*calc_expo_down + eta_TM_x_up*calc_expo_up)
-            calc_E_TM_y = np.sum(eta_TM_y_down*calc_expo_down + eta_TM_y_up*calc_expo_up)
-            calc_E_TM_z = np.sum(eta_TM_z_down*calc_expo_down + eta_TM_z_up*calc_expo_up)
-            calc_E_TE_x_array[i] = calc_E_TE_x
-            calc_E_TE_y_array[i] = calc_E_TE_y
-            calc_E_TE_z_array[i] = calc_E_TE_z
-            calc_E_TM_x_array[i] = calc_E_TM_x
-            calc_E_TM_y_array[i] = calc_E_TM_y
-            calc_E_TM_z_array[i] = calc_E_TM_z
-        calc_E_x_array = calc_E_TE_x_array + calc_E_TM_x_array
-        calc_E_y_array = calc_E_TE_y_array + calc_E_TM_y_array
-        calc_E_z_array = calc_E_TE_z_array + calc_E_TM_z_array
-        calc_E_tot_array = np.sqrt(calc_E_x_array*np.conj(calc_E_x_array) \
-                            +calc_E_y_array*np.conj(calc_E_y_array)+calc_E_z_array*np.conj(calc_E_z_array))
+            vec_coef_down = np.array(pstack.vec_coef_down[num_lays-1-lay_interest]).flatten()
+            vec_coef_down_TE = vec_coef_down[0:PWordtot]
+            vec_coef_down_TM = vec_coef_down[PWordtot::]
+            if lay_interest == 0:
+                vec_coef_up = np.zeros((2*PWordtot), dtype = 'complex')
+            else:
+                vec_coef_up = np.array(pstack.vec_coef_up[num_lays-1-lay_interest]).flatten()
 
-        np.savez('%(dir_name)s/%(stack_num)s_E_calc_points_%(name)s_wl_%(wl)s'% \
-                            {'dir_name':dir_name, 'wl':wl,'name' : name_lay,'stack_num':stack_num},\
-                            calc_E_x_array=calc_E_x_array,calc_E_y_array=calc_E_y_array,\
-                            calc_E_z_array=calc_E_z_array,calc_E_tot_array=calc_E_tot_array)
+            vec_coef_up_TE = vec_coef_up[0:PWordtot]
+            vec_coef_up_TM = vec_coef_up[PWordtot::]
 
-        np.savetxt('%(dir_name)s/%(stack_num)s_E_calc_points_%(name)s_wl_%(wl)s.txt'% \
-                            {'dir_name':dir_name, 'wl':wl,'name' : name_lay,'stack_num':stack_num},\
-                            np.array([np.real(calc_E_x_array), np.imag(calc_E_x_array), np.real(calc_E_y_array),\
-                            np.imag(calc_E_y_array), np.real(calc_E_z_array), np.imag(calc_E_z_array), np.real(calc_E_tot_array)]))
+            norm = np.sqrt(alpha**2+beta**2)
+            k = np.sqrt(alpha**2+beta**2+gamma**2)
+            chi_TE = np.sqrt((n*gamma)/k)
+            chi_TM = np.sqrt((n*k)/gamma)
+            E_TE_x = beta/norm
+            E_TE_y = -1*alpha/norm
+            E_TE_z = np.array(np.zeros(np.size(E_TE_x)))
+            E_TM_x = alpha/norm
+            E_TM_y = beta/norm
+            E_TM_z = -1*norm/gamma
 
-        stack_num += 1
+            eta_TE_x_down = (vec_coef_down_TE*E_TE_x)/chi_TE
+            eta_TE_y_down = (vec_coef_down_TE*E_TE_y)/chi_TE
+            eta_TE_z_down = (vec_coef_down_TE*E_TE_z)/chi_TE
+            eta_TM_x_down = (vec_coef_down_TM*E_TM_x)/chi_TM
+            eta_TM_y_down = (vec_coef_down_TM*E_TM_y)/chi_TM
+            eta_TM_z_down = (vec_coef_down_TM*E_TM_z)/chi_TM
+
+            eta_TE_x_up = (vec_coef_up_TE*E_TE_x)/chi_TE
+            eta_TE_y_up = (vec_coef_up_TE*E_TE_y)/chi_TE
+            eta_TE_z_up = (vec_coef_up_TE*E_TE_z)/chi_TE
+            eta_TM_x_up = (vec_coef_up_TM*E_TM_x)/chi_TM
+            eta_TM_y_up = (vec_coef_up_TM*E_TM_y)/chi_TM
+            eta_TM_z_up = (vec_coef_up_TM*E_TM_z)/chi_TM
+
+            calc_E_TE_x_array = np.zeros(len(xyz_values),dtype='complex')
+            calc_E_TE_y_array = np.zeros(len(xyz_values),dtype='complex')
+            calc_E_TE_z_array = np.zeros(len(xyz_values),dtype='complex')
+            calc_E_TM_x_array = np.zeros(len(xyz_values),dtype='complex')
+            calc_E_TM_y_array = np.zeros(len(xyz_values),dtype='complex')
+            calc_E_TM_z_array = np.zeros(len(xyz_values),dtype='complex')
+
+            for i in xrange(len(xyz_values)):
+
+                (x1,y1,z1) = np.array(xyz_values[i])/float(pstack.layers[lay_interest].structure.period)
+
+                if pstack.layers[lay_interest].structure.world_1d == True: y1 = 0
+
+                if lay_interest == 0: z1 = -1*z1
+                else:z1 = np.abs(z1)
+
+                if pstack.layers[lay_interest].structure.height_nm == 'semi_inf':
+                    calc_expo_down = np.exp(1j*(alpha*x1+beta*y1-gamma*z1))
+                else:
+                    calc_expo_down = np.exp(1j*(alpha*x1+beta*y1-gamma*(z1-float(pstack.layers[lay_interest].structure.height_nm)/period)))
+                calc_expo_up = np.exp(1j*(alpha*x1+beta*y1+gamma*z1))
+
+                calc_E_TE_x = np.sum(eta_TE_x_down*calc_expo_down + eta_TE_x_up*calc_expo_up)
+                calc_E_TE_y = np.sum(eta_TE_y_down*calc_expo_down + eta_TE_y_up*calc_expo_up)
+                calc_E_TE_z = np.sum(eta_TE_z_down*calc_expo_down + eta_TE_z_up*calc_expo_up)
+                calc_E_TM_x = np.sum(eta_TM_x_down*calc_expo_down + eta_TM_x_up*calc_expo_up)
+                calc_E_TM_y = np.sum(eta_TM_y_down*calc_expo_down + eta_TM_y_up*calc_expo_up)
+                calc_E_TM_z = np.sum(eta_TM_z_down*calc_expo_down + eta_TM_z_up*calc_expo_up)
+                calc_E_TE_x_array[i] = calc_E_TE_x
+                calc_E_TE_y_array[i] = calc_E_TE_y
+                calc_E_TE_z_array[i] = calc_E_TE_z
+                calc_E_TM_x_array[i] = calc_E_TM_x
+                calc_E_TM_y_array[i] = calc_E_TM_y
+                calc_E_TM_z_array[i] = calc_E_TM_z
+            calc_E_x_array = calc_E_TE_x_array + calc_E_TM_x_array
+            calc_E_y_array = calc_E_TE_y_array + calc_E_TM_y_array
+            calc_E_z_array = calc_E_TE_z_array + calc_E_TM_z_array
+            calc_E_tot_array = np.sqrt(calc_E_x_array*np.conj(calc_E_x_array) \
+                                +calc_E_y_array*np.conj(calc_E_y_array)+calc_E_z_array*np.conj(calc_E_z_array))
+
+            np.savez('%(dir_name)s/%(stack_num)s_E_calc_points_%(name)s_wl_%(wl)s'% \
+                                {'dir_name':dir_name, 'wl':wl,'name' : name_lay,'stack_num':stack_num},\
+                                calc_E_x_array=calc_E_x_array,calc_E_y_array=calc_E_y_array,\
+                                calc_E_z_array=calc_E_z_array,calc_E_tot_array=calc_E_tot_array)
+
+            np.savetxt('%(dir_name)s/%(stack_num)s_E_calc_points_%(name)s_wl_%(wl)s.txt'% \
+                                {'dir_name':dir_name, 'wl':wl,'name' : name_lay,'stack_num':stack_num},\
+                                np.array([np.real(calc_E_x_array), np.imag(calc_E_x_array), np.real(calc_E_y_array),\
+                                np.imag(calc_E_y_array), np.real(calc_E_z_array), np.imag(calc_E_z_array), np.real(calc_E_tot_array)]))
+
+            stack_num += 1
+        except ValueError:
+            print "field_values can only calculate field values in ThinFilms."\
+            "\nPlease select a different lay_interest.\n"
 
 
 def fields_3d(stacks_list, lay_interest = 1):
@@ -2436,30 +2464,36 @@ def fields_3d(stacks_list, lay_interest = 1):
 
     stack_num = 0
     for pstack in stacks_list:
-        if not isinstance(pstack.layers[lay_interest],mode_calcs.Simmo):
-            raise ValueError, "Can only plot 3D fields within NanoStruct layers.\
-                Please select a different lay_interest."
+        try:
+            if not isinstance(pstack.layers[lay_interest],mode_calcs.Simmo):
+                raise ValueError
 
-        meat = pstack.layers[lay_interest]
-        gmsh_file_pos = meat.structure.mesh_file[0:-5]
+            meat = pstack.layers[lay_interest]
+            if not meat.structure.periodicity == '2D_array':
+                raise ValueError
 
-        # vec_coef sorted from top of stack, everything else is sorted from bottom
-        vec_index = len(pstack.layers) - lay_interest - 1
+            gmsh_file_pos = meat.structure.mesh_file[0:-5]
 
-        vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
-        # vec_coef_up = np.zeros(shape=(np.shape(pstack.vec_coef_down[vec_index])),dtype='complex128')
-        # vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],vec_coef_up))
-        h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-        wl_normed = pstack.layers[lay_interest].wl_norm()
+            # vec_coef sorted from top of stack, everything else is sorted from bottom
+            vec_index = len(pstack.layers) - lay_interest - 1
 
-        layer_name = 'Lay_' + zeros_int_str(lay_interest) + 'Stack_' + str(stack_num)
+            vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+            # vec_coef_up = np.zeros(shape=(np.shape(pstack.vec_coef_down[vec_index])),dtype='complex128')
+            # vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],vec_coef_up))
+            h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+            wl_normed = pstack.layers[lay_interest].wl_norm()
 
-        EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,
-            meat.E_H_field, meat.n_msh_el, meat.n_msh_pts,
-            nnodes, meat.type_el, meat.structure.nb_typ_el, meat.table_nod,
-            meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos, layer_name)
+            layer_name = 'Lay_' + zeros_int_str(lay_interest) + 'Stack_' + str(stack_num)
 
-        stack_num += 1
+            EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,
+                meat.E_H_field, meat.n_msh_el, meat.n_msh_pts,
+                nnodes, meat.type_el, meat.structure.nb_typ_el, meat.table_nod,
+                meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos, layer_name)
+
+            stack_num += 1
+        except ValueError:
+            print "fields_3d can only plot 3D fields within 2D_array"\
+            "Nanostruct layers. \nPlease select a different lay_interest.\n"
 ###############################################################################
 
 
