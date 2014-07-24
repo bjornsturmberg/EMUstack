@@ -171,6 +171,11 @@ class NanoStruct(object):
         plotting_fields = False, plot_real = 1, plot_imag = 0, plot_abs = 0,
         plot_field_conc=False):
         self.periodicity    = periodicity
+        if periodicity == '1D_array':
+            raise NotImplementedError, "The 1.5 dimension version of EMUstack \
+                has not been publicly released. As a taste test; current \
+                testing indicates this simulation to be 15x faster... \n \
+                Contact Bjorn for further details."
         self.period         = period
         self.diameter1      = diameter1
         self.inc_shape      = inc_shape

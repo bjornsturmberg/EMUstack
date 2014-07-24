@@ -40,7 +40,7 @@ from numpy.testing import assert_equal
 
 
 
-def setup_module(module):  
+def setup_module(module):
     ################ Light parameters #####################
 
     # Set up light objects
@@ -103,7 +103,7 @@ def test_txt_results():
 
 def test_stack_list_matches_saved(casefile_name = 'case_3'):
     rtol = 1e-1
-    atol = 1e-0
+    atol = 1e+1
     ref = np.load("ref/%s.npz" % casefile_name)
     yield assert_equal, len(stack_list), len(ref['stack_list'])
     for stack, rstack in zip(stack_list, ref['stack_list']):
@@ -119,4 +119,4 @@ def test_stack_list_matches_saved(casefile_name = 'case_3'):
             #TODO: yield assert_ac, lay.sol1, rlay['sol1']
         yield assert_ac, stack.R_net, rstack['R_net'], rtol, atol, lbl_s + 'R_net'
         yield assert_ac, stack.T_net, rstack['T_net'], rtol, atol, lbl_s + 'T_net'
-        
+
