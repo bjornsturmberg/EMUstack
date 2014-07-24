@@ -65,7 +65,7 @@ NW_diameter = 120
 NW_array = objects.NanoStruct('2D_array', period, NW_diameter,
     height_nm = 2330, inclusion_a = materials.Si_c, background = materials.Air,
     loss = True, make_mesh_now = True, force_mesh = True, lc_bkg = 0.1,
-    lc2= 2.0, plot_BMs = True, plotting_fields = True)
+    lc2= 2.0, plotting_fields = True)
 
 
 def simulate_stack(light):

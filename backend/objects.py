@@ -135,19 +135,20 @@ class NanoStruct(object):
             lc3-6'  (float): factor by which lc_bkg will be reduced at center \
                 of inclusions.
 
-            plot_BMs  (bool): Plot modes (ie. FEM solutions) in gmsh format, \
-                you get epsilon*|E|^2 & either real/imag/abs of \
-                x,y,z components, field vectors. Fields are saved as gmsh \
+            plotting_fields  (bool): Unless set to true field data deleted.\
+                Also plots modes (ie. FEM solutions) in gmsh format. \
+                Plots epsilon*|E|^2 & choice of real/imag/abs of \
+                x,y,z components & field vectors. Fields are saved as gmsh \
                 files, but can be converted by running the .geo file found in \
                 Bloch_fields/PNG/
 
-            plot_real  (bool): Plot the real part of modal fields.
+            plot_real  (bool): Choose to plot real part of modal fields.
 
-            plot_imag  (bool): Plot the imaginary part of modal fields.
+            plot_imag  (bool): Choose to plot imaginary part of modal fields.
 
-            plot_abs  (bool): Plot the absolute value of modal fields.
+            plot_abs  (bool): Choose to plot absolute value of modal fields.
 
-            plotting_fields  (bool): Unless set to true field data deleted.
+
     """
 
 
@@ -167,8 +168,8 @@ class NanoStruct(object):
         make_mesh_now = True, force_mesh = False,
         mesh_file = 'NEED_FILE.mail',
         lc_bkg = 0.09, lc2 = 1.0, lc3 = 1.0, lc4 = 1.0, lc5 = 1.0, lc6 = 1.0,
-        plot_BMs = False, plot_real = 1, plot_imag = 0, plot_abs = 0,
-        plotting_fields = False, plot_field_conc=False):
+        plotting_fields = False, plot_real = 1, plot_imag = 0, plot_abs = 0,
+        plot_field_conc=False):
         self.periodicity    = periodicity
         self.period         = period
         self.diameter1      = diameter1
@@ -240,15 +241,16 @@ class NanoStruct(object):
             self.make_mesh()
         else:
             self.mesh_file = mesh_file
-        if plot_BMs == True:
-            self.plot_BMs = 1
-            if not os.path.exists("Bloch_fields"): os.mkdir("Bloch_fields")
-            if not os.path.exists("Bloch_fields/PNG"): os.mkdir("Bloch_fields/PNG")
-        else: self.plot_BMs = 0
+        if plotting_fields == True:
+            self.plotting_fields = 1
+            if not os.path.exists("Bloch_fields"):
+                os.mkdir("Bloch_fields")
+            if not os.path.exists("Bloch_fields/PNG"):
+                os.mkdir("Bloch_fields/PNG")
+        else: self.plotting_fields = 0
         self.plot_real       = plot_real
         self.plot_imag       = plot_imag
         self.plot_abs        = plot_abs
-        self.plotting_fields = plotting_fields
         self.plot_field_conc = plot_field_conc
 
     def make_mesh(self):

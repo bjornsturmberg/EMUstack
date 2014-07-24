@@ -9,7 +9,7 @@ c     Explicit inputs
      *    neq_PW, neq_PW_2d, world_1d,
 C     Outputs
      *     beta_1, overlap_J, overlap_J_dagger, overlap_J_2d,
-     *     overlap_J_dagger_2d, sol_1, sol_2, sol_P2)
+     *     overlap_J_dagger_2d, sol_P2)
 
 C************************************************************************
 C
@@ -50,7 +50,7 @@ C
 
       complex*16, target :: sol_1(3+4+4,nval,nel), sol_2(3+4+4,nval,nel)
       complex*16, pointer :: sol(:,:,:)
-      complex*16, allocatable :: sol_P2(:,:,:,:)
+      complex*16 sol_P2(3,nnodes_P2,nval,nel)
       complex*16 eps_eff(nb_typ_el), n_eff(nb_typ_el)
 
       complex*16 overlap_J(2*neq_PW, nval)
@@ -103,7 +103,7 @@ Cf2py depend(x_P2) npt_P2
 
 Cf2py intent(out) beta_1, overlap_J, overlap_J_dagger
 Cf2py intent(out) overlap_J_2d, overlap_J_dagger_2d
-Cf2py intent(out) sol_1, sol_2
+Cf2py intent(out) sol_P2
 
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -288,16 +288,6 @@ c
         write(*,*) "allocate_status = ", allocate_status
         write(*,*) "Not enough memory for mode_pol"
         write(*,*) "nval = ", nval
-        write(*,*) "Aborting..."
-        stop
-      endif
-
-      allocate(sol_P2(3,nnodes_P2,nval,nel), STAT=allocate_status)
-      if (allocate_status /= 0) then
-        write(*,*) "The allocation is unsuccessful"
-        write(*,*) "allocate_status = ", allocate_status
-        write(*,*) "Not enough memory for sol_P2"
-        write(*,*) "nval, nel = ", nval,nel
         write(*,*) "Aborting..."
         stop
       endif

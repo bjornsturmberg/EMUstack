@@ -10,7 +10,8 @@ c
 
       subroutine gmsh_plot_slice_1d (E_H_field, nval, nel, npt_P2,
      *     type_el, nb_typ_el, n_eff, table_nod, x_P2,
-     *     beta, sol_P2, vec_coef, h, lambda, gmsh_file_pos)
+     *     beta, sol_P2, vec_coef, h, lambda, gmsh_file_pos,
+     *     Transf_XX, Offset_Z, Offset_X)
 
       implicit none
       integer*8 nval, nel, npt_P2, E_H_field, nb_typ_el
@@ -56,7 +57,7 @@ C     Resolution: number of points over the thickness h
       integer*8, dimension(:), allocatable :: type_data
 
       double precision Transf_XX, Transf_YY, Transf_ZZ
-      double precision Offset_Z
+      double precision Offset_Z, Offset_X
 
       integer*8 n_interface, n_interface_max
       parameter (n_interface_max = 100)
@@ -106,13 +107,13 @@ c
       enddo
 
 c     Diagonal elements of the coordinate transformation matrix
-c     Saling factor = Transf_XX
-      Transf_XX = 2
+c     Scaling factor = Transf_XX
+C      Transf_XX = 2.0
       Transf_YY = Transf_XX
       Transf_ZZ = Transf_XX
 
 c     Translation of the view along Z-axis
-      Offset_Z = 0.5
+C      Offset_Z = 20.0
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
@@ -210,7 +211,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       tchar=dir_name(1:namelen_dir)// '/' //
      *           gmsh_file_pos(1:namelen_gmsh)
-     *           // '_field_' // tE_H // '_abs2_xz.pos'
+     *           // tE_H // '_abs2_xz.pos'
       open (unit=26,file=tchar, IOSTAT=IO_status)
        if (IO_status /= 0) then
          write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
@@ -220,6 +221,7 @@ c
          stop
        endif
         write(26,*) "View.IntervalsType = 3;"
+        write(26,*) "View.Axes = 2;"
         write(26,*) "General.Trackball = 0;"
         write(26,*) "General.RotationX = -90;"
         write(26,*) "General.RotationY = 0;"
@@ -227,13 +229,14 @@ c
         write(26,"('View.TransformXX = ',f10.6,';')") Transf_XX
         write(26,"('View.TransformYY = ',f10.6,';')") Transf_YY
         write(26,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(26,"('View.OffsetX = ',f10.6,';')") Offset_X
         write(26,"('View.OffsetZ = ',f10.6,';')") Offset_Z
         write(26,*) "View ""|",tE_H,"_t|^2 ",
      *     " "" {"
 
       tchar=dir_name(1:namelen_dir)// '/' //
      *           gmsh_file_pos(1:namelen_gmsh)
-     *           // '_field_' // tE_H // 'x_re_xz.pos'
+     *           // tE_H // 'x_re_xz.pos'
       open (unit=27,file=tchar, IOSTAT=IO_status)
        if (IO_status /= 0) then
          write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
@@ -243,6 +246,7 @@ c
          stop
        endif
         write(27,*) "View.IntervalsType = 3;"
+        write(27,*) "View.Axes = 2;"
         write(27,*) "General.Trackball = 0;"
         write(27,*) "General.RotationX = -90;"
         write(27,*) "General.RotationY = 0;"
@@ -250,13 +254,14 @@ c
         write(27,"('View.TransformXX = ',f10.6,';')") Transf_XX
         write(27,"('View.TransformYY = ',f10.6,';')") Transf_YY
         write(27,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(27,"('View.OffsetX = ',f10.6,';')") Offset_X
         write(27,"('View.OffsetZ = ',f10.6,';')") Offset_Z
         write(27,*) "View ""Re ",tE_H,"x ",
      *     " "" {"
 
       tchar=dir_name(1:namelen_dir)// '/' //
      *           gmsh_file_pos(1:namelen_gmsh)
-     *           // '_field_' // tE_H // 'y_re_xz.pos'
+     *           // tE_H // 'y_re_xz.pos'
       open (unit=28,file=tchar, IOSTAT=IO_status)
        if (IO_status /= 0) then
          write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
@@ -266,6 +271,7 @@ c
          stop
        endif
         write(28,*) "View.IntervalsType = 3;"
+        write(28,*) "View.Axes = 2;"
         write(28,*) "General.Trackball = 0;"
         write(28,*) "General.RotationX = -90;"
         write(28,*) "General.RotationY = 0;"
@@ -273,13 +279,14 @@ c
         write(28,"('View.TransformXX = ',f10.6,';')") Transf_XX
         write(28,"('View.TransformYY = ',f10.6,';')") Transf_YY
         write(28,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(28,"('View.OffsetX = ',f10.6,';')") Offset_X
         write(28,"('View.OffsetZ = ',f10.6,';')") Offset_Z
         write(28,*) "View ""Re ",tE_H,"y ",
      *     " "" {"
 
       tchar=dir_name(1:namelen_dir)// '/' //
      *           gmsh_file_pos(1:namelen_gmsh)
-     *           // '_field_' // tE_H // 'z_re_xz.pos'
+     *           // tE_H // 'z_re_xz.pos'
       open (unit=29,file=tchar, IOSTAT=IO_status)
        if (IO_status /= 0) then
          write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
@@ -289,6 +296,7 @@ c
          stop
        endif
         write(29,*) "View.IntervalsType = 3;"
+        write(29,*) "View.Axes = 2;"
         write(29,*) "General.Trackball = 0;"
         write(29,*) "General.RotationX = -90;"
         write(29,*) "General.RotationY = 0;"
@@ -296,13 +304,14 @@ c
         write(29,"('View.TransformXX = ',f10.6,';')") Transf_XX
         write(29,"('View.TransformYY = ',f10.6,';')") Transf_YY
         write(29,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(29,"('View.OffsetX = ',f10.6,';')") Offset_X
         write(29,"('View.OffsetZ = ',f10.6,';')") Offset_Z
         write(29,*) "View ""Re ",tE_H,"z ",
      *     " "" {"
 
       tchar=dir_name(1:namelen_dir)// '/' //
      *           gmsh_file_pos(1:namelen_gmsh)
-     *           // '_field_' // tE_H // 'v_re_xz.pos'
+     *           // tE_H // 'v_re_xz.pos'
       open (unit=30,file=tchar, IOSTAT=IO_status)
        if (IO_status /= 0) then
          write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
@@ -320,6 +329,7 @@ c
         write(30,"('View.TransformXX = ',f10.6,';')") Transf_XX
         write(30,"('View.TransformYY = ',f10.6,';')") Transf_YY
         write(30,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(30,"('View.OffsetX = ',f10.6,';')") Offset_X
         write(30,"('View.OffsetZ = ',f10.6,';')") Offset_Z
         write(30,*) "View ""Re ",tE_H, " "" {"
 
@@ -490,7 +500,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       tchar=dir_name(1:namelen_dir)// '/' //
      *           gmsh_file_pos(1:namelen_gmsh)
-     *           // '_abs2_xz.msh'
+     *           // 'abs2_xz.msh'
       open (unit=26,file=tchar, IOSTAT=IO_status)
        if (IO_status /= 0) then
          write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
@@ -567,7 +577,7 @@ c
       nFrame = 50
 
       tchar=dir_name(1:namelen_dir)// '/' //
-     *           "Anim/"
+     *           "anim/"
      *           // 'view_' // tE_H // '_v_xz.geo'
       open (unit=29,file=tchar, IOSTAT=IO_status)
        if (IO_status /= 0) then
@@ -591,7 +601,7 @@ c       Exponential time dependence: Exp(-i omega t)
         namelen_tchar = len_trim(tchar)
         write(29,*) " Include """, tchar(1:namelen_tchar), """;"
         tchar=dir_name(1:namelen_dir)// '/' //
-     *           "Anim/"
+     *           "anim/"
      *           // 'view_' // tval // '_v_xz.pos'
         open (unit=30,file=tchar, IOSTAT=IO_status)
        if (IO_status /= 0) then
@@ -610,6 +620,7 @@ c       Exponential time dependence: Exp(-i omega t)
         write(30,"('View.TransformXX = ',f10.6,';')") Transf_XX
         write(30,"('View.TransformYY = ',f10.6,';')") Transf_YY
         write(30,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(30,"('View.OffsetX = ',f10.6,';')") Offset_X
         write(30,"('View.OffsetZ = ',f10.6,';')") Offset_Z
         write(30,*) "View ""Vector field ",tE_H, " "" {"
         dz = h/dble(npt_h-1)
@@ -738,6 +749,7 @@ c   Search for the interface points
         write(26,"('Geometry.TransformXX = ',f10.6,';')") Transf_XX
         write(26,"('Geometry.TransformYY = ',f10.6,';')") Transf_YY
         write(26,"('Geometry.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(26,"('Geometry.OffsetX = ',f10.6,';')") Offset_X
         write(26,"('Geometry.OffsetZ = ',f10.6,';')") Offset_Z
 
         write(26,*) "Geometry.LineWidth = 2;"
@@ -749,71 +761,74 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 
+      tchar = "fields_vertically/All_plots_png_abs2_sl.geo"
+      open (unit=34,file=tchar)
 
-c    All_plots.geo (unit=34)
-
-      tchar = "../../"//dir_name(1:namelen_dir)//
+      tchar = "../"//dir_name(1:namelen_dir)//
      *  "/interface_xz.geo"
       namelen2 = len_trim(tchar)
         write(34,*) "Merge """, tchar(1:namelen2), """;"
 
-      tchar = "../../"//dir_name(1:namelen_dir)// "/" //
+      tchar = "../"//dir_name(1:namelen_dir)// "/" //
      *           gmsh_file_pos(1:namelen_gmsh)
-     *           // "_field_" // tE_H // "_abs2_xz.pos"
+     *           // tE_H // "_abs2_xz.pos"
       namelen2 = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen2), """;"
       tchar= gmsh_file_pos(1:namelen_gmsh)
-     *           // "_field_" // tE_H // "_abs2_xz.png"
+     *           // tE_H // "_abs2_xz.png"
       namelen2 = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
 
       write(34,*)
       write(34,*) "Delete View[0];"
-      tchar = "../../"//dir_name(1:namelen_dir)// "/" //
+      tchar = "../"//dir_name(1:namelen_dir)// "/" //
      *           gmsh_file_pos(1:namelen_gmsh)
-     *           // "_field_" // tE_H // "x_re_xz.pos"
+     *           // tE_H // "x_re_xz.pos"
       namelen2 = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen2), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh)
-     *           // "_field_" // tE_H // "x_re_xz.png"
+     *           // tE_H // "x_re_xz.png"
       namelen2 = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
 
       write(34,*)
       write(34,*) "Delete View[0];"
-      tchar = "../../"//dir_name(1:namelen_dir)// "/" //
+      tchar = "../"//dir_name(1:namelen_dir)// "/" //
      *           gmsh_file_pos(1:namelen_gmsh)
-     *           // "_field_" // tE_H // "y_re_xz.pos"
+     *           // tE_H // "y_re_xz.pos"
       namelen2 = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen2), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh)
-     *           // "_field_" // tE_H // "y_re_xz.png"
+     *           // tE_H // "y_re_xz.png"
       namelen2 = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
 
       write(34,*)
       write(34,*) "Delete View[0];"
-      tchar = "../../"//dir_name(1:namelen_dir)// "/" //
+      tchar = "../"//dir_name(1:namelen_dir)// "/" //
      *           gmsh_file_pos(1:namelen_gmsh)
-     *           // "_field_" // tE_H // "z_re_xz.pos"
+     *           // tE_H // "z_re_xz.pos"
       namelen2 = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen2), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh)
-     *           // "_field_" // tE_H // "z_re_xz.png"
+     *           // tE_H // "z_re_xz.png"
       namelen2 = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
 
       write(34,*)
       write(34,*) "Delete View[0];"
-      tchar = "../../"//dir_name(1:namelen_dir)// "/" //
+      tchar = "../"//dir_name(1:namelen_dir)// "/" //
      *           gmsh_file_pos(1:namelen_gmsh)
-     *           // "_field_" // tE_H // "v_re_xz.pos"
+     *           // tE_H // "v_re_xz.pos"
       namelen2 = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen2), """;"
       tchar = gmsh_file_pos(1:namelen_gmsh)
-     *           // "_field_" // tE_H // "v_re_xz.png"
+     *           // tE_H // "v_re_xz.png"
       namelen2 = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
+
+
+      close (unit=34)
 
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

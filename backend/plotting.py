@@ -1823,6 +1823,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
         subprocess.call('rm %s -r' %dir_name, shell = True)
     os.mkdir(dir_name)
     os.mkdir(dir_name+"/gmsh_BMs")
+    os.mkdir(dir_name+"/gmsh_BMs/anim")
 
     # always make odd
     if nu_calc_pts % 2 == 0: nu_calc_pts += 1
@@ -1852,11 +1853,15 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
 
                 struct = meat.structure
                 if meat.structure.periodicity == '1D_array':
+                    scale_plot = 2.0
+                    shift_x_plot = -.5
+                    shift_v_plot = h_normed*0.75
                     EMUstack.gmsh_plot_slice_1d(meat.E_H_field, meat.num_BM,
                         struct.n_msh_el, struct.n_msh_pts, struct.type_el,
                         struct.nb_typ_el, n_eff, struct.table_nod,
-                        struct.x_arr, meat.k_z, meat.sol_P2, vec_coef,
-                        h_normed, wl_normed, gmsh_file_pos)
+                        struct.x_arr, meat.k_z, meat.sol1, vec_coef,
+                        h_normed, wl_normed, gmsh_file_pos,
+                        scale_plot, shift_v_plot, shift_x_plot)
 
                 else:
                     EMUstack.gmsh_plot_slice(meat.E_H_field, meat.num_BM,
