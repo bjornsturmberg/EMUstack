@@ -1864,11 +1864,15 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
                         scale_plot, shift_v_plot, shift_x_plot)
 
                 else:
+                    scale_plot = 2.0
+                    shift_x_plot = -.5
+                    shift_v_plot = h_normed*0.75
                     EMUstack.gmsh_plot_slice(meat.E_H_field, meat.num_BM,
                         meat.n_msh_el, meat.n_msh_pts, nnodes, meat.type_el,
                         meat.structure.nb_typ_el, n_eff, meat.table_nod,
                         meat.x_arr, meat.k_z, meat.sol1, vec_coef,
-                        h_normed, wl_normed, gmsh_file_pos)
+                        h_normed, wl_normed, gmsh_file_pos,
+                        scale_plot, shift_v_plot, shift_x_plot)
 
             else:
                 if lay == 0: name_lay = "%i_Substrate"% lay

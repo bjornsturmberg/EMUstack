@@ -221,7 +221,7 @@ c
          stop
        endif
         write(26,*) "View.IntervalsType = 3;"
-        write(26,*) "View.Axes = 2;"
+C         write(26,*) "View.Axes = 2;"
         write(26,*) "General.Trackball = 0;"
         write(26,*) "General.RotationX = -90;"
         write(26,*) "General.RotationY = 0;"
@@ -246,7 +246,7 @@ c
          stop
        endif
         write(27,*) "View.IntervalsType = 3;"
-        write(27,*) "View.Axes = 2;"
+C         write(27,*) "View.Axes = 2;"
         write(27,*) "General.Trackball = 0;"
         write(27,*) "General.RotationX = -90;"
         write(27,*) "General.RotationY = 0;"
@@ -271,7 +271,7 @@ c
          stop
        endif
         write(28,*) "View.IntervalsType = 3;"
-        write(28,*) "View.Axes = 2;"
+C         write(28,*) "View.Axes = 2;"
         write(28,*) "General.Trackball = 0;"
         write(28,*) "General.RotationX = -90;"
         write(28,*) "General.RotationY = 0;"
@@ -296,7 +296,7 @@ c
          stop
        endif
         write(29,*) "View.IntervalsType = 3;"
-        write(29,*) "View.Axes = 2;"
+C         write(29,*) "View.Axes = 2;"
         write(29,*) "General.Trackball = 0;"
         write(29,*) "General.RotationX = -90;"
         write(29,*) "General.RotationY = 0;"
@@ -321,7 +321,7 @@ c
          stop
        endif
         write(30,*) "View.IntervalsType = 3;"
-        write(30,*) "View.Axes = 2;"
+C         write(30,*) "View.Axes = 2;"
         write(30,*) "General.Trackball = 0;"
         write(30,*) "General.RotationX = -90;"
         write(30,*) "General.RotationY = 0;"
@@ -612,7 +612,7 @@ c       Exponential time dependence: Exp(-i omega t)
          stop
        endif
         write(30,*) "View.IntervalsType = 3;"
-        write(30,*) "View.Axes = 2;"
+C         write(30,*) "View.Axes = 2;"
         write(30,*) "General.Trackball = 0;"
         write(30,*) "General.RotationX = -90;"
         write(30,*) "General.RotationY = 0;"

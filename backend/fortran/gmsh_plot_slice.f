@@ -4,7 +4,7 @@ c   evecs(i) : contains the values of the solution for all points
       subroutine gmsh_plot_slice (E_H_field, nval, nel, npt, nnodes,
      *     type_el, nb_typ_el, n_eff,
      *     table_nod, x, beta, evecs, vec_coef, h,  lambda,
-     *     gmsh_file_pos)
+     *     gmsh_file_pos, Transf_XX, Offset_Z, Offset_X)
 
 
       implicit none
@@ -44,7 +44,8 @@ C      Quadrangle element
       double precision xel(3,n_quad)
       complex*16 sol_el(3,n_quad)
       double precision sol_el_abs2(n_quad)
-
+      double precision Transf_XX, Transf_YY, Transf_ZZ
+      double precision Offset_Z, Offset_X
 
       complex*16 P_down, P_up, coef_down, coef_up, coef_t, coef_z
       complex*16 ii, z_tmp1, r_index
@@ -146,7 +147,6 @@ c
       ls_edge(3) = y_min
       ls_edge(4) = y_max
 
-
       lx = x_max - x_min  !  Length in the x direction
       ly = y_max - y_min  !  Length in the y direction
 
@@ -162,8 +162,8 @@ c     rx and ry and such that : rx * ry = 2 * nel
         write(ui,*) "gmsh_plot_slice: nx, ny = ", nx, ny
         write(ui,*) "gmsh_plot_slice: rx, ry = ", rx, ry
         write(ui,*) "gmsh_plot_slice: lx, ly = ", lx, ly
-        write(ui,*) "gmsh_plot_slice:  2 rx * ry = ", 2 * rx * ry
-        write(ui,*) "gmsh_plot_slice:   nel = ", nel
+        write(ui,*) "gmsh_plot_slice: 2 rx * ry = ", 2 * rx * ry
+        write(ui,*) "gmsh_plot_slice: nel = ", nel
         write(ui,*)
       endif
 
@@ -172,6 +172,18 @@ c     rx and ry and such that : rx * ry = 2 * nel
       nel_Y = ny
       nel_D_1 = max(nx ,ny)
       nel_D_2 = max(nx ,ny)
+
+
+c     Diagonal elements of the coordinate transformation matrix
+c     Scaling factor = Transf_XX
+C      Transf_XX = 2.0
+      Transf_YY = Transf_XX
+      Transf_ZZ = Transf_XX
+
+c     Translation of the view along Z-axis
+C      Offset_Z = 20.0
+
+
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
@@ -360,7 +372,8 @@ c
           coef_down = vec_coef(ival) * P_down
           coef_up = vec_coef(ival+nval) * P_up
           coef_t = coef_up + coef_down
-          coef_z = (coef_up - coef_down)/beta(ival) ! Taking into accout the change of variable for Ez
+          ! Taking into account the change of variable for Ez
+          coef_z = (coef_up - coef_down)/beta(ival)
           do iel=1,nel
             do j=1,nnodes
               j1 = table_nod(j,iel)
@@ -380,9 +393,8 @@ c
       enddo
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c
 c    Average values
-
+c
       do i_h=1,npt_h
         do iel=1,nel_X
           do inod=1,nnodes_P1
@@ -460,7 +472,12 @@ c
         write(26,*) "General.RotationX = -90;"
         write(26,*) "General.RotationY = 0;"
         write(26,*) "General.RotationZ = 0;"
-        write(26,*) "View.Axes = 2;"
+        write(26,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(26,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(26,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(26,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(26,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(26,*) "View.Axes = 2;"
         write(26,*) "View ""|",tE_H,"_t|^2 ",
      *     " "" {"
 
@@ -473,7 +490,12 @@ c
         write(27,*) "General.RotationX = -90;"
         write(27,*) "General.RotationY = 0;"
         write(27,*) "General.RotationZ = 0;"
-        write(27,*) "View.Axes = 2;"
+        write(27,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(27,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(27,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(27,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(27,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(27,*) "View.Axes = 2;"
         write(27,*) "View ""Re ",tE_H,"x ",
      *     " "" {"
 
@@ -486,7 +508,12 @@ c
         write(28,*) "General.RotationX = -90;"
         write(28,*) "General.RotationY = 0;"
         write(28,*) "General.RotationZ = 0;"
-        write(28,*) "View.Axes = 2;"
+        write(28,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(28,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(28,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(28,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(28,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(28,*) "View.Axes = 2;"
         write(28,*) "View ""Re ",tE_H,"y ",
      *     " "" {"
 
@@ -499,7 +526,12 @@ c
         write(29,*) "General.RotationX = -90;"
         write(29,*) "General.RotationY = 0;"
         write(29,*) "General.RotationZ = 0;"
-        write(29,*) "View.Axes = 2;"
+        write(29,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(29,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(29,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(29,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(29,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(29,*) "View.Axes = 2;"
         write(29,*) "View ""Re ",tE_H,"z ",
      *     " "" {"
 
@@ -512,7 +544,12 @@ c
         write(30,*) "General.RotationX = -90;"
         write(30,*) "General.RotationY = 0;"
         write(30,*) "General.RotationZ = 0;"
-        write(30,*) "View.Axes = 2;"
+        write(30,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(30,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(30,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(30,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(30,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(30,*) "View.Axes = 2;"
         write(30,*) "View ""Re ",tE_H, " "" {"
 
 
@@ -531,7 +568,6 @@ c
             xel(1,4) = xel(1,1)  ! Quadrangle element
             xel(2,4) = xel(2,1)
             xel(3,4) = zz - dz
-
 
           do inod=1,2
             sol_el_abs2(inod) = 0.0
@@ -579,7 +615,12 @@ c
         write(26,*) "General.RotationX = -90;"
         write(26,*) "General.RotationY = 0;"
         write(26,*) "General.RotationZ = -90;"
-        write(26,*) "View.Axes = 2;"
+        write(26,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(26,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(26,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(26,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(26,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(26,*) "View.Axes = 2;"
         write(26,*) "View ""|",tE_H,"_t|^2 ",
      *     " "" {"
 
@@ -592,7 +633,12 @@ c
         write(27,*) "General.RotationX = -90;"
         write(27,*) "General.RotationY = 0;"
         write(27,*) "General.RotationZ = -90;"
-        write(27,*) "View.Axes = 2;"
+        write(27,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(27,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(27,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(27,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(27,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(27,*) "View.Axes = 2;"
         write(27,*) "View ""Re ",tE_H,"x ",
      *     " "" {"
 
@@ -605,7 +651,12 @@ c
         write(28,*) "General.RotationX = -90;"
         write(28,*) "General.RotationY = 0;"
         write(28,*) "General.RotationZ = -90;"
-        write(28,*) "View.Axes = 2;"
+        write(28,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(28,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(28,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(28,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(28,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(28,*) "View.Axes = 2;"
         write(28,*) "View ""Re ",tE_H,"y ",
      *     " "" {"
 
@@ -618,7 +669,12 @@ c
         write(29,*) "General.RotationX = -90;"
         write(29,*) "General.RotationY = 0;"
         write(29,*) "General.RotationZ = -90;"
-        write(29,*) "View.Axes = 2;"
+        write(29,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(29,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(29,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(29,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(29,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(29,*) "View.Axes = 2;"
         write(29,*) "View ""Re ",tE_H,"z ",
      *     " "" {"
 
@@ -631,7 +687,12 @@ c
         write(30,*) "General.RotationX = -90;"
         write(30,*) "General.RotationY = 0;"
         write(30,*) "General.RotationZ = -90;"
-        write(30,*) "View.Axes = 2;"
+        write(30,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(30,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(30,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(30,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(30,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(30,*) "View.Axes = 2;"
         write(30,*) "View ""Re ",tE_H, " "" {"
 
 
@@ -650,7 +711,6 @@ c
             xel(1,4) = xel(1,1)  ! Quadrangle element
             xel(2,4) = xel(2,1)
             xel(3,4) = zz - dz
-
 
           do inod=1,2
             sol_el_abs2(inod) = 0.0
@@ -698,7 +758,12 @@ c
         write(26,*) "General.RotationX = -90;"
         write(26,*) "General.RotationY = 0;"
         write(26,*) "General.RotationZ = 0;"
-        write(26,*) "View.Axes = 2;"
+        write(26,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(26,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(26,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(26,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(26,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(26,*) "View.Axes = 2;"
         write(26,*) "View ""|",tE_H,"_t|^2 ",
      *     " "" {"
 
@@ -711,7 +776,12 @@ c
         write(27,*) "General.RotationX = -90;"
         write(27,*) "General.RotationY = 0;"
         write(27,*) "General.RotationZ = 0;"
-        write(27,*) "View.Axes = 2;"
+        write(27,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(27,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(27,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(27,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(27,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(27,*) "View.Axes = 2;"
         write(27,*) "View ""Re ",tE_H,"x ",
      *     " "" {"
 
@@ -724,7 +794,12 @@ c
         write(28,*) "General.RotationX = -90;"
         write(28,*) "General.RotationY = 0;"
         write(28,*) "General.RotationZ = 0;"
-        write(28,*) "View.Axes = 2;"
+        write(28,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(28,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(28,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(28,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(28,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(28,*) "View.Axes = 2;"
         write(28,*) "View ""Re ",tE_H,"y ",
      *     " "" {"
 
@@ -737,7 +812,12 @@ c
         write(29,*) "General.RotationX = -90;"
         write(29,*) "General.RotationY = 0;"
         write(29,*) "General.RotationZ = 0;"
-        write(29,*) "View.Axes = 2;"
+        write(29,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(29,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(29,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(29,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(29,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(29,*) "View.Axes = 2;"
         write(29,*) "View ""Re ",tE_H,"z ",
      *     " "" {"
 
@@ -750,7 +830,12 @@ c
         write(30,*) "General.RotationX = -90;"
         write(30,*) "General.RotationY = 0;"
         write(30,*) "General.RotationZ = 0;"
-        write(30,*) "View.Axes = 2;"
+        write(30,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(30,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(30,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(30,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(30,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(30,*) "View.Axes = 2;"
         write(30,*) "View ""Re ",tE_H, " "" {"
 
 
@@ -769,7 +854,6 @@ c
             xel(1,4) = xel(1,1)  ! Quadrangle element
             xel(2,4) = xel(2,1)
             xel(3,4) = zz - dz
-
 
           do inod=1,2
             sol_el_abs2(inod) = 0.0
@@ -817,7 +901,12 @@ c
         write(26,*) "General.RotationX = 90;"
         write(26,*) "General.RotationY = 180;"
         write(26,*) "General.RotationZ = 90;"
-        write(26,*) "View.Axes = 2;"
+        write(26,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(26,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(26,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(26,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(26,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(26,*) "View.Axes = 2;"
         write(26,*) "View ""|",tE_H,"_t|^2 ",
      *     " "" {"
 
@@ -830,7 +919,12 @@ c
         write(27,*) "General.RotationX = 90;"
         write(27,*) "General.RotationY = 180;"
         write(27,*) "General.RotationZ = 90;"
-        write(27,*) "View.Axes = 2;"
+        write(27,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(27,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(27,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(27,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(27,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(27,*) "View.Axes = 2;"
         write(27,*) "View ""Re ",tE_H,"x ",
      *     " "" {"
 
@@ -843,7 +937,12 @@ c
         write(28,*) "General.RotationX = 90;"
         write(28,*) "General.RotationY = 180;"
         write(28,*) "General.RotationZ = 90;"
-        write(28,*) "View.Axes = 2;"
+        write(28,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(28,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(28,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(28,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(28,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(28,*) "View.Axes = 2;"
         write(28,*) "View ""Re ",tE_H,"y ",
      *     " "" {"
 
@@ -856,7 +955,12 @@ c
         write(29,*) "General.RotationX = 90;"
         write(29,*) "General.RotationY = 180;"
         write(29,*) "General.RotationZ = 90;"
-        write(29,*) "View.Axes = 2;"
+        write(29,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(29,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(29,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(29,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(29,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(29,*) "View.Axes = 2;"
         write(29,*) "View ""Re ",tE_H,"z ",
      *     " "" {"
 
@@ -869,7 +973,12 @@ c
         write(30,*) "General.RotationX = 90;"
         write(30,*) "General.RotationY = 180;"
         write(30,*) "General.RotationZ = 90;"
-        write(30,*) "View.Axes = 2;"
+        write(30,"('View.TransformXX = ',f10.6,';')") Transf_XX
+        write(30,"('View.TransformYY = ',f10.6,';')") Transf_YY
+        write(30,"('View.TransformZZ = ',f10.6,';')") Transf_ZZ
+        write(30,"('View.OffsetX = ',f10.6,';')") Offset_X
+        write(30,"('View.OffsetZ = ',f10.6,';')") Offset_Z
+C         write(30,*) "View.Axes = 2;"
         write(30,*) "View ""Re ",tE_H, " "" {"
 
 

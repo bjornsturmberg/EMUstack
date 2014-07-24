@@ -29,11 +29,11 @@ from fortran import EMUstack
 msh_location = '../backend/fortran/msh/'
 
 # Acknowledgements
-print '\n####################################################################\n' + \
-      'EMUstack is brought to you by Bjorn Sturmberg, Kokou Dossou, \n' + \
-      'Felix Lawrence and Lindsay Botton, with support from CUDOS and ARENA\n' + \
-      'Starting EMUstack calculation ...\n' + \
-      '####################################################################\n'
+print '\n##################################################################\n'\
+    + 'EMUstack is brought to you by Bjorn Sturmberg, Kokou Dossou, \n' \
+    + 'Felix Lawrence & Lindsay Botton, with support from CUDOS & ARENA\n' \
+    + 'Starting EMUstack calculation ...\n' + \
+      '##################################################################\n'
 
 
 
