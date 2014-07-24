@@ -18,7 +18,7 @@
 """
 
 """
-Simulating a nanowire array with period 600.65 nm and NW diameter 120 nm.
+Simulating a nanowire array with period 600 nm and NW diameter 120 nm.
 """
 
 import time
@@ -36,7 +36,7 @@ from stack import *
 start = time.time()
 ################ Simulation parameters ################
 
-# Number of CPUs to use im simulation
+# Number of CPUs to use in simulation
 num_cores = 7
 
 # Remove results of previous simulations
@@ -53,7 +53,6 @@ no_wl_1  = 3
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 light_list  = [objects.Light(wl, max_order_PWs = 2, theta = 0.0, phi = 0.0) \
     for wl in wavelengths]
-
 
 # Period must be consistent throughout simulation!!!
 period = 600
@@ -90,9 +89,9 @@ def simulate_stack(light):
     sim_substrate   = substrate.calc_modes(light)
     sim_NWs         = NW_array.calc_modes(light, num_BM=num_BM)
 
-    ################ Evaluate full solar cell structure ##############
-    """ Now when defining full structure order is critical and
-    stack list MUST be ordered from bottom to top!
+    ###################### Evaluate structure ######################
+    """ Now define full structure. Here order is critical and
+        stack list MUST be ordered from bottom to top!
     """
 
     stack = Stack((sim_substrate, sim_NWs, sim_superstrate))

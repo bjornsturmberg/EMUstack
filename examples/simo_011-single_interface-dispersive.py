@@ -70,9 +70,9 @@ def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
-    ################ Evaluate stacked structure ##############
-    """ Now when defining full structure order is critical and
-    stack MUST be ordered from bottom to top!
+    ###################### Evaluate structure ######################
+    """ Now define full structure. Here order is critical and
+        stack list MUST be ordered from bottom to top!
     """
 
     stack = Stack((sim_substrate, sim_superstrate))

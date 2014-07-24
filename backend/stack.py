@@ -2,8 +2,7 @@
     stack.py is a subroutine of EMUstack that contains the Stack object,
     which takes layers with known scattering matrices and calculates
     the net scattering matrices of the multilayered stack.
-"""
-"""
+
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
@@ -23,7 +22,6 @@
 import numpy as np
 from mode_calcs import r_t_mat
 from mode_calcs import Anallo
-from scipy import sqrt
 
 class Stack(object):
     """ Represents a stack of layers evaluated at one frequency.
@@ -35,37 +33,44 @@ class Stack(object):
                 ordered from top to bottom layer.
 
             heights_nm  (tuple): the heights of the inside layers,\
-                i.e., all layers except for the top and bottom. This\ 
+                i.e., all layers except for the top and bottom. This\
                 overrides any heights specified in the :ThinFilm: or\
                 :NanoStruct: objects.
+
+            shears  (tuple): the in-plane coordinates of each layer,\
+                including semi-inf layers in unit cell units (i.e. 0-1).
+                e.g. ([0.0, 0.3], [0.1, 0.1], [0.2, 0.5]) for '2D_array'\
+                e.g. ([0.0], [ 0.1], [0.5]) for '1D_array'.\
+                Only required if wish to shift layers relative to each\
+                other. Only relative difference matters.
 
     """
     def __init__(self, layers, heights_nm = None, shears = None):
         self.layers = tuple(layers)
         self._heights_nm = heights_nm
-        self._shears = shears
+        self.shears = shears
         self.period = float(layers[0].structure.period)
         self._check_periods_are_consistent()
 
     def heights_nm(self):
+        """ Update heights of each layer to those given in Keyword Arg
+        'heights_nm'. If no heights specified in Stack, the heights of
+        each layer object are used. """
         if None != self._heights_nm:
             return self._heights_nm
         else:
             return [float(lay.structure.height_nm) for lay in self.layers[1:-1]]
 
     def heights_norm(self):
+        """ Normalise heights by the array period. """
         return [h / self.period for h in self.heights_nm()]
 
     def total_height(self):
+        """ Calculate total thickness of stack. """
         return sum(self.heights())
 
-    def shears(self):
-        if None != self._shears:
-            return np.asarray(self._shears)
-        else:
-            return np.array([[0.0, 0.0] for lay in self.layers[0:-1]])
-
     def structures(self):
+        """ Return :NanoStruct: or :ThinFilm: object of each layer. """
         return (lay.structure for lay in self.layers)
 
     # def calc_R_T_net(self, save_working = True):
@@ -75,8 +80,8 @@ class Stack(object):
 
     #         - `save_working` : If `True`, then store net reflection
     #             and transmission matrices at each part of the stack, in
-    #             `self.R_net_list` and `self.T_net_list`, ordered with 
-    #             the reflection and tranmsission of the first/topmost
+    #             `self.R_net_list` and `self.T_net_list`, ordered with
+    #             the reflection and transmission of the first/topmost
     #             finitely thick layer first.
 
     #         OUTPUTS:
@@ -122,7 +127,7 @@ class Stack(object):
 
     #         OUTPUTS:
 
-    #         - `f_down_list` : List of vectors of amplitudes of 
+    #         - `f_down_list` : List of vectors of amplitudes of
     #             downwards/forward modes
 
     #         - `f_up_list` : Amplitudes of upwards/backward modes
@@ -140,24 +145,35 @@ class Stack(object):
     #     # Now work backwards to find what incident field at each interface
     #     # leads to this superposition of transmitted modes.
     #     f_down_list = [np.linalg.solve(T_net_l, out) for T_net_l in self.T_net_list]
-        
+
     #     # And from these, we can use each R_net to find the upward amplitudes
     #     f_up_list  = [R * f_d for R, f_d in zip(self.R_net_list, f_down_list)]
-        
+
     #     return f_down_list, f_up_list
 
-    def calc_scat(self, pol = 'TE', incoming_amplitudes = None):
+    def calc_scat(self, pol = 'TE', incoming_amplitudes = None,
+        save_scat_list = False):
         """ Calculate the transmission and reflection matrices of the stack.
 
             In relation to the FEM mesh the polarisation is orientated,
-            - vertically   for TE
-            - horizontally for TM
+            - along the y axis for TE
+            - along the x axis for TM
             at normal incidence (polar angle theta = 0, azimuthal angle phi = 0).
+
+            Keyword Args:
+                pol  (str): Polarisation for which to calculate transmission \
+                    & reflection.
+
+                incoming_amplitudes  (int): Which incoming PW order to give \
+                    1 unit of energy. If None the 0th order PW is selected.
+
+                save_scat_list  (bool): If True, save tnet_list, rnet_list \
+                    as property of stack for later access.
         """
         # Can check this against lines ~ 127 in J_overlap.f E components are TE, have diffraction
         # orders along beta, which is along y.
 
-        # TODO: Switch to calc_R_T_net, which does not use infinitesimal air 
+        # TODO: Switch to calc_R_T_net, which does not use infinitesimal air
         # layers. This will require rewriting the parts that calculate fluxes
         # through each layer.
 
@@ -169,7 +185,7 @@ class Stack(object):
         I_air           = np.matrix(np.eye(PW_pols),dtype='D')
 
         """ Calculate net scattering matrices starting at the bottom.
-            1 is infintesimal air layer.
+            1 is infinitesimal air layer.
             2 is medium in layer (symmetric as air on each side).
             (r)t12 and (r)tnet lists run from bottom to top!
         """
@@ -188,8 +204,8 @@ class Stack(object):
             # Save the reflection matrices to the layers
             # (for easier introspection/testing)
             st1.R12, st1.T12, st1.R21, st1.T21 = R12, T12, R21, T21
- 
-    # initiate (r)tnet as top interface of substrate 
+
+    # initiate (r)tnet as top interface of substrate
         tnet_list = []
         rnet_list = []
         tnet      = t12_list[0]
@@ -197,7 +213,6 @@ class Stack(object):
         tnet_list.append(tnet)
         rnet_list.append(rnet)
 
-        if self.shears != None: shears_list = self.shears()
         inv_t21_list   = []
         inv_t12_list   = []
         for i in range(1, len(self.layers) - 1):
@@ -209,7 +224,7 @@ class Stack(object):
                 tnet           = tnet*inverted_t21
                 rnet           = r21_list[i] + t12_list[i]*rnet*inverted_t21
             else:
-                coord_diff = shears_list[i-1] - shears_list[i]
+                coord_diff = np.asarray(self.shears[i-1]) - np.asarray(self.shears[i])
                 Q = st1.shear_transform(coord_diff)
                 Q_inv = st1.shear_transform(-1*coord_diff)
                 to_invert      = (I_air - r12_list[i]*Q_inv*rnet*Q)
@@ -240,7 +255,7 @@ class Stack(object):
             tnet         = tnet*inverted_t21
             rnet         = r21_list[-1] + t12_list[-1]*rnet*inverted_t21
         else:
-            coord_diff = shears_list[-1]
+            coord_diff = np.asarray(self.shears[-1])
             Q = st1.shear_transform(coord_diff)
             Q_inv = st1.shear_transform(-1*coord_diff)
             to_invert    = (I_air - r12_list[-1]*Q_inv*rnet*Q)
@@ -252,29 +267,35 @@ class Stack(object):
         rnet_list.append(rnet)
 
         self.R_net, self.T_net = rnet, tnet
+        if save_scat_list == True:
+            self.tnet_list = tnet_list
+            self.rnet_list = rnet_list
 
 
         """ Calculate field expansions for all layers (including air) \
             starting at top.
             Ordering is now top to bottom (inverse of above)! \
             i.e. f1 is superstrate (top).
-            Calculate net downward energy flux in each infintesimal air layer \
+            Calculate net downward energy flux in each infinitesimal air layer \
             & super/substrates (see appendix C in Dossou et al. JOSA 2012).
         """
 
         self.t_list = []
         self.r_list = []
         self.a_list = []
-        num_prop_air    = self.layers[-1].air_ref().num_prop_pw_per_pol
-        num_prop_in     = self.layers[-1].num_prop_pw_per_pol
+        num_prop_air = self.layers[-1].air_ref().num_prop_pw_per_pol
+        num_prop_in  = self.layers[-1].num_prop_pw_per_pol
 
-        down_fluxes = []
-        up_flux     = []
-        self.vec_coef_down = []
-        self.vec_coef_up = []
+        down_fluxes   = []
+        up_flux       = []
+        vec_coef_down = []
+        vec_coef_up   = []
+        self.vec_coef_down = vec_coef_down
+        self.vec_coef_up = vec_coef_up
 
     # Start by composing U matrix which is same for all air layers.
-    # diagonal with 1 for propagating, i for evanescent TE and -i for evanescent TM plane wave orders
+    # It is a diagonal matrix with 1 for propagating, i for evanescent TE
+    # & -i for evanescent TM plane wave orders.
 
         U_mat = np.matrix(np.zeros((2*PW_pols, 2*PW_pols),complex))
         for i in range(0,num_prop_air):
@@ -314,8 +335,8 @@ class Stack(object):
 
         for i in range(len(self.layers) - 2):
             f1_plus = rnet_list[-2*i-2]*f1_minus
-    # net downward flux in infintesimal air layer
-            f_mat   = np.matrix(np.concatenate((f1_minus,f1_plus)))
+    # net downward flux in infinitesimal air layer
+            f_mat   = np.matrix(np.concatenate((f1_minus, f1_plus)))
             flux    = f_mat.H*U_mat*f_mat
             down_fluxes.append(flux)
 
@@ -340,57 +361,59 @@ class Stack(object):
                 flux_TE  = np.linalg.norm(f2_minus[0:num_prop_out])**2
                 flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
                 down_fluxes.append(flux_TE + flux_TM)
-            else: print "Warning: there are no propagating modes in the semi-inf substrate\n \
-            therefore cannot calculate energy fluxes here."
+            else: print "Warning: there are no propagating modes in the \
+                semi-inf \n substrate therefore cannot calculate energy \
+                fluxes here."
 
             num_prop_in    = self.layers[-1].num_prop_pw_per_pol
             if num_prop_out != 0:
             # calculate absorptance in each layer
-                for i in range(1,len(down_fluxes)-1):
+                for i in range(1 , len(down_fluxes)-1):
                     a_layer = abs(abs(down_fluxes[i])-abs(down_fluxes[i+1]))
                     self.a_list.append(a_layer)
                 a_layer = abs(down_fluxes[0]-down_fluxes[-1]-up_flux[0])
                 self.a_list.append(a_layer)
 
             # calculate reflectance in each layer
-                for i in range(1,len(up_flux)-1):
-                    r_layer = abs(abs(up_flux[i])/abs(down_flux[i]))
+                for i in range(1, len(up_flux)-1):
+                    r_layer = abs(up_flux[i])/abs(down_fluxes[i])
                     self.r_list.append(r_layer)
                 r_layer = abs(up_flux[0]/down_fluxes[0])
                 self.r_list.append(r_layer)
 
             # calculate transmittance in each layer
-                for i in range(0,len(down_fluxes)-2):
+                for i in range(0, len(down_fluxes)-2):
                     t_layer = abs(abs(down_fluxes[i+2])/abs(down_fluxes[i]))
                     self.t_list.append(t_layer)
                 t_layer = abs(down_fluxes[-1]/down_fluxes[0])
                 self.t_list.append(t_layer)
 
-            else: 
-                self.a_list = np.zeros(len(self.layers)-2)
-                self.r_list = np.zeros(len(self.layers)-2)
-                self.t_list = np.zeros(len(self.layers)-2)
-                print "Warning: there are no propagating modes in the semi-inf superstrate\n \
-                therefore CANNOT CALCULATE ENERGY FLUXES ANYWHERE."
+            else:
+                self.a_list = np.zeros(len(self.layers) - 2)
+                self.r_list = np.zeros(len(self.layers) - 2)
+                self.t_list = np.zeros(len(self.layers) - 2)
+                print "Warning: there are no propagating modes in the \
+                semi-inf \n superstrate therefore CANNOT CALCULATE \
+                ENERGY FLUXES ANYWHERE."
 
         else:
         # calculate absorptance in each layer
-            for i in range(1,len(down_fluxes)-1):
+            for i in range(1, len(down_fluxes)-1):
                 a_layer = abs(abs(down_fluxes[i])-abs(down_fluxes[i+1]))
                 self.a_list.append(a_layer)
             a_layer = abs(down_fluxes[0]-down_fluxes[-1]-up_flux[0])
             self.a_list.append(a_layer)
 
         # calculate reflectance in each layer
-            for i in range(1,len(up_flux)-1):
-                r_layer = abs(abs(up_flux[i])/abs(down_flux[i]))
+            for i in range(1, len(up_flux)-1):
+                r_layer = abs(up_flux[i])/abs(down_fluxes[i])
                 self.r_list.append(r_layer)
             r_layer = abs(up_flux[0]/down_fluxes[0])
             self.r_list.append(r_layer)
 
         # calculate transmittance in each layer
-            for i in range(0,len(down_fluxes)-2):
-                t_layer = abs(abs(down_fluxes[i+2])/abs(down_fluxes[i]))
+            for i in range(0, len(down_fluxes)-2):
+                t_layer = abs(down_fluxes[i+2])/abs(down_fluxes[i])
                 self.t_list.append(t_layer)
             t_layer = abs(down_fluxes[-1]/down_fluxes[0])
             self.t_list.append(t_layer)

@@ -18,7 +18,10 @@
 """
 
 """
-Example coming once 1.5D EMUstack is created...
+Simulating a lamellar grating that is periodic in x only.
+For this simulation EMUstack uses the 1D diffraction orders for the basis
+of the plane waves and carries out a 1D FEM calculation for the modes of 
+the grating.
 """
 
 import time
@@ -50,32 +53,41 @@ wl_1     = 400
 wl_2     = 800
 no_wl_1  = 2
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 5, theta = 0.0, phi = 0.0) for wl in wavelengths]
 
 # The period must be consistent throughout a simulation!
 period = 300
 
-# Define each layer of the structure, as in last example.
-superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
+# Define each layer of the structure
+# We need to inform EMUstack at this point that all layers in the stack will 
+# be at most be periodic in one dimension (i.e. there are no '2D_arrays's).
+# This is done with the Keyword Arg 'world_1d' and all homogenous layers are 
+# calculated using the PW basis of 1D diffraction orders.
+superstrate = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
     material = materials.Air)
+
+substrate   = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
+    material = materials.Air)
+# Define 1D grating that is periodic in x. 
+# The mesh for this is always made 'live' in objects.py the number of 
+# FEM elements used is given by 1/lc_bkg.
+# See Fortran Backends section of tutorial for more details.
 grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
     background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j), 
-    loss = True, make_mesh_now = True, force_mesh = False, lc_bkg = 0.1, lc2= 3.0)
-substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Air)
+    loss = True, lc_bkg = 0.0051)
 
 def simulate_stack(light):    
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
-    sim_grating = grating.calc_modes(light)
+    sim_grating     = grating.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
-    ################ Evaluate stacked structure ##############
-    """ Now when defining full structure order is critical and
-    stack MUST be ordered from bottom to top!
+    ###################### Evaluate structure ######################
+    """ Now define full structure. Here order is critical and
+        stack list MUST be ordered from bottom to top!
     """
-# Put semi-inf substrate below thick mirror so that propagating energy is defined.
+
     stack = Stack((sim_substrate, sim_grating, sim_superstrate))
-    stack.calc_scat(pol = 'TM')
+    stack.calc_scat(pol = 'TE')
 
     return stack
 

@@ -1,5 +1,5 @@
 """
-    test_case_simple_mk_msh.py is a simulation example for EMUstack.
+    test_case_3_simple_mk_msh.py is a simulation example for EMUstack.
 
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
@@ -120,6 +120,3 @@ def test_stack_list_matches_saved(casefile_name = 'case_3'):
         yield assert_ac, stack.R_net, rstack['R_net'], rtol, atol, lbl_s + 'R_net'
         yield assert_ac, stack.T_net, rstack['T_net'], rtol, atol, lbl_s + 'T_net'
         
-
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')

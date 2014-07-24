@@ -1,9 +1,8 @@
 """
     materials.py is a subroutine of EMUstack that defines Material objects,
-    these represent dispersive lossy refractive indices and possess 
+    these represent dispersive lossy refractive indices and possess
     methods to interpolate n from tabulated data.
-"""
-"""
+
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
@@ -29,7 +28,7 @@ class Material(object):
     """ Represents a material with a refractive index n.
 
         If the material is dispersive, the refractive index at a given
-        wavelength is calculated by linear interpolation from the 
+        wavelength is calculated by linear interpolation from the
         initially given data `n`. Materials may also have `n` calculated
         from a Drude model with input parameters.
 
@@ -38,6 +37,54 @@ class Material(object):
                 an array of values `(wavelength, n)`, or \
                 `(wavelength, real(n), imag(n))`, \
                 or omega_p, omega_g, eps_inf for Drude model.
+
+        Currently included materials are;
+
+        .. tabularcolumns:: |c|c|c|
+
+        +--------------------+------------+------------------------+
+        | **Semiconductors** | **Metals** | **Transparent oxides** |
+        +--------------------+------------+------------------------+
+        |    Si_c            |  Au        |   TiO2                 |
+        +--------------------+------------+------------------------+
+        |    Si_a            |  Au_Palik  |   ITO                  |
+        +--------------------+------------+------------------------+
+        |    SiO2_a          |  Ag        |                        |
+        +--------------------+------------+------------------------+
+        |    CuO             |  Ag_Palik  |                        |
+        +--------------------+------------+------------------------+
+        |    CdTe            |  Cu        |                        |
+        +--------------------+------------+------------------------+
+        |    FeS2            |            |                        |
+        +--------------------+------------+------------------------+
+        |    Zn3P2           |            |                        |
+        +--------------------+------------+------------------------+
+        |    Sb2S3           |            |                        |
+        +--------------------+------------+------------------------+
+        |    AlGaAs          |            |                        |
+        +--------------------+------------+------------------------+
+        |    Al2O3           |            |                        |
+        +--------------------+------------+------------------------+
+        |    GaAs            |            |                        |
+        +--------------------+------------+------------------------+
+        |    InGaAs          | **Drude**  | **Other**              |
+        +--------------------+------------+------------------------+
+        |    Si3N4           |  Au_drude  |   Air                  |
+        +--------------------+------------+------------------------+
+        |    MgF2            |            |   H2O                  |
+        +--------------------+------------+------------------------+
+        |    InP             |            |                        |
+        +--------------------+------------+------------------------+
+        |    InAs            |            |                        |
+        +--------------------+------------+------------------------+
+        |    GaP             |            |                        |
+        +--------------------+------------+------------------------+
+        |    Ge              |            |                        |
+        +--------------------+------------+------------------------+
+        |    CH3NH3PbI3      |            |                        |
+        +--------------------+------------+------------------------+
+
+
     """
     def __init__(self, n):
         if () == np.shape(n):
@@ -91,46 +138,46 @@ class Material(object):
             self._n = lambda x: self.data_ns
         elif self.data_wls == 'Drude':
             self._n = lambda x: np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
-        else:                   
+        else:
             self._n = interp1d(self.data_wls, self.data_ns)
 
 
-Air      = Material(np.loadtxt('%sAir.txt'% data_location))         # Idealised Air n=1.0, k = 0.0 everywhere
-H2O      = Material(np.loadtxt('%sH2O.txt'% data_location))         # G. M. Hale and M. R. Querry. doi:10.1364/AO.12.000555
+Air        = Material(1.00 + 0.0j)
+H2O        = Material(np.loadtxt('%sH2O.txt'% data_location))         # G. M. Hale and M. R. Querry. doi:10.1364/AO.12.000555
 # Transparent oxides
-TiO2     = Material(np.loadtxt('%sTiO2.txt'% data_location))
-ITO      = Material(np.loadtxt('%sITO.txt'% data_location))         # Filmetrics.com
+TiO2       = Material(np.loadtxt('%sTiO2.txt'% data_location))
+ITO        = Material(np.loadtxt('%sITO.txt'% data_location))         # Filmetrics.com
 # Semiconductors
-Si_c     = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
-Si_c_mod = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
-Si_a     = Material(np.loadtxt('%sSi_a.txt'% data_location))
-SiO2_a   = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
-CuO      = Material(np.loadtxt('%sCuO.txt'% data_location))
-CdTe     = Material(np.loadtxt('%sCdTe.txt'% data_location))
-FeS2     = Material(np.loadtxt('%sFeS2.txt'% data_location))
-Zn3P2    = Material(np.loadtxt('%sZn3P2.txt'% data_location))
-Sb2S3    = Material(np.loadtxt('%sSb2S3.txt'% data_location))
-AlGaAs   = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
-Al2O3    = Material(np.loadtxt('%sAl2O3.txt'% data_location))       # http://refractiveindex.info/?group=CRYSTALS&material=Al2O3
-GaAs     = Material(np.loadtxt('%sGaAs.txt'% data_location))        # http://www.filmetrics.com/refractive-index-database/GaAs/Gallium-Arsenide
-InGaAs   = Material(np.loadtxt('%sInGaAs.txt'% data_location))      # http://refractiveindex.info/?group=CRYSTALS&material=InGaAs
-Si3N4    = Material(np.loadtxt('%sSi3N4.txt'% data_location))       # http://www.filmetrics.com/refractive-index-database/Si3N4/Silicon-Nitride-SiN
-MgF2     = Material(np.loadtxt('%sMgF2.txt'% data_location))        # http://www.filmetrics.com/refractive-index-database/MgF2/Magnesium-Fluoride
-InP      = Material(np.loadtxt('%sInP.txt'% data_location))
-InAs     = Material(np.loadtxt('%sInAs.txt'% data_location))        # Filmetrics.com
-GaP      = Material(np.loadtxt('%sGaP.txt'% data_location))         # Filmetrics.com
-Ge       = Material(np.loadtxt('%sGe.txt'% data_location))          # http://www.filmetrics.com/refractive-index-database/Ge/Germanium
+Si_c       = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
+Si_a       = Material(np.loadtxt('%sSi_a.txt'% data_location))
+SiO2_a     = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
+CuO        = Material(np.loadtxt('%sCuO.txt'% data_location))
+CdTe       = Material(np.loadtxt('%sCdTe.txt'% data_location))
+FeS2       = Material(np.loadtxt('%sFeS2.txt'% data_location))
+Zn3P2      = Material(np.loadtxt('%sZn3P2.txt'% data_location))
+Sb2S3      = Material(np.loadtxt('%sSb2S3.txt'% data_location))
+AlGaAs     = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
+Al2O3      = Material(np.loadtxt('%sAl2O3.txt'% data_location))       # http://refractiveindex.info/?group=CRYSTALS&material=Al2O3
+GaAs       = Material(np.loadtxt('%sGaAs.txt'% data_location))        # http://www.filmetrics.com/refractive-index-database/GaAs/Gallium-Arsenide
+InGaAs     = Material(np.loadtxt('%sInGaAs.txt'% data_location))      # http://refractiveindex.info/?group=CRYSTALS&material=InGaAs
+Si3N4      = Material(np.loadtxt('%sSi3N4.txt'% data_location))       # http://www.filmetrics.com/refractive-index-database/Si3N4/Silicon-Nitride-SiN
+MgF2       = Material(np.loadtxt('%sMgF2.txt'% data_location))        # http://www.filmetrics.com/refractive-index-database/MgF2/Magnesium-Fluoride
+InP        = Material(np.loadtxt('%sInP.txt'% data_location))
+InAs       = Material(np.loadtxt('%sInAs.txt'% data_location))        # Filmetrics.com
+GaP        = Material(np.loadtxt('%sGaP.txt'% data_location))         # Filmetrics.com
+Ge         = Material(np.loadtxt('%sGe.txt'% data_location))          # http://www.filmetrics.com/refractive-index-database/Ge/Germanium
+CH3NH3PbI3 = Material(np.loadtxt('%sCH3NH3PbI3.txt'% data_location))  # doi:10.1038/nmat3911 - (noting bandedge @ 800nm) Michael Graetzel, Nature Materials
 # Metals
-Au       = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Default - Johnson and Christy
-Au_Palik = Material(np.loadtxt('%sAu_Palik.txt'% data_location))    # Palik
-Ag       = Material(np.loadtxt('%sAg_JC.txt'% data_location))       # Default - Johnson and Christy
-Ag_Palik = Material(np.loadtxt('%sAg_Palik.txt'% data_location))    # Palik
-Cu       = Material(np.loadtxt('%sCu_Palik.txt'% data_location))    # Palik
+Au         = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Default - Johnson and Christy
+Au_Palik   = Material(np.loadtxt('%sAu_Palik.txt'% data_location))    # Palik
+Ag         = Material(np.loadtxt('%sAg_JC.txt'% data_location))       # Default - Johnson and Christy
+Ag_Palik   = Material(np.loadtxt('%sAg_Palik.txt'% data_location))    # Palik
+Cu         = Material(np.loadtxt('%sCu_Palik.txt'% data_location))    # Palik
 # Drude model - need to give [omega_plasma, omega_gamma, eplison_infinity]
-Au_drude = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
+Au_drude   = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
 
 
-# Use the below to plot the interpolated refractive indices 
+# Use the below to plot the interpolated refractive indices
 
 # import matplotlib
 # matplotlib.use('pdf')
@@ -140,7 +187,7 @@ Au_drude = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
 #     ax1 = fig.add_subplot(2,1,1)
 #     ax1.plot(wavelengths, np.real(data))
 #     ax1.set_xlabel('Wavelength (nm)')
-#     ax1.set_ylabel('n')    
+#     ax1.set_ylabel('n')
 #     ax1 = fig.add_subplot(2,1,2)
 #     ax1.plot(wavelengths, np.imag(data))
 #     ax1.set_xlabel('Wavelength (nm)')

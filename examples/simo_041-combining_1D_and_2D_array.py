@@ -1,5 +1,5 @@
 """
-    simo_051-plotting_amplitudes.py is a simulation example for EMUstack.
+    simo_041-combining_1D_and_2D_array.py is a simulation example for EMUstack.
 
     Copyright (C) 2013  Bjorn Sturmberg
 
@@ -18,7 +18,7 @@
 """
 
 """
-Here we investigate how efficiently a stack of 1D gratings excite diffraction orders.
+Combining 1D gratings and 2D arrays in the same stack.
 """
 
 import time
@@ -37,7 +37,7 @@ start = time.time()
 ################ Simulation parameters ################
 
 # Number of CPUs to use in simulation
-num_cores = 5
+num_cores = 7
 
 # Remove results of previous simulations
 plotting.clear_previous('.npz')
@@ -46,44 +46,54 @@ plotting.clear_previous('.pdf')
 plotting.clear_previous('.log')
 
 ################ Light parameters #####################
-wavelengths = np.linspace(1500,1600,10)
-light_list  = [objects.Light(wl, max_order_PWs = 6, theta = 0.0, phi = 0.0) \
+wl_1     = 310
+wl_2     = 1127
+no_wl_1  = 3
+# Set up light objects
+wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
+light_list  = [objects.Light(wl, max_order_PWs = 4, theta = 0.0, phi = 0.0) \
     for wl in wavelengths]
 
 
-################ Grating parameters #####################
-# The period must be consistent throughout a simulation!
-period = 700
+# Period must be consistent throughout simulation!!!
+period = 600
 
-superstrate = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d = True,
+# In this example we set the number of Bloch modes to use in the simulation
+# Be default it is set to be slightly greater than the number of PWs.
+num_BM = 200
+
+superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
-substrate  = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d = True,
-    material = materials.Air, loss = False)
+substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
+    material = materials.SiO2_a, loss = False)
 
-absorber    = objects.ThinFilm(period, height_nm = 10, world_1d = True,
-    material = materials.Material(2.0 + 0.05j), loss = True)
+NW_diameter = 120
+NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
+    inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
+    make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 2.0)
 
-grating_1 = objects.NanoStruct('1D_array', period, int(round(0.75*period)),
-    height_nm = 2900, background = materials.Material(1.46 + 0.0j), 
-    inclusion_a = materials.Material(3.61 + 0.0j), loss = True, 
-    lc_bkg = 0.005)
+# We now create a 1D grating that is periodic in x only, but whose scattering
+# matrices are constructed with of the 2D plane wave basis. This allows this layer
+# to be combined with 2D_arrays.
+grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
+    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j), 
+    loss = True, lc_bkg = 0.01, world_1d = False)
 
 
 def simulate_stack(light):
-   
+    
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
-    sim_absorber    = absorber.calc_modes(light)
-    sim_grating_1   = grating_1.calc_modes(light)
+    sim_NWs         = NW_array.calc_modes(light, num_BM=num_BM)
 
     ###################### Evaluate structure ######################
     """ Now define full structure. Here order is critical and
         stack list MUST be ordered from bottom to top!
     """
 
-    stack = Stack((sim_substrate, sim_absorber, sim_grating_1, sim_superstrate))
+    stack = Stack((sim_substrate, sim_NWs, sim_superstrate))
     stack.calc_scat(pol = 'TE')
 
     return stack
@@ -93,31 +103,16 @@ def simulate_stack(light):
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-np.savez('Simo_results', stacks_list = stacks_list)
-
-######################## Post Processing ########################
-# We can plot the amplitudes of each transmitted plane wave order as a 
-# function of angle. 
-plotting.PW_amplitudes(stacks_list, add_name = '-default_substrate')
-# By default this will plot the amplitudes in the substrate, however we can also give
-# the index in the stack of a different homogeneous layer and calculate them here.
-# We here chose a subset of orders to plot.
-plotting.PW_amplitudes(stacks_list, chosen_PWs = [-1,0,2], \
-    lay_interest = 1)
-
-# When many plane wave orders are included these last plots can become confusing,
-# so instead one may wish to sum together the amplitudes of all propagating orders,
-# of all evanescent orders, and all far-evanescent orders 
-# (which have in plane k>n_H * k0).
-plotting.evanescent_merit(stacks_list, lay_interest = 0)
+np.savez('Simo_results', stacks_list=stacks_list)
 
 
-plotting.BM_amplitudes(stacks_list, lay_interest = 2, chosen_BMs = [0,1,2,3,4,5])
+######################## Plotting ########################
 
-# Lastly we also plot the transmission, reflection and absorption of each 
-# layer and the stack.
-plotting.t_r_a_plots(stacks_list, xvalues = wavelengths)
+# Plot the transmission, reflection and absorption.
+plotting.t_r_a_plots(stacks_list, active_layer_nu=1) 
 
+# We also plot the dispersion relation for the NW layer.
+plotting.omega_plot(stacks_list, wavelengths) 
 
 ######################## Wrapping up ########################
 # Calculate and record the (real) time taken for simulation

@@ -37,7 +37,7 @@ from stack import *
 start = time.time()
 ################ Simulation parameters ################
 
-# Number of CPUs to use im simulation
+# Number of CPUs to use in simulation
 num_cores = 8
 
 # Remove results of previous simulations
@@ -86,9 +86,9 @@ for PWs in np.linspace(1,10,10):
         sim_grating_1   = grating_1.calc_modes(light, num_BM = num_BM)
         sim_grating_2   = grating_2.calc_modes(light, num_BM = num_BM)
 
-        ################ Evaluate full solar cell structure ##############
-        """ Now when defining full structure order is critical and
-        solar_cell list MUST be ordered from bottom to top!
+        ###################### Evaluate structure ######################
+        """ Now define full structure. Here order is critical and
+            stack list MUST be ordered from bottom to top!
         """
 
         stack = Stack((sim_substrate, sim_grating_1, sim_grating_2, sim_superstrate))

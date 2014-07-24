@@ -18,8 +18,7 @@
 """
 
 """
-`Simulating NW array with period 600 nm and NW diameter 120 nm, placed ontop of 
-different substrates.'
+Show how to plot electric fields.
 """
 
 import time
@@ -37,7 +36,7 @@ from stack import *
 start = time.time()
 ################ Simulation parameters ################
 
-# Number of CPUs to use im simulation
+# Number of CPUs to use in simulation
 num_cores = 7
 
 # Remove results of previous simulations
@@ -47,47 +46,42 @@ plotting.clear_previous('.pdf')
 plotting.clear_previous('.log')
 
 ################ Light parameters #####################
-wl_1     = 310
-wl_2     = 1127
-no_wl_1  = 3
-# Set up light objects
-wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
+wl     = 615
+light_list  = [objects.Light(wl, max_order_PWs = 5, theta = 0.0, phi = 0.0)]
 
-
-# period must be consistent throughout simulation!!!
+# Period must be consistent throughout simulation!!!
 period = 600
-max_num_BMs = 200
 
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.SiO2_a, loss = False)
+    material = materials.Air, loss = False)
+
+spacer  = objects.ThinFilm(period, height_nm = 200,
+    material = materials.SiO2_a, loss = True)
 
 NW_diameter = 120
-NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
-    inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
-    make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 2.0)
+NW_array = objects.NanoStruct('2D_array', period, NW_diameter,
+    height_nm = 2330, inclusion_a = materials.Si_c, background = materials.Air,
+    loss = True, make_mesh_now = True, force_mesh = True, lc_bkg = 0.1,
+    lc2= 2.0, plotting_fields = True)
 
-# Find num_BM for each simulation (wl) as num decreases w decreasing index contrast.
-max_n = max([NW_array.inclusion_a.n(wl).real for wl in wavelengths])
 
 def simulate_stack(light):
-    num_BM = round(max_num_BMs * NW_array.inclusion_a.n(light.wl_nm).real/max_n)
-    # num_BM = max_num_BMs
-    
+
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
-    sim_NWs         = NW_array.calc_modes(light, num_BM = num_BM)
+    sim_NWs         = NW_array.calc_modes(light)
+    sim_spacer      = spacer.calc_modes(light)
 
-    ################ Evaluate full solar cell structure ##############
-    """ Now when defining full structure order is critical and
-    solar_cell list MUST be ordered from bottom to top!
+    ###################### Evaluate structure ######################
+    """ Now define full structure. Here order is critical and
+        stack list MUST be ordered from bottom to top!
     """
 
-    stack = Stack((sim_substrate, sim_NWs, sim_superstrate))
+    stack = Stack((sim_substrate, sim_spacer, sim_NWs, sim_superstrate))
     stack.calc_scat(pol = 'TE')
 
     return stack
@@ -97,17 +91,30 @@ def simulate_stack(light):
 pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
-np.savez('Simo_results', stacks_list=stacks_list)
+np.savez('Simo_results', stacks_list = stacks_list)
 
 
 ######################## Plotting ########################
-#### Example 1: simple multilayered stack.
 
-plotting.t_r_a_plots(stack_wl_list) 
+# Plot fields on slices through stack along the x & y axis,
+# and along the diagonals.
+# This is done through all layers of the stack and saved as png files.
+#
+# Note that all field plots of previous simulations are deleted! Move any
+# results that you wish to keep into a different folder, ideally copying the
+# whole simo directory to future reference to simo parameters.
+#
+plotting.fields_vertically(stacks_list)
 
-# Dispersion
-plotting.omega_plot(stack_wl_list, wavelengths) 
+# Plot fields in the x-y plane at a list of specified heights.
+plotting.fields_in_plane(stacks_list, lay_interest = 2, z_values = [0.0, 2.0])
+plotting.fields_in_plane(stacks_list, lay_interest = 1, z_values = [1.0, 3.2])
 
+# Plot fields inside nanostructures in 3D which are viewed using gmsh.
+plotting.fields_3d(stacks_list, lay_interest = 2)
+
+# Save electric field values (all components) at a list of selected point.
+plotting.field_values(stacks_list, lay_interest = 0, xyz_values = [(4.0, 2.5, 7.0), (1.0, 1.5, 3.0)])
 
 ######################## Wrapping up ########################
 # Calculate and record the (real) time taken for simulation

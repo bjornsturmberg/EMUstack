@@ -38,7 +38,7 @@ from stack import *
 start = time.time()
 ################ Simulation parameters ################
 
-# Number of CPUs to use im simulation
+# Number of CPUs to use in simulation
 num_cores = 5
 
 # Remove results of previous simulations
@@ -86,9 +86,9 @@ def simulate_stack(light):
     sim_grating     = grating.calc_modes(light, num_BM = num_BM)
     sim_mirror      = mirror.calc_modes(light)
 
-    ################ Evaluate full solar cell structure ##############
-    """ Now when defining full structure order is critical and
-    solar_cell list MUST be ordered from bottom to top!
+    ###################### Evaluate structure ######################
+    """ Now define full structure. Here order is critical and
+        stack list MUST be ordered from bottom to top!
     """
     stack = Stack((sim_substrate, sim_mirror, sim_grating, sim_homo_film, sim_superstrate))
     stack.calc_scat(pol = 'TE')

@@ -1,5 +1,5 @@
 """
-    test_case_0_thin_film_multistack.py is a simulation example for EMUstack.
+    test_case_4_stacked_gratings.py is a simulation example for EMUstack.
 
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
@@ -18,11 +18,9 @@
 """
 
 """
-Test simulation of a very simple structure;
-a stack of lossy homogeneous dielectric films.
-NOTE: This calculation is entirely analytical & should produce excellent 
-agreement on all machines.
+Test simulation of stacked 1D gratings.
 """
+
 
 import time
 import datetime
@@ -40,82 +38,64 @@ from numpy.testing import assert_allclose as assert_ac
 from numpy.testing import assert_equal
 
 
-################ Light parameters #####################
+def setup_module(module): 
+    # Remove results of previous simulations
+    plotting.clear_previous('.log')
+    plotting.clear_previous('.pdf')
+    plotting.clear_previous('.txt')
 
-# Set up light objects
-wl_1     = 400
-wl_2     = 1000
-no_wl_1  = 3
-wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0) for wl in wavelengths]
+    ################ Light parameters #####################
+    wavelengths = np.linspace(800,1600,1)
+    light_list  = [objects.Light(wl, max_order_PWs = 6, theta = 0.0, phi = 0.0) for wl in wavelengths]
+    light = light_list[0]
 
+    period = 760
 
-################ Scattering matrices (for distinct layers) ##############
-""" Calculate scattering matrices for each distinct layer.
-Calculated in the order listed below, however this does not influence final 
-structure which is defined later
-"""
+    superstrate = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d = True,
+        material = materials.Air, loss = False)
 
-# period must be consistent throughout simulation!!!
-period = 1
+    substrate  = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d = True,
+        material = materials.Air, loss = False)
 
-superstrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
-    material = materials.Material(3.5 + 0.0j), loss = False)
+    grating_1 = objects.NanoStruct('1D_array', period,
+        diameter1=int(round(0.25*period)), diameter2=int(round(0.25*period)), height_nm = 150, 
+        inclusion_a = materials.Material(1.46 + 0.0j), inclusion_b = materials.Material(1.46 + 0.0j),
+        background = materials.Material(3.61 + 0.0j), 
+        loss = True, lc_bkg = 0.005)
 
-homo_film1  = objects.ThinFilm(period = period, height_nm = 50,
-    material = materials.Material(3.6 + 0.27j), loss = True)
-
-homo_film2  = objects.ThinFilm(period = period, height_nm = 200,
-    material = materials.Si_c, loss = True)
-
-mirror      = objects.ThinFilm(period = period, height_nm = 100,
-    material = materials.Ag, loss = True)
-
-substrate   = objects.ThinFilm(period = period, height_nm = 'semi_inf',
-    material = materials.Air, loss = False)
-
-stack_list = []
-
-def simulate_stack(light):
-    
+    grating_2 = objects.NanoStruct('1D_array', period, int(round(0.25*period)), height_nm = 900, 
+        background = materials.Material(3.61 + 0.0j), inclusion_a = materials.Material(1.46 + 0.0j), 
+        loss = True, lc_bkg = 0.005)
+   
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
-    sim_homo_film1  = homo_film1.calc_modes(light)
-    sim_homo_film2  = homo_film2.calc_modes(light)
-    sim_mirror      = mirror.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
+    sim_grating_1   = grating_1.calc_modes(light)
+    sim_grating_2   = grating_2.calc_modes(light)
 
     ################ Evaluate full solar cell structure ##############
     """ Now when defining full structure order is critical and
-    solar_cell list MUST be ordered from bottom to top!
+    stack list MUST be ordered from bottom to top!
     """
-    stack = Stack((sim_substrate,sim_mirror,sim_homo_film1,sim_homo_film2,
-        sim_homo_film1,sim_homo_film2, sim_superstrate))
-    stack.calc_scat(pol = 'TM')
 
-    return stack
+    stack = Stack((sim_substrate, sim_grating_1, sim_grating_2, sim_superstrate))
+    stack.calc_scat(pol = 'TE')
+    module.stack_list = [stack]
 
-def setup_module(module):
-    # Run in parallel across wavelengths.
-    # This has to be in a setup_module otherwise nosetests will crash :(
-    pool = Pool(3)
-    module.stack_list = pool.map(simulate_stack, light_list)
-
-    active_layer_nu = 3 # Specify which layer is the active one (where absorption generates charge carriers).
-    plotting.t_r_a_plots(stack_list, active_layer_nu=active_layer_nu, save_txt=True)
+    plotting.t_r_a_plots(stack_list, save_txt=True)
 
 
     # # SAVE DATA AS REFERENCE
     # # Only run this after changing what is simulated - this
     # # generates a new set of reference answers to check against
     # # in the future
-    # testing.save_reference_data("case_0", stack_list)
+    # testing.save_reference_data("case_4", stack_list)
 
 
 def results_match_reference(filename):
     rtol = 1e-6
     atol = 1e-6
-    reference = np.loadtxt("ref/case_0/" + filename)
+    reference = np.loadtxt("ref/case_4/" + filename)
     result    = np.loadtxt(filename)
     np.testing.assert_allclose(result, reference, rtol, atol, filename)
 
@@ -124,23 +104,17 @@ def test_txt_results():
         "Absorptance_stack0001.txt",
         "Lay_Absorb_0_stack0001.txt",
         "Lay_Absorb_1_stack0001.txt",
-        "Lay_Absorb_2_stack0001.txt",
-        "Lay_Absorb_3_stack0001.txt",
-        "Lay_Absorb_4_stack0001.txt",
         "Lay_Trans_0_stack0001.txt",
         "Lay_Trans_1_stack0001.txt",
-        "Lay_Trans_2_stack0001.txt",
-        "Lay_Trans_3_stack0001.txt",
-        "Lay_Trans_4_stack0001.txt",
         "Reflectance_stack0001.txt",
         "Transmittance_stack0001.txt",
         )
     for f in result_files:
         yield results_match_reference, f
 
-def test_stack_list_matches_saved(casefile_name = 'case_0'):
-    rtol = 1e-6
-    atol = 1e-6
+def test_stack_list_matches_saved(casefile_name = 'case_4'):
+    rtol = 1e-1
+    atol = 1e-0
     ref = np.load("ref/%s.npz" % casefile_name)
     yield assert_equal, len(stack_list), len(ref['stack_list'])
     for stack, rstack in zip(stack_list, ref['stack_list']):
@@ -153,6 +127,8 @@ def test_stack_list_matches_saved(casefile_name = 'case_0'):
             yield assert_ac, lay.R21, rlay['R21'], rtol, atol, lbl_l + 'R21'
             yield assert_ac, lay.T21, rlay['T21'], rtol, atol, lbl_l + 'T21'
             yield assert_ac, lay.k_z, rlay['k_z'], rtol, atol, lbl_l + 'k_z'
-            #TODO: yield assert_ac, lay.sol1, rlay['sol1']
         yield assert_ac, stack.R_net, rstack['R_net'], rtol, atol, lbl_s + 'R_net'
         yield assert_ac, stack.T_net, rstack['T_net'], rtol, atol, lbl_s + 'T_net'
+
+plotting.clear_previous('.txt')
+plotting.clear_previous('.pdf')

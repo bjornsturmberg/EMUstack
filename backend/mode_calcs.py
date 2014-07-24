@@ -1,9 +1,8 @@
 """
-    mode_calcs.py is a subroutine of EMUstack that contains methods to 
-    calculate the modes of a given layer, either analytically 
+    mode_calcs.py is a subroutine of EMUstack that contains methods to
+    calculate the modes of a given layer, either analytically
     (class 'Anallo') or from the FEM routine (class 'Simmo').
-"""
-"""
+
     Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
@@ -26,8 +25,7 @@ import sys
 import os
 sys.path.append("../backend/")
 
-from fem_2d import EMUstack
-from fem_1d import EMUstack1D
+from fortran import EMUstack
 
 _interfaces_i_have_known = {}
 pi = np.pi
@@ -40,13 +38,14 @@ class Modes(object):
     def wl_norm(self):
         """ Return normalised wavelength (wl/period). """
         wl = float(self.light.wl_nm) / self.structure.period
-        if self.light.wl_nm % self.structure.period == 0: # Avoid Wood Anomalies
+        # Avoid Wood Anomalies
+        if self.light.wl_nm % self.structure.period == 0:
             wl += 1e-10
         return wl
 
     def air_ref(self):
         """ Return an :Anallo: for air for the same :Light: as this. """
-        return self.light._air_ref(self.structure.period)
+        return self.light._air_ref(self.structure.period, self.structure.world_1d)
 
     def calc_1d_grating_orders(self, max_order):
         """ Return the grating order indices px and py, unsorted. """
@@ -73,8 +72,11 @@ class Modes(object):
     def shear_transform(self, coords):
         """ Return the matrix Q corresponding to a shear transformation to coordinats coords. """
         alphas = np.append(self.air_ref().alphas,self.air_ref().alphas)
-        betas  = np.append(self.air_ref().betas,self.air_ref().betas)
-        return np.mat(np.diag(np.exp(1j * (alphas * coords[0] + betas * coords[1]))))
+        if np.shape(coords) == (1,):
+            return np.mat(np.diag(np.exp(1j * (alphas * coords[0]))))
+        else:
+            betas  = np.append(self.air_ref().betas,self.air_ref().betas)
+            return np.mat(np.diag(np.exp(1j * (alphas * coords[0] + betas * coords[1]))))
 
     def __del__(self):
         # Clean up _interfaces_i_have_known to avoid memory leak
@@ -86,16 +88,10 @@ class Modes(object):
 
 
 
-
-
-
-
-
-
 class Anallo(Modes):
     """ Interaction of one :Light: object with one :ThinFilm: object.
 
-        Like a :Simmo:, but for a thin film, and calculated analytically. 
+        Like a :Simmo:, but for a thin film, and calculated analytically.
     """
     def __init__(self, thin_film, light):
         self.structure     = thin_film
@@ -104,10 +100,8 @@ class Anallo(Modes):
         self.is_air_ref    = False
 
     def calc_modes(self):
-        #TODO: switch to just using calc_kz()?
-
+        """ Calculate the modes of homogeneous layer analytically. """
         kzs = self.calc_kz()
-
         self.k_z = np.append(kzs, kzs) # add 2nd polarisation
         self.structure.num_pw_per_pol = len(kzs)
 
@@ -118,8 +112,8 @@ class Anallo(Modes):
         if self.structure.world_1d == True:
             # Calculate vectors of pxs
             pxs = self.calc_1d_grating_orders(self.max_order_PWs)
-            # Calculate k_x and k_y components of scattered PWs
-            # (using the grating equation)
+            # Calculate k_x (alphas) and k_y (betas) components of
+            # scattered PWs using the grating equation.
             alpha0, beta0 = self.k_pll_norm()
             alphas = alpha0 + pxs * 2 * pi / d
             betas  = beta0
@@ -131,8 +125,6 @@ class Anallo(Modes):
             # Calculate vectors of pxs and pys of all orders
             # with px^2 + py^2 <= self.max_order_PWs
             pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
-            # Calculate k_x and k_y components of scattered PWs
-            # (using the grating equation)
             alpha0, beta0 = self.k_pll_norm()
             alphas = alpha0 + pxs * 2 * pi / d
             betas  = beta0 + pys * 2 * pi / d
@@ -155,11 +147,14 @@ class Anallo(Modes):
         else:
             s = self.air_ref().sort_order
             self.sort_order = s
-            assert s.shape == k_z_unsrt.shape, (s.shape, 
+            assert s.shape == k_z_unsrt.shape, (s.shape,
                 k_z_unsrt.shape)
 
         # Find element of k_z_unsrt corresponding to zeroth order
-        self.specular_order = np.nonzero((pxs[s] == 0) * (pys[s] == 0))[0][0]
+        if self.structure.world_1d == True:
+            self.specular_order = np.nonzero((pxs[s] == 0))[0][0]
+        elif self.structure.world_1d == False:
+            self.specular_order = np.nonzero((pxs[s] == 0) * (pys[s] == 0))[0][0]
 
         # Calculate number of propagating plane waves in thin film
         self.num_prop_pw_per_pol = (k_z_unsrt.imag == 0).sum()
@@ -232,15 +227,10 @@ class Anallo(Modes):
 
 
 
-
-
-
-
-
 class Simmo(Modes):
     """ Interaction of one :Light: object with one :NanoStruc: object.
 
-        Inherits knowledge of :NanoStruc:, :Light: objects 
+        Inherits knowledge of :NanoStruc:, :Light: objects
         Stores the calculated modes of :NanoStruc: for illumination by :Light:
     """
     def __init__(self, structure, light):
@@ -250,45 +240,39 @@ class Simmo(Modes):
         self.prop_consts    = None
         self.mode_pol       = None
 
-    def calc_modes(self, num_BM = None, delete_working = True):
+    def calc_modes(self, num_BM = None):
         """ Run a Fortran FEM caluculation to find the modes of a \
         structured layer. """
         st = self.structure
         wl = self.light.wl_nm
-        if self.structure.diameter2 == 0:
-            self.nb_typ_el = 2
-        else:
-            self.nb_typ_el = 3
-        self.n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl), 
+        self.n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl),
             st.inclusion_b.n(wl)])
-        self.n_effs = self.n_effs[:self.nb_typ_el]
+        self.n_effs = self.n_effs[:self.structure.nb_typ_el]
         if self.structure.loss == False:
             self.n_effs = self.n_effs.real
 
 
-        # if self.structure.geometry == '1D_array':
-        #     pxs = self.calc_1d_grating_orders(self.max_order_PWs)
-        # elif self.structure.geometry == '2D_array':
-        pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
-        # else:
-        #     raise ValueError, "object.geometry must either be '1D_array' \
-        #         or '2D_array'."
-
+        if self.structure.periodicity == '1D_array':
+            pxs = self.calc_1d_grating_orders(self.max_order_PWs)
+        elif self.structure.periodicity == '2D_array':
+            pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
+        else:
+            raise ValueError, "NanoStruct layer must have periodicity of \
+                either '1D_array' or '2D_array'."
 
         num_pw_per_pol = pxs.size
         if num_BM == None: self.num_BM = num_pw_per_pol * 2 + 20
         else: self.num_BM = num_BM
-        assert self.num_BM > num_pw_per_pol * 2, "You must include at least as many BMs as PWs. \n" + \
+        assert self.num_BM > num_pw_per_pol * 2, \
+        "You must include at least as many BMs as PWs. \n" + \
         "Currently you have %(bm)i BMs < %(np)i PWs." % {
-            'bm': self.num_BM, 'np': num_pw_per_pol * 2} 
-
-        d = self.structure.period
+            'bm': self.num_BM, 'np': num_pw_per_pol * 2}
 
         # Parameters that control how FEM routine runs
         self.E_H_field = 1  # Selected formulation (1=E-Field, 2=H-Field)
         i_cond         = 2  # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
         itermax        = 30 # Maximum number of iterations for convergence
-        FEM_debug = 0   # Fortran routine will print info to screen and save additional into to file
+        FEM_debug      = 0   # Fortran routines will display & save add. info
         if FEM_debug == 1:
             if not os.path.exists("Normed"):
                 os.mkdir("Normed")
@@ -297,103 +281,103 @@ class Simmo(Modes):
             if not os.path.exists("Output"):
                 os.mkdir("Output")
 
-
-        # if self.structure.geometry == '1D_array':
-            # raise NotImplementedError, "Soz still working on this"
-            # with open("../backend/fem_1d/msh/"+self.structure.mesh_file) as f:
-            #     self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
-            # # Size of Fortran's complex superarray (scales with mesh)
-            # # In theory could do some python-based preprocessing
-            # # on the mesh file to work out RAM requirements
-            # cmplx_max = 2**27
-
-        #     with open("../backend/fem_1d/msh/mesh_1d_1.txt") as f:
-        #         self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
-
-        #     print self.wl_norm(), self.num_BM,
-        #     print self.nb_typ_el
-        #     lamdba    = self.wl_norm()
-        #     nb_typ_el = 4#self.nb_typ_el
-        #     nval = 20
-        #     ordre_ls = 5
-        #     neq_PW = 2 * ordre_ls + 1
-
-        #     resm = EMUstack1D.calc_1d_modes(lamdba, nval, neq_PW, nb_typ_el)
-
-        #     # resm = EMUstack1D.calc_1d_modes(
-        #     #     self.wl_norm(), self.num_BM, self.n_msh_pts, self.n_msh_el,
-        #     #     self.nb_typ_el)
-
-        #     J = resm
-        #     self.J = np.mat(J)
-
-        #     print self.J
-
-
-
-
-
-
-        # elif self.structure.geometry == '2D_array':
-        # Prepare for the mesh
-        with open("../backend/fem_2d/msh/"+self.structure.mesh_file) as f:
-            self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
-
-        # Size of Fortran's complex superarray (scales with mesh)
-        # In theory could do some python-based preprocessing
-        # on the mesh file to work out RAM requirements
-        cmplx_max = 2**27#30
-
-        # Calculate where to center the Eigenmode solver around. (Shift and invert FEM method)
-        max_n = np.real(self.n_effs.max()) # Take real part so that complex conjugate pair 
-        # Eigenvalues are equal distance from shift and invert point and therefore both found.
+        # Calculate where to center the Eigenmode solver around.
+        # (Shift and invert FEM method)
+        max_n = np.real(self.n_effs).max()
+        # Take real part so that complex conjugate pair Eigenvalues are
+        # equal distance from shift and invert point and therefore both found.
         k_0 = 2 * pi * self.air_ref().n() / self.wl_norm()
-
         if self.structure.hyperbolic == True:
-            shift = 1.01*max_n**2 * k_0**2
+            shift = 1.1*max_n**2 * k_0**2
         else:
-            shift = 1.01*max_n**2 * k_0**2  \
+            shift = 1.1*max_n**2 * k_0**2  \
             - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
 
-        resm = EMUstack.calc_2d_modes(
-            self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug, 
-            self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-            self.nb_typ_el, self.n_effs, self.k_pll_norm(), shift,
-            self.E_H_field, i_cond, itermax, 
-            self.structure.plot_modes, self.structure.plot_real, 
-            self.structure.plot_imag, self.structure.plot_abs,
-            num_pw_per_pol, cmplx_max)
 
-        self.k_z, J, J_dag, self.sol1, self.sol2, self.mode_pol, \
-        self.table_nod, self.type_el, self.x_arr = resm
-        self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+        if self.structure.periodicity == '1D_array':
+            if self.structure.world_1d == True:
+                world_1d = 1
+                num_pw_per_pol_2d = 1
+            else:
+                world_1d = 0
+                pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
+                num_pw_per_pol_2d = pxs.size
+
+            try:
+                struct = self.structure
+                resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BM,
+                    self.max_order_PWs, struct.nb_typ_el, struct.n_msh_pts,
+                    struct.n_msh_el, struct.table_nod,
+                    struct.type_el, struct.x_arr, itermax, FEM_debug,
+                    struct.mesh_file, self.n_effs, self.k_pll_norm()[0],
+                    self.k_pll_norm()[1], shift, struct.plotting_fields,
+                    struct.plot_real, struct.plot_imag, struct.plot_abs,
+                    num_pw_per_pol, num_pw_per_pol_2d, world_1d )
+
+                self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1 = resm
+
+                if self.structure.world_1d == True:
+                    self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+                else:
+                    self.J, self.J_dag = np.mat(J_2d), np.mat(J_dag_2d)
+                J_2d = None
+                J_dag_2d = None
+
+            except KeyboardInterrupt:
+                print "\n\n1D FEM routine calc_modes_1d",\
+                "interrupted by keyboard.\n\n"
 
 
-        # else:
-        #     raise ValueError, "object.geometry must either be '1D_array' \
-        #         or '2D_array'."
+        elif self.structure.periodicity == '2D_array':
+            # Prepare for the mesh
+            with open("../backend/fortran/msh/"+self.structure.mesh_file) as f:
+                self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
 
+            # Size of Fortran's complex superarray (scales with mesh)
+            # In theory could do some python-based preprocessing
+            # on the mesh file to work out RAM requirements
+            cmplx_max = 2**27#30
 
+            try:
+                resm = EMUstack.calc_modes_2d(
+                    self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug,
+                    self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
+                    self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(),
+                    shift, self.E_H_field, i_cond, itermax,
+                    self.structure.plotting_fields, self.structure.plot_real,
+                    self.structure.plot_imag, self.structure.plot_abs,
+                    num_pw_per_pol, cmplx_max)
 
-        if delete_working:
-            self.sol2 = None
+                self.k_z, J, J_dag, self.sol1, self.mode_pol, \
+                self.table_nod, self.type_el, self.x_arr = resm
+                self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+
+            except KeyboardInterrupt:
+                print "\n\n2D FEM routine calc_modes_2d",\
+                "interrupted by keyboard.\n\n"
+
+        else:
+            raise ValueError,  "NanoStruct layer must have periodicity of \
+                either '1D_array' or '2D_array'."
 
         if not self.structure.plot_field_conc:
             self.mode_pol = None
 
-        if not self.structure.plotting3d:
-            del self.sol1
-            del self.table_nod
-            del self.type_el
-            del self.x_arr
-            del self.n_msh_pts
-            del self.n_msh_el
-            del self.n_effs
-            del self.E_H_field
-            del self.nb_typ_el
+        if self.structure.plotting_fields != 1:
+            self.sol1 = None
+            self.n_effs = None
+            self.E_H_field = None
+            if self.structure.periodicity == '2D_array':
+                self.table_nod = None
+                self.type_el = None
+                self.x_arr = None
+                self.n_msh_pts = None
+                self.n_msh_el = None
 
-
-
+        ## To do, work out how to automagically process to png
+        # if self.structure.plotting_fields:
+        #     gmsh_cmd = 'gmsh '+ 'Bloch_fields/PNG/' + '*.geo'
+        #     os.system(gmsh_cmd)
 
 
 
@@ -422,12 +406,12 @@ def r_t_mat(lay1, lay2):
         ref_trans = r_t_mat_tf_ns(lay1, lay2)
     elif isinstance(lay1, Simmo) and isinstance(lay2, Anallo):
         R21, T21, R12, T12 = r_t_mat_tf_ns(lay2, lay1)
-        ref_trans = R12, T12, R21, T21 
+        ref_trans = R12, T12, R21, T21
     elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
         raise NotImplementedError, \
             "Sorry! For, now you can put an extremely thin film between your \
             NanoStructs"
-    
+
     # Store its R and T matrices for later use
     _interfaces_i_have_known[id(lay1), id(lay2)] = ref_trans
     return ref_trans
@@ -467,13 +451,17 @@ def r_t_mat_tf_ns(an1, sim2):
         `Dossou et al., JOSA A, Vol. 29, Issue 5, pp. 817-831 (2012)\
          <http://dx.doi.org/10.1364/JOSAA.29.000817>`_
 
-        But we use Zw = 1/(Zcr X) instead of X, so that an1 does not 
+        But we use Zw = 1/(Zcr X) instead of X, so that an1 does not
         have to be free space.
     """
     Z1_sqrt_inv = np.sqrt(1/an1.Z()).reshape((1,-1))
 
     # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
     # Same difference.
+    if np.shape(Z1_sqrt_inv)[1] != np.shape(sim2.J.A)[0]:
+        raise ValueError, "Scattering matrices of layers are not consistent,\
+            \nsome layers are 1D and others 2D. Check that world_1d status."
+
     A = np.mat(Z1_sqrt_inv.T * sim2.J.A)
     B = np.mat(sim2.J_dag.A * Z1_sqrt_inv)
 

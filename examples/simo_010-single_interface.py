@@ -63,9 +63,9 @@ def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
-    ################ Evaluate stacked structure ##############
-    """ Now when defining full structure order is critical and
-    stack MUST be ordered from bottom to top!
+    ###################### Evaluate structure ######################
+    """ Now define full structure. Here order is critical and
+        stack list MUST be ordered from bottom to top!
     """
 
     stack = Stack((sim_substrate, sim_superstrate))
@@ -116,12 +116,12 @@ np.savetxt('Substrate_k_zs.txt', betas.view(float).reshape(-1, 2))
 
 # We can also access the scattering matrices of individual layers, 
 # and of interfaces of the stack.
+# For instance the reflection scattering matrix off the top 
+# of the substrate when considered as an isolated layer.
 wl_num = -1
 lay = 0
-R12_sub = stacks_list[wl_num].layers[lay].T12
-# For instance is the reflection scattering matrix off the top 
-# of the substrate when considered as an isolated layer.
-print 'k_z of superstrate \n', R12_sub
+R12_sub = stacks_list[wl_num].layers[lay].R12
+print 'R12 of substrate \n', R12_sub
 
 # The reflection matrix for the reflection off the top of the 
 # superstrate-substrate interface meanwhile is a property of the stack.
