@@ -52,13 +52,14 @@ charge_e       = 1.602176565*1e-19  # Charge of an electron
 def clear_previous():
     """ Delete all files of specified type as well as field directories. """
 
-    type_list = ['.npz', '.pdf', '.txt', '.gif', '.png', '.log',
+    devnull = open(os.devnull, 'wb')
+
+    type_list = ['*.npz', '*.pdf', '*.txt', '*.gif', '*.png', '*.log',
     'fields_vertically -r', 'in_plane_fields -r', 'Bloch_fields -r',
     'field_values-r', '3d_fields-r']
-
     for typ in type_list:
         try:
-            files_rm = 'rm *%s'% typ
+            files_rm = 'rm %s'% typ
             subprocess.call(files_rm, shell = True, stderr=devnull)
         except:
             pass
@@ -863,7 +864,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,
 
 
 #### Plot dispersion diagrams & field concentrations function of wavelength ###
-def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
+def omega_plot(stacks_list, wavelengths, params_layer = 1, stack_label = 1):
     """ Plots the dispersion diagram of each layer in one plot. \
         k_z has units nm^-1.
 
@@ -1106,7 +1107,7 @@ def vis_matrix(scat_mat, add_name = '', max_scale = None, only_real = True):
 
 
 #### Plot PW amplitudes function k-vector #####################################
-def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
+def t_func_k_plot_1D(stacks_list, lay_interest = 0, pol = 'TE'):
     """ PW amplitudes in transmission as a function of their in-plane k-vector.
 
         Args:
@@ -1756,9 +1757,9 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6],
                         ax1.set_ylim((y_min,y_max))
 
                     plt.suptitle('%(name)s \n E_xy_slice_%(p)s, z = %(z_pos)s, heights = %(h)s \n \
-                        $\lambda$ = %(wl)f nm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i,' % \
+                        $\lambda$ = %(wl)f nm, period = %(d)f, PW = %(pw)i,' % \
                         {'name' : name_lay, 'h':heights_list, 'p' : p, 'z_pos' : z1[z_of_xy],'wl' : wl, \
-                        'd' : period, 'dia': diameter, 'pw' : pw} + '\n'
+                        'd' : period, 'pw' : pw} + '\n'
                         + '# prop. ords = %(prop)s, # evan. ords = %(evan)s, n = %(n)s,k = %(k)s'\
                         % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                     plt.savefig('%(dir_name)s/stack_%(stack_num)s_E_%(name)s_slice=%(z_pos)s_wl=%(wl)s_%(p)s.pdf'% \
@@ -2109,9 +2110,9 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
                                     if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
 
                                 plt.suptitle('%(name)s \n E_xz_slice_%(p)s, y = %(y_pos)s, heights = %(h)s \n \
-                                $\lambda$ = %(wl)f nm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i, %(add)s' % \
+                                $\lambda$ = %(wl)f nm, period = %(d)f, PW = %(pw)i, %(add)s' % \
                                     {'name' : name_lay, 'h':heights_list, 'p' : p, 'y_pos' : y1[y_of_xz],'wl' : wl, \
-                                    'd' : period, 'dia': diameter, 'pw' : pw, 'add' : add_name} + '\n'
+                                    'd' : period, 'pw' : pw, 'add' : add_name} + '\n'
                                     + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
                                     'prop' : prop, 'n' : n, 'k' : k[0]})
                                 plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_xz_slice=%(y_pos)s_wl=%(wl)s_%(p)s%(add)s.pdf'% \
@@ -2144,9 +2145,9 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
                                     if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
 
                                 plt.suptitle('%(name)s \n E_yz_slice_%(p)s, x = %(x_pos)s, heights = %(h)s \n \
-                                    $\lambda$ = %(wl)snm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i, %(add)s' % \
+                                    $\lambda$ = %(wl)snm, period = %(d)f, PW = %(pw)i, %(add)s' % \
                                     {'name' : name_lay, 'h':heights_list, 'p' : p, 'x_pos' : x1[x_of_yz],'wl' : wl, \
-                                    'd' : period, 'dia': diameter, 'pw' : pw, 'add' : add_name} + '\n'
+                                    'd' : period, 'pw' : pw, 'add' : add_name} + '\n'
                                     + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , \
                                     n = %(n)s, k = %(k)s' % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                                 plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_yz_slice=%(x_pos)s_wl=%(wl)s_%(p)s%(add)s.pdf'% \
@@ -2180,9 +2181,9 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
                                 if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
 
                             plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
-                                $\lambda$ = %(wl)f, period = %(d)f, diameter = %(dia)f, PW = %(pw)i, %(add)s' % \
+                                $\lambda$ = %(wl)f, period = %(d)f, PW = %(pw)i, %(add)s' % \
                                 {'name' : name_lay, 'h':heights_list, 'p':p,'diag' : diag,'wl' : wl, 'd' : period, \
-                                'pw' : pw,'dia': diameter, 'add' : add_name} + '\n'
+                                'pw' : pw, 'add' : add_name} + '\n'
                                 + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
@@ -2216,9 +2217,9 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
                                 if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
 
                             plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
-                                $\lambda$ = %(wl)f nm, period = %(d)f, diameter = %(dia)f, PW = %(pw)i, %(add)s' % \
+                                $\lambda$ = %(wl)f nm, period = %(d)f, PW = %(pw)i, %(add)s' % \
                                     {'name' : name_lay, 'h':heights_list,'diag' : diag, 'p' : p,'wl' : wl, \
-                                    'd' : period, 'dia': diameter, 'pw' : pw, 'add' : add_name} + '\n'  +
+                                    'd' : period, 'pw' : pw, 'add' : add_name} + '\n'  +
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
@@ -2252,9 +2253,9 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
                                 if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
 
                             plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(0,0) to (%(x)s,1), heights = %(h)s \n\
-                                $\lambda$ = %(wl)f, period = %(d)f, diameter = %(dia)f, PW = %(pw)i, %(add)s' % \
+                                $\lambda$ = %(wl)f, period = %(d)f, PW = %(pw)i, %(add)s' % \
                                 {'name' : name_lay, 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
-                                'pw' : pw, 'x':x1[-1],'dia': diameter, 'add' : add_name} + '\n' +
+                                'pw' : pw, 'x':x1[-1], 'add' : add_name} + '\n' +
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
@@ -2288,9 +2289,9 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
                                 if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
 
                             plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(1,0) to (%(x)s,1), heights = %(h)s \n\
-                                $\lambda$ = %(wl)f, period = %(d)f, diameter = %(dia)f, PW = %(pw)i, %(add)s' % \
+                                $\lambda$ = %(wl)f, period = %(d)f, PW = %(pw)i, %(add)s' % \
                                 {'name' : name_lay, 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
-                                'pw' : pw,'x':x1[-1],'dia': diameter, 'add' : add_name} + '\n' +
+                                'pw' : pw,'x':x1[-1], 'add' : add_name} + '\n' +
                                 '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
                                 {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
                             plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
