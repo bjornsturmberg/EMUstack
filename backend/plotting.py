@@ -1468,15 +1468,17 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,
                 ix = np.in1d(one_pol_k_space.ravel(), on_axis_kzs).reshape(one_pol_k_space.shape)
                 axis_indices = np.ravel(np.array(np.where(ix))).astype(int)
 
-                trans = np.abs(stack.vec_coef_down[vec_index][axis_indices]).reshape(-1,) # Outgoing TE polarisation
-                trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols+axis_indices]).reshape(-1,) # Outgoing TM polarisation
+                # Outgoing TE polarisation
+                trans = np.abs(stack.vec_coef_down[vec_index][axis_indices])
+                # Outgoing TM polarisation
+                trans += np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols +axis_indices])
 
                 if np.abs(this_k_pll2) < np.abs(k**2): merit_prop += trans
                 if np.abs(k**2) < np.abs(this_k_pll2) < np.abs((n_H*k0)**2):
                     merit_near_ev += trans
                 if np.abs(this_k_pll2) > np.abs((n_H*k0)**2): merit_far_ev += trans
                 sum_p_amps += np.abs(pxs) * trans
-                sum_amps += trans
+                sum_amps += np.abs(stack.vec_coef_down[vec_index][axis_indices])**2 + np.abs(stack.vec_coef_down[vec_index][n_PW_p_pols +axis_indices])**2
 
             if merit_prop != 0.0:
                 store_m_p = np.append(store_m_p,merit_prop)
@@ -1507,7 +1509,7 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,
             lgd = ax1.legend(handles, labels, ncol=4, loc='upper center', bbox_to_anchor=(0.5,1.6))
             ax1.set_ylabel('Ev FoM')
             ax1.set_xticklabels( () )
-            ax2.set_ylabel(r'$\Sigma|a_p|$')
+            ax2.set_ylabel(r'$\Sigma|a_p|^2$')
             ax2.set_xlabel(xlabel)
             plt.suptitle(add_name)
             plt.savefig('evanescent_merit-lay_%s' % add_name, \
@@ -1530,7 +1532,6 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,
     except ValueError:
         print "evanescent_merit only works in ThinFilm layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
-
 ###############################################################################
 
 
