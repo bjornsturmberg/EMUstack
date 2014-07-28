@@ -37,10 +37,7 @@ from stack import *
 start = time.time()
 
 # Remove results of previous simulations.
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Simulation parameters ################
 # Select the number of CPUs to use in simulation.
@@ -57,16 +54,16 @@ period = 100
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air)
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Air, loss=False) 
+    material = materials.Air, loss=False)
 
 n_min = 1
 n_max = 5
 num_n = 51
-Re_n = np.linspace(n_min,n_max,num_n) 
+Re_n = np.linspace(n_min,n_max,num_n)
 Im_n = np.linspace(n_max,n_min,num_n)
 # Having lists run this way will ease plotting, as matshow plots from top left
 
-def simulate_stack(light):    
+def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
@@ -75,7 +72,7 @@ def simulate_stack(light):
     for Re in Re_n:
         Im_stack = []
         for Im in Im_n:
-            TF_1 = objects.ThinFilm(period, height_nm = 10, 
+            TF_1 = objects.ThinFilm(period, height_nm = 10,
                 material = materials.Material(Re + Im*1j))
             sim_TF_1 = TF_1.calc_modes(light)
 

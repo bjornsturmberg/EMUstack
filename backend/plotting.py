@@ -49,11 +49,19 @@ charge_e       = 1.602176565*1e-19  # Charge of an electron
 
 
 #### Short utility functions ##################################################
-def clear_previous(file_type):
-    """ Delete all files of specified type 'file_type'. """
+def clear_previous():
+    """ Delete all files of specified type as well as field directories. """
 
-    files_rm = 'rm *%s'% file_type
-    subprocess.call(files_rm, shell = True)
+    type_list = ['.npz', '.pdf', '.txt', '.gif', '.png', '.log',
+    'fields_vertically -r', 'in_plane_fields -r', 'Bloch_fields -r',
+    'field_values-r', '3d_fields-r']
+
+    for typ in type_list:
+        try:
+            files_rm = 'rm *%s'% typ
+            subprocess.call(files_rm, shell = True, stderr=devnull)
+        except:
+            pass
 
 def zeros_int_str(zero_int):
     """ Convert integer into string with '0' in place of ' '. """
@@ -134,9 +142,9 @@ def gen_params_string(stack, layer = 1):
 
 
 #### Standard plotting of spectra #############################################
-def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1, \
-    active_layer_nu = 1, stack_label = 1, ult_eta = False, J_sc = False, \
-    weight_spec = False, extinct = False, add_height = 0, add_name = '', \
+def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1,
+    active_layer_nu = 1, stack_label = 1, ult_eta = False, J_sc = False,
+    weight_spec = False, extinct = False, add_height = 0, add_name = '',
     save_pdf = True, save_txt = False):
     """ Plot t, r, a for each layer & in total.
 
@@ -276,14 +284,14 @@ def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1, \
     else:
         return
 
-def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, \
+def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
     params_2_print, stack_label, add_name, save_pdf, save_txt):
     """ Plots one type of spectrum across all layers.
 
         Is called from t_r_a_plots.
     """
 
-    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', \
+    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w',
         edgecolor='k')
     nu_layers = len(spec_list)/len(xvalues)
     h_array = np.ones(len(xvalues))*total_h
@@ -357,14 +365,14 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h, \
 
         del layer_spec
 
-def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, \
+def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     params_2_print, stack_label, add_name):
     """ Plots total t, r, a spectra on one plot.
 
         Is called from t_r_a_plots, t_r_a_plots_subs
     """
 
-    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', \
+    fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w',
     edgecolor='k')
 
     ax1 = fig.add_subplot(3, 1, 1)
@@ -410,8 +418,8 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel, \
 
 
 #### Plot spectra indicating Wood anomalies in substrate ######################
-def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, \
-    params_layer = 1, active_layer_nu = 1, stack_label = 1, ult_eta = False, \
+def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n,
+    params_layer = 1, active_layer_nu = 1, stack_label = 1, ult_eta = False,
     J_sc = False, weight_spec = False, extinct = False, add_name = ''):
     """ Plot t, r, a indicating Wood anomalies in substrate for each layer \
         & total.
@@ -519,7 +527,7 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n, \
     if ult_eta == True or J_sc == True: del active_abs
     return
 
-def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
+def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths,
     params_2_print, stack_label, add_name, period, sub_n):
     """ Plots total t, r, a spectra with lines at first 6 Wood anomalies.
 
@@ -628,8 +636,8 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths, \
 
 
 #### Save J_sc & ult efficiency w/o spectra ###################################
-def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, \
-    active_layer_nu=1, stack_label=1, add_name=''):
+def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer = 1,
+    active_layer_nu = 1, stack_label = 1, add_name = ''):
     """ Calculate J_sc & ultimate efficiency but do not save or plot spectra.
 
         Args:
@@ -678,7 +686,8 @@ def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1, \
 
 
 #### Saving spectra to files ##################################################
-def t_r_a_write_files(stacks_list, wavelengths, stack_label=1, add_name=''):
+def t_r_a_write_files(stacks_list, wavelengths, stack_label = 1,
+    add_name = ''):
     """ Save t, r, a for each layer & total in text files.
 
         Args:
@@ -716,8 +725,8 @@ def t_r_a_write_files(stacks_list, wavelengths, stack_label=1, add_name=''):
     layers_print('Lay_Trans',  t_list, wavelengths, total_h, stack_label)
     layers_print('Lay_Reflec', r_list, wavelengths, total_h, stack_label)
 
-def layers_print(spectra_name, spec_list, wavelengths, total_h, stack_label=1,\
-    add_name=''):
+def layers_print(spectra_name, spec_list, wavelengths, total_h,
+    stack_label = 1, add_name = ''):
     """ Save spectra to text files.
 
         Is called from t_r_a_write_files.
@@ -753,7 +762,8 @@ def layers_print(spectra_name, spec_list, wavelengths, total_h, stack_label=1,\
 
 
 #### Plot spectra on other scales #############################################
-def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
+def extinction_plot(t_spec, wavelengths, params_2_print, stack_label,
+    add_name):
     """ Plot extinction ratio in transmission extinct = log_10(1/t). """
 
     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
@@ -768,7 +778,8 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label, add_name):
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% \
         {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
-def EOT_plot(stacks_list, wavelengths, params_layer=1, num_pw_per_pol=0, add_name=''):
+def EOT_plot(stacks_list, wavelengths, params_layer = 1, num_pw_per_pol = 0,
+    add_name = ''):
     """ Plot T_{00} as in Martin-Moreno PRL 86 2001.
         To plot {9,0} component of TM polarisation set num_pw_per_pol = num_pw_per_pol.
     """
@@ -811,7 +822,8 @@ def EOT_plot(stacks_list, wavelengths, params_layer=1, num_pw_per_pol=0, add_nam
 
 
 #### Calculate short circuit current and ultimate efficiency ##################
-def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_name):
+def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label,
+    add_name):
     """ Calculate the short circuit current J_sc under ASTM 1.5 illumination.
         Assuming every absorbed photon produces a pair of charge carriers.
     """
@@ -827,7 +839,8 @@ def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_na
         np.array([J]), fmt = '%10.6f')
     return J
 
-def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name):
+def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,
+    add_name):
     """ Calculate the photovoltaic ultimate efficiency achieved in the specified active layer.
 
         For definition see `Sturmberg et al., Optics Express, Vol. 19, Issue S5, pp. A1067-A1081 (2011)\
@@ -932,7 +945,7 @@ def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
 
-def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, \
+def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths,
     params_layer = 1, stack_label = 1):
     """ Plots the energy concentration (epsilon E_cyl / epsilon E_cell) of given layer.
 
@@ -989,8 +1002,8 @@ def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, \
 
 
 #### Visualise scattering Matrices ############################################
-def vis_scat_mats(scat_mat, nu_prop_PWs = 0, wl = None, add_name = '', \
-        max_scale = None):
+def vis_scat_mats(scat_mat, nu_prop_PWs = 0, wl = None, add_name = '',
+    max_scale = None):
     """ Plot given scattering matrix as greyscale images.
 
         Args:
@@ -1179,7 +1192,7 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
 
 
 #### Plot amplitudes of modes #################################################
-def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = None,\
+def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = None,
     lay_interest = 1, up_and_down = True, add_height = None, add_name = ''):
     """ Plot the amplitudes of Bloch modes in selected layer.
 
@@ -1254,8 +1267,7 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = None,\
         print "BM_amplitudes only works in NanoStruct layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
 
-
-def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
+def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,
     lay_interest = 0, up_and_down = True, add_height = None, add_name = ''):
     """ Plot the amplitudes of plane wave orders in selected layer.
 
@@ -1369,8 +1381,8 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,\
         print "PW_amplitudes only works in ThinFilm layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
 
-def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,\
-    lay_interest = 0, add_height = None, add_name = '', \
+def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,
+    lay_interest = 0, add_height = None, add_name = '',
     save_pdf = True, save_txt = False):
     """ Plot a figure of merit for the 'evanescent-ness' of excited fields.
 
@@ -1522,7 +1534,7 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,\
 
 
 #### Field plotting routines ##################################################
-def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
+def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6],
     nu_calc_pts = 51):
     """
     Plot fields in the x-y plane at chosen values of z.
@@ -1545,7 +1557,8 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
     from fortran import EMUstack
 
     dir_name = "in_plane_fields"
-    if not os.path.exists(dir_name): os.mkdir(dir_name)
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
 
     # always make odd
     if nu_calc_pts % 2 == 0: nu_calc_pts += 1
@@ -1791,7 +1804,7 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6], \
             # # vec_coef_down[neq_PW] = 1.0
 
 
-def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
+def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
     gradient = None, scale_axis = True, no_incoming = False, add_name = ''):
     """
     Plot fields in the x-y plane at chosen values of z, where z is \
@@ -1821,14 +1834,16 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
 
             add_name  (str): Add add_name to title.
     """
+
     from fortran import EMUstack
 
     dir_name = "fields_vertically"
-    if os.path.exists(dir_name):
-        subprocess.call('rm %s -r' %dir_name, shell = True)
-    os.mkdir(dir_name)
-    os.mkdir(dir_name+"/gmsh_BMs")
-    os.mkdir(dir_name+"/gmsh_BMs/anim")
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
+    if not os.path.exists(dir_name+"/gmsh_BMs"):
+        os.mkdir(dir_name+"/gmsh_BMs")
+    if not os.path.exists(dir_name+"/gmsh_BMs/anim"):
+        os.mkdir(dir_name+"/gmsh_BMs/anim")
 
     # always make odd
     if nu_calc_pts % 2 == 0: nu_calc_pts += 1
@@ -2285,7 +2300,7 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0, \
     stack_num += 1
 
 
-def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
+def field_values(stacks_list, lay_interest = 0, xyz_values = [(0.1,0.1,0.1)]):
     """
     Save electric field values at given x-y-z points. Points must be within \
     a ThinFilm layer. In txt file fields are given as \
@@ -2305,9 +2320,8 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
     """
 
     dir_name = 'field_values'
-    if os.path.exists(dir_name):
-        subprocess.call('rm %s -r' %dir_name, shell = True)
-    os.mkdir(dir_name)
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
 
     stack_num = 0
     for pstack in stacks_list:
@@ -2426,7 +2440,6 @@ def field_values(stacks_list, lay_interest = 0, xyz_values =[(0.1,0.1,0.1)]):
             print "field_values can only calculate field values in ThinFilms."\
             "\nPlease select a different lay_interest.\n"
 
-
 def fields_3d(stacks_list, lay_interest = 1):
     """
     Plot fields in 3D using gmsh.
@@ -2443,11 +2456,11 @@ def fields_3d(stacks_list, lay_interest = 1):
 
     nnodes=6
     dir_name = "3d_fields"
-    if os.path.exists(dir_name):
-        subprocess.call('rm %s -r' %dir_name, shell = True)
-    os.mkdir(dir_name)
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
     dir_name = "3d_fields/anim"
-    os.mkdir(dir_name)
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
 
     stack_num = 0
     for pstack in stacks_list:
@@ -2485,7 +2498,8 @@ def fields_3d(stacks_list, lay_interest = 1):
 
 
 #### Fabry-Perot resonances ###################################################
-def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0, lay_interest=1):
+def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0,
+    lay_interest = 1):
     """ Calculate the Fabry-Perot resonance condition for a resonances within a layer.
 
         This is equivalent to finding the slab waveguide modes of the layer.

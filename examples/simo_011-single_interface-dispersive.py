@@ -18,7 +18,7 @@
 """
 
 """
-Simulating an interface between 2 homogeneous, dispersive media. 
+Simulating an interface between 2 homogeneous, dispersive media.
 We use multiple CPUs.
 """
 
@@ -37,10 +37,7 @@ from stack import *
 start = time.time()
 
 # We begin by remove all results of previous simulations.
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Simulation parameters ################
 # Select the number of CPUs to use in simulation.
@@ -50,7 +47,7 @@ num_cores = 2
 wl_1     = 400
 wl_2     = 800
 no_wl_1  = 4
-# Set up light objects (no need to specifiy n_inc as light incident from 
+# Set up light objects (no need to specifiy n_inc as light incident from
 # Air with n_inc = 1.0).
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0) \
@@ -66,7 +63,7 @@ superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.SiO2_a) # Amorphous silica
 
-def simulate_stack(light):    
+def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
@@ -88,8 +85,8 @@ np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Post Processing ########################
 # This time let's visualise the net Transmission scattering matrix,
-# which describes the propagation of light all the way from the superstrate into 
-# the substrate. When studying diffractive layers it is useful to know how many 
+# which describes the propagation of light all the way from the superstrate into
+# the substrate. When studying diffractive layers it is useful to know how many
 # of theplane waves of the substrate are propagating, so lets include this.
 wl_num = -1
 T_net = stacks_list[wl_num].T_net

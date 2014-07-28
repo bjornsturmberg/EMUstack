@@ -40,10 +40,7 @@ start = time.time()
 num_cores = 7
 
 # Remove results of previous simulations
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Light parameters #####################
 wl_1     = 310
@@ -68,8 +65,8 @@ substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.SiO2_a, loss = False)
 
 NW_diameter = 120
-NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
-    inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
+NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
+    inclusion_a = materials.Si_c, background = materials.Air, loss = True,
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 2.0)
 # Here we get EMUstack to make the FEM mesh automagically using our input parameters.
 # the lc_bkg parameter sets the baseline distance between points on the FEM mesh,
@@ -77,13 +74,13 @@ NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
 # There are higher lc parameters which are used when including multiple inclusions.
 
 # Alternatively we can specify a pre-made mesh as follows.
-NW_array2 = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
-    inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
+NW_array2 = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
+    inclusion_a = materials.Si_c, background = materials.Air, loss = True,
     make_mesh_now = False, mesh_file='4testing-600_120.mail')
 
 
 def simulate_stack(light):
-    
+
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
@@ -116,10 +113,10 @@ np.savez('Simo_results', stacks_list=stacks_list)
 # (default active_layer_nu=1), and indicate that we want to calculate
 # the ideal short circuit current (J_sc) of the cell.
 # We could also calculate the 'ultimate efficiency' by setting ult_eta=True.
-plotting.t_r_a_plots(stacks_list, active_layer_nu=1, J_sc=True) 
+plotting.t_r_a_plots(stacks_list, active_layer_nu=1, J_sc=True)
 
 # We also plot the dispersion relation for the NW layer.
-plotting.omega_plot(stacks_list, wavelengths) 
+plotting.omega_plot(stacks_list, wavelengths)
 
 ######################## Wrapping up ########################
 # Calculate and record the (real) time taken for simulation

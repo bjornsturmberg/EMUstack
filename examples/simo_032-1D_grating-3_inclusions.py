@@ -20,7 +20,7 @@
 """
 Simulating a lamellar grating that is periodic in x only.
 For this simulation EMUstack uses the 1D diffraction orders for the basis
-of the plane waves and carries out a 1D FEM calculation for the modes of 
+of the plane waves and carries out a 1D FEM calculation for the modes of
 the grating.
 """
 
@@ -39,10 +39,7 @@ from stack import *
 start = time.time()
 
 # Remove results of previous simulations.
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Simulation parameters ################
 # Select the number of CPUs to use in simulation.
@@ -59,7 +56,7 @@ light_list  = [objects.Light(wl, max_order_PWs = 5, theta = 0.0, phi = 0.0) for 
 period = 300
 
 # Define each layer of the structure
-# We need to inform EMUstack at this point that all layers in the stack will 
+# We need to inform EMUstack at this point that all layers in the stack will
 # be at most be periodic in one dimension (i.e. there are no '2D_arrays's).
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
     material = materials.Air)
@@ -67,27 +64,27 @@ superstrate = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
     material = materials.Air)
 # Define 1D grating that is periodic in x and contains 3 interleaved inclusions.
-# Inclusion_a is in the center of the unit cell. Inclusions 2 and 3 have 
+# Inclusion_a is in the center of the unit cell. Inclusions 2 and 3 have
 # diameters diameter2, diameter3, and are of material inclusion_b.
-# Inclusion 1 is still centered in the center and by default all inclusions are 
+# Inclusion 1 is still centered in the center and by default all inclusions are
 # seperated by period/(# inclusions) so in this case perid/3.
 # See Fortran Backends section of tutorial for more details.
-grating = objects.NanoStruct('1D_array', period, int(round(0.05*period)), 
+grating = objects.NanoStruct('1D_array', period, int(round(0.05*period)),
     diameter2 = int(round(0.17*period)), diameter3 = int(round(0.03*period)),
-    diameter4 = int(round(0.07*period)), height_nm = 2900, 
+    diameter4 = int(round(0.07*period)), height_nm = 2900,
     background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
-    inclusion_b = materials.Material(3.0 + 0.0j), 
+    inclusion_b = materials.Material(3.0 + 0.0j),
     loss = True, lc_bkg = 0.0071)
-# To instead seperate the inclusions with an equal distance between their edges use 
+# To instead seperate the inclusions with an equal distance between their edges use
 # the Keyword Arg edge_spacing = True.
-grating = objects.NanoStruct('1D_array', period, int(round(0.15*period)), 
-    diameter2 = int(round(0.27*period)), diameter3 = int(round(0.03*period)), 
-    edge_spacing = True, height_nm = 2900, 
+grating = objects.NanoStruct('1D_array', period, int(round(0.15*period)),
+    diameter2 = int(round(0.27*period)), diameter3 = int(round(0.03*period)),
+    edge_spacing = True, height_nm = 2900,
     background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
-    inclusion_b = materials.Material(3.0 + 0.0j), 
+    inclusion_b = materials.Material(3.0 + 0.0j),
     loss = True, lc_bkg = 0.0071)
 
-def simulate_stack(light):    
+def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_grating     = grating.calc_modes(light)

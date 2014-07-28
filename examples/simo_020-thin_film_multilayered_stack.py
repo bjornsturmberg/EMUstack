@@ -36,10 +36,7 @@ from stack import *
 start = time.time()
 
 # Remove results of previous simulations.
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Simulation parameters ################
 # Select the number of CPUs to use in simulation.
@@ -60,24 +57,24 @@ period = 300
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air)
 # Define a thin film with (finite) thickness in nm and constant refractive index
-TF_1 = objects.ThinFilm(period, height_nm = 100, 
+TF_1 = objects.ThinFilm(period, height_nm = 100,
     material = materials.Material(2.0 + 0.1j))
 # EMUstack calculation time is independent dispersion and thickness of layer!
-# This layer is made of Indium Phosphide, the tabulated refractive index of which 
+# This layer is made of Indium Phosphide, the tabulated refractive index of which
 # is stored in EMUstack/data/
 # We artificially set the imaginary part of the layer to zero for all wavelengths.
-TF_2 = objects.ThinFilm(period, height_nm = 5e6,  
-    material = materials.InP, loss=False) 
+TF_2 = objects.ThinFilm(period, height_nm = 5e6,
+    material = materials.InP, loss=False)
 # By default loss = True
 TF_3 = objects.ThinFilm(period, height_nm = 52,
-    material = materials.Si_a) 
-# Note that the semi-inf substrate must be lossess so that EMUstack can distinguish 
+    material = materials.Si_a)
+# Note that the semi-inf substrate must be lossess so that EMUstack can distinguish
 # propagating plane waves that carry energy from evanescent waves which do not.
 # This layer is therefore crystalline silicon with Im(n) == 0.
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Si_c, loss=False) 
+    material = materials.Si_c, loss=False)
 
-def simulate_stack(light):    
+def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_TF_1 = TF_1.calc_modes(light)

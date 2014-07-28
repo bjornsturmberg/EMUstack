@@ -715,7 +715,9 @@ c   Search for the interface points
         enddo
       endif
 
-      tchar=dir_name(1:namelen_dir)// "/interface_xz.geo"
+      tchar=dir_name(1:namelen_dir)// "/interface_xz"//
+     *   gmsh_file_pos(1:namelen_gmsh) // ".geo"
+
       open (unit=26,file=tchar, IOSTAT=IO_status)
        if (IO_status /= 0) then
          write(*,*) "gmsh_plot_slices_xz_1d: Error opening a file"
@@ -761,11 +763,13 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 
-      tchar = "fields_vertically/All_plots_png_abs2_sl.geo"
+      tchar = "fields_vertically/to_png-"//
+     *   gmsh_file_pos(1:namelen_gmsh) // ".geo"
       open (unit=34,file=tchar)
 
       tchar = "../"//dir_name(1:namelen_dir)//
-     *  "/interface_xz.geo"
+     *  "/interface_xz"//
+     *   gmsh_file_pos(1:namelen_gmsh) // ".geo"
       namelen2 = len_trim(tchar)
         write(34,*) "Merge """, tchar(1:namelen2), """;"
 

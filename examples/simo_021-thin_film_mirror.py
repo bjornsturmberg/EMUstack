@@ -39,10 +39,7 @@ from stack import *
 start = time.time()
 
 # Remove results of previous simulations.
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Simulation parameters ################
 # Select the number of CPUs to use in simulation.
@@ -66,14 +63,14 @@ TF_2 = objects.ThinFilm(period, height_nm = 5e6,
     material = materials.InP, loss=False)
 TF_3 = objects.ThinFilm(period, height_nm = 52,
     material = materials.Si_a)
-# Realistically a few micron thick mirror would do the trick, 
+# Realistically a few micron thick mirror would do the trick,
 # but EMUstack is height agnostic.... so what the hell.
 mirror = objects.ThinFilm(period, height_nm = 1e5,
-    material = materials.Ag) 
+    material = materials.Ag)
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air)
 
-def simulate_stack(light):    
+def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_mirror = mirror.calc_modes(light)
@@ -90,7 +87,7 @@ def simulate_stack(light):
 
     return stack
 
-pool = Pool(num_cores)  
+pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
 np.savez('Simo_results', stacks_list=stacks_list)

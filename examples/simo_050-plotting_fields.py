@@ -40,10 +40,7 @@ start = time.time()
 num_cores = 7
 
 # Remove results of previous simulations
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Light parameters #####################
 wl     = 615

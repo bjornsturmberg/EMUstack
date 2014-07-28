@@ -42,15 +42,11 @@ start = time.time()
 num_cores = 4
 
 # Remove results of previous simulations
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.gif')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Light parameters #####################
 wl_1     = 310
-wl_2     = 1127 
+wl_2     = 1127
 no_wl_1  = 3
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
@@ -67,11 +63,11 @@ cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
 sub_ns = np.linspace(1.0,4.0,100)
 
 NW_diameter = 480
-NWs = objects.NanoStruct('1D_array', period, NW_diameter, height_nm = 2330, 
-    inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
+NWs = objects.NanoStruct('1D_array', period, NW_diameter, height_nm = 2330,
+    inclusion_a = materials.Si_c, background = materials.Air, loss = True,
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.17, lc2= 2.5)
 
-def simulate_stack(light):   
+def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_cover = cover.calc_modes(light)
     sim_NWs   = NWs.calc_modes(light)
@@ -124,7 +120,7 @@ for s in range(len(sub_ns)):
     eta.append(100.0*Efficiency[0])
     # Dispersion of structured layer is the same for all cases.
     if s == 0:
-        plotting.omega_plot(stack1_wl_list, wavelengths, stack_label=stack_label) 
+        plotting.omega_plot(stack1_wl_list, wavelengths, stack_label=stack_label)
 
 # Now plot as a function of substrate refractive index.
 import matplotlib

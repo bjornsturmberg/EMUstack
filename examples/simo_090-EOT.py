@@ -18,7 +18,7 @@
 """
 
 """
-Simulating Extraordinary Optical Transmission 
+Simulating Extraordinary Optical Transmission
 as in H. Liu, P. Lalanne, Nature 452 2008 doi:10.1038/nature06762
 """
 
@@ -41,10 +41,7 @@ start = time.time()
 num_cores = 16
 
 # Remove results of previous simulations
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Light parameters #####################
 wl_1     = 0.85*940
@@ -59,9 +56,9 @@ light_list  = [objects.Light(wl, max_order_PWs = 4) for wl in wavelengths]
 #period must be consistent throughout simulation!!!
 period = 940
 diam1 = 266
-NHs = objects.NanoStruct('2D_array', period, diam1, height_nm = 200, 
+NHs = objects.NanoStruct('2D_array', period, diam1, height_nm = 200,
     inclusion_a = materials.Air, background = materials.Au, loss = True,
-    square = True,    
+    square = True,
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.12, lc2= 5.0, lc3= 3.0)#lc_bkg = 0.08, lc2= 5.0)
 
 superstrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
@@ -95,7 +92,7 @@ pool = Pool(num_cores)
 stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to .npz file for safe keeping!
 np.savez('Simo_results', stacks_list=stacks_list)
-    
+
 
 
 ######################## Plotting ########################
@@ -110,9 +107,9 @@ for h in range(len(NH_heights)):
     for wl in range(len(wavelengths)):
         wl_list.append(stacks_list[wl][stack_label][h])
     mess_name = '_h%(h)i'% {'h'   : h, }
-    plotting.EOT_plot(wl_list, wls_normed, add_name = mess_name) 
+    plotting.EOT_plot(wl_list, wls_normed, add_name = mess_name)
 # Dispersion
-plotting.omega_plot(wl_list, wavelengths) 
+plotting.omega_plot(wl_list, wavelengths)
 
 
 # Calculate and record the (real) time taken for simulation

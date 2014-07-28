@@ -18,7 +18,7 @@
 """
 
 """
-Here we introduce a shear transformation to shift layers relative to one  
+Here we introduce a shear transformation to shift layers relative to one
 another in the plane.
 """
 
@@ -41,10 +41,7 @@ start = time.time()
 num_cores = 5
 
 # Remove results of previous simulations
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Light parameters #####################
 azi_angles = np.linspace(0,20,5)
@@ -62,15 +59,15 @@ substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 grating_1 = objects.NanoStruct('1D_array', period, small_d=period/2,
-    diameter1=int(round(0.25*period)), diameter2=int(round(0.25*period)), 
-    height_nm = 150, inclusion_a = materials.Material(3.61 + 0.0j), 
-    inclusion_b = materials.Material(3.61 + 0.0j), 
-    background = materials.Material(1.46 + 0.0j), 
+    diameter1=int(round(0.25*period)), diameter2=int(round(0.25*period)),
+    height_nm = 150, inclusion_a = materials.Material(3.61 + 0.0j),
+    inclusion_b = materials.Material(3.61 + 0.0j),
+    background = materials.Material(1.46 + 0.0j),
     loss = True, make_mesh_now = True, force_mesh = False, lc_bkg = 0.1, lc2= 3.0)
 
-grating_2 = objects.NanoStruct('1D_array', period, int(round(0.75*period)), 
-    height_nm = 2900, background = materials.Material(1.46 + 0.0j), 
-    inclusion_a = materials.Material(3.61 + 0.0j), 
+grating_2 = objects.NanoStruct('1D_array', period, int(round(0.75*period)),
+    height_nm = 2900, background = materials.Material(1.46 + 0.0j),
+    inclusion_a = materials.Material(3.61 + 0.0j),
     loss = True, make_mesh_now = True, force_mesh = False, lc_bkg = 0.1, lc2= 3.0)
 
 num_BM = 60
@@ -90,7 +87,7 @@ def simulate_stack(light):
 
     # Shear is relative to top layer (ie incident light) and in units of d.
     stack = Stack((sim_substrate, sim_grating_1, sim_grating_2, sim_superstrate), \
-        shears = ([(0.1,0.0),(-0.3,0.1),(0.2,0.5)]) ) 
+        shears = ([(0.1,0.0),(-0.3,0.1),(0.2,0.5)]) )
     stack.calc_scat(pol = 'TE')
 
     return stack

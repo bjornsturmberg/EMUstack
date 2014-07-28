@@ -40,10 +40,7 @@ start = time.time()
 num_cores = 5
 
 # Remove results of previous simulations
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Light parameters #####################
 azi_angles = np.linspace(-50,50,11)
@@ -66,13 +63,13 @@ absorber    = objects.ThinFilm(period, height_nm = 10,
     material = materials.Material(2.0 + 0.05j), loss = True)
 
 grating_1 = objects.NanoStruct('1D_array', period, int(round(0.75*period)),
-    height_nm = 2900, background = materials.Material(1.46 + 0.0j), 
-    inclusion_a = materials.Material(3.61 + 0.0j), loss = True, 
+    height_nm = 2900, background = materials.Material(1.46 + 0.0j),
+    inclusion_a = materials.Material(3.61 + 0.0j), loss = True,
     lc_bkg = 0.005)
 
 
 def simulate_stack(light):
-   
+
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
@@ -97,13 +94,13 @@ stacks_list = pool.map(simulate_stack, light_list)
 np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Post Processing ########################
-# We can represent the strength with which different orders are excited 
+# We can represent the strength with which different orders are excited
 # in k-space.
 plotting.t_func_k_plot_1D(stacks_list)
 # This corresponds to Fig 2 of Handmer et al. Optics Lett. 35, 2010.
 # (The PW_amplitudes plots correspond to Fig 1 of this paper).
 
-# Lastly we also plot the transmission, reflection and absorption of each 
+# Lastly we also plot the transmission, reflection and absorption of each
 # layer and the stack.
 plotting.t_r_a_plots(stacks_list, xvalues=azi_angles)
 

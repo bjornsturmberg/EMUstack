@@ -42,10 +42,7 @@ start = time.time()
 num_cores = 5
 
 # Remove results of previous simulations
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Light parameters #####################
 wl_1     = 900
@@ -70,7 +67,7 @@ substrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 grating_diameter = 100
-grating = objects.NanoStruct('1D_array', period, grating_diameter, height_nm = 25, 
+grating = objects.NanoStruct('1D_array', period, grating_diameter, height_nm = 25,
     inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True,
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.05, lc2= 4.0)
 
@@ -103,7 +100,7 @@ stacks_list = pool.map(simulate_stack, light_list)
 # Save full simo data to timestamped .npz file for safe keeping!
 simotime = str(time.strftime("%Y%m%d%H%M%S", time.localtime()))
 np.savez('Simo_results'+simotime, stacks_list=stacks_list)
-    
+
 
 ######################## Plotting ########################
 last_light_object = light_list.pop()
@@ -112,15 +109,15 @@ params_string = plotting.gen_params_string(param_layer, last_light_object, max_n
 
 
 active_layer_nu = 3 # Specify which layer is the active one (where absorption generates charge carriers).
-# Plot total transmission, reflection, absorption & that of each layer. 
+# Plot total transmission, reflection, absorption & that of each layer.
 # Also calculate efficiency of active layer.
-Efficiency = plotting.t_r_a_plots(stacks_list, wavelengths, params_string, active_layer_nu=active_layer_nu) 
+Efficiency = plotting.t_r_a_plots(stacks_list, wavelengths, params_string, active_layer_nu=active_layer_nu)
 # Dispersion
-# plotting.omega_plot(stacks_list, wavelengths, params_string) 
+# plotting.omega_plot(stacks_list, wavelengths, params_string)
 # # Energy Concentration
 # which_layer = 2
 # which_modes = [1,2] # can be a single mode or multiple
-# plotting.E_conc_plot(stacks_list, which_layer, which_modes, wavelengths, 
+# plotting.E_conc_plot(stacks_list, which_layer, which_modes, wavelengths,
 #     params_string)
 
 

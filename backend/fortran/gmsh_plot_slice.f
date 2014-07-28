@@ -1037,7 +1037,8 @@ C         write(30,*) "View.Axes = 2;"
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-      tchar = "fields_vertically/All_plots_png_abs2_sl.geo"
+      tchar = "fields_vertically/to_png-"//
+     *   gmsh_file_pos(1:namelen_gmsh) // ".geo"
       open (unit=34,file=tchar)
 
       tchar = "../"//dir_name(1:namelen_dir)// "/" //

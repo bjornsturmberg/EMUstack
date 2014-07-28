@@ -40,10 +40,7 @@ start = time.time()
 num_cores = 7
 
 # Remove results of previous simulations
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Light parameters #####################
 wl_1     = 310
@@ -69,20 +66,20 @@ substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.SiO2_a, loss = False)
 
 NW_diameter = 120
-NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330, 
-    inclusion_a = materials.Si_c, background = materials.Air, loss = True,    
+NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
+    inclusion_a = materials.Si_c, background = materials.Air, loss = True,
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 2.0)
 
 # We now create a 1D grating that is periodic in x only, but whose scattering
 # matrices are constructed with of the 2D plane wave basis. This allows this layer
 # to be combined with 2D_arrays.
-grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
-    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j), 
+grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900,
+    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
     loss = True, lc_bkg = 0.01, world_1d = False)
 
 
 def simulate_stack(light):
-    
+
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
@@ -109,10 +106,10 @@ np.savez('Simo_results', stacks_list=stacks_list)
 ######################## Plotting ########################
 
 # Plot the transmission, reflection and absorption.
-plotting.t_r_a_plots(stacks_list, active_layer_nu=1) 
+plotting.t_r_a_plots(stacks_list, active_layer_nu=1)
 
 # We also plot the dispersion relation for the NW layer.
-plotting.omega_plot(stacks_list, wavelengths) 
+plotting.omega_plot(stacks_list, wavelengths)
 
 ######################## Wrapping up ########################
 # Calculate and record the (real) time taken for simulation

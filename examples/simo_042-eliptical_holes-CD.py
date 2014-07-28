@@ -41,14 +41,11 @@ start = time.time()
 num_cores = 4
 
 # Remove results of previous simulations
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Light parameters #####################
 wl_1     = 300
-wl_2     = 1000 
+wl_2     = 1000
 no_wl_1  = 21
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
@@ -63,12 +60,12 @@ diam1  = 140
 diam2  = 60
 ellipticity = (float(diam1-diam2))/float(diam1)
 
-# Replicating the geometry of the paper we set up a gold layer with elliptical air 
+# Replicating the geometry of the paper we set up a gold layer with elliptical air
 # holes. To get good agreement with the published work we use the Drude model for Au.
 # Note that better physical results are obtained using the tabulated data for Au!
 Au_NHs = objects.NanoStruct('2D_array', period, diam1, inc_shape = 'ellipse',
     ellipticity = ellipticity, height_nm = 60,
-    inclusion_a = materials.Air, background = materials.Au_drude, loss = True,    
+    inclusion_a = materials.Air, background = materials.Au_drude, loss = True,
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.2, lc2= 5.0)
 
 superstrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
@@ -79,7 +76,7 @@ substrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
 # Again for this example we fix the number of BMs.
 num_BM = 50
 
-def simulate_stack(light):  
+def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_Au   = Au_NHs.calc_modes(light, num_BM = num_BM)
@@ -90,7 +87,7 @@ def simulate_stack(light):
     stackSub2 = Stack((sim_substrate, sim_Au, sim_superstrate))
     stackSub2.calc_scat(pol = 'L Circ')
     saveStack = Stack((sim_substrate, sim_Au, sim_superstrate))
-    
+
     a_CD = []
     t_CD = []
     r_CD = []
@@ -114,7 +111,7 @@ stacks_list = pool.map(simulate_stack, light_list)
 np.savez('Simo_results', stacks_list=stacks_list)
 
 ######################## Plotting ########################
-# Just to show how it's done we can add the height of the layer and some extra 
+# Just to show how it's done we can add the height of the layer and some extra
 # details to the file names and plot titles.
 title = 'what_a_lovely_day-'
 

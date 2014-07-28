@@ -20,7 +20,7 @@
 """
 Simulating a lamellar grating that is periodic in x only.
 For this simulation EMUstack uses the 1D diffraction orders for the basis
-of the plane waves and carries out a 1D FEM calculation for the modes of 
+of the plane waves and carries out a 1D FEM calculation for the modes of
 the grating.
 """
 
@@ -39,10 +39,7 @@ from stack import *
 start = time.time()
 
 # Remove results of previous simulations.
-plotting.clear_previous('.npz')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
-plotting.clear_previous('.log')
+plotting.clear_previous()
 
 ################ Simulation parameters ################
 # Select the number of CPUs to use in simulation.
@@ -59,24 +56,24 @@ light_list  = [objects.Light(wl, max_order_PWs = 5, theta = 0.0, phi = 0.0) for 
 period = 300
 
 # Define each layer of the structure
-# We need to inform EMUstack at this point that all layers in the stack will 
+# We need to inform EMUstack at this point that all layers in the stack will
 # be at most be periodic in one dimension (i.e. there are no '2D_arrays's).
-# This is done with the Keyword Arg 'world_1d' and all homogenous layers are 
+# This is done with the Keyword Arg 'world_1d' and all homogenous layers are
 # calculated using the PW basis of 1D diffraction orders.
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
     material = materials.Air)
 
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d=True,
     material = materials.Air)
-# Define 1D grating that is periodic in x. 
-# The mesh for this is always made 'live' in objects.py the number of 
+# Define 1D grating that is periodic in x.
+# The mesh for this is always made 'live' in objects.py the number of
 # FEM elements used is given by 1/lc_bkg.
 # See Fortran Backends section of tutorial for more details.
-grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
-    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j), 
+grating = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900,
+    background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(5.0 + 0.0j),
     loss = True, lc_bkg = 0.0051)
 
-def simulate_stack(light):    
+def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_grating     = grating.calc_modes(light)

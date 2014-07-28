@@ -41,10 +41,7 @@ start = time.time()
 num_cores = 8
 
 # Remove results of previous simulations
-plotting.clear_previous('.npz')
-plotting.clear_previous('.log')
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
+plotting.clear_previous()
 
 ################ Light parameters #####################
 wavelengths = np.linspace(1600,900,1)
@@ -65,13 +62,13 @@ for PWs in np.linspace(1,10,10):
         material = materials.Air, loss = False)
 
     grating_1 = objects.NanoStruct('1D_array', period, small_d=period/2,
-        diameter1=int(round(0.25*period)), diameter2=int(round(0.25*period)), height_nm = 150, 
+        diameter1=int(round(0.25*period)), diameter2=int(round(0.25*period)), height_nm = 150,
         inclusion_a = materials.Material(3.61 + 0.0j), inclusion_b = materials.Material(3.61 + 0.0j),
-        background = materials.Material(1.46 + 0.0j), 
+        background = materials.Material(1.46 + 0.0j),
         loss = True, make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 3.0)
 
-    grating_2 = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900, 
-        background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(3.61 + 0.0j), 
+    grating_2 = objects.NanoStruct('1D_array', period, int(round(0.75*period)), height_nm = 2900,
+        background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(3.61 + 0.0j),
         loss = True, make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 3.0)
 
     num_BM = BMs[B]+30
@@ -79,7 +76,7 @@ for PWs in np.linspace(1,10,10):
 
 
     def simulate_stack(light):
-       
+
         ################ Evaluate each layer individually ##############
         sim_superstrate = superstrate.calc_modes(light)
         sim_substrate   = substrate.calc_modes(light)
