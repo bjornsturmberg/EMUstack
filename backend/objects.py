@@ -243,10 +243,11 @@ class NanoStruct(object):
             self.mesh_file = mesh_file
         if plotting_fields == True:
             self.plotting_fields = 1
-            if not os.path.exists("Bloch_fields"):
-                os.mkdir("Bloch_fields")
-            if not os.path.exists("Bloch_fields/PNG"):
-                os.mkdir("Bloch_fields/PNG")
+            if periodicity == '2D_array':
+                if not os.path.exists("Bloch_fields"):
+                    os.mkdir("Bloch_fields")
+                if not os.path.exists("Bloch_fields/PNG"):
+                    os.mkdir("Bloch_fields/PNG")
         else: self.plotting_fields = 0
         self.plot_real       = plot_real
         self.plot_imag       = plot_imag

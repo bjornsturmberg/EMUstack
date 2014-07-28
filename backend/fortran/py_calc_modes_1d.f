@@ -530,17 +530,17 @@ C    Save Original solution
         dir_name = "Bloch_fields"
 C        call write_sol_P2_1d (nval, nel, E_H_field,
 C     *     lambda, beta_1, sol_P2, mesh_file, dir_name)
-        q_average = 0
-        tchar = "Bloch_fields/PNG/All_plots_png_abs2_eE.geo"
-        open (unit=34,file=tchar)
-        do i=1,nval
-          call gmsh_post_process_1d (i, E_H_field, nval,
-     *       nel, npt_P2, table_nod, type_el, nb_typ_el,
-     *       n_eff, x_P2, beta_1, sol_P2,
-     *       mesh_file, dir_name,
-     *       q_average, plot_real, plot_imag, plot_abs)
-        enddo
-        close (unit=34)
+C         q_average = 0
+C         tchar = "Bloch_fields/PNG/All_plots_png_abs2_eE.geo"
+C         open (unit=34,file=tchar)
+C         do i=1,nval
+C           call gmsh_post_process_1d (i, E_H_field, nval,
+C      *       nel, npt_P2, table_nod, type_el, nb_typ_el,
+C      *       n_eff, x_P2, beta_1, sol_P2,
+C      *       mesh_file, dir_name,
+C      *       q_average, plot_real, plot_imag, plot_abs)
+C         enddo
+C         close (unit=34)
       endif
 C
 C  Normalisation

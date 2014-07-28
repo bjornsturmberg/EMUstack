@@ -55,7 +55,7 @@ def clear_previous():
     devnull = open(os.devnull, 'wb')
 
     type_list = ['*.npz', '*.pdf', '*.txt', '*.gif', '*.png', '*.log',
-    'fields_vertically -r', 'in_plane_fields -r', 'Bloch_fields -r',
+    'fields_vertically -r', 'in_plane_fields -r', #'Bloch_fields -r',
     'field_values-r', '3d_fields-r']
     for typ in type_list:
         try:
@@ -945,7 +945,6 @@ def omega_plot(stacks_list, wavelengths, params_layer = 1, stack_label = 1):
     # Uncomment if you wish to save the dispersion data of a simulation to file.
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
-
 def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths,
     params_layer = 1, stack_label = 1):
     """ Plots the energy concentration (epsilon E_cyl / epsilon E_cell) of given layer.
@@ -1805,7 +1804,6 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6],
             # # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
             # # vec_coef_down[neq_PW] = 1.0
 
-
 def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
     gradient = None, scale_axis = True, no_incoming = False, add_name = ''):
     """
@@ -1875,15 +1873,78 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
 
                 struct = meat.structure
                 if meat.structure.periodicity == '1D_array':
-                    scale_plot = 2.0
-                    shift_x_plot = -.5
-                    shift_v_plot = h_normed*0.75
-                    EMUstack.gmsh_plot_slice_1d(meat.E_H_field, meat.num_BM,
-                        struct.n_msh_el, struct.n_msh_pts, struct.type_el,
-                        struct.nb_typ_el, n_eff, struct.table_nod,
-                        struct.x_arr, meat.k_z, meat.sol1, vec_coef,
-                        h_normed, wl_normed, gmsh_file_pos,
-                        scale_plot, shift_v_plot, shift_x_plot)
+                    sdsdlfj = 0
+            # try:
+            #     meat = pstack.layers[lay]
+            #     if not isinstance(meat,mode_calcs.Simmo):
+            #         raise ValueError
+            #     if not meat.structure.periodicity == '1D_array':
+            #         raise ValueError
+
+            #     h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+            #     wl_normed = pstack.layers[lay].wl_norm()
+            #     eps_eff = meat.n_effs**2
+
+            #     # vec_coef sorted from top, everything else sorted from bottom
+            #     vec_index = num_lays - lay - 1
+            #     vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
+            #         pstack.vec_coef_up[vec_index]))
+
+            #     struct = meat.structure
+            #     boundary = []
+            #     dx = (struct.x_arr[1] - struct.x_arr[0]) / 2.0
+            #     plot_x = np.arange(0,1+dx,dx)
+            #     for i in range(len(struct.type_el) - 1):
+            #         if struct.type_el[i] != struct.type_el[i+1]:
+            #             boundary.append(struct.x_arr[i] + dx)
+
+            #     fields = ['x', 'y', 'z']
+            #     for BM in range(meat.num_BM):
+            #         fig = plt.figure()
+            #         plot_sol_eps_abs = np.zeros(struct.n_msh_pts)
+            #         for i in range(len(fields)):
+            #             # sol_P2([Ex,Ey,Ez],P2_interpolation_points,nval,nel)
+            #             BM_sol = meat.sol1[i,:,BM,:]
+            #             plot_sol = [np.real(BM_sol[0,0])]
+            #             plot_sol_eps_abs[0] += eps_eff[struct.type_el[0]-1] * abs(BM_sol[0,0])
+            #             for x in range(struct.n_msh_el - 1):
+            #                 plot_sol.append(np.real(BM_sol[1,x]))
+            #                 plot_sol.append(np.real(BM_sol[2,x] + BM_sol[0,x+1]) / 2)
+            #                 plot_sol_eps_abs[2*x+1] += eps_eff[struct.type_el[x]-1] * abs(BM_sol[1,x])
+            #                 plot_sol_eps_abs[2*x+2] += eps_eff[struct.type_el[x]-1] * abs(BM_sol[2,x])
+
+            #             plot_sol.append(np.real(BM_sol[1,-1]))
+            #             plot_sol.append(np.real(BM_sol[2,-1]))
+            #             plot_sol_eps_abs[-2] += eps_eff[struct.type_el[-1]-1] * abs(BM_sol[1,x])
+            #             plot_sol_eps_abs[-1] += eps_eff[struct.type_el[-1]-1] * abs(BM_sol[2,x])
+
+            #             ax1 = fig.add_subplot(4, 1, i+1)
+            #             ax1.plot(struct.x_arr, plot_sol)
+            #             ax1.set_ylabel(r'Re(E$_%s$)'% fields[i])
+            #             ax1.set_xticklabels( () )
+            #             start, end = ax1.get_ylim()
+            #             ax1.yaxis.set_ticks(np.linspace(start, end, 3))
+            #         ax1 = fig.add_subplot(4, 1, 4)
+            #         ax1.plot(struct.x_arr, plot_sol_eps_abs)
+            #         start, end = ax1.get_ylim()
+            #         ax1.yaxis.set_ticks(np.linspace(start, end, 3))
+            #         ax1.set_ylabel(r'$\epsilon$ |E|$^2$')
+            #         ax1.set_xlabel('x (d)')
+
+            #         name_lay = "layer-%(lay)i-BM_%(BM)i"% {'lay' : lay, 'BM' : BM}
+            #         plt.savefig(dir_name + '/' + name_lay)
+
+
+
+
+
+
+
+
+
+
+
+
 
                 else:
                     scale_plot = 2.0
@@ -2301,7 +2362,6 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
 
     stack_num += 1
 
-
 def field_values(stacks_list, lay_interest = 0, xyz_values = [(0.1,0.1,0.1)]):
     """
     Save electric field values at given x-y-z points. Points must be within \
@@ -2494,8 +2554,98 @@ def fields_3d(stacks_list, lay_interest = 1):
 
             stack_num += 1
         except ValueError:
-            print "fields_3d can only plot 3D fields within 2D_array"\
+            print "fields_3d can only plot 3D fields within 2D_array "\
             "Nanostruct layers. \nPlease select a different lay_interest.\n"
+
+def Bloch_fields_1d(stacks_list, lay_interest = None):
+    """
+    Plot Bloch mode fields along the x axis.
+
+        Args:
+            stacks_list  (list): Stack objects containing data to plot.
+
+        Keyword Args:
+            lay_interest  (int): the index of the layer considered within \
+                the stack. Must be a 1D_array NanoStruct layer. By default \
+                routine finds all such layers.
+    """
+
+    dir_name = "Bloch_fields"
+    if not os.path.exists(dir_name):
+        os.mkdir(dir_name)
+
+    stack_num = 0
+    for pstack in stacks_list:
+        # by default find all 1D layers
+        if lay_interest == None:
+            lay_interest = []
+            for l in range(len(pstack.layers)):
+                if isinstance(pstack.layers[l],mode_calcs.Simmo):
+                    if pstack.layers[l].structure.periodicity == '1D_array':
+                        lay_interest.append(l)
+
+        num_lays = len(pstack.layers)
+        for lay in lay_interest:
+            try:
+                meat = pstack.layers[lay]
+                if not isinstance(meat,mode_calcs.Simmo):
+                    raise ValueError
+                if not meat.structure.periodicity == '1D_array':
+                    raise ValueError
+
+                eps_eff = meat.n_effs**2
+
+                struct = meat.structure
+                boundary = []
+                for i in range(len(struct.type_el) - 1):
+                    if struct.type_el[i] != struct.type_el[i+1]:
+                        boundary.append(struct.x_arr[2*(i+1)])
+                print boundary
+
+                fields = ['x', 'y', 'z']
+                for BM in [0]:#range(meat.num_BM):
+                    fig = plt.figure()
+                    plot_sol_eps_abs = np.zeros(struct.n_msh_pts)
+                    for i in range(len(fields)):
+                        # sol_P2([Ex,Ey,Ez],P2_interpolation_points,nval,nel)
+                        BM_sol = meat.sol1[i,:,BM,:]
+                        plot_sol = [np.real(BM_sol[0,0])]
+                        plot_sol_eps_abs[0] += eps_eff[struct.type_el[0]-1] * abs(BM_sol[0,0])
+                        for x in range(struct.n_msh_el - 1):
+                            plot_sol.append(np.real(BM_sol[1,x]))
+                            plot_sol.append(np.real(BM_sol[2,x] + BM_sol[0,x+1]) / 2)
+                            plot_sol_eps_abs[2*x+1] += eps_eff[struct.type_el[x]-1] * abs(BM_sol[1,x])
+                            plot_sol_eps_abs[2*x+2] += eps_eff[struct.type_el[x]-1] * abs(BM_sol[2,x])
+
+                        plot_sol.append(np.real(BM_sol[1,-1]))
+                        plot_sol.append(np.real(BM_sol[2,-1]))
+                        plot_sol_eps_abs[-2] += eps_eff[struct.type_el[-1]-1] * abs(BM_sol[1,x])
+                        plot_sol_eps_abs[-1] += eps_eff[struct.type_el[-1]-1] * abs(BM_sol[2,x])
+
+                        ax1 = fig.add_subplot(4, 1, i+1)
+                        ax1.plot(struct.x_arr, plot_sol)
+                        ax1.set_ylabel(r'Re(E$_%s$)'% fields[i])
+                        ax1.set_xticklabels( () )
+                        start, end = ax1.get_ylim()
+                        ax1.yaxis.set_ticks(np.linspace(start, end, 3))
+                        for b in boundary:
+                            ax1.plot([b,b],[start,end],'k')
+                    ax1 = fig.add_subplot(4, 1, 4)
+                    ax1.plot(struct.x_arr, plot_sol_eps_abs)
+                    start, end = ax1.get_ylim()
+                    ax1.yaxis.set_ticks(np.linspace(start, end, 3))
+                    for b in boundary:
+                        ax1.plot([b,b],[start,end],'k')
+                    ax1.set_ylabel(r'$\epsilon$ |E|$^2$')
+                    ax1.set_xlabel('x (d)')
+
+                    name_lay = "layer-%(lay)i-BM_%(BM)i"% {'lay' : lay, 'BM' : BM}
+                    plt.savefig(dir_name + '/' + name_lay)
+
+            except ValueError:
+                print "fields_1d can only plot 1D fields of 1D_array "\
+                "Nanostruct layers. \nPlease select different lay_interest.\n"
+
 ###############################################################################
 
 
