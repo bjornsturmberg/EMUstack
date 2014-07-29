@@ -28,6 +28,7 @@ from matplotlib.mlab import griddata
 import matplotlib
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import os
 
 # font = {'family' : 'normal',
@@ -55,7 +56,7 @@ def clear_previous():
     devnull = open(os.devnull, 'wb')
 
     type_list = ['*.npz', '*.pdf', '*.txt', '*.gif', '*.png', '*.log',
-    'fields_vertically -r', 'in_plane_fields -r', #'Bloch_fields -r',
+    'fields_vertically -r', 'in_plane_fields -r', 'Bloch_fields -r',
     'field_values-r', '3d_fields-r']
     for typ in type_list:
         try:
@@ -94,7 +95,7 @@ def max_n(stacks_list):
                 ns.append(l.structure.inclusion_b.n(wl))
     return np.real(np.max(ns))
 
-def gen_params_string(stack, layer = 1):
+def gen_params_string(stack, layer=1):
     """ Generate the string of simulation info that is to be printed \
         at the top of plots.
     """
@@ -143,10 +144,10 @@ def gen_params_string(stack, layer = 1):
 
 
 #### Standard plotting of spectra #############################################
-def t_r_a_plots(stacks_list, xvalues = None, params_layer = 1,
-    active_layer_nu = 1, stack_label = 1, ult_eta = False, J_sc = False,
-    weight_spec = False, extinct = False, add_height = 0, add_name = '',
-    save_pdf = True, save_txt = False):
+def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
+    active_layer_nu=1, stack_label=1, ult_eta=False, J_sc=False,
+    weight_spec=False, extinct=False, add_height=0, add_name='',
+    save_pdf=True, save_txt=False):
     """ Plot t, r, a for each layer & in total.
 
         Args:
@@ -637,8 +638,8 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths,
 
 
 #### Save J_sc & ult efficiency w/o spectra ###################################
-def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer = 1,
-    active_layer_nu = 1, stack_label = 1, add_name = ''):
+def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1,
+    active_layer_nu=1, stack_label=1, add_name=''):
     """ Calculate J_sc & ultimate efficiency but do not save or plot spectra.
 
         Args:
@@ -687,8 +688,8 @@ def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer = 1,
 
 
 #### Saving spectra to files ##################################################
-def t_r_a_write_files(stacks_list, wavelengths, stack_label = 1,
-    add_name = ''):
+def t_r_a_write_files(stacks_list, wavelengths, stack_label=1,
+    add_name=''):
     """ Save t, r, a for each layer & total in text files.
 
         Args:
@@ -727,7 +728,7 @@ def t_r_a_write_files(stacks_list, wavelengths, stack_label = 1,
     layers_print('Lay_Reflec', r_list, wavelengths, total_h, stack_label)
 
 def layers_print(spectra_name, spec_list, wavelengths, total_h,
-    stack_label = 1, add_name = ''):
+    stack_label=1, add_name=''):
     """ Save spectra to text files.
 
         Is called from t_r_a_write_files.
@@ -779,8 +780,8 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label,
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% \
         {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
-def EOT_plot(stacks_list, wavelengths, params_layer = 1, num_pw_per_pol = 0,
-    add_name = ''):
+def EOT_plot(stacks_list, wavelengths, params_layer=1, num_pw_per_pol=0,
+    add_name=''):
     """ Plot T_{00} as in Martin-Moreno PRL 86 2001.
         To plot {9,0} component of TM polarisation set num_pw_per_pol = num_pw_per_pol.
     """
@@ -864,7 +865,7 @@ def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,
 
 
 #### Plot dispersion diagrams & field concentrations function of wavelength ###
-def omega_plot(stacks_list, wavelengths, params_layer = 1, stack_label = 1):
+def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
     """ Plots the dispersion diagram of each layer in one plot. \
         k_z has units nm^-1.
 
@@ -946,7 +947,7 @@ def omega_plot(stacks_list, wavelengths, params_layer = 1, stack_label = 1):
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
 def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths,
-    params_layer = 1, stack_label = 1):
+    params_layer=1, stack_label=1):
     """ Plots the energy concentration (epsilon E_cyl / epsilon E_cell) of given layer.
 
         Args:
@@ -1002,8 +1003,8 @@ def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths,
 
 
 #### Visualise scattering Matrices ############################################
-def vis_scat_mats(scat_mat, nu_prop_PWs = 0, wl = None, add_name = '',
-    max_scale = None):
+def vis_scat_mats(scat_mat, nu_prop_PWs=0, wl=None, add_name='',
+    max_scale=None):
     """ Plot given scattering matrix as greyscale images.
 
         Args:
@@ -1065,7 +1066,7 @@ def vis_scat_mats(scat_mat, nu_prop_PWs = 0, wl = None, add_name = '',
     plt.suptitle('Scattering Matrices' + add_name)
     plt.savefig('Scat_mat' + add_name)
 
-def vis_matrix(scat_mat, add_name = '', max_scale = None, only_real = True):
+def vis_matrix(scat_mat, add_name='', max_scale=None, only_real=True):
     """ Plot given matrix as a greyscale image.
 
         Args:
@@ -1106,7 +1107,7 @@ def vis_matrix(scat_mat, add_name = '', max_scale = None, only_real = True):
 
 
 #### Plot PW amplitudes function k-vector #####################################
-def t_func_k_plot_1D(stacks_list, lay_interest = 0, pol = 'TE'):
+def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
     """ PW amplitudes in transmission as a function of their in-plane k-vector.
 
         Args:
@@ -1192,8 +1193,8 @@ def t_func_k_plot_1D(stacks_list, lay_interest = 0, pol = 'TE'):
 
 
 #### Plot amplitudes of modes #################################################
-def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = None,
-    lay_interest = 1, up_and_down = True, add_height = None, add_name = ''):
+def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
+    lay_interest=1, up_and_down=True, add_height=None, add_name=''):
     """ Plot the amplitudes of Bloch modes in selected layer.
 
         Args:
@@ -1267,8 +1268,8 @@ def BM_amplitudes(stacks_list, xvalues = None, chosen_BMs = None,
         print "BM_amplitudes only works in NanoStruct layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
 
-def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,
-    lay_interest = 0, up_and_down = True, add_height = None, add_name = ''):
+def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
+    lay_interest=0, up_and_down=True, add_height=None, add_name=''):
     """ Plot the amplitudes of plane wave orders in selected layer.
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
@@ -1381,9 +1382,9 @@ def PW_amplitudes(stacks_list, xvalues = None, chosen_PWs = None,
         print "PW_amplitudes only works in ThinFilm layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
 
-def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,
-    lay_interest = 0, add_height = None, add_name = '',
-    save_pdf = True, save_txt = False):
+def evanescent_merit(stacks_list, xvalues=None, chosen_PWs=None,
+    lay_interest=0, add_height=None, add_name='',
+    save_pdf=True, save_txt=False):
     """ Plot a figure of merit for the 'evanescent-ness' of excited fields.
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
@@ -1535,8 +1536,8 @@ def evanescent_merit(stacks_list, xvalues = None, chosen_PWs = None,
 
 
 #### Field plotting routines ##################################################
-def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6],
-    nu_calc_pts = 51):
+def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
+    nu_calc_pts=51):
     """
     Plot fields in the x-y plane at chosen values of z.
 
@@ -1733,14 +1734,14 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6],
             E_sup_labels = [' E_x', ' E_y', ' E_z', ' |E|',]
 
             # Save figures
-            for p in ['real','imag']:
+            for re_im in ['real','imag']:
                 for z_of_xy in xrange(np.size(z1)):
                     fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
                     for i in range(len(E_super)):
                         ax1 = fig1.add_subplot(4,1,i+1)
-                        if p == 'real':
+                        if re_im == 'real':
                             E_slice = np.real(E_super[i][:,:,z_of_xy])
-                        elif p == 'imag':
+                        elif re_im == 'imag':
                             E_slice = np.imag(E_super[i][:,:,z_of_xy])
                         x_min = x1[0]
                         x_max = x1[-1]
@@ -1804,8 +1805,9 @@ def fields_in_plane(stacks_list, lay_interest = 1, z_values = [0.1, 3.6],
             # # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
             # # vec_coef_down[neq_PW] = 1.0
 
-def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
-    gradient = None, scale_axis = True, no_incoming = False, add_name = ''):
+def fields_vertically(stacks_list, nu_calc_pts=51, semi_inf_height=1.0,
+    gradient=None, scale_axis=True, no_incoming=False, re_im = 'real',
+    add_name=''):
     """
     Plot fields in the x-y plane at chosen values of z, where z is \
     calculated from the bottom of chosen layer.
@@ -1817,8 +1819,8 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
             nu_calc_pts  (int): fields are calculated over a mesh of \
                 nu_calc_pts * nu_calc_pts points.
 
-            max_height  (float): distance to which fields are plotting in \
-                semi-infinite (sub)superstrates.
+            semi_inf_height  (float): distance to which fields are plotting \
+                in semi-infinite (sub)superstrates.
 
             gradient  (float): further slices calculated with given gradient \
                 and -gradient. It is entitled 'specified_diagonal_slice'.\
@@ -1832,7 +1834,9 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
                 absence of the incident driving field (i.e. only showing \
                 upward propagating scattered field).
 
-            add_name  (str): Add add_name to title.
+            re_im  (str): plot 'real' or 'imag' part of fields.
+
+            add_name  (str): concatenate add_name to title.
     """
 
     from fortran import EMUstack
@@ -1847,522 +1851,460 @@ def fields_vertically(stacks_list, nu_calc_pts = 51, max_height = 2.0,
 
     # always make odd
     if nu_calc_pts % 2 == 0: nu_calc_pts += 1
-    user_max_height = max_height
 
     stack_num = 0
     for pstack in stacks_list:
-        num_lays = len(pstack.layers)
-        nnodes = 6
-        for lay in xrange(np.size(pstack.layers)):
-            meat = pstack.layers[lay]
-            # If NanoStruct layer plot fields using fortran routine.
-            if isinstance(meat,mode_calcs.Simmo):
-                name_lay = "%i_NanoStruct"% lay
+        num_lays  = len(pstack.layers)
+        period    = pstack.layers[0].structure.period
+        pw        = pstack.layers[0].max_order_PWs
+        wl_normed = pstack.layers[0].wl_norm()
 
-                h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-                wl_normed = pstack.layers[lay].wl_norm()
-                gmsh_file_pos = 'stack_%(stack_num)s_lay_%(name)s_'% \
-                                {'name' : name_lay,'stack_num':stack_num}
-                # eps_eff = meat.n_effs**2
-                n_eff = meat.n_effs
+        # Stack layers on top of one another to find heights of interfaces.
+        h_list        = np.zeros(num_lays+1)
+        h_list[0]     = -semi_inf_height
+        ind_h_list    = np.zeros(num_lays)
+        ind_h_list[0] = semi_inf_height
+        for lay in range(2, num_lays):
+            layer = pstack.layers[lay-1]
+            lay_h = float(layer.structure.height_nm)/float(layer.structure.period)
+            h_list[lay] = h_list[lay-1] + lay_h
+            ind_h_list[lay-1] = lay_h
+        h_list[-1] = h_list[-2] + semi_inf_height
+        ind_h_list[-1] = semi_inf_height
 
-                # vec_coef sorted from top, everything else sorted from bottom
-                vec_index = num_lays - lay - 1
-                vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
-                    pstack.vec_coef_up[vec_index]))
+        min_h = ind_h_list.min()
+        h_ratio = [h/min_h for h in ind_h_list]
+        print h_ratio
 
-                struct = meat.structure
-                if meat.structure.periodicity == '1D_array':
-                    sdsdlfj = 0
-            # try:
-            #     meat = pstack.layers[lay]
-            #     if not isinstance(meat,mode_calcs.Simmo):
-            #         raise ValueError
-            #     if not meat.structure.periodicity == '1D_array':
-            #         raise ValueError
-
-            #     h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
-            #     wl_normed = pstack.layers[lay].wl_norm()
-            #     eps_eff = meat.n_effs**2
-
-            #     # vec_coef sorted from top, everything else sorted from bottom
-            #     vec_index = num_lays - lay - 1
-            #     vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
-            #         pstack.vec_coef_up[vec_index]))
-
-            #     struct = meat.structure
-            #     boundary = []
-            #     dx = (struct.x_arr[1] - struct.x_arr[0]) / 2.0
-            #     plot_x = np.arange(0,1+dx,dx)
-            #     for i in range(len(struct.type_el) - 1):
-            #         if struct.type_el[i] != struct.type_el[i+1]:
-            #             boundary.append(struct.x_arr[i] + dx)
-
-            #     fields = ['x', 'y', 'z']
-            #     for BM in range(meat.num_BM):
-            #         fig = plt.figure()
-            #         plot_sol_eps_abs = np.zeros(struct.n_msh_pts)
-            #         for i in range(len(fields)):
-            #             # sol_P2([Ex,Ey,Ez],P2_interpolation_points,nval,nel)
-            #             BM_sol = meat.sol1[i,:,BM,:]
-            #             plot_sol = [np.real(BM_sol[0,0])]
-            #             plot_sol_eps_abs[0] += eps_eff[struct.type_el[0]-1] * abs(BM_sol[0,0])
-            #             for x in range(struct.n_msh_el - 1):
-            #                 plot_sol.append(np.real(BM_sol[1,x]))
-            #                 plot_sol.append(np.real(BM_sol[2,x] + BM_sol[0,x+1]) / 2)
-            #                 plot_sol_eps_abs[2*x+1] += eps_eff[struct.type_el[x]-1] * abs(BM_sol[1,x])
-            #                 plot_sol_eps_abs[2*x+2] += eps_eff[struct.type_el[x]-1] * abs(BM_sol[2,x])
-
-            #             plot_sol.append(np.real(BM_sol[1,-1]))
-            #             plot_sol.append(np.real(BM_sol[2,-1]))
-            #             plot_sol_eps_abs[-2] += eps_eff[struct.type_el[-1]-1] * abs(BM_sol[1,x])
-            #             plot_sol_eps_abs[-1] += eps_eff[struct.type_el[-1]-1] * abs(BM_sol[2,x])
-
-            #             ax1 = fig.add_subplot(4, 1, i+1)
-            #             ax1.plot(struct.x_arr, plot_sol)
-            #             ax1.set_ylabel(r'Re(E$_%s$)'% fields[i])
-            #             ax1.set_xticklabels( () )
-            #             start, end = ax1.get_ylim()
-            #             ax1.yaxis.set_ticks(np.linspace(start, end, 3))
-            #         ax1 = fig.add_subplot(4, 1, 4)
-            #         ax1.plot(struct.x_arr, plot_sol_eps_abs)
-            #         start, end = ax1.get_ylim()
-            #         ax1.yaxis.set_ticks(np.linspace(start, end, 3))
-            #         ax1.set_ylabel(r'$\epsilon$ |E|$^2$')
-            #         ax1.set_xlabel('x (d)')
-
-            #         name_lay = "layer-%(lay)i-BM_%(BM)i"% {'lay' : lay, 'BM' : BM}
-            #         plt.savefig(dir_name + '/' + name_lay)
-
-
-
-
-
-
-
-
-
-
-
-
-
-                else:
-                    scale_plot = 2.0
-                    shift_x_plot = -.5
-                    shift_v_plot = h_normed*0.75
-                    EMUstack.gmsh_plot_slice(meat.E_H_field, meat.num_BM,
-                        meat.n_msh_el, meat.n_msh_pts, nnodes, meat.type_el,
-                        meat.structure.nb_typ_el, n_eff, meat.table_nod,
-                        meat.x_arr, meat.k_z, meat.sol1, vec_coef,
-                        h_normed, wl_normed, gmsh_file_pos,
-                        scale_plot, shift_v_plot, shift_x_plot)
-
+        if isinstance(layer,mode_calcs.Anallo):
+            if layer.structure.world_1d == True:
+                slice_types = ['xz']
+        else:
+            if layer.structure.periodicity == '1D_array':
+                slice_types = ['xz']
             else:
-                if lay == 0: name_lay = "%i_Substrate"% lay
-                elif lay == num_lays-1: name_lay = "%i_Superstrate"% lay
-                else: name_lay = "%i_ThinFilm"% lay
-                wl = np.around(pstack.layers[-1].light.wl_nm,decimals=2)
-                pw = pstack.layers[-1].max_order_PWs
-                period = pstack.layers[-1].structure.period
-                heights_list = []
+                slice_types = ['xz','yz','diag+','diag-']
+                if gradient != None: slice_types.append('special+','special-')
 
-                for i in xrange(num_lays):
-                    if i == 0 or i == num_lays-1: pass
-                    else: heights_list.append(pstack.layers[i].structure.height_nm)
-                    try:
-                        pstack.layers[i].structure.diameter1
-                        diameter = pstack.layers[i].structure.diameter1
-                    except: pass
+        for sli in slice_types:
+            E_fields = ['E_x', 'E_y', 'E_z']#, '|E|']
+            for E in E_fields:
+                fig = plt.figure()#num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                gs = gridspec.GridSpec(num_lays, 1, wspace=0.0, hspace=0.0,
+                    width_ratios=[1,1],
+                    height_ratios=h_ratio)
+                # Iterate through layers
+                for lay in xrange(num_lays):
+                    ax1 = plt.subplot(gs[num_lays-lay-1])
+                    layer = pstack.layers[lay]
 
-                x_range = np.linspace(0.0,1.0,nu_calc_pts)
-                y_range = np.linspace(0.0,1.0,nu_calc_pts)
-                z_range = np.linspace(0.0,max_height,nu_calc_pts)
+                    if lay == 0:
+                        z_range = np.linspace(h_list[lay],0.0,nu_calc_pts)
+                    else:
+                        z_range = np.linspace(0.0,h_list[lay+1]-h_list[lay],nu_calc_pts)
 
-                if lay == 0 or lay == num_lays-1:
-                    max_height = user_max_height
-                    z_range = np.linspace(0,max_height,nu_calc_pts)
-                else:
-                    max_height = np.around(float(meat.structure.height_nm)/period,decimals=4)
-                    z_range = np.linspace(0,max_height,nu_calc_pts)
+                    # If 2D_array NanoStruct layer plot fields using fortran routine.
+                    if isinstance(layer,mode_calcs.Simmo):
+                        name_lay = "%i_NanoStruct"% lay
+                        gmsh_file_pos = 'stack_%(stack_num)s_lay_%(name)s_'% \
+                                        {'name' : name_lay,'stack_num':stack_num}
+                        # n_eff = layer.n_effs
+                        eps_eff = layer.n_effs**2
 
-                s = meat.sort_order
-                alpha_unsrt = np.array(meat.alphas)
-                beta_unsrt = np.array(meat.betas)
-                alpha = alpha_unsrt[s]
-                if meat.structure.world_1d == True:
-                    beta = beta_unsrt
-                else:
-                    beta = beta_unsrt[s]
-                gamma = np.array(meat.calc_kz())
-                n = meat.n()
-                PWordtot = meat.structure.num_pw_per_pol
-                prop = 2*(gamma.imag == 0).sum()
-                evan = 2*PWordtot - prop
+                        # vec_coef sorted from top, everything else sorted from bottom
+                        vec_index = num_lays - lay - 1
+                        vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
+                            pstack.vec_coef_up[vec_index]))
 
-                if lay == num_lays-1 and no_incoming == True:
-                    vec_coef_down = np.zeros((2*PWordtot), dtype = 'complex')
-                else:
-                    vec_coef_down = np.array(pstack.vec_coef_down[num_lays-1-lay]).flatten()
-                vec_coef_down_TE = vec_coef_down[0:PWordtot]
-                vec_coef_down_TM = vec_coef_down[PWordtot::]
+                        if layer.structure.periodicity == '2D_array':
+                            scale_plot   = 2.0
+                            shift_x_plot = -.5
+                            shift_v_plot = h_normed*0.75
+                            nnodes = 6
+                            EMUstack.gmsh_plot_slice(layer.E_H_field, layer.num_BM,
+                                layer.n_msh_el, layer.n_msh_pts, nnodes, layer.type_el,
+                                layer.structure.nb_typ_el, eps_eff, layer.table_nod,
+                                layer.x_arr, layer.k_z, layer.sol1, vec_coef,
+                                h_normed, wl_normed, gmsh_file_pos,
+                                scale_plot, shift_v_plot, shift_x_plot)
 
-                if lay == 0:
-                    vec_coef_up = np.zeros((2*PWordtot), dtype = 'complex')
-                else:
-                    vec_coef_up = np.array(pstack.vec_coef_up[num_lays-1-lay]).flatten()
-                vec_coef_up_TE = vec_coef_up[0:PWordtot]
-                vec_coef_up_TM = vec_coef_up[PWordtot::]
-
-                norm = np.sqrt(alpha**2+beta**2)
-                k = np.sqrt(alpha**2+beta**2+gamma**2)
-                chi_TE = np.sqrt((n*gamma)/k)
-                chi_TM = np.sqrt((n*k)/gamma)
-                E_TE_x = beta/norm
-                E_TE_y = -1*alpha/norm
-                E_TE_z = np.array(np.zeros(np.size(E_TE_x)))
-                E_TM_x = alpha/norm
-                E_TM_y = beta/norm
-                E_TM_z = -1*norm/gamma
-                k = np.around(k,decimals=4)
-                n = np.around(n,decimals=4)
-
-                eta_TE_x_down = (vec_coef_down_TE*E_TE_x)/chi_TE
-                eta_TE_y_down = (vec_coef_down_TE*E_TE_y)/chi_TE
-                eta_TE_z_down = (vec_coef_down_TE*E_TE_z)/chi_TE
-                eta_TM_x_down = (vec_coef_down_TM*E_TM_x)/chi_TM
-                eta_TM_y_down = (vec_coef_down_TM*E_TM_y)/chi_TM
-                eta_TM_z_down = (vec_coef_down_TM*E_TM_z)/chi_TM
-
-                eta_TE_x_up = (vec_coef_up_TE*E_TE_x)/chi_TE
-                eta_TE_y_up = (vec_coef_up_TE*E_TE_y)/chi_TE
-                eta_TE_z_up = (vec_coef_up_TE*E_TE_z)/chi_TE
-                eta_TM_x_up = (vec_coef_up_TM*E_TM_x)/chi_TM
-                eta_TM_y_up = (vec_coef_up_TM*E_TM_y)/chi_TM
-                eta_TM_z_up = (vec_coef_up_TM*E_TM_z)/chi_TM
-
-                x_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
-                y_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
-
-                if meat.structure.world_1d == True:
-                    slice_type = ['xz']
-                else:
-                    slice_type = ['xz','yz','diag+','diag-']
-                    if gradient != None: slice_type.append('special+','special-')
-
-                if lay==0:
-                    max_height = -1*max_height
-                    z_range = np.linspace(max_height,0.0,nu_calc_pts)
-
-                for s in slice_type:
-                    if s == 'xz':
-                        x1 = x_range
-                        if meat.structure.world_1d == True:
-                            y1 = np.array([0])
                         else:
-                            y1 = np.array([0,0.5])
-                        z1 = z_range
-                        (y_axis,x_axis) = np.meshgrid(z1,x1)
-                    elif s == 'yz':
-                        x1 = np.array([0,0.5])
-                        y1= y_range
-                        z1 = z_range
-                        (y_axis,x_axis) = np.meshgrid(z1,y1)
-                    elif s == 'diag+':
-                        x1 = x_range
-                        y1 = np.array([0])
-                        y2 = x_range
-                        z1 = z_range
-                        (y_axis,x_axis) = np.meshgrid(z1,sqrt(2)*x1)
-                    elif s == 'diag-':
-                        x1 = x_range[::-1]
-                        y1 = np.array([0])
-                        y2 = x_range
-                        z1 = z_range
-                        (y_axis,x_axis) = np.meshgrid(z1,sqrt(2)*x1[::-1])
-                    elif s == 'special+':
-                        x1 = x_range
-                        y1 = np.array([0])
-                        y2 = gradient*x_range
-                        for i in xrange(np.size(y2)):
-                                if y2[i] > 1:
-                                    y2 = np.resize(y2,(i,))
-                                    x1 = np.resize(x1,(i,))
-                                    break
-                        z1 = z_range
-                        (y_axis,x_axis) = np.meshgrid(z1,sqrt(1+gradient**2)*x1)
-                    elif s == 'special-':
-                        x1 = x_range[::-1]
-                        y1 = np.array([0])
-                        y2 = gradient*x_range
-                        for i in xrange(np.size(y2)):
-                                if y2[i] > 1:
-                                    y2 = np.resize(y2,(i,))
-                                    x1 = np.resize(x1,(i,))
-                                    break
-                        z1 = z_range
-                        (y_axis,x_axis) = np.meshgrid(z1,sqrt(1+gradient**2)*(x1[::-1]-x1[-1]))
+                            if sli == 'xz':
+                                print 'hi dick'
+                                struct = layer.structure
+                                E_field = np.zeros((struct.n_msh_pts,1,nu_calc_pts), dtype = 'complex')
 
-                    E_TE_x_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-                    E_TE_y_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-                    E_TE_z_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-                    E_TM_x_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-                    E_TM_y_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
-                    E_TM_z_array = np.zeros((np.size(x1),np.size(y1),np.size(z1)), dtype = 'complex')
+                                (y_axis_plot,x_axis_plot) = np.meshgrid(z_range,struct.n_msh_pts)
 
-                    for z in xrange(np.size(z1)):
-                        for y in xrange(np.size(y1)):
-                            for x in xrange(np.size(x1)):
-                                if s == 'diag+' or s == 'diag-' or s == 'special+' or s == 'special-':
-                                    if meat.structure.height_nm == 'semi_inf':
-                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*z1[z]))
-                                    else:
-                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*(z1[z]-float(meat.structure.height_nm)/period)))
-                                    expo_up = np.exp(1j*(alpha*x1[x]+beta*y2[x]+gamma*z1[z]))
+                                if lay == 0:
+                                    stack_field = E_field
+                                    stack_coords_x = x_axis_plot
+                                    stack_coords_y = y_axis_plot
                                 else:
-                                    if meat.structure.height_nm == 'semi_inf':
-                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*z1[z]))
+                                    stack_field = np.concatenate((stack_field, E_field),axis=0)
+                                    stack_coords_x = np.concatenate((stack_coords_x, x_axis_plot),axis=0)
+                                    stack_coords_y = np.concatenate((stack_coords_y, y_axis_plot),axis=0)
+
+                            else:
+                                print 'Whoops, not implemented..'
+                            # scale_plot = 2.0
+                            # shift_x_plot = -.5
+                            # shift_v_plot = h_normed*0.75
+                            # EMUstack.gmsh_plot_slice_1d(layer.E_H_field, layer.num_BM,
+                            #     struct.n_msh_el, struct.n_msh_pts, struct.type_el,
+                            #     struct.nb_typ_el, n_eff, struct.table_nod,
+                            #     struct.x_arr, layer.k_z, layer.sol1, vec_coef,
+                            #     h_normed, wl_normed, gmsh_file_pos,
+                            #     scale_plot, shift_v_plot, shift_x_plot)
+
+                    # ThinFilm layer, using Plane Wave basis.
+                    else:
+                        x_range = np.linspace(0.0,1.0,nu_calc_pts)
+                        y_range = np.linspace(0.0,1.0,nu_calc_pts)
+
+                        s = layer.sort_order
+                        alpha_unsrt = np.array(layer.alphas)
+                        beta_unsrt = np.array(layer.betas)
+                        alpha = alpha_unsrt[s]
+                        if layer.structure.world_1d == True:
+                            beta = beta_unsrt
+                        else:
+                            beta = beta_unsrt[s]
+                        gamma = np.array(layer.calc_kz())
+                        n = layer.n()
+                        num_pws = layer.structure.num_pw_per_pol
+
+                        if lay == num_lays-1 and no_incoming == True:
+                            vec_coef_down = np.zeros((2*num_pws), dtype = 'complex')
+                        else:
+                            vec_coef_down = np.array(pstack.vec_coef_down[num_lays-1-lay]).flatten()
+                        vec_coef_down_TE = vec_coef_down[0:num_pws]
+                        vec_coef_down_TM = vec_coef_down[num_pws::]
+
+                        if lay == 0:
+                            vec_coef_up = np.zeros((2*num_pws), dtype = 'complex')
+                        else:
+                            vec_coef_up = np.array(pstack.vec_coef_up[num_lays-1-lay]).flatten()
+                        vec_coef_up_TE = vec_coef_up[0:num_pws]
+                        vec_coef_up_TM = vec_coef_up[num_pws::]
+
+                        norm = np.sqrt(alpha**2+beta**2)
+                        k = np.sqrt(alpha**2+beta**2+gamma**2)
+                        chi_TE = np.sqrt((n*gamma)/k)
+                        chi_TM = np.sqrt((n*k)/gamma)
+                        E_TE_x = beta/norm
+                        E_TE_y = -1*alpha/norm
+                        E_TE_z = np.array(np.zeros(np.size(E_TE_x)))
+                        E_TM_x = alpha/norm
+                        E_TM_y = beta/norm
+                        E_TM_z = -1*norm/gamma
+
+                        if E == 'E_x':
+                            TE_coef = E_TE_x
+                            TM_coef = E_TM_x
+                        elif E == 'E_y':
+                            TE_coef = E_TE_y
+                            TM_coef = E_TM_y
+                        elif E == 'E_z':
+                            TE_coef = E_TE_z
+                            TM_coef = E_TM_z
+
+                        eta_TE_down = (vec_coef_down_TE*TE_coef)/chi_TE
+                        eta_TM_down = (vec_coef_down_TM*TM_coef)/chi_TM
+                        eta_TE_up = (vec_coef_up_TE*TE_coef)/chi_TE
+                        eta_TM_up = (vec_coef_up_TM*TM_coef)/chi_TM
+
+                        x_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
+                        y_axis = np.zeros((nu_calc_pts,nu_calc_pts), dtype = 'float')
+
+                        if sli == 'xz':
+                            x1 = x_range
+                            if layer.structure.world_1d == True:
+                                y1 = np.array([0])
+                            else:
+                                y1 = np.array([0,0.5])
+                            (y_axis,x_axis) = np.meshgrid(z_range,x1)
+                        elif sli == 'yz':
+                            x1 = np.array([0,0.5])
+                            y1= y_range
+                            (y_axis,x_axis) = np.meshgrid(z_range,y1)
+                        elif sli == 'diag+':
+                            x1 = x_range
+                            y1 = np.array([0])
+                            y2 = x_range
+                            (y_axis,x_axis) = np.meshgrid(z_range,sqrt(2)*x1)
+                        elif sli == 'diag-':
+                            x1 = x_range[::-1]
+                            y1 = np.array([0])
+                            y2 = x_range
+                            (y_axis,x_axis) = np.meshgrid(z_range,sqrt(2)*x1[::-1])
+                        elif sli == 'special+':
+                            x1 = x_range
+                            y1 = np.array([0])
+                            y2 = gradient*x_range
+                            for i in xrange(np.size(y2)):
+                                if y2[i] > 1:
+                                    y2 = np.resize(y2,(i,))
+                                    x1 = np.resize(x1,(i,))
+                                    break
+                            (y_axis,x_axis) = np.meshgrid(z_range,sqrt(1+gradient**2)*x1)
+                        elif sli == 'special-':
+                            x1 = x_range[::-1]
+                            y1 = np.array([0])
+                            y2 = gradient*x_range
+                            for i in xrange(np.size(y2)):
+                                if y2[i] > 1:
+                                    y2 = np.resize(y2,(i,))
+                                    x1 = np.resize(x1,(i,))
+                                    break
+                            (y_axis,x_axis) = np.meshgrid(z_range,sqrt(1+gradient**2)*(x1[::-1]-x1[-1]))
+
+                        E_field = np.zeros((np.size(x1),np.size(y1),np.size(z_range)), dtype = 'complex')
+
+                        for z in xrange(np.size(z_range)):
+                            for y in xrange(np.size(y1)):
+                                for x in xrange(np.size(x1)):
+                                    if sli == 'diag+' or sli == 'diag-' or sli == 'special+' or sli == 'special-':
+                                        if layer.structure.height_nm == 'semi_inf':
+                                            expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*z_range[z]))
+                                        else:
+                                            expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*(z_range[z]-float(layer.structure.height_nm)/period)))
+                                        expo_up = np.exp(1j*(alpha*x1[x]+beta*y2[x]+gamma*z_range[z]))
                                     else:
-                                        expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*(z1[z]-float(meat.structure.height_nm)/period)))
-                                    expo_up = np.exp(1j*(alpha*x1[x]+beta*y1[y]+gamma*z1[z]))
+                                        if layer.structure.height_nm == 'semi_inf':
+                                            expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*z_range[z]))
+                                        else:
+                                            expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*(z_range[z]-float(layer.structure.height_nm)/period)))
+                                        expo_up = np.exp(1j*(alpha*x1[x]+beta*y1[y]+gamma*z_range[z]))
 
-                                E_TE_x = np.sum(eta_TE_x_down*expo_down + eta_TE_x_up*expo_up)
-                                E_TE_y = np.sum(eta_TE_y_down*expo_down + eta_TE_y_up*expo_up)
-                                E_TE_z = np.sum(eta_TE_z_down*expo_down + eta_TE_z_up*expo_up)
-                                E_TM_x = np.sum(eta_TM_x_down*expo_down + eta_TM_x_up*expo_up)
-                                E_TM_y = np.sum(eta_TM_y_down*expo_down + eta_TM_y_up*expo_up)
-                                E_TM_z = np.sum(eta_TM_z_down*expo_down + eta_TM_z_up*expo_up)
-                                E_TE_x_array[x,y,z] = E_TE_x
-                                E_TE_y_array[x,y,z] = E_TE_y
-                                E_TE_z_array[x,y,z] = E_TE_z
-                                E_TM_x_array[x,y,z] = E_TM_x
-                                E_TM_y_array[x,y,z] = E_TM_y
-                                E_TM_z_array[x,y,z] = E_TM_z
-                    E_x_array = E_TE_x_array + E_TM_x_array
-                    E_y_array = E_TE_y_array + E_TM_y_array
-                    E_z_array = E_TE_z_array + E_TM_z_array
-                    E_tot_array = np.sqrt(E_x_array*np.conj(E_x_array) + E_y_array*np.conj(E_y_array) + E_z_array*np.conj(E_z_array))
+                                    E_field[x,y,z] = np.sum(eta_TE_down*expo_down + eta_TE_up*expo_up) + np.sum(eta_TM_down*expo_down + eta_TM_up*expo_up)
+                                    # E_tot_array = np.sqrt(E_x_array*np.conj(E_x_array) + E_y_array*np.conj(E_y_array) + E_z_array*np.conj(E_z_array))
 
-                    E_super = [E_x_array, E_y_array, E_z_array, E_tot_array]
-                    E_sup_labels = [' E_x', ' E_y', ' E_z', ' |E|',]
+                        if sli == 'xz':
+                            if re_im == 'real':
+                                E_slice = np.real(E_field[:,0,:])
+                            elif re_im == 'imag':
+                                E_slice = np.imag(E_field[:,0,:])
+                            x_min = x_range[0]
+                            x_max = x_range[-1]
+                            z_min = z_range[0]
+                            z_max = z_range[-1]
+                            cmap = plt.get_cmap('jet')
+                            CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
+                            ax1.set_xlim((x_min,x_max))
+                            ax1.set_ylim((z_min,z_max))
 
-                    for p in ['real','imag']:
-                        if s == 'xz':
-                            for y_of_xz in xrange(len(y1)):
-                                fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                                for i in range(len(E_super)):
-                                    ax1 = fig1.add_subplot(4,1,i+1)
-                                    if p == 'real':
-                                        E_slice = np.real(E_super[i][:,y_of_xz,:])
-                                    elif p == 'imag':
-                                        E_slice = np.imag(E_super[i][:,y_of_xz,:])
-                                    x_min = x_range[0]
-                                    x_max = x_range[-1]
-                                    z_min = z1[0]
-                                    z_max = z1[-1]
-                                    cmap = plt.get_cmap('jet')
-                                    CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
-                                    plt.axis([x_min,x_max,z_min,z_max])
-                                    cbar = plt.colorbar()
-                                    cbar.ax.set_ylabel(p + E_sup_labels[i])
-                                    ax1.set_xlabel('x (d)')
-                                    ax1.set_ylabel('z (d)')
-                                    if scale_axis == True: ax1.axis('scaled')
-                                    ax1.xaxis.set_ticks([x_min,x_max])
-                                    ax1.set_ylim((z_min,z_max))
-                                    if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
+                    if lay == 0:
+                        plt.xlabel('x (d)')
+                    else:
+                        # ax1.set_xlim((x_min,x_max))
+                        # ax1.xaxis.set_ticks(())
+                        ax1.set_xticklabels( () )
 
-                                plt.suptitle('%(name)s \n E_xz_slice_%(p)s, y = %(y_pos)s, heights = %(h)s \n \
-                                $\lambda$ = %(wl)f nm, period = %(d)f, PW = %(pw)i, %(add)s' % \
-                                    {'name' : name_lay, 'h':heights_list, 'p' : p, 'y_pos' : y1[y_of_xz],'wl' : wl, \
-                                    'd' : period, 'pw' : pw, 'add' : add_name} + '\n'
-                                    + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
-                                    'prop' : prop, 'n' : n, 'k' : k[0]})
-                                plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_xz_slice=%(y_pos)s_wl=%(wl)s_%(p)s%(add)s.pdf'% \
-                                    {'dir_name' : dir_name,'p':p, 'wl' : wl, 'y_pos' : y1[y_of_xz], \
-                                    'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
+                    # if scale_axis == True: ax1.axis('scaled')
 
-                        elif s == 'yz':
-                            for x_of_yz in xrange(np.size(x1)):
-                                fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                                for i in range(len(E_super)):
-                                    ax1 = fig1.add_subplot(4,1,i+1)
-                                    if p == 'real':
-                                        E_slice = np.real(E_super[i][x_of_yz,:,:])
-                                    elif p == 'imag':
-                                        E_slice = np.imag(E_super[i][x_of_yz,:,:])
-                                    y_min = y_range[0]
-                                    y_max = y_range[-1]
-                                    z_min = z1[0]
-                                    z_max = z1[-1]
-                                    cmap = plt.get_cmap('jet')
-                                    CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
-                                    plt.axis([y_min,y_max,z_min,z_max])
-                                    cbar = plt.colorbar()
-                                    cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                                    ax1.set_xlabel('y (d)')
-                                    ax1.set_ylabel('z (d)')
-                                    if scale_axis == True: ax1.axis('scaled')
-                                    ax1.xaxis.set_ticks([x_min,x_max])
-                                    ax1.set_ylim((z_min,z_max))
-                                    if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
 
-                                plt.suptitle('%(name)s \n E_yz_slice_%(p)s, x = %(x_pos)s, heights = %(h)s \n \
-                                    $\lambda$ = %(wl)snm, period = %(d)f, PW = %(pw)i, %(add)s' % \
-                                    {'name' : name_lay, 'h':heights_list, 'p' : p, 'x_pos' : x1[x_of_yz],'wl' : wl, \
-                                    'd' : period, 'pw' : pw, 'add' : add_name} + '\n'
-                                    + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , \
-                                    n = %(n)s, k = %(k)s' % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                                plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_yz_slice=%(x_pos)s_wl=%(wl)s_%(p)s%(add)s.pdf'% \
-                                    {'dir_name' : dir_name, 'p':p, 'wl' : wl, 'x_pos' : x1[x_of_yz],\
-                                    'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
+                cbar = plt.colorbar()
+                # cbar.ax.set_ylabel(re_im + ' ' + E)
+                # plt.ylabel('z (d)')
 
-                        elif s == 'diag+':
-                            diag = 1
-                            fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                            for i in range(len(E_super)):
-                                ax1 = fig1.add_subplot(4,1,i+1)
-                                if p == 'real':
-                                    E_slice = np.real(E_super[i][:,0,:])
-                                elif p == 'imag':
-                                    E_slice = np.imag(E_super[i][:,0,:])
-                                y_min = y_range[0]
-                                y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
-                                z_min = z1[0]
-                                z_max = z1[-1]
-                                cmap = plt.get_cmap('jet')
-                                CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
-                                plt.axis([y_min,y_max,z_min,z_max])
-                                cbar = plt.colorbar()
-                                cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                                ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
-                                ax1.set_ylabel('z (d)')
-                                if scale_axis == True: ax1.axis('scaled')
-                                ax1.xaxis.set_ticks([y_min,y_max])
-                                ax1.set_xlim((y_min,y_max))
-                                ax1.set_ylim((z_min,z_max))
-                                if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
+                # ax1.xaxis.set_ticks([x_min,x_max])
+                # ax1.set_ylim((z_min,z_max))
+                # if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
 
-                            plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
-                                $\lambda$ = %(wl)f, period = %(d)f, PW = %(pw)i, %(add)s' % \
-                                {'name' : name_lay, 'h':heights_list, 'p':p,'diag' : diag,'wl' : wl, 'd' : period, \
-                                'pw' : pw, 'add' : add_name} + '\n'
-                                + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
-                                {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
-                                {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, \
-                                'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
+                # plt.suptitle('%(name)s \n E_xz_slice_%(p)s, y = %(y_pos)s, heights = %(h)s \n \
+                # $\lambda$ = %(wl)f nm, period = %(d)f, PW = %(pw)i, %(add)s' % \
+                #     {'h':heights_list, 'p' : re_im, 'y_pos' : y1[y_of_xz],'wl' : wl, \
+                #     'd' : period, 'pw' : pw, 'add' : add_name} + '\n'
+                #     + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
+                #     'prop' : prop, 'n' : n, 'k' : k[0]})
 
-                        elif s == 'diag-':
-                            diag = -1
-                            fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                            for i in range(len(E_super)):
-                                ax1 = fig1.add_subplot(4,1,i+1)
-                                if p == 'real':
-                                    E_slice = np.real(E_super[i][:,0,:])
-                                elif p == 'imag':
-                                    E_slice = np.imag(E_super[i][:,0,:])
-                                y_min = y_range[0]
-                                y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
-                                z_min = z1[0]
-                                z_max = z1[-1]
-                                cmap = plt.get_cmap('jet')
-                                CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
-                                plt.axis([y_min,y_max,z_min,z_max])
-                                cbar = plt.colorbar()
-                                cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                                ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
-                                ax1.set_ylabel('z (d)')
-                                if scale_axis == True: ax1.axis('scaled')
-                                ax1.xaxis.set_ticks([y_min,y_max])
-                                ax1.set_xlim((y_min,y_max))
-                                ax1.set_ylim((z_min,z_max))
-                                if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
+                plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)i_E_xz_slice_%(comp)s_%(p)s%(add)s.pdf'% \
+                    {'dir_name' : dir_name, 'comp':E, 'p':re_im, \
+                    'name' : lay,'stack_num':stack_num, 'add' : add_name})
 
-                            plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
-                                $\lambda$ = %(wl)f nm, period = %(d)f, PW = %(pw)i, %(add)s' % \
-                                    {'name' : name_lay, 'h':heights_list,'diag' : diag, 'p' : p,'wl' : wl, \
-                                    'd' : period, 'pw' : pw, 'add' : add_name} + '\n'  +
-                                '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
-                                {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
-                                {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, \
-                                'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
+                        # elif sli == 'yz':
+                        #     for x_of_yz in xrange(np.size(x1)):
+                        #         fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                        #         for i in range(len(E_super)):
+                        #             ax1 = fig1.add_subplot(4,1,i+1)
+                        #             if re_im == 'real':
+                        #                 E_slice = np.real(E_super[i][x_of_yz,:,:])
+                        #             elif re_im == 'imag':
+                        #                 E_slice = np.imag(E_super[i][x_of_yz,:,:])
+                        #             y_min = y_range[0]
+                        #             y_max = y_range[-1]
+                        #             z_min = z_range[0]
+                        #             z_max = z_range[-1]
+                        #             cmap = plt.get_cmap('jet')
+                        #             CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
+                        #             plt.axis([y_min,y_max,z_min,z_max])
+                        #             cbar = plt.colorbar()
+                        #             cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
+                        #             ax1.set_xlabel('y (d)')
+                        #             ax1.set_ylabel('z (d)')
+                        #             if scale_axis == True: ax1.axis('scaled')
+                        #             ax1.xaxis.set_ticks([x_min,x_max])
+                        #             ax1.set_ylim((z_min,z_max))
+                        #             if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
 
-                        elif s == 'special+':
-                            diag = 1
-                            fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                            for i in range(len(E_super)):
-                                ax1 = fig1.add_subplot(4,1,i+1)
-                                if p == 'real':
-                                    E_slice = np.real(E_super[i][:,0,:])
-                                elif p == 'imag':
-                                    E_slice = np.imag(E_super[i][:,0,:])
-                                y_min = y_range[0]
-                                y_max = np.around(sqrt(1+gradient**2)*x1[-1],decimals=2)
-                                z_min = z1[0]
-                                z_max = z1[-1]
-                                cmap = plt.get_cmap('jet')
-                                CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
-                                plt.axis([y_min,y_max,z_min,z_max])
-                                cbar = plt.colorbar()
-                                cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                                ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
-                                ax1.set_ylabel('z (d)')
-                                if scale_axis == True: ax1.axis('scaled')
-                                ax1.xaxis.set_ticks([y_min,y_max])
-                                ax1.set_ylim((z_min,z_max))
-                                ax1.set_xlim((y_min,y_max))
-                                if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
+                        #         # plt.suptitle('%(name)s \n E_yz_slice_%(p)s, x = %(x_pos)s, heights = %(h)s \n \
+                        #         #     $\lambda$ = %(wl)snm, period = %(d)f, PW = %(pw)i, %(add)s' % \
+                        #         #     {'name' : name_lay, 'h':heights_list, 'p' : p, 'x_pos' : x1[x_of_yz],'wl' : wl, \
+                        #         #     'd' : period, 'pw' : pw, 'add' : add_name} + '\n'
+                        #         #     + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , \
+                        #         #     n = %(n)s, k = %(k)s' % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                        #         # plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_yz_slice=%(x_pos)s_wl=%(wl)s_%(p)s%(add)s.pdf'% \
+                        #         #     {'dir_name' : dir_name, 'p':p, 'wl' : wl, 'x_pos' : x1[x_of_yz],\
+                        #         #     'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
 
-                            plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(0,0) to (%(x)s,1), heights = %(h)s \n\
-                                $\lambda$ = %(wl)f, period = %(d)f, PW = %(pw)i, %(add)s' % \
-                                {'name' : name_lay, 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
-                                'pw' : pw, 'x':x1[-1], 'add' : add_name} + '\n' +
-                                '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
-                                {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
-                                {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
-                                'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
+                        # elif sli == 'diag+':
+                        #     diag = 1
+                        #     fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                        #     for i in range(len(E_super)):
+                        #         ax1 = fig1.add_subplot(4,1,i+1)
+                        #         if re_im == 'real':
+                        #             E_slice = np.real(E_super[i][:,0,:])
+                        #         elif re_im == 'imag':
+                        #             E_slice = np.imag(E_super[i][:,0,:])
+                        #         y_min = y_range[0]
+                        #         y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
+                        #         z_min = z1[0]
+                        #         z_max = z1[-1]
+                        #         cmap = plt.get_cmap('jet')
+                        #         CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
+                        #         plt.axis([y_min,y_max,z_min,z_max])
+                        #         cbar = plt.colorbar()
+                        #         cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
+                        #         ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
+                        #         ax1.set_ylabel('z (d)')
+                        #         if scale_axis == True: ax1.axis('scaled')
+                        #         ax1.xaxis.set_ticks([y_min,y_max])
+                        #         ax1.set_xlim((y_min,y_max))
+                        #         ax1.set_ylim((z_min,z_max))
+                        #         if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
 
-                        elif s == 'special-':
-                            diag = -1
-                            fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
-                            for i in range(len(E_super)):
-                                ax1 = fig1.add_subplot(4,1,i+1)
-                                if p == 'real':
-                                    E_slice = np.real(E_super[i][:,0,:])
-                                elif p == 'imag':
-                                    E_slice = np.imag(E_super[i][:,0,:])
-                                y_min = y_range[0]
-                                y_max = np.around(sqrt(1+gradient**2)*(x1[0]-x1[-1]),decimals=2)
-                                z_min = z1[0]
-                                z_max = z1[-1]
-                                cmap = plt.get_cmap('jet')
-                                CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
-                                plt.axis([y_min,y_max,z_min,z_max])
-                                cbar = plt.colorbar()
-                                cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
-                                ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
-                                ax1.set_ylabel('z (d)')
-                                if scale_axis == True: ax1.axis('scaled')
-                                ax1.xaxis.set_ticks([y_min,y_max])
-                                ax1.set_ylim((z_min,z_max))
-                                ax1.set_xlim((y_min,y_max))
-                                if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
+                        #     # plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
+                        #     #     $\lambda$ = %(wl)f, period = %(d)f, PW = %(pw)i, %(add)s' % \
+                        #     #     {'name' : name_lay, 'h':heights_list, 'p':p,'diag' : diag,'wl' : wl, 'd' : period, \
+                        #     #     'pw' : pw, 'add' : add_name} + '\n'
+                        #     #     + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
+                        #     #     {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                        #     # plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
+                        #     #     {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, \
+                        #     #     'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
 
-                            plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(1,0) to (%(x)s,1), heights = %(h)s \n\
-                                $\lambda$ = %(wl)f, period = %(d)f, PW = %(pw)i, %(add)s' % \
-                                {'name' : name_lay, 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
-                                'pw' : pw,'x':x1[-1], 'add' : add_name} + '\n' +
-                                '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
-                                {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
-                                {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
-                                'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
+                        # elif sli == 'diag-':
+                        #     diag = -1
+                        #     fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                        #     for i in range(len(E_super)):
+                        #         ax1 = fig1.add_subplot(4,1,i+1)
+                        #         if re_im == 'real':
+                        #             E_slice = np.real(E_super[i][:,0,:])
+                        #         elif re_im == 'imag':
+                        #             E_slice = np.imag(E_super[i][:,0,:])
+                        #         y_min = y_range[0]
+                        #         y_max = np.around(np.sqrt(2)*y_range[-1],decimals=2)
+                        #         z_min = z1[0]
+                        #         z_max = z1[-1]
+                        #         cmap = plt.get_cmap('jet')
+                        #         CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
+                        #         plt.axis([y_min,y_max,z_min,z_max])
+                        #         cbar = plt.colorbar()
+                        #         cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
+                        #         ax1.set_xlabel('x=%(diag)sy (d)'%{'diag':diag})
+                        #         ax1.set_ylabel('z (d)')
+                        #         if scale_axis == True: ax1.axis('scaled')
+                        #         ax1.xaxis.set_ticks([y_min,y_max])
+                        #         ax1.set_xlim((y_min,y_max))
+                        #         ax1.set_ylim((z_min,z_max))
+                        #         if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
+
+                        #     # plt.suptitle('%(name)s \n E_diagonal_slice_%(p)s, y = %(diag)sx, heights = %(h)s \n\
+                        #     #     $\lambda$ = %(wl)f nm, period = %(d)f, PW = %(pw)i, %(add)s' % \
+                        #     #         {'name' : name_lay, 'h':heights_list,'diag' : diag, 'p' : p,'wl' : wl, \
+                        #     #         'd' : period, 'pw' : pw, 'add' : add_name} + '\n'  +
+                        #     #     '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
+                        #     #     {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                        #     # plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_diag_slice_y=%(diag)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
+                        #     #     {'dir_name' : dir_name, 'p':p,'wl' : wl, 'diag' : diag, \
+                        #     #     'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
+
+                        # elif sli == 'special+':
+                        #     diag = 1
+                        #     fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                        #     for i in range(len(E_super)):
+                        #         ax1 = fig1.add_subplot(4,1,i+1)
+                        #         if re_im == 'real':
+                        #             E_slice = np.real(E_super[i][:,0,:])
+                        #         elif re_im == 'imag':
+                        #             E_slice = np.imag(E_super[i][:,0,:])
+                        #         y_min = y_range[0]
+                        #         y_max = np.around(sqrt(1+gradient**2)*x1[-1],decimals=2)
+                        #         z_min = z1[0]
+                        #         z_max = z1[-1]
+                        #         cmap = plt.get_cmap('jet')
+                        #         CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
+                        #         plt.axis([y_min,y_max,z_min,z_max])
+                        #         cbar = plt.colorbar()
+                        #         cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
+                        #         ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
+                        #         ax1.set_ylabel('z (d)')
+                        #         if scale_axis == True: ax1.axis('scaled')
+                        #         ax1.xaxis.set_ticks([y_min,y_max])
+                        #         ax1.set_ylim((z_min,z_max))
+                        #         ax1.set_xlim((y_min,y_max))
+                        #         if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
+
+                        #     # plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(0,0) to (%(x)s,1), heights = %(h)s \n\
+                        #     #     $\lambda$ = %(wl)f, period = %(d)f, PW = %(pw)i, %(add)s' % \
+                        #     #     {'name' : name_lay, 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
+                        #     #     'pw' : pw, 'x':x1[-1], 'add' : add_name} + '\n' +
+                        #     #     '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
+                        #     #     {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                        #     # plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
+                        #     #     {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
+                        #     #     'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
+
+                        # elif sli == 'special-':
+                        #     diag = -1
+                        #     fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                        #     for i in range(len(E_super)):
+                        #         ax1 = fig1.add_subplot(4,1,i+1)
+                        #         if re_im == 'real':
+                        #             E_slice = np.real(E_super[i][:,0,:])
+                        #         elif re_im == 'imag':
+                        #             E_slice = np.imag(E_super[i][:,0,:])
+                        #         y_min = y_range[0]
+                        #         y_max = np.around(sqrt(1+gradient**2)*(x1[0]-x1[-1]),decimals=2)
+                        #         z_min = z1[0]
+                        #         z_max = z1[-1]
+                        #         cmap = plt.get_cmap('jet')
+                        #         CS = plt.contourf(x_axis,y_axis,E_slice,15,cmap=cmap)
+                        #         plt.axis([y_min,y_max,z_min,z_max])
+                        #         cbar = plt.colorbar()
+                        #         cbar.ax.set_ylabel(r'%(p)s E_x'%{'p':p})
+                        #         ax1.set_xlabel('y=%(diag)sx (d)'%{'diag':diag*gradient})
+                        #         ax1.set_ylabel('z (d)')
+                        #         if scale_axis == True: ax1.axis('scaled')
+                        #         ax1.xaxis.set_ticks([y_min,y_max])
+                        #         ax1.set_ylim((z_min,z_max))
+                        #         ax1.set_xlim((y_min,y_max))
+                        #         if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
+
+                        #     # plt.suptitle('%(name)s \n E_specified_diagonal_slice_%(p)s, y = %(diag*gradient)sx, (x,y):(1,0) to (%(x)s,1), heights = %(h)s \n\
+                        #     #     $\lambda$ = %(wl)f, period = %(d)f, PW = %(pw)i, %(add)s' % \
+                        #     #     {'name' : name_lay, 'h':heights_list,'diag*gradient':diag*gradient, 'p':p,'wl' : wl, 'd' : period, \
+                        #     #     'pw' : pw,'x':x1[-1], 'add' : add_name} + '\n' +
+                        #     #     '# prop. ords = %(prop)s, # evan. ords = %(evan)s , n = %(n)s, k = %(k)s' % \
+                        #     #     {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                        #     # plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_specified_diagonal_slice_y=%(diag*gradient)sx_wl=%(wl)s_%(p)s%(add)s.pdf'% \
+                        #     #     {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
+                        #     #     'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
 
     stack_num += 1
 
-def field_values(stacks_list, lay_interest = 0, xyz_values = [(0.1,0.1,0.1)]):
+def field_values(stacks_list, lay_interest=0, xyz_values=[(0.1,0.1,0.1)]):
     """
     Save electric field values at given x-y-z points. Points must be within \
     a ThinFilm layer. In txt file fields are given as \
@@ -2502,7 +2444,7 @@ def field_values(stacks_list, lay_interest = 0, xyz_values = [(0.1,0.1,0.1)]):
             print "field_values can only calculate field values in ThinFilms."\
             "\nPlease select a different lay_interest.\n"
 
-def fields_3d(stacks_list, lay_interest = 1):
+def fields_3d(stacks_list, lay_interest=1):
     """
     Plot fields in 3D using gmsh.
 
@@ -2557,7 +2499,7 @@ def fields_3d(stacks_list, lay_interest = 1):
             print "fields_3d can only plot 3D fields within 2D_array "\
             "Nanostruct layers. \nPlease select a different lay_interest.\n"
 
-def Bloch_fields_1d(stacks_list, lay_interest = None):
+def Bloch_fields_1d(stacks_list, lay_interest=None):
     """
     Plot Bloch mode fields along the x axis.
 
@@ -2600,27 +2542,26 @@ def Bloch_fields_1d(stacks_list, lay_interest = None):
                 for i in range(len(struct.type_el) - 1):
                     if struct.type_el[i] != struct.type_el[i+1]:
                         boundary.append(struct.x_arr[2*(i+1)])
-                print boundary
 
                 fields = ['x', 'y', 'z']
-                for BM in [0]:#range(meat.num_BM):
+                for BM in range(meat.num_BM):
                     fig = plt.figure()
                     plot_sol_eps_abs = np.zeros(struct.n_msh_pts)
                     for i in range(len(fields)):
                         # sol_P2([Ex,Ey,Ez],P2_interpolation_points,nval,nel)
                         BM_sol = meat.sol1[i,:,BM,:]
                         plot_sol = [np.real(BM_sol[0,0])]
-                        plot_sol_eps_abs[0] += eps_eff[struct.type_el[0]-1] * abs(BM_sol[0,0])
+                        plot_sol_eps_abs[0] += eps_eff[struct.type_el[0]-1] * abs(BM_sol[0,0])**2
                         for x in range(struct.n_msh_el - 1):
                             plot_sol.append(np.real(BM_sol[1,x]))
                             plot_sol.append(np.real(BM_sol[2,x] + BM_sol[0,x+1]) / 2)
-                            plot_sol_eps_abs[2*x+1] += eps_eff[struct.type_el[x]-1] * abs(BM_sol[1,x])
-                            plot_sol_eps_abs[2*x+2] += eps_eff[struct.type_el[x]-1] * abs(BM_sol[2,x])
+                            plot_sol_eps_abs[2*x+1] += eps_eff[struct.type_el[x]-1] * abs(BM_sol[1,x])**2
+                            plot_sol_eps_abs[2*x+2] += eps_eff[struct.type_el[x]-1] * (abs(BM_sol[2,x] + BM_sol[0,x+1]) / 2)**2
 
                         plot_sol.append(np.real(BM_sol[1,-1]))
                         plot_sol.append(np.real(BM_sol[2,-1]))
-                        plot_sol_eps_abs[-2] += eps_eff[struct.type_el[-1]-1] * abs(BM_sol[1,x])
-                        plot_sol_eps_abs[-1] += eps_eff[struct.type_el[-1]-1] * abs(BM_sol[2,x])
+                        plot_sol_eps_abs[-2] += eps_eff[struct.type_el[-1]-1] * abs(BM_sol[1,x])**2
+                        plot_sol_eps_abs[-1] += eps_eff[struct.type_el[-1]-1] * abs(BM_sol[2,x])**2
 
                         ax1 = fig.add_subplot(4, 1, i+1)
                         ax1.plot(struct.x_arr, plot_sol)
@@ -2639,19 +2580,21 @@ def Bloch_fields_1d(stacks_list, lay_interest = None):
                     ax1.set_ylabel(r'$\epsilon$ |E|$^2$')
                     ax1.set_xlabel('x (d)')
 
-                    name_lay = "layer-%(lay)i-BM_%(BM)i"% {'lay' : lay, 'BM' : BM}
-                    plt.savefig(dir_name + '/' + name_lay)
+                    name_lay = "layer-%(lay)i-BM_%(BM)i"% \
+                        {'lay' : lay, 'BM' : BM}
+                    plt.savefig(dir_name + '/' + name_lay,
+                        bbox_inches = 'tight')
 
             except ValueError:
                 print "fields_1d can only plot 1D fields of 1D_array "\
-                "Nanostruct layers. \nPlease select different lay_interest.\n"
+                "NanoStruct layers. \nPlease select different lay_interest.\n"
 
 ###############################################################################
 
 
 #### Fabry-Perot resonances ###################################################
 def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0,
-    lay_interest = 1):
+    lay_interest=1):
     """ Calculate the Fabry-Perot resonance condition for a resonances within a layer.
 
         This is equivalent to finding the slab waveguide modes of the layer.
