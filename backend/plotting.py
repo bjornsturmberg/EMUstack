@@ -1802,7 +1802,7 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
             # # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
             # # vec_coef_down[neq_PW] = 1.0
 
-def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
+def fields_vertically(stacks_list, factor_pts_vert=20, nu_pts_hori=51,
     semi_inf_height=1.0, gradient=None, no_incoming=False,
     re_im = 'real', add_name=''):
     """
@@ -1840,10 +1840,6 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
     dir_name = "fields_vertically"
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
-    if not os.path.exists(dir_name+"/gmsh_BMs"):
-        os.mkdir(dir_name+"/gmsh_BMs")
-    if not os.path.exists(dir_name+"/gmsh_BMs/anim"):
-        os.mkdir(dir_name+"/gmsh_BMs/anim")
 
     # always make odd
     if nu_pts_hori % 2 == 0: nu_pts_hori += 1
@@ -1915,6 +1911,11 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                 pstack.vec_coef_up[vec_index]))
 
                             if layer.structure.periodicity == '2D_array':
+                                if not os.path.exists(dir_name+"/gmsh_BMs"):
+                                    os.mkdir(dir_name+"/gmsh_BMs")
+                                if not os.path.exists(dir_name+"/gmsh_BMs/anim"):
+                                    os.mkdir(dir_name+"/gmsh_BMs/anim")
+
                                 scale_plot   = 2.0
                                 shift_x_plot = -.5
                                 shift_v_plot = h_normed*0.75
