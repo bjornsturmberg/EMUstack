@@ -1,5 +1,5 @@
 """
-    simo_050-plotting_fields.py is a simulation example for EMUstack.
+    simo_051-plotting_fields_2d.py is a simulation example for EMUstack.
 
     Copyright (C) 2013  Bjorn Sturmberg
 
@@ -44,7 +44,7 @@ plotting.clear_previous()
 
 ################ Light parameters #####################
 wl     = 615
-light_list  = [objects.Light(wl, max_order_PWs = 5, theta = 0.0, phi = 0.0)]
+light_list  = [objects.Light(wl, max_order_PWs = 15, theta = 0.0, phi = 0.0)]
 
 # Period must be consistent throughout simulation!!!
 period = 600

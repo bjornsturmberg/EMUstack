@@ -1802,7 +1802,7 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
             # # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
             # # vec_coef_down[neq_PW] = 1.0
 
-def fields_vertically(stacks_list, factor_pts_vert=20, nu_pts_hori=51,
+def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
     semi_inf_height=1.0, gradient=None, no_incoming=False,
     re_im = 'real', add_name=''):
     """
@@ -1893,7 +1893,7 @@ def fields_vertically(stacks_list, factor_pts_vert=20, nu_pts_hori=51,
                             eps = layer.n_effs**2
                         else:
                             eps = layer.n()**2
-                        nu_pts_vert = np.round(factor_pts_vert*(np.max(eps)*ind_h_list[lay] / wl_normed))
+                        nu_pts_vert = np.round(factor_pts_vert*(np.real(np.max(eps))*ind_h_list[lay] / wl_normed))
                         if lay == 0:
                             z_range = np.linspace(h_list[lay],0.0,nu_pts_vert)
                         else:

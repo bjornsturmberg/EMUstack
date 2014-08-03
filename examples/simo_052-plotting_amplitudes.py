@@ -1,5 +1,5 @@
 """
-    simo_051-plotting_amplitudes.py is a simulation example for EMUstack.
+    simo_052-plotting_amplitudes.py is a simulation example for EMUstack.
 
     Copyright (C) 2013  Bjorn Sturmberg
 
