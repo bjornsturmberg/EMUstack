@@ -58,7 +58,7 @@ class NanoStruct(object):
             len_vertical  (float): Vertical length of split ring resonator \
                 (if inc_shape = 'SRR').
 
-            len_horizontal  (float): Horizontal length of split ring resonator \
+            len_horizontal  (float): Horizontal length of split ring resonator\
                 (if inc_shape = 'SRR').
 
             diameter2-16  (float): The diameters of further inclusions in nm. \
@@ -159,7 +159,7 @@ class NanoStruct(object):
         inclusion_a = materials.Material(3.0 + 0.1j),
         inclusion_b = materials.Material(3.0 + 0.1j),
         background = materials.Material(1.0 + 0.0j),
-        loss = True, height_nm = 100,
+        loss = True, height_nm = 100.0,
         diameter2 = 0,  diameter3 = 0, diameter4 = 0, diameter5 = 0,
         diameter6 = 0, diameter7 = 0, diameter8 = 0, diameter9 = 0,
         diameter10 = 0, diameter11 = 0, diameter12 = 0, diameter13 = 0,
@@ -832,7 +832,7 @@ class ThinFilm(object):
 
             loss  (bool): If False sets Im(n) = 0, if True leaves n as is.
     """
-    def __init__(self, period, height_nm = 1000, num_pw_per_pol=0,
+    def __init__(self, period, height_nm = 1000.0, num_pw_per_pol=0,
         world_1d = False, material = materials.Material(3.0 + 0.001), loss = True):
         self.period         = period
         self.world_1d       = world_1d

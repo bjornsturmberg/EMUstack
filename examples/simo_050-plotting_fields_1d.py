@@ -98,13 +98,13 @@ np.savez('Simo_results', stacks_list = stacks_list)
 # results that you wish to keep into a different folder, ideally copying the
 # whole simo directory to future reference to simo parameters.
 #
-plotting.fields_vertically(stacks_list)
-# We can also plot only the scattered field (disregarding the incident field)
-plotting.fields_vertically(stacks_list, no_incoming = True, add_name = '-no_incoming')
+# plotting.fields_vertically(stacks_list)
+# # We can also plot only the scattered field (disregarding the incident field)
+# plotting.fields_vertically(stacks_list, no_incoming = True, add_name = '-no_incoming')
 #
 # The above fields are the total fields, we can also look at the fields of
 # each individual Bloch mode, which for a 1D array is done like so,
-plotting.Bloch_fields_1d(stacks_wl_list)
+plotting.Bloch_fields_1d(stacks_list)
 
 ######################## Wrapping up ########################
 # Calculate and record the (real) time taken for simulation

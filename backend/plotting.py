@@ -35,8 +35,8 @@ import os
 #         'weight' : 'bold',
 #         'size'   : 18}
 
-font = {'size'   : 18}
-matplotlib.rc('font', **font)
+# font = {'size'   : 14}
+# matplotlib.rc('font', **font)
 linesstrength = 2.5
 title_font = 10
 
@@ -55,7 +55,7 @@ def clear_previous():
 
     devnull = open(os.devnull, 'wb')
 
-    type_list = ['*.npz', '*.pdf', '*.txt', '*.gif', '*.png', '*.log',
+    type_list = ['*.npz', '*.pdf', '*.txt', '*.gif', '*.png', '*.log', '*.svg',
     'fields_vertically -r', 'in_plane_fields -r', 'Bloch_fields -r',
     'field_values-r', '3d_fields-r']
     for typ in type_list:
@@ -121,7 +121,7 @@ def gen_params_string(stack, layer=1):
             if param_layer.diameter14 != 0: params_2_print += 'a14 = %(rad)d '%   {'rad' : param_layer.diameter14,}
             if param_layer.diameter15 != 0: params_2_print += 'a15 = %(rad)d '%   {'rad' : param_layer.diameter15,}
             if param_layer.diameter16 != 0: params_2_print += 'a16 = %(rad)d \n'% {'rad' : param_layer.diameter16,}
-            if param_layer.inc_shape == 'square': params_2_print += '\nSquare NWs '
+            if param_layer.inc_shape == 'square': params_2_print += '\nSquare ins '
             if param_layer.inc_shape == 'ellipse': params_2_print += '\nEllipticity = %(rad)5.3f '% {'rad' : param_layer.ellipticity}
         elif param_layer.periodicity == '1D_array':
             params_2_print += ''
@@ -192,7 +192,7 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
     height_list = stacks_list[0].heights_nm()[::-1]
     params_2_print = gen_params_string(stacks_list, params_layer)
     params_2_print += '\n'r'$h_t,...,h_b$ = '
-    params_2_print += ''.join('%4d, ' % num for num in height_list)
+    params_2_print += ''.join('%4f, ' % num for num in height_list)
 
     xlabel = 'xvalues'
     if xvalues==None:
@@ -1191,7 +1191,8 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
 
 #### Plot amplitudes of modes #################################################
 def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
-    lay_interest=1, up_and_down=True, add_height=None, add_name=''):
+    lay_interest=1, up_and_down=True, add_height=None, add_name='',
+    save_pdf=True, save_npz=False):
     """ Plot the amplitudes of Bloch modes in selected layer.
 
         Args:
@@ -1215,6 +1216,11 @@ def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
             add_height  (float): Print the heights of :Stack: layer in title.
 
             add_name  (str): Add add_name to title.
+
+            save_pdf  (bool): If True save spectra as pdf files. \
+                True by default.
+
+            save_npz  (bool): If True, saves lists of BM amplitudes to file.
     """
 
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
@@ -1237,6 +1243,7 @@ def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
 
     if chosen_BMs == None: chosen_BMs = range(stacks_list[-1].layers[lay_interest].num_BM)
     try:
+        save_trans = []
         for BM in chosen_BMs:
             store_trans = []
             for stack in stacks_list:
@@ -1249,24 +1256,34 @@ def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
                     store_trans = np.append(store_trans,trans/2)
                 else:
                     store_trans = np.append(store_trans,trans)
+            if save_pdf == True:
+                ax1.plot(xvalues,store_trans, label="BM %i" % BM)
+            if save_npz == True:
+                save_trans.append(store_trans)
 
-            ax1.plot(xvalues,store_trans, label="BM %i" % BM)
+        if save_pdf == True or save_npz == True:
+            if add_height!= None: add_name += '_' + zeros_int_str(add_height)
+            add_name = str(lay_interest) + add_name
 
-        handles, labels = ax1.get_legend_handles_labels()
-        lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
-        ax1.set_ylabel('BM Amplitude')
-        ax1.set_xlabel(xlabel)
-        plt.suptitle(add_name)
-        if add_height!= None: add_name += '_' + zeros_int_str(add_height)
-        add_name = str(lay_interest) + add_name
-        plt.savefig('BM_amplitudes-lay_%s' % add_name, \
-            fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+        if save_pdf == True:
+            handles, labels = ax1.get_legend_handles_labels()
+            lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
+            ax1.set_ylabel('BM Amplitude')
+            ax1.set_xlabel(xlabel)
+            plt.suptitle(add_name)
+            plt.savefig('BM_amplitudes-lay_%s' % add_name, \
+                fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+
+        if save_npz == True:
+            np.savez('BM_amplitudes-lay_%s' % add_name, save_trans=save_trans)
+
     except ValueError:
         print "BM_amplitudes only works in NanoStruct layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
 
 def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
-    lay_interest=0, up_and_down=True, add_height=None, add_name=''):
+    lay_interest=0, up_and_down=True, add_height=None, add_name='',
+    save_pdf=True, save_npz=False):
     """ Plot the amplitudes of plane wave orders in selected layer.
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
@@ -1292,6 +1309,11 @@ def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
             add_height  (float): Print the heights of :Stack: layer in title.
 
             add_name  (str): Add add_name to title.
+
+            save_pdf  (bool): If True save spectra as pdf files. \
+                True by default.
+
+            save_npz  (bool): If True, saves lists of PW amplitudes to file.
     """
 
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
@@ -1317,6 +1339,7 @@ def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
             print "PW_amplitudes is guessing you have a single wavelength, else specify xvalues."
 
     try:
+        save_trans = []
         for pxs in chosen_PWs:
             store_trans = []
             for stack in stacks_list:
@@ -1362,18 +1385,26 @@ def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
                         store_trans = np.append(store_trans,trans/2)
                     else:
                         store_trans = np.append(store_trans,trans)
+            if save_pdf == True:
+                ax1.plot(xvalues,store_trans, label="m = %i" % pxs)
+            if save_npz == True:
+                save_trans.append(store_trans)
 
-            ax1.plot(xvalues,store_trans, label="m = %i" % pxs)
+        if save_pdf == True or save_npz == True:
+            if add_height!= None: add_name += '_' + zeros_int_str(add_height)
+            add_name = str(lay_interest) + add_name
 
-        handles, labels = ax1.get_legend_handles_labels()
-        lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
-        ax1.set_ylabel(r'$|E|_{trans}$')
-        ax1.set_xlabel(xlabel)
-        plt.suptitle(add_name)
-        if add_height!= None: add_name += '_' + zeros_int_str(add_height)
-        add_name = str(lay_interest) + add_name
-        plt.savefig('PW_amplitudes-lay_%s' % add_name, \
-            fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+        if save_pdf == True:
+            handles, labels = ax1.get_legend_handles_labels()
+            lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
+            ax1.set_ylabel(r'$|E|_{trans}$')
+            ax1.set_xlabel(xlabel)
+            plt.suptitle(add_name)
+            plt.savefig('PW_amplitudes-lay_%s' % add_name, \
+                fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+
+        if save_npz == True:
+            np.savez('PW_amplitudes-lay_%s' % add_name, save_trans=save_trans)
 
     except ValueError:
         print "PW_amplitudes only works in ThinFilm layers."\
@@ -1874,7 +1905,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                 if gradient != None: slice_types.append('special+','special-')
 
         for sli in slice_types:
-            E_fields = ['E_x', 'E_y', 'E_z', '|E|']
+            E_fields = ['E_x', 'E_y', 'E_z', 'E_abs']
             E_fields_tot = []
             for E in E_fields:
                 fig = plt.figure(figsize=(9,12))
@@ -1894,6 +1925,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                         else:
                             eps = layer.n()**2
                         nu_pts_vert = np.round(factor_pts_vert*(np.real(np.max(eps))*ind_h_list[lay] / wl_normed))
+                        if nu_pts_vert < 11: nu_pts_vert = 11
                         if lay == 0:
                             z_range = np.linspace(h_list[lay],0.0,nu_pts_vert)
                         else:
@@ -1936,7 +1968,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if struct.type_el[i] != struct.type_el[i+1]:
                                         boundary.append(struct.x_arr[2*(i+1)])
 
-                                if E != '|E|':
+                                if E != 'E_abs':
                                     if E == 'E_x': comp = 0
                                     if E == 'E_y': comp = 1
                                     if E == 'E_z': comp = 2
@@ -1948,9 +1980,6 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                             hz = z_range[h]
                                             P_down = np.exp(1j*beta*(ind_h_list[lay]-hz))   # Introduce Propagation in -z
                                             P_up = np.exp(1j*beta*hz) # Introduce Propagation in +z
-
-                                            # P_down = np.exp(1j*beta*hz)   # Introduce Propagation in -z
-                                            # P_up = np.exp(1j*beta*(ind_h_list[lay]-hz)) # Introduce Propagation in +z
                                             coef_down = vec_coef_fem[BM] * P_down
                                             coef_up = vec_coef_fem[BM+layer.num_BM] * P_up
                                             if E == 'E_z':
@@ -1961,7 +1990,8 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                             E_slice[0,h] += BM_sol[0,0] * coef_tot
                                             for x in range(struct.n_msh_el - 1):
                                                 E_slice[2*x+1,h] += BM_sol[1,x] * coef_tot
-                                                E_slice[2*x+2,h] += (BM_sol[2,x] + BM_sol[0,x+1] / 2.) * coef_tot
+                                                # E_slice[2*x+2,h] += (BM_sol[2,x] + BM_sol[0,x+1] / 2.) * coef_tot
+                                                E_slice[2*x+2,h] += (BM_sol[2,x]) * coef_tot
                                             E_slice[2*x+3,h] += BM_sol[1,-1] * coef_tot
                                             E_slice[2*x+4,h] += BM_sol[2,-1] * coef_tot
 
@@ -1987,7 +2017,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                 else:
                                     E_slice = np.imag(E_slice)
 
-                                if E != '|E|':
+                                if E != 'E_abs':
                                     max_E_lay = np.max(E_slice)
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
@@ -2030,8 +2060,8 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if max_E_lay == max_E:
                                         cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
                                         cb = fig.colorbar(CS, cax=cax)
-                                        if E != '|E|':
-                                            cb.set_clim(-max_E, max_E)
+                                        if E != 'E_abs':
+                                            cb.set_clim(min_E, max_E)
                                             cax.set_ylabel(re_im + ' ' + E)
                                         else:
                                             cb.set_clim(0, max_E)
@@ -2039,7 +2069,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
 
                                     start, end = ax1.get_ylim()
                                     for b in boundary:
-                                        ax1.plot([b,b],[start,end],'k', linewidth=3)
+                                        ax1.plot([b,b],[start,end],'w', linewidth=3)
 
                                 # else:
                                 # scale_plot = 2.0
@@ -2180,7 +2210,6 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                 z_plot = np.linspace(h_list[lay],h_list[lay+1],nu_pts_vert)
                             (y_axis_plot,x_axis) = np.meshgrid(z_plot,x_range)
 
-
                             if sli == 'xz':
                                 E_slice = E_field[:,0,:]
                                 if max_E_field == 0:
@@ -2191,7 +2220,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     else:
                                         E_fields_tot[lay] = np.real(eps) * (E_fields_tot[lay])
                                         # E_fields_tot[lay] = np.real(eps) * np.sqrt(E_fields_tot[lay])
-                                elif max_E_field == 1 and E == '|E|':
+                                elif max_E_field == 1 and E == 'E_abs':
                                     E_slice = E_fields_tot[lay]
 
                                 if re_im == 'real':
@@ -2199,7 +2228,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                 elif re_im == 'imag':
                                     E_slice = np.imag(E_slice)
 
-                                if E != '|E|':
+                                if E != 'E_abs':
                                     max_E_lay = np.max(E_slice)
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
@@ -2237,9 +2266,10 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if max_E_lay == max_E:
                                         cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
                                         cb = fig.colorbar(CS, cax=cax)
-                                        if E != '|E|':
+                                        if E != 'E_abs':
                                             cax.set_ylabel(re_im + ' ' + E)
-                                            cb.set_clim(-max_E, max_E)
+                                            # cb.set_clim(-max_E, max_E)
+                                            cb.set_clim(min_E, max_E)
                                         else:
                                             cax.set_ylabel(r'Re($\epsilon$) |E|$^2$')
                                             cb.set_clim(min_E, max_E)
@@ -2665,6 +2695,7 @@ def Bloch_fields_1d(stacks_list, lay_interest=None, re_im='real'):
                 if isinstance(pstack.layers[l],mode_calcs.Simmo):
                     if pstack.layers[l].structure.periodicity == '1D_array':
                         lay_interest.append(l)
+        else: lay_interest = [lay_interest]
 
         num_lays = len(pstack.layers)
         for lay in lay_interest:
@@ -2685,12 +2716,14 @@ def Bloch_fields_1d(stacks_list, lay_interest=None, re_im='real'):
 
                 fields = ['x', 'y', 'z']
                 for BM in range(meat.num_BM):
-                    fig = plt.figure()
+                    fig = plt.figure(figsize=(6, 8))
                     plot_sol_eps_abs = np.zeros(struct.n_msh_pts)
+                    plot_sol_2_FT    = np.zeros(struct.n_msh_pts)
                     for i in range(len(fields)):
                         # sol_P2([Ex,Ey,Ez],P2_interpolation_points,nval,nel)
                         BM_sol = meat.sol1[i,:,BM,:]
-                        plot_sol = [np.real(BM_sol[0,0])]
+                        if re_im == 'real': plot_sol = [np.real(BM_sol[0,0])]
+                        else: plot_sol = [np.imag(BM_sol[0,0])]
                         plot_sol_eps_abs[0] += np.real(eps[struct.type_el[0]-1] * np.sqrt((BM_sol[0,0])* np.conj(BM_sol[0,0])))
                         for x in range(struct.n_msh_el - 1):
                             if re_im == 'real':
@@ -2712,7 +2745,7 @@ def Bloch_fields_1d(stacks_list, lay_interest=None, re_im='real'):
                         plot_sol_eps_abs[-2] += np.real(eps[struct.type_el[-1]-1] * np.sqrt((BM_sol[1,x])* np.conj(BM_sol[1,x])))
                         plot_sol_eps_abs[-1] += np.real(eps[struct.type_el[-1]-1] * np.sqrt((BM_sol[2,x])* np.conj(BM_sol[2,x])))
 
-                        ax1 = fig.add_subplot(4, 1, i+1)
+                        ax1 = fig.add_subplot(5, 1, i+1)
                         ax1.plot(struct.x_arr, plot_sol)
                         if re_im == 'real': ax1.set_ylabel(r'Re(E$_%s$)'% fields[i])
                         else: ax1.set_ylabel(r'Im(E$_%s$)'% fields[i])
@@ -2721,7 +2754,9 @@ def Bloch_fields_1d(stacks_list, lay_interest=None, re_im='real'):
                         ax1.yaxis.set_ticks(np.linspace(start, end, 3))
                         for b in boundary:
                             ax1.plot([b,b],[start,end],'k')
-                    ax1 = fig.add_subplot(4, 1, 4)
+
+                        if fields[i] == 'y': plot_sol_2_FT = plot_sol
+                    ax1 = fig.add_subplot(5, 1, 4)
                     ax1.plot(struct.x_arr, plot_sol_eps_abs)
                     start, end = ax1.get_ylim()
                     ax1.yaxis.set_ticks(np.linspace(start, end, 3))
@@ -2730,10 +2765,27 @@ def Bloch_fields_1d(stacks_list, lay_interest=None, re_im='real'):
                     ax1.set_ylabel(r'Re($\epsilon$) |E|')
                     ax1.set_xlabel('x (d)')
 
-                    name_lay = "layer-%(lay)i-BM_%(BM)i"% \
-                        {'lay' : lay, 'BM' : BM}
-                    plt.savefig(dir_name + '/' + name_lay,
-                        bbox_inches = 'tight')
+
+                    ax1 = fig.add_subplot(5, 1, 5)
+                    xshape = struct.x_arr.size
+                    # plot_sol_2_FT = np.sin(3*np.linspace(0,2*np.pi,xshape))
+                    FT = np.fft.fft(plot_sol_2_FT)
+                    freqs = np.fft.fftfreq(xshape,struct.x_arr[1])
+                    freqs = np.fft.fftshift(freqs)
+                    FT = np.fft.fftshift(FT)
+                    ax1.plot(freqs, np.abs(FT),'ro', linewidth=3.0)
+                    start, end = ax1.get_ylim()
+                    ax1.yaxis.set_ticks(np.linspace(start, end, 3))
+                    ax1.set_ylabel(r'FT E$_y$')
+                    ax1.set_xlim((0,10))
+
+                    name_lay = "layer-%(lay)i-BM_%(BM)s"% \
+                        {'lay' : lay, 'BM' : zeros_int_str(BM)}
+
+                    plt.suptitle(r'BM %(BM)i, k$_z$ = %(re)7.3f + %(im)7.3fi'% \
+                        {'re' : np.real(meat.k_z[BM]), 'im' : np.imag(meat.k_z[BM]), 'BM' : BM})
+                    plt.savefig(dir_name + '/' + name_lay)#,
+                        # bbox_inches = 'tight')
 
             except ValueError:
                 print "fields_1d can only plot 1D fields of 1D_array "\
