@@ -1834,8 +1834,7 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
             # # vec_coef_down[neq_PW] = 1.0
 
 def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
-    semi_inf_height=1.0, gradient=None, no_incoming=False,
-    re_im = 'real', add_name=''):
+    semi_inf_height=1.0, gradient=None, no_incoming=False, add_name=''):
     """
     Plot fields in the x-y plane at chosen values of z, where z is \
     calculated from the bottom of chosen layer.
@@ -1860,8 +1859,6 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
             no_incoming  (bool): if True, plots fields in superstrate in the \
                 absence of the incident driving field (i.e. only showing \
                 upward propagating scattered field).
-
-            re_im  (str): plot 'real' or 'imag' part of fields.
 
             add_name  (str): concatenate add_name to title.
     """
@@ -1905,7 +1902,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                 if gradient != None: slice_types.append('special+','special-')
 
         for sli in slice_types:
-            E_fields = ['E_x', 'E_y', 'E_z', 'E_abs']
+            E_fields = ['re(E_x)', 'im(E_x)', 're(E_y)', 'im(E_y)', 're(E_z)', 'im(E_z)', 'abs(E)']
             E_fields_tot = []
             for E in E_fields:
                 fig = plt.figure(figsize=(9,12))
@@ -1968,10 +1965,10 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if struct.type_el[i] != struct.type_el[i+1]:
                                         boundary.append(struct.x_arr[2*(i+1)])
 
-                                if E != 'E_abs':
-                                    if E == 'E_x': comp = 0
-                                    if E == 'E_y': comp = 1
-                                    if E == 'E_z': comp = 2
+                                if E != 'abs(E)':
+                                    if E[5] == 'x': comp = 0
+                                    if E[5] == 'y': comp = 1
+                                    if E[5] == 'z': comp = 2
                                     ### sol1 = sol_P2([Ex,Ey,Ez],P2_interpolation_points,nval,nel)
                                     for BM in range(layer.num_BM):
                                         BM_sol = layer.sol1[comp,:,BM,:]
@@ -1982,7 +1979,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                             P_up = np.exp(1j*beta*hz) # Introduce Propagation in +z
                                             coef_down = vec_coef_fem[BM] * P_down
                                             coef_up = vec_coef_fem[BM+layer.num_BM] * P_up
-                                            if E == 'E_z':
+                                            if E[5] == 'z':
                                                 coef_tot = (coef_up - coef_down)/beta # Taking into account the change of variable for Ez
                                             else:
                                                 coef_tot = coef_up + coef_down
@@ -1996,9 +1993,9 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                             E_slice[2*x+4,h] += BM_sol[2,-1] * coef_tot
 
                                     if max_E_field == 0:
-                                        if E == 'E_x':
+                                        if E[5] == 'x':
                                             E_fields_tot.append(E_slice*np.conj(E_slice))
-                                        elif E == 'E_y' or E == 'E_z':
+                                        elif E[5] == 'y' or E[5] == 'z':
                                             E_fields_tot[lay] += E_slice*np.conj(E_slice)
                                 else:
                                     if max_E_field == 0:
@@ -2012,12 +2009,12 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     else:
                                         E_slice = E_fields_tot[lay]
 
-                                if re_im == 'real':
+                                if E[0] == 'r' or E[0] == 'a':
                                     E_slice = np.real(E_slice)
                                 else:
                                     E_slice = np.imag(E_slice)
 
-                                if E != 'E_abs':
+                                if E != 'abs(E)':
                                     max_E_lay = np.max(E_slice)
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
@@ -2060,9 +2057,9 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if max_E_lay == max_E:
                                         cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
                                         cb = fig.colorbar(CS, cax=cax)
-                                        if E != 'E_abs':
+                                        if E != 'abs(E)':
                                             cb.set_clim(min_E, max_E)
-                                            cax.set_ylabel(re_im + ' ' + E)
+                                            cax.set_ylabel(E)
                                         else:
                                             cb.set_clim(0, max_E)
                                             cax.set_ylabel(r'Re($\epsilon$) |E|$^2$')
@@ -2124,15 +2121,16 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                             E_TM_y = beta/norm
                             E_TM_z = -1*norm/gamma
 
-                            if E == 'E_x':
-                                TE_coef = E_TE_x
-                                TM_coef = E_TM_x
-                            elif E == 'E_y':
-                                TE_coef = E_TE_y
-                                TM_coef = E_TM_y
-                            elif E == 'E_z':
-                                TE_coef = E_TE_z
-                                TM_coef = E_TM_z
+                            if E != 'abs(E)':
+                                if E[5] == 'x':
+                                    TE_coef = E_TE_x
+                                    TM_coef = E_TM_x
+                                elif E[5] == 'y':
+                                    TE_coef = E_TE_y
+                                    TM_coef = E_TM_y
+                                elif E[5] == 'z':
+                                    TE_coef = E_TE_z
+                                    TM_coef = E_TM_z
 
                             eta_TE_down = (vec_coef_down_TE*TE_coef)/chi_TE
                             eta_TM_down = (vec_coef_down_TM*TM_coef)/chi_TM
@@ -2213,22 +2211,23 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                             if sli == 'xz':
                                 E_slice = E_field[:,0,:]
                                 if max_E_field == 0:
-                                    if E == 'E_x':
-                                        E_fields_tot.append(E_slice*np.conj(E_slice))
-                                    elif E == 'E_y' or E == 'E_z':
-                                        E_fields_tot[lay] += E_slice*np.conj(E_slice)
+                                    if E != 'abs(E)':
+                                        if E[5] == 'x':
+                                            E_fields_tot.append(E_slice*np.conj(E_slice))
+                                        elif E[5] == 'y' or E[5] == 'z':
+                                            E_fields_tot[lay] += E_slice*np.conj(E_slice)
                                     else:
                                         E_fields_tot[lay] = np.real(eps) * (E_fields_tot[lay])
                                         # E_fields_tot[lay] = np.real(eps) * np.sqrt(E_fields_tot[lay])
-                                elif max_E_field == 1 and E == 'E_abs':
+                                elif max_E_field == 1 and E == 'abs(E)':
                                     E_slice = E_fields_tot[lay]
 
-                                if re_im == 'real':
+                                if E[0] == 'r' or E[0] == 'a':
                                     E_slice = np.real(E_slice)
-                                elif re_im == 'imag':
+                                elif E[0] == 'i':
                                     E_slice = np.imag(E_slice)
 
-                                if E != 'E_abs':
+                                if E != 'abs(E)':
                                     max_E_lay = np.max(E_slice)
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
@@ -2266,8 +2265,8 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if max_E_lay == max_E:
                                         cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
                                         cb = fig.colorbar(CS, cax=cax)
-                                        if E != 'E_abs':
-                                            cax.set_ylabel(re_im + ' ' + E)
+                                        if E != 'abs(E)':
+                                            cax.set_ylabel(E)
                                             # cb.set_clim(-max_E, max_E)
                                             cb.set_clim(min_E, max_E)
                                         else:
@@ -2286,8 +2285,8 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                 #     + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
                 #     'prop' : prop, 'n' : n, 'k' : k[0]})
 
-                plt.savefig('%(dir_name)s/stack_%(stack_num)s_E_xz_slice_%(comp)s_%(p)s%(add)s.pdf'% \
-                    {'dir_name' : dir_name, 'comp':E, 'p':re_im, \
+                plt.savefig('%(dir_name)s/stack_%(stack_num)s_E_xz_slice_%(comp)s%(add)s.pdf'% \
+                    {'dir_name' : dir_name, 'comp':E, \
                      'stack_num':stack_num, 'add' : add_name},
                         bbox_inches = 'tight')
 

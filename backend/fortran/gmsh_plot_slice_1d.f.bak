@@ -176,7 +176,7 @@ c
           coef_down = vec_coef(ival) * P_down
           coef_up = vec_coef(ival+nval) * P_up
           coef_t = coef_up + coef_down
-          coef_z = (coef_up - coef_down)/beta(ival) ! Taking into accout the change of variable for Ez
+          coef_z = (coef_up - coef_down)/beta(ival) ! Taking into account the change of variable for Ez
           do iel=1,nel
             do inod=1,nnodes_0
               do j=1,2
