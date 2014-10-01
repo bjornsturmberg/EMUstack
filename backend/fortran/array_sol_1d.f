@@ -11,16 +11,16 @@ c
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
-      subroutine array_sol_1d (nval, nel, n_ddl, neq, 
-     *     n_core, bloch_vec_x, index, 
-     *     table_ddl, type_el, ineq, 
-     *     ip_period_ddl, x_ddl, 
-     *     v_cmplx, mode_pol, sol_0, sol)
+      subroutine array_sol_1d (nval, nel, n_ddl, neq,
+     *     n_core, bloch_vec_x, index,
+     *     table_ddl, type_el, ineq,
+     *     ip_period_ddl, x_ddl,
+     *     v_cmplx, mode_pol, sol_0, sol, n_k)
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       implicit none
-      integer*8 nval, nel, n_ddl, neq
+      integer*8 nval, nel, n_ddl, neq, n_k
       integer*8 n_core(2), type_el(nel)
       integer*8 ineq(n_ddl), index(neq)
       integer*8 ip_period_ddl(n_ddl)
@@ -46,11 +46,15 @@ c     Local variables
 
       double precision mode_comp(4)
       double complex val_exp(nddl_0)
-      double precision xmin, xmax
+      double precision x_min_0, x_max_0
 
       integer*8 j, k, j1, inod, typ_e, debug, i_sol_max
       integer*8 iel, ival, ival2
       complex*16 ii, z_tmp1, z_tmp2, z_sol_max
+
+      double precision x_min, x_max, x_mid, dx, xx
+      complex*16 z_sol_max_L, z_sol_max_R  ! Maximum to left and right of the middle point
+      complex*16 z_sol_max_mid  ! Value at (or near) the middle point
 c
 c  ii = sqrt(-1)
       ii = cmplx(0.0d0, 1.0d0)
@@ -76,6 +80,25 @@ c
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc
 c
+      x_min = x_ddl(1)
+      x_max = x_ddl(1)
+      do j=1,n_ddl
+        xx = x_ddl(j)
+        if(xx .lt. x_min) x_min = xx
+        if(xx .gt. x_max) x_max = xx
+      enddo
+      x_mid = (x_min + x_max) / 2.0d0
+      dx = (x_max - x_min)/dble(nel)
+      if (debug .eq. 1) then
+        write(*,*) "array_sol_1d: x_min = ", x_min
+        write(*,*) "array_sol_1d: x_max = ", x_max
+        write(*,*) "array_sol_1d: x_mid = ", x_mid
+        write(*,*) "array_sol_1d:    dx = ", dx
+      endif
+c
+cccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+
       do j=1,nval
         j1=index(j)
         v_tmp(j) = v_cmplx(j1)
@@ -84,14 +107,15 @@ c
         v_cmplx(j) = v_tmp(j)
       enddo
 
-c     Coordinates of the interpolation nodes
-cc      call interp_nod_2d (nnodes, xn)
       do ival=1,nval
         ival2 = index(ival)
         do j=1,4
           mode_pol(j,ival) = 0.0d0
         enddo
         z_sol_max = 0.0d0
+        z_sol_max_L = 0.0d0
+        z_sol_max_R = 0.0d0
+        z_sol_max_mid = 0.0d0
         i_sol_max = 0
         do iel=1,nel
           typ_e = type_el(iel)
@@ -137,7 +161,26 @@ c         For a pair of periodic points, one is chosen as origin and the other i
                 i_sol_max = table_ddl(inod,iel)
               endif
           enddo
-c           Contribution of the element iel to the mode component 
+cccccccccc NEW ADDITION
+          do inod=1,nddl_0
+            jp = table_ddl(inod,iel)
+            xx = x_ddl(jp)
+            z_tmp2 = sol_el(inod)
+            if (abs(z_sol_max_L) < abs(z_tmp2) .and.
+     *        xx < x_mid) then
+              z_sol_max_L = z_tmp2
+            endif
+            if (abs(z_sol_max_R) < abs(z_tmp2) .and.
+     *        xx > x_mid) then
+              z_sol_max_R = z_tmp2
+            endif
+            if (abs(z_sol_max_mid) < abs(z_tmp2) .and.
+     *        abs(xx - x_mid) < dx/4.0d0) then
+              z_sol_max_mid = z_tmp2
+            endif
+          enddo
+cccccccccc END OF NEW ADDITION
+c           Contribution of the element iel to the mode component
           do inod=1,3
             z_tmp2 = abs(sol_el(inod))**2
             mode_comp(1) = mode_comp(1) + z_tmp2   !   X-component
@@ -152,26 +195,27 @@ c           Contribution of the element iel to the mode component
           enddo
           j = table_ddl(1,iel)
 c          write(*,*) "iel, j = ", iel, j
-          xmin = x_ddl(j)
+          x_min_0 = x_ddl(j)
           j = table_ddl(3,iel)
-          xmax = x_ddl(j)
+          x_max_0 = x_ddl(j)
 c         Avarage values
           do j=1,3
-            mode_comp(j) = abs(xmax-xmin)*mode_comp(j)/dble(nddl_0)
+            mode_comp(j) = abs(x_max_0 - x_min_0) * mode_comp(j)
+     *                    / dble(nddl_0)
           enddo
-c         Add the contribution of the element iel to the mode component 
+c         Add the contribution of the element iel to the mode component
           do j=1,3
             mode_pol(j,ival) = mode_pol(j,ival) + mode_comp(j)
           enddo
           if (typ_e .eq. n_core(1) .or. typ_e .eq. n_core(2)) then
-            z_tmp2 = mode_comp(1) + mode_comp(2) 
+            z_tmp2 = mode_comp(1) + mode_comp(2)
      *        + mode_comp(3)
             mode_pol(4,ival) = mode_pol(4,ival) + z_tmp2
           endif
         enddo
 cccccccccccccccccccccccccccccc
 c       Total energy and normalization
-        z_tmp2 = mode_pol(1,ival) + mode_pol(2,ival) 
+        z_tmp2 = mode_pol(1,ival) + mode_pol(2,ival)
      *        + mode_pol(3,ival)
         if (abs(z_tmp2) .lt. 1.0d-10) then
           write(*,*) "array_sol_1d: the total energy ",
@@ -194,13 +238,55 @@ c       Check if the eigenvector is nonzero
           write(*,*) "array_sol_1d: zero eigenvector; aborting..."
           stop
         endif
+        if (debug .eq. 1) then
+          write(*,*) "array_sol_1d: "
+          write(*,*) "                           ival = ", ival
+          write(*,*) "z_sol_max     = ", z_sol_max, abs(z_sol_max)
+          write(*,*) "z_sol_max_L   = ", z_sol_max_L, abs(z_sol_max_L)
+          write(*,*) "z_sol_max_R   = ", z_sol_max_R, abs(z_sol_max_R)
+          write(*,*) "z_sol_max_mid = ", z_sol_max_mid,
+     *        abs(z_sol_max_mid)
+        endif
 c       Normalization so that the maximum field component is 1
-        do iel=1,nel
-          do inod=1,nddl_0
-            z_tmp1 = sol(inod,ival,iel) / z_sol_max
-            sol(inod,ival,iel) = z_tmp1
+        if (abs(z_sol_max_mid/z_sol_max) >= 0.95d0) then
+          if (debug .eq. 1) then
+            write(*,*) "array_sol_1d: CASE max_mid: n_k = ", n_k
+          endif
+          do iel=1,nel
+            do inod=1,nddl_0
+              z_tmp1 = sol(inod,ival,iel) / z_sol_max_mid
+              sol(inod,ival,iel) = z_tmp1
+            enddo
           enddo
-        enddo
+        elseif (n_k == 1) then
+          if (debug .eq. 1) then
+            write(*,*) "array_sol_1d: CASE max_R: n_k = ", n_k
+          endif
+          do iel=1,nel
+            do inod=1,nddl_0
+              z_tmp1 = sol(inod,ival,iel) / z_sol_max_R
+              sol(inod,ival,iel) = z_tmp1
+            enddo
+          enddo
+        elseif (n_k == 2) then
+          if (debug .eq. 1) then
+            write(*,*) "array_sol_1d: CASE max_L: n_k ", n_k
+          endif
+          do iel=1,nel
+            do inod=1,nddl_0
+              z_tmp1 = sol(inod,ival,iel) / z_sol_max_L
+              sol(inod,ival,iel) = z_tmp1
+            enddo
+          enddo
+        else
+          if (debug .eq. 1) then
+            write(*,*) "array_sol_1d: CASE 4: n_k", n_k
+          endif
+          write(*,*)
+          write(*,*) "array_sol_1d: no action defined for n_k = ", n_k
+          write(*,*) "array_sol_1d: aborting..."
+          stop
+        endif
       enddo
 c
       if (debug .eq. 1) then

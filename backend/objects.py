@@ -148,28 +148,28 @@ class NanoStruct(object):
 
             plot_abs  (bool): Choose to plot absolute value of modal fields.
 
-
+            plt_msh  (bool): Save a plot of the 1D array geometry.
     """
 
 
     def __init__(self, periodicity, period, diameter1,
-        inc_shape = 'circle', ellipticity = 0.0,
-        ff = 0, ff_rand=False, small_space = None, edge_spacing = False,
-        len_vertical = 0, len_horizontal = 0,
-        inclusion_a = materials.Material(3.0 + 0.1j),
-        inclusion_b = materials.Material(3.0 + 0.1j),
-        background = materials.Material(1.0 + 0.0j),
-        loss = True, height_nm = 100.0,
-        diameter2 = 0,  diameter3 = 0, diameter4 = 0, diameter5 = 0,
-        diameter6 = 0, diameter7 = 0, diameter8 = 0, diameter9 = 0,
-        diameter10 = 0, diameter11 = 0, diameter12 = 0, diameter13 = 0,
-        diameter14 = 0, diameter15 = 0, diameter16 = 0,
-        hyperbolic = False, world_1d = None, posx = 0, posy = 0,
-        make_mesh_now = True, force_mesh = False,
-        mesh_file = 'NEED_FILE.mail',
-        lc_bkg = 0.09, lc2 = 1.0, lc3 = 1.0, lc4 = 1.0, lc5 = 1.0, lc6 = 1.0,
-        plotting_fields = False, plot_real = 1, plot_imag = 0, plot_abs = 0,
-        plot_field_conc=False):
+        inc_shape='circle', ellipticity=0.0,
+        ff=0, ff_rand=False, small_space=None, edge_spacing=False,
+        len_vertical=0, len_horizontal=0,
+        inclusion_a=materials.Material(3.0 + 0.1j),
+        inclusion_b=materials.Material(3.0 + 0.1j),
+        background=materials.Material(1.0 + 0.0j),
+        loss=True, height_nm=100.0,
+        diameter2=0,  diameter3=0, diameter4=0, diameter5=0,
+        diameter6=0, diameter7=0, diameter8=0, diameter9=0,
+        diameter10=0, diameter11=0, diameter12=0, diameter13=0,
+        diameter14=0, diameter15=0, diameter16=0,
+        hyperbolic=False, world_1d=None, posx=0, posy=0,
+        make_mesh_now=True, force_mesh=False,
+        mesh_file='NEED_FILE.mail',
+        lc_bkg=0.09, lc2=1.0, lc3=1.0, lc4=1.0, lc5=1.0, lc6=1.0,
+        plotting_fields=False, plot_real=1, plot_imag=0, plot_abs=0,
+        plot_field_conc=False, plt_msh=True):
         self.periodicity    = periodicity
         self.period         = period
         self.diameter1      = diameter1
@@ -237,6 +237,7 @@ class NanoStruct(object):
         self.force_mesh    = force_mesh
         self.small_space   = small_space
         self.edge_spacing  = edge_spacing
+        self.plt_msh       = plt_msh
         if make_mesh_now == True:
             self.make_mesh()
         else:
@@ -716,19 +717,20 @@ class NanoStruct(object):
             self.x_arr     = ls_x[1:]
             self.mesh_file = msh_name
 
-            import matplotlib
-            import matplotlib.pyplot as plt
-            fig = plt.figure()
-            ax1 = fig.add_subplot(1,1,1)
-            ax1.plot(el_list,self.type_el)
-            ax1.fill_between(el_list,self.type_el,0)
-            ax1.set_xlim(el_list[0],el_list[-1])
-            ax1.set_ylim(1,3)
-            ax1.set_yticks([1,2,3])
-            ax1.set_yticklabels(['bkg', 'inc_a', 'inc_b'])
-            ax1.set_xlabel('Element Number')
-            ax1.set_ylabel('Material Type')
-            plt.savefig(msh_name, bbox_inches='tight')
+            if self.plt_msh == True:
+                import matplotlib
+                import matplotlib.pyplot as plt
+                fig = plt.figure()
+                ax1 = fig.add_subplot(1,1,1)
+                ax1.plot(el_list,self.type_el)
+                ax1.fill_between(el_list,self.type_el,0)
+                ax1.set_xlim(el_list[0],el_list[-1])
+                ax1.set_ylim(1,3)
+                ax1.set_yticks([1,2,3])
+                ax1.set_yticklabels(['bkg', 'inc_a', 'inc_b'])
+                ax1.set_xlabel('Element Number')
+                ax1.set_ylabel('Material Type')
+                plt.savefig(msh_name, bbox_inches='tight')
 
             # Then clean up local variables.
             del nel, npt, table_nod, ls_x, type_el, el_list

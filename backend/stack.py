@@ -151,8 +151,8 @@ class Stack(object):
 
     #     return f_down_list, f_up_list
 
-    def calc_scat(self, pol = 'TE', incoming_amplitudes = None,
-        save_scat_list = False):
+    def calc_scat(self, pol = 'TE', incoming_amplitudes=None, calc_fluxes=True,
+        save_scat_list=False):
         """ Calculate the transmission and reflection matrices of the stack.
 
             In relation to the FEM mesh the polarisation is orientated,
@@ -167,6 +167,9 @@ class Stack(object):
                 incoming_amplitudes  (int): Which incoming PW order to give \
                     1 unit of energy. If None the 0th order PW is selected.
 
+                calc_fluxes  (bool): Calculate energy fluxes. Only possible if \
+                    top layer is a ThinFilm.
+
                 save_scat_list  (bool): If True, save tnet_list, rnet_list \
                     as property of stack for later access.
         """
@@ -178,11 +181,6 @@ class Stack(object):
         # through each layer.
 
         self._check_periods_are_consistent()
-
-        nu_intfaces     = 2*(len(self.layers)-1)
-        neq_PW          = self.layers[-1].structure.num_pw_per_pol # assumes incident from homogeneous film
-        PW_pols         = 2*neq_PW
-        I_air           = np.matrix(np.eye(PW_pols),dtype='D')
 
         """ Calculate net scattering matrices starting at the bottom.
             1 is infinitesimal air layer.
@@ -204,6 +202,11 @@ class Stack(object):
             # Save the reflection matrices to the layers
             # (for easier introspection/testing)
             st1.R12, st1.T12, st1.R21, st1.T21 = R12, T12, R21, T21
+
+        PW_pols = np.shape(R12)[0]
+        neq_PW  = int(PW_pols/2.0)
+        PW_pols = int(PW_pols)
+        I_air   = np.matrix(np.eye(PW_pols),dtype='D')
 
     # initiate (r)tnet as top interface of substrate
         tnet_list = []
@@ -260,7 +263,7 @@ class Stack(object):
             Q_inv = st1.shear_transform(-1*coord_diff)
             to_invert    = (I_air - r12_list[-1]*Q_inv*rnet*Q)
             inverted_t21 = np.linalg.solve(to_invert,t21_list[-1])
-            tnet         = tnet*Q*inverted_t21
+            tnet         = tnet*Q*inverted_t21calc_fluxes
             rnet         = r21_list[-1] + t12_list[-1]*Q_inv*rnet*Q*inverted_t21
         inv_t21_list.append(inverted_t21)
         tnet_list.append(tnet)
@@ -271,104 +274,134 @@ class Stack(object):
             self.tnet_list = tnet_list
             self.rnet_list = rnet_list
 
+        if calc_fluxes == True:
+            """ Calculate field expansions for all layers (including air) \
+                starting at top.
+                Ordering is now top to bottom (inverse of above)! \
+                i.e. f1 is superstrate (top).
+                Calculate net downward energy flux in each infinitesimal air layer \
+                & super/substrates (see appendix C in Dossou et al. JOSA 2012).
+            """
 
-        """ Calculate field expansions for all layers (including air) \
-            starting at top.
-            Ordering is now top to bottom (inverse of above)! \
-            i.e. f1 is superstrate (top).
-            Calculate net downward energy flux in each infinitesimal air layer \
-            & super/substrates (see appendix C in Dossou et al. JOSA 2012).
-        """
+            self.t_list = []
+            self.r_list = []
+            self.a_list = []
+            num_prop_air = self.layers[-1].air_ref().num_prop_pw_per_pol
+            num_prop_in  = self.layers[-1].num_prop_pw_per_pol
 
-        self.t_list = []
-        self.r_list = []
-        self.a_list = []
-        num_prop_air = self.layers[-1].air_ref().num_prop_pw_per_pol
-        num_prop_in  = self.layers[-1].num_prop_pw_per_pol
+            down_fluxes   = []
+            up_flux       = []
+            vec_coef_down = []
+            vec_coef_up   = []
+            self.vec_coef_down = vec_coef_down
+            self.vec_coef_up = vec_coef_up
 
-        down_fluxes   = []
-        up_flux       = []
-        vec_coef_down = []
-        vec_coef_up   = []
-        self.vec_coef_down = vec_coef_down
-        self.vec_coef_up = vec_coef_up
+        # Start by composing U matrix which is same for all air layers.
+        # It is a diagonal matrix with 1 for propagating, i for evanescent TE
+        # & -i for evanescent TM plane wave orders.
 
-    # Start by composing U matrix which is same for all air layers.
-    # It is a diagonal matrix with 1 for propagating, i for evanescent TE
-    # & -i for evanescent TM plane wave orders.
+            U_mat = np.matrix(np.zeros((2*PW_pols, 2*PW_pols),complex))
+            for i in range(0,num_prop_air):
+                U_mat[i,i]                               = 1.0
+                U_mat[neq_PW+i,neq_PW+i]                 = 1.0
+                U_mat[PW_pols+i,PW_pols+i]               = -1.0
+                U_mat[PW_pols+neq_PW+i,PW_pols+neq_PW+i] = -1.0
+            for i in range(num_prop_air,neq_PW):
+                U_mat[i,PW_pols+i]                       = -1.0j
+                U_mat[neq_PW+i,PW_pols+neq_PW+i]         = 1.0j
+                U_mat[PW_pols+i,i]                       = 1.0j
+                U_mat[PW_pols+neq_PW+i,neq_PW+i]         = -1.0j
 
-        U_mat = np.matrix(np.zeros((2*PW_pols, 2*PW_pols),complex))
-        for i in range(0,num_prop_air):
-            U_mat[i,i]                               = 1.0
-            U_mat[neq_PW+i,neq_PW+i]                 = 1.0
-            U_mat[PW_pols+i,PW_pols+i]               = -1.0
-            U_mat[PW_pols+neq_PW+i,PW_pols+neq_PW+i] = -1.0
-        for i in range(num_prop_air,neq_PW):
-            U_mat[i,PW_pols+i]                       = -1.0j
-            U_mat[neq_PW+i,PW_pols+neq_PW+i]         = 1.0j
-            U_mat[PW_pols+i,i]                       = 1.0j
-            U_mat[PW_pols+neq_PW+i,neq_PW+i]         = -1.0j
+            if incoming_amplitudes is None:
+                # Set the incident field to be a 0th order plane wave
+                # in a given polarisation, from the semi-inf top layer
+                d_minus = self.layers[-1].specular_incidence(pol)
+            else:
+                d_minus = incoming_amplitudes
 
-        if incoming_amplitudes is None:
-            # Set the incident field to be a 0th order plane wave
-            # in a given polarisation, from the semi-inf top layer
-            d_minus = self.layers[-1].specular_incidence(pol)
-        else:
-            d_minus = incoming_amplitudes
+        # total incoming flux
+            flux_TE = np.linalg.norm(d_minus[0:num_prop_in])**2
+            flux_TM = np.linalg.norm(d_minus[neq_PW:neq_PW+num_prop_in])**2
+            down_fluxes.append(flux_TE + flux_TM)
 
-    # total incoming flux
-        flux_TE = np.linalg.norm(d_minus[0:num_prop_in])**2
-        flux_TM = np.linalg.norm(d_minus[neq_PW:neq_PW+num_prop_in])**2
-        down_fluxes.append(flux_TE + flux_TM)
+        # up into semi-inf off top air gap
+            d_plus  = rnet_list[-1]*d_minus
+            self.vec_coef_down.append(d_minus)
+            self.vec_coef_up.append(d_plus)
+        # total reflected flux
+            flux_TE = np.linalg.norm(d_plus[0:num_prop_in])**2
+            flux_TM = np.linalg.norm(d_plus[neq_PW:neq_PW+num_prop_in])**2
+            up_flux.append(flux_TE + flux_TM)
 
-    # up into semi-inf off top air gap
-        d_plus  = rnet_list[-1]*d_minus
-        self.vec_coef_down.append(d_minus)
-        self.vec_coef_up.append(d_plus)
-    # total reflected flux
-        flux_TE = np.linalg.norm(d_plus[0:num_prop_in])**2
-        flux_TM = np.linalg.norm(d_plus[neq_PW:neq_PW+num_prop_in])**2
-        up_flux.append(flux_TE + flux_TM)
+        # incoming from semi-inf into top air gap
+            f1_minus = inv_t21_list[-1]*d_minus
 
-    # incoming from semi-inf into top air gap
-        f1_minus = inv_t21_list[-1]*d_minus
+            for i in range(len(self.layers) - 2):
+                f1_plus = rnet_list[-2*i-2]*f1_minus
+        # net downward flux in infinitesimal air layer
+                f_mat   = np.matrix(np.concatenate((f1_minus, f1_plus)))
+                flux    = f_mat.H*U_mat*f_mat
+                down_fluxes.append(flux)
 
-        for i in range(len(self.layers) - 2):
-            f1_plus = rnet_list[-2*i-2]*f1_minus
-    # net downward flux in infinitesimal air layer
-            f_mat   = np.matrix(np.concatenate((f1_minus, f1_plus)))
-            flux    = f_mat.H*U_mat*f_mat
-            down_fluxes.append(flux)
+                f2_minus = inv_t12_list[-i-1]*f1_minus
+                f2_plus  = rnet_list[-2*i-3]*P_list[-i-1]*f2_minus
+                self.vec_coef_down.append(f2_minus)
+                self.vec_coef_up.append(f2_plus)
 
-            f2_minus = inv_t12_list[-i-1]*f1_minus
-            f2_plus  = rnet_list[-2*i-3]*P_list[-i-1]*f2_minus
+                f1_minus = inv_t21_list[-i-2]*P_list[-i-1]*f2_minus
+
+        # bottom air to semi-inf substrate
+            f1_plus  = rnet_list[0]*f1_minus
+
+            f2_minus = tnet_list[0]*f1_minus
             self.vec_coef_down.append(f2_minus)
-            self.vec_coef_up.append(f2_plus)
+            # self.trans_vector = f2_minus
+        # can only calculate the energy flux in homogeneous films
+            if isinstance(self.layers[0], Anallo):
+                num_prop_out    = self.layers[0].num_prop_pw_per_pol
+                if num_prop_out != 0:
+                    # out             = self.layers[0].specular_order
+                    flux_TE  = np.linalg.norm(f2_minus[0:num_prop_out])**2
+                    flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
+                    down_fluxes.append(flux_TE + flux_TM)
+                else: print "Warning: there are no propagating modes in the \
+                    semi-inf \n substrate therefore cannot calculate energy \
+                    fluxes here."
 
-            f1_minus = inv_t21_list[-i-2]*P_list[-i-1]*f2_minus
+                num_prop_in    = self.layers[-1].num_prop_pw_per_pol
+                if num_prop_out != 0:
+                # calculate absorptance in each layer
+                    for i in range(1 , len(down_fluxes)-1):
+                        a_layer = abs(abs(down_fluxes[i])-abs(down_fluxes[i+1]))
+                        self.a_list.append(a_layer)
+                    a_layer = abs(down_fluxes[0]-down_fluxes[-1]-up_flux[0])
+                    self.a_list.append(a_layer)
 
-    # bottom air to semi-inf substrate
-        f1_plus  = rnet_list[0]*f1_minus
+                # calculate reflectance in each layer
+                    for i in range(1, len(up_flux)-1):
+                        r_layer = abs(up_flux[i])/abs(down_fluxes[i])
+                        self.r_list.append(r_layer)
+                    r_layer = abs(up_flux[0]/down_fluxes[0])
+                    self.r_list.append(r_layer)
 
-        f2_minus = tnet_list[0]*f1_minus
-        self.vec_coef_down.append(f2_minus)
-        # self.trans_vector = f2_minus
-    # can only calculate the energy flux in homogeneous films
-        if isinstance(self.layers[0], Anallo):
-            num_prop_out    = self.layers[0].num_prop_pw_per_pol
-            if num_prop_out != 0:
-                # out             = self.layers[0].specular_order
-                flux_TE  = np.linalg.norm(f2_minus[0:num_prop_out])**2
-                flux_TM  = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
-                down_fluxes.append(flux_TE + flux_TM)
-            else: print "Warning: there are no propagating modes in the \
-                semi-inf \n substrate therefore cannot calculate energy \
-                fluxes here."
+                # calculate transmittance in each layer
+                    for i in range(0, len(down_fluxes)-2):
+                        t_layer = abs(abs(down_fluxes[i+2])/abs(down_fluxes[i]))
+                        self.t_list.append(t_layer)
+                    t_layer = abs(down_fluxes[-1]/down_fluxes[0])
+                    self.t_list.append(t_layer)
 
-            num_prop_in    = self.layers[-1].num_prop_pw_per_pol
-            if num_prop_out != 0:
+                else:
+                    self.a_list = np.zeros(len(self.layers) - 2)
+                    self.r_list = np.zeros(len(self.layers) - 2)
+                    self.t_list = np.zeros(len(self.layers) - 2)
+                    print "Warning: there are no propagating modes in the \
+                    semi-inf \n superstrate therefore CANNOT CALCULATE \
+                    ENERGY FLUXES ANYWHERE."
+
+            else:
             # calculate absorptance in each layer
-                for i in range(1 , len(down_fluxes)-1):
+                for i in range(1, len(down_fluxes)-1):
                     a_layer = abs(abs(down_fluxes[i])-abs(down_fluxes[i+1]))
                     self.a_list.append(a_layer)
                 a_layer = abs(down_fluxes[0]-down_fluxes[-1]-up_flux[0])
@@ -383,40 +416,10 @@ class Stack(object):
 
             # calculate transmittance in each layer
                 for i in range(0, len(down_fluxes)-2):
-                    t_layer = abs(abs(down_fluxes[i+2])/abs(down_fluxes[i]))
+                    t_layer = abs(down_fluxes[i+2])/abs(down_fluxes[i])
                     self.t_list.append(t_layer)
                 t_layer = abs(down_fluxes[-1]/down_fluxes[0])
                 self.t_list.append(t_layer)
-
-            else:
-                self.a_list = np.zeros(len(self.layers) - 2)
-                self.r_list = np.zeros(len(self.layers) - 2)
-                self.t_list = np.zeros(len(self.layers) - 2)
-                print "Warning: there are no propagating modes in the \
-                semi-inf \n superstrate therefore CANNOT CALCULATE \
-                ENERGY FLUXES ANYWHERE."
-
-        else:
-        # calculate absorptance in each layer
-            for i in range(1, len(down_fluxes)-1):
-                a_layer = abs(abs(down_fluxes[i])-abs(down_fluxes[i+1]))
-                self.a_list.append(a_layer)
-            a_layer = abs(down_fluxes[0]-down_fluxes[-1]-up_flux[0])
-            self.a_list.append(a_layer)
-
-        # calculate reflectance in each layer
-            for i in range(1, len(up_flux)-1):
-                r_layer = abs(up_flux[i])/abs(down_fluxes[i])
-                self.r_list.append(r_layer)
-            r_layer = abs(up_flux[0]/down_fluxes[0])
-            self.r_list.append(r_layer)
-
-        # calculate transmittance in each layer
-            for i in range(0, len(down_fluxes)-2):
-                t_layer = abs(down_fluxes[i+2])/abs(down_fluxes[i])
-                self.t_list.append(t_layer)
-            t_layer = abs(down_fluxes[-1]/down_fluxes[0])
-            self.t_list.append(t_layer)
 
 
     def _check_periods_are_consistent(self):

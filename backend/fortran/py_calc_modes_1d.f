@@ -86,7 +86,7 @@ C  Names and Controls
       character*100 mesh_file
       character*100 overlap_file, dir_name
       character*100 tchar
-      integer*8 debug, plot_modes, pair_warning
+      integer*8 debug, plot_modes, pair_warning, homogeneous_check
       integer*8 q_average, plot_real, plot_imag, plot_abs
 
 Cf2py intent(in) lambda, nval, ordre_ls, nb_typ_el
@@ -328,10 +328,10 @@ C
       endif
 C
       write(ui,*)
-      write(ui,*) "--------------------------------------------",
+      write(ui,*) "---------------------------------------",
      *     "-------"
       write(ui,*) " Wavelength : ", lambda, " (d)"
-      write(ui,*) "--------------------------------------------",
+      write(ui,*) "---------------------------------------",
      *     "-------"
       write(ui,*)
 C
@@ -359,8 +359,24 @@ C  Index number of the core materials (material with highest Re(eps_eff))
             n_core(1) = i
           endif
         enddo
+C  Check that the layer is not in fact homogeneous
+        homogeneous_check = 0
+        do i=1,nb_typ_el-1
+          if(dble(eps_eff(i)) .ne. dble(eps_eff(i+1))) then
+            homogeneous_check = 1
+          elseif(dimag(eps_eff(i)) .ne. dimag(eps_eff(i+1))) then
+            homogeneous_check = 1
+          endif
+        enddo
+        if(homogeneous_check .eq. 0) then
+          write(ui,*) "py_calc_modes_1d.f: ",
+     *              "FEM routine cannot handle homogeneous layers."
+          write(ui,*) "Define layer as object.ThinFilm"
+          write(ui,*) "Aborting..."
+          stop
+        endif
         n_core(2) = n_core(1)
-        If(debug .eq. 1) then
+        if(debug .eq. 1) then
           write(ui,*) "n_core = ", n_core
           write(ui,*) "shift = ", shift
           if(E_H_field .eq. 1) then
@@ -472,7 +488,7 @@ C                 using the permutation vector index
      *     n_core, bloch_vec_x_k, index,
      *     table_ddl, type_el, ineq,
      *     ip_period_ddl, x_ddl,
-     *     beta, mode_pol, vp, sol)
+     *     beta, mode_pol, vp, sol, n_k)
 
 ccc      if (n_k == 1) then
 ccc        call array_sol_1d (nval, nel, n_ddl, neq,

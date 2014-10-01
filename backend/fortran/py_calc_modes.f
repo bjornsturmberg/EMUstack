@@ -109,7 +109,7 @@ C  Names and Controls
       character*100 tchar
       integer*8 namelength, PrintAll!, Checks
       integer*8 plot_modes
-      integer*8 pair_warning
+      integer*8 pair_warning, homogeneous_check
       integer*8 q_average, plot_real, plot_imag, plot_abs
 
 c     Declare the pointers of the real super-vector
@@ -531,10 +531,10 @@ C
 C
 C
       write(ui,*)
-      write(ui,*) "--------------------------------------------",
+      write(ui,*) "---------------------------------------",
      *     "-------"
       write(ui,*) " Wavelength : ", lambda, " (d)"
-      write(ui,*) "--------------------------------------------",
+      write(ui,*) "---------------------------------------",
      *     "-------"
       write(ui,*)
 C
@@ -548,6 +548,22 @@ C  Index number of the core materials (material with highest Re(eps_eff))
           n_core(1) = 2
       endif
       n_core(2) = n_core(1)
+C  Check that the layer is not in fact homogeneous
+        homogeneous_check = 0
+        do i=1,nb_typ_el-1
+          if(dble(eps_eff(i)) .ne. dble(eps_eff(i+1))) then
+            homogeneous_check = 1
+          elseif(dimag(eps_eff(i)) .ne. dimag(eps_eff(i+1))) then
+            homogeneous_check = 1
+          endif
+        enddo
+        if(homogeneous_check .eq. 0) then
+          write(ui,*) "py_calc_modes_1d.f: ",
+     *              "FEM routine cannot handle homogeneous layers."
+          write(ui,*) "Define layer as object.ThinFilm"
+          write(ui,*) "Aborting..."
+          stop
+        endif
 C Parameter for shift-and-invert method - now given as input from python
 C      shift = 1.01d0*Dble(n_eff(n_core(1)))**2 * k_0**2
 C     *    - bloch_vec(1)**2 - bloch_vec(2)**2

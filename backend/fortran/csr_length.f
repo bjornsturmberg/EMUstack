@@ -2,7 +2,7 @@
 c
 c***********************************************************************
 c
-      subroutine csr_length (nel, n_ddl, neq, nnodes, 
+      subroutine csr_length (nel, n_ddl, neq, nnodes,
      *  table_N_E_F, ineq, col_ind, row_ptr, nonz_max,
      *   nonz, max_row_len, ipointer, int_max, debug)
 c
@@ -16,9 +16,11 @@ c
       integer*8 max_row_len
 
 c     Local variables
-      integer*8 nonz_max_0
-      parameter (nonz_max_0=2**22)
-      integer*8 col_ind_0(nonz_max_0)
+C       integer*8 nonz_max_0
+C       parameter (nonz_max_0=2**22)
+C       integer*8 col_ind_0(nonz_max_0)
+      integer alloc_stat
+      integer*8, dimension(:), allocatable :: col_ind_0
 
       integer*8 nddl_0
       parameter (nddl_0 = 14)
@@ -31,15 +33,31 @@ c     Local variables
 c
       ui = 6
 c
-c initialize  pointer arrays.
+c initialize pointer arrays.
 c
-      if (nonz_max .gt. nonz_max_0) then
-         write(ui,*) "csr_length: nonz_max > nonz_max_0 : ", 
-     *  nonz_max, nonz_max_0
-         write(ui,*) "csr_length: increase the size of nonz_max_0"
-         write(ui,*) "csr_length : Aborting..."
-         stop
+C       if (nonz_max .gt. nonz_max_0) then
+C          write(ui,*) "csr_length: nonz_max > nonz_max_0 : ",
+C      *  nonz_max, nonz_max_0
+C          write(ui,*) "csr_length: increase the size of nonz_max_0"
+C          write(ui,*) "csr_length : Aborting..."
+C          stop
+C       endif
+
+      alloc_stat = 0
+
+      allocate(col_ind_0(nonz_max), STAT=alloc_stat)
+      if (alloc_stat /= 0) then
+        write(*,*)
+        write(*,*) "csr_length: ",
+     *     "The allocation is unsuccessful"
+        write(*,*) "alloc_stat = ", alloc_stat
+        write(*,*) "Not enough memory for the array col_ind_0"
+        write(*,*) "nonz_max = ", nonz_max
+        write(*,*) "csr_length: Aborting..."
+        stop
       endif
+
+
 c
       if ( nnodes .ne. 6 ) then
         write(ui,*) "csr_length: problem nnodes = ", nnodes
@@ -80,7 +98,7 @@ c                 Search if the entry (ind_ip,ind_jp) is already stored
 c                   No entry exists for (ind_ip,ind_jp); create new one
                     nonz = nonz + 1
                     if (nonz .gt. nonz_max) then
-                      print*, "csr_length: nonz > nonz_max: ", 
+                      print*, "csr_length: nonz > nonz_max: ",
      *                nonz .gt. nonz_max
                       print*, "csr_length: Aborting..."
                       stop
@@ -143,7 +161,7 @@ c
       endif
 c
       if ((ipointer+nonz) .gt. int_max) then
-         write(ui,*) "csr_length: (ipointer+nonz) > int_max : ", 
+         write(ui,*) "csr_length: (ipointer+nonz) > int_max : ",
      *   (ipointer+nonz), int_max
          write(ui,*) "csr_length: nonz_max = ", nonz_max
          write(ui,*) "csr_length: increase the size of int_max"
