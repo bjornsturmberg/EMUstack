@@ -1942,7 +1942,6 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
 
                             vec_coef_fem = np.concatenate((pstack.vec_coef_down[vec_index],
                                 pstack.vec_coef_up[vec_index]))
-                            print pstack.vec_coef_down[vec_index]
 
                             if layer.structure.periodicity == '2D_array':
                                 if not os.path.exists(dir_name+"/gmsh_BMs"):
@@ -1985,10 +1984,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                             hz = z_range[h]
                                             P_down = np.exp(1j*beta*(ind_h_list[lay]-hz))   # Introduce Propagation in -z
                                             P_up = np.exp(1j*beta*hz) # Introduce Propagation in +z
-            ## Added for symmetric plot
-                                            P_down = P_down*np.exp(-0.5*1j*beta*(ind_h_list[lay]))
-                                            P_up = P_up*np.exp(0.5*1j*beta*(ind_h_list[lay]))
-            ## end addition
+
                                             coef_down = vec_coef_fem[BM] * P_down
                                             coef_up = vec_coef_fem[BM+layer.num_BM] * P_up
                                             if E[5] == 'z':
@@ -2003,37 +1999,6 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                                 E_slice[2*x+2,h] += (BM_sol[2,x]) * coef_tot
                                             E_slice[2*x+3,h] += BM_sol[1,-1] * coef_tot
                                             E_slice[2*x+4,h] += BM_sol[2,-1] * coef_tot
-
-            ## Added for symmetric plot
-                                            P_down = np.exp(1j*beta*(hz))   # Introduce Propagation in -z
-                                            P_up = np.exp(1j*beta*(ind_h_list[lay]-hz)) # Introduce Propagation in +z
-
-                                            P_down = P_down*np.exp(-0.5*1j*beta*(ind_h_list[lay]))
-                                            P_up = P_up*np.exp(0.5*1j*beta*(ind_h_list[lay]))
-
-                                            coef_down = vec_coef_fem[BM] * P_down
-                                            coef_up = vec_coef_fem[BM+layer.num_BM] * P_up
-                                            if E[5] == 'z':
-                                                coef_tot = (coef_up - coef_down)/beta # Taking into account the change of variable for Ez
-                                            else:
-                                                coef_tot = coef_up + coef_down
-                                            coef_tot = coef_tot[0,0]
-                                            # Symmetric
-                                            E_slice[0,h] += BM_sol[0,0] * coef_tot
-                                            for x in range(struct.n_msh_el - 1):
-                                                E_slice[2*x+1,h] += BM_sol[1,x] * coef_tot
-                                                E_slice[2*x+2,h] += (BM_sol[2,x]) * coef_tot
-                                            E_slice[2*x+3,h] += BM_sol[1,-1] * coef_tot
-                                            E_slice[2*x+4,h] += BM_sol[2,-1] * coef_tot
-                                            # # Anti-symmetric
-                                            # E_slice[0,h] -= BM_sol[0,0] * coef_tot
-                                            # for x in range(struct.n_msh_el - 1):
-                                            #     E_slice[2*x+1,h] -= BM_sol[1,x] * coef_tot
-                                            #     E_slice[2*x+2,h] -= (BM_sol[2,x]) * coef_tot
-                                            # E_slice[2*x+3,h] -= BM_sol[1,-1] * coef_tot
-                                            # E_slice[2*x+4,h] -= BM_sol[2,-1] * coef_tot
-            ## end addition
-
 
                                     if max_E_field == 0:
                                         if E[5] == 'x':
