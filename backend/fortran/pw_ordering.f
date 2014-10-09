@@ -2,8 +2,8 @@ C
       subroutine pw_ordering (neq_PW, lat_vecs,
      *  bloch_vec, index_pw_inv,
      *  debug, ordre_ls, k_0)
-C 
-      implicit none 
+C
+      implicit none
 C  input output parameters
       integer*8 neq_PW, ordre_ls, debug
       double precision bloch_vec(2), k_0
@@ -41,7 +41,7 @@ C
         stop
       endif
 C
-      d = lat_vecs(1,1)  
+      d = lat_vecs(1,1)
       pi = 3.141592653589793d0
       bloch1 = bloch_vec(1)
       bloch2 = bloch_vec(2)
@@ -62,10 +62,10 @@ C     Ordering
           endif
         enddo
       enddo
-C      
-
+C
       call z_indexx (neq_PW, beta_z_pw, index_pw)
       if (debug .eq. 1) then
+        write(ui,*) "pw_ordering.f:"
         write(ui,*) "index_pw = ", (index_pw(s),s=1,neq_PW)
       endif
 C
@@ -76,6 +76,7 @@ C       Inverse of index_pw
       enddo
 C
       if (debug .eq. 1) then
+        write(ui,*) "pw_ordering.f: PW k_z = "
         do s=1,neq_PW
           s2 = index_pw(s)
           write(ui,*) beta_z_pw(s2)
@@ -86,4 +87,4 @@ C
       deallocate(beta_z_pw)
 C
       return
-      end 
+      end

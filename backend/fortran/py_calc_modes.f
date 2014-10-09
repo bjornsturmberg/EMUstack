@@ -698,6 +698,7 @@ C
         write(ui,*) "lambda, 1/lambda = ", lambda, 1.0d0/lambda
         write(ui,*) (bloch_vec_k(i)/(2.0d0*pi),i=1,2)
         write(ui,*) "sqrt(shift) = ", sqrt(shift)
+        write(ui,*) "nvals = "
         do i=1,nval
           write(ui,"(i4,2(g22.14),2(g18.10))") i,
      *       beta(i)

@@ -1942,6 +1942,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
 
                             vec_coef_fem = np.concatenate((pstack.vec_coef_down[vec_index],
                                 pstack.vec_coef_up[vec_index]))
+                            print pstack.vec_coef_down[vec_index]
 
                             if layer.structure.periodicity == '2D_array':
                                 if not os.path.exists(dir_name+"/gmsh_BMs"):

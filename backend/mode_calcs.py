@@ -135,6 +135,23 @@ class Anallo(Modes):
         else:
             raise ValueError, "must specify world_1d status of ThinFilm."
 
+        if np.shape(np.nonzero(k_z_unsrt))[1] != np.shape(k_z_unsrt)[0]:
+            print "Warning: selected [k_x, k_y] hits a Wood Anomaly!\n EMUstack changed [k_x, k_y] -> (1-1e-9)*[k_x, k_y]."
+            if self.structure.world_1d == True:
+                alpha0, beta0 = (1-1e-9)*self.k_pll_norm()
+                alphas = alpha0 + pxs * 2 * pi / d
+                betas  = beta0
+                self.alphas = alphas
+                self.betas = betas
+                k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
+            elif self.structure.world_1d == False:
+                alpha0, beta0 = (1-1e-9)*self.k_pll_norm()
+                alphas = alpha0 + pxs * 2 * pi / d
+                betas  = beta0 + pys * 2 * pi / d
+                self.alphas = alphas
+                self.betas = betas
+                k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
+
 
         if self.is_air_ref:
             assert not hasattr(self, 'sort_order'), \
@@ -273,13 +290,6 @@ class Simmo(Modes):
         i_cond         = 2  # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
         itermax        = 30 # Maximum number of iterations for convergence
         FEM_debug      = 0   # Fortran routines will display & save add. info
-        if FEM_debug == 1:
-            if not os.path.exists("Normed"):
-                os.mkdir("Normed")
-            if not os.path.exists("Matrices"):
-                os.mkdir("Matrices")
-            if not os.path.exists("Output"):
-                os.mkdir("Output")
 
         # Calculate where to center the Eigenmode solver around.
         # (Shift and invert FEM method)
@@ -293,6 +303,14 @@ class Simmo(Modes):
             shift = 1.1*max_n**2 * k_0**2  \
             - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
 
+        if FEM_debug == 1:
+            print 'shift', shift
+            if not os.path.exists("Normed"):
+                os.mkdir("Normed")
+            if not os.path.exists("Matrices"):
+                os.mkdir("Matrices")
+            if not os.path.exists("Output"):
+                os.mkdir("Output")
 
         if self.structure.periodicity == '1D_array':
             if self.structure.world_1d == True:

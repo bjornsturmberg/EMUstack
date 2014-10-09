@@ -906,6 +906,10 @@ class Light(object):
 
         if None == theta:
             self.k_pll = np.array(k_parallel, dtype='float64')
+            # Check that not aligned with either x or y axis.
+            if np.abs(self.k_pll[0]) == 0 or np.abs(self.k_pll[1]) == 0:
+                print "Warning: a component of k_parallel is exactly zero, \n\
+                this can lead to degeneracies and errors."
         else:
             # Check for inconsistent input
             if [0,0] != k_parallel or phi == None:
@@ -920,6 +924,7 @@ class Light(object):
             phi *= np.pi / 180
             self.k_pll = k*np.sin(theta) * np.array(
                         [np.cos(phi), np.sin(phi)], dtype='float64')
+
 
 
     def _air_ref(self, period, world_1d):
