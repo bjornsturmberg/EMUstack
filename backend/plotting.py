@@ -2037,7 +2037,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
 
-                                if lay == 0:
+                                if lay == 0 or lay == num_lays-1:
                                     z_plot = np.linspace(h_list[lay],0.0,nu_pts_vert)
                                 else:
                                     z_plot = np.linspace(h_list[lay],h_list[lay+1],nu_pts_vert)
@@ -2202,7 +2202,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                                 expo_down = np.exp(1j*(alpha*x1[x]+beta*y2[x]-gamma*(z_range[z]-ind_h_list[lay])))
                                             expo_up = np.exp(1j*(alpha*x1[x]+beta*y2[x]+gamma*z_range[z]))
                                         else:
-                                            if lay == 0:
+                                            if lay == 0 or lay == num_lays-1:
                                                 expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*z_range[z]))
                                             else:
                                                 expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*(z_range[z]-ind_h_list[lay])))
