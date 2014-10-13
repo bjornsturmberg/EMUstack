@@ -1833,6 +1833,7 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
             # # vec_coef_down = np.zeros(shape=(np.shape(vec_coef_up)),dtype='complex128')
             # # vec_coef_down[neq_PW] = 1.0
 
+
 def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
     semi_inf_height=1.0, gradient=None, no_incoming=False, add_name=''):
     """
@@ -1901,13 +1902,13 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
             if layer.structure.periodicity == '1D_array':
                 slice_types = ['xz']
             else:
-                print "fsldkfjdlskfj"
                 slice_types = ['xz','yz','diag+','diag-']
                 if gradient != None: slice_types.append(('special+','special-'))
 
         for sli in slice_types:
-            E_fields = ['Re(E_x)', 'Im(E_x)', 'Re(E_y)', 'Im(E_y)', 'Re(E_z)', 'Im(E_z)', 'eps_abs(E)']
+            E_fields = ['Re(E_x)', 'Im(E_x)', 'Re(E_y)', 'Im(E_y)', 'Re(E_z)', 'Im(E_z)', 'Re(E)',  'eps_abs(E)']
             E_fields_tot = []
+            epsE_fields_tot = []
             for E in E_fields:
                 fig = plt.figure(figsize=(9,12))
                 gs = gridspec.GridSpec(num_lays, 1, wspace=0.0, hspace=0.0,
@@ -1972,7 +1973,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if struct.type_el[i] != struct.type_el[i+1]:
                                         boundary.append(struct.x_arr[2*(i+1)])
 
-                                if E != 'eps_abs(E)':
+                                if E[-3:] != '(E)':
                                     if E[5] == 'x': comp = 0
                                     if E[5] == 'y': comp = 1
                                     if E[5] == 'z': comp = 2
@@ -2003,37 +2004,53 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if max_E_field == 0:
                                         if E[5] == 'x':
                                             E_fields_tot.append(E_slice*np.conj(E_slice))
+                                            epsE_fields_tot.append(E_slice)
                                         elif E[5] == 'y' or E[5] == 'z':
                                             E_fields_tot[lay] += E_slice*np.conj(E_slice)
-                                else:
+                                elif E == 'eps_abs(E)':
                                     if max_E_field == 0:
                                         type_el = np.vstack((struct.type_el,struct.type_el)).reshape((-1,),order='F')
                                         type_el = np.append(type_el,type_el[-1])
                                         type_el[type_el == 1] = np.real(eps[0])
                                         type_el[type_el == 2] = np.real(eps[1])
                                         type_el = np.diag(type_el)
-                                        E_fields_tot[lay] = np.dot(type_el,(E_fields_tot[lay]))
-                                        # E_fields_tot[lay] = np.dot(type_el,np.sqrt(E_fields_tot[lay]))
+                                        epsE_fields_tot[lay] = np.dot(type_el,(E_fields_tot[lay]))
                                     else:
-                                        E_slice = E_fields_tot[lay]
+                                        E_slice = epsE_fields_tot[lay]
+                                elif E[-3:] == '(E)' and max_E_field == 1:
+                                    E_slice = np.sqrt(E_fields_tot[lay])
 
                                 if E[0] == 'R' or E[0] == 'e':
                                     E_slice = np.real(E_slice)
                                 elif E[0] == 'I':
                                     E_slice = np.imag(E_slice)
 
-                                if E != 'eps_abs(E)':
+                                if E[-3:] != '(E)':
                                     max_E_lay = np.max(E_slice)
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
                                     min_E_lay = np.min(E_slice)
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
-                                else:
-                                    max_E_lay = np.max(np.real(E_fields_tot[lay]))
+                                elif E == 'Re(E)':
+                                    max_E_lay = np.max(np.real(np.sqrt(E_fields_tot[lay])))
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
-                                    min_E_lay = np.min(np.real(E_fields_tot[lay]))
+                                    min_E_lay = np.min(np.real(np.sqrt(E_fields_tot[lay])))
+                                    if min_E_lay < min_E or min_E == None:
+                                        min_E = min_E_lay
+                                elif E == 'Im(E)':
+                                    max_E_lay = np.max(np.imag(np.sqrt(E_fields_tot[lay])))
+                                    if max_E_lay > max_E or max_E == None:
+                                        max_E = max_E_lay
+                                    min_E_lay = np.min(np.imag(np.sqrt(E_fields_tot[lay])))
+                                    if min_E_lay < min_E or min_E == None:
+                                        min_E = min_E_lay
+                                else:
+                                    max_E_lay = np.max(np.real(epsE_fields_tot[lay]))
+                                    if max_E_lay > max_E or max_E == None:
+                                        max_E = max_E_lay
+                                    min_E_lay = np.min(np.real(epsE_fields_tot[lay]))
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
 
@@ -2061,16 +2078,6 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                         ticktitles = []
                                         [ticktitles.append('%3.2f' % tick) for tick in ticks]
                                         ax1.yaxis.set_ticklabels(ticktitles)
-
-                                    if max_E_lay == max_E:
-                                        cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
-                                        cb = fig.colorbar(CS, cax=cax)
-                                        if E != 'eps_abs(E)':
-                                            cb.set_clim(min_E, max_E)
-                                            cax.set_ylabel(E)
-                                        else:
-                                            cb.set_clim(0, max_E)
-                                            cax.set_ylabel(r'Re($\epsilon$) |E|$^2$')
 
                                     start, end = ax1.get_ylim()
                                     for b in boundary:
@@ -2129,7 +2136,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                             E_TM_y = beta/norm
                             E_TM_z = -1*norm/gamma
 
-                            if E != 'eps_abs(E)':
+                            if E[-3:] != '(E)':
                                 if E[5] == 'x':
                                     TE_coef = E_TE_x
                                     TM_coef = E_TM_x
@@ -2219,34 +2226,50 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                             if sli == 'xz':
                                 E_slice = E_field[:,0,:]
                                 if max_E_field == 0:
-                                    if E != 'eps_abs(E)':
+                                    if E[-3:] != '(E)':
                                         if E[5] == 'x':
                                             E_fields_tot.append(E_slice*np.conj(E_slice))
+                                            epsE_fields_tot.append(E_slice)
                                         elif E[5] == 'y' or E[5] == 'z':
                                             E_fields_tot[lay] += E_slice*np.conj(E_slice)
                                     else:
-                                        E_fields_tot[lay] = np.real(eps) * (E_fields_tot[lay])
-                                        # E_fields_tot[lay] = np.real(eps) * np.sqrt(E_fields_tot[lay])
+                                        epsE_fields_tot[lay] = np.real(eps) * (E_fields_tot[lay])
                                 elif max_E_field == 1 and E == 'eps_abs(E)':
-                                    E_slice = E_fields_tot[lay]
+                                    E_slice = epsE_fields_tot[lay]
+                                elif max_E_field == 1 and E[-3:] == '(E)':
+                                    E_slice = np.sqrt(E_fields_tot[lay])
 
                                 if E[0] == 'R' or E[0] == 'e':
                                     E_slice = np.real(E_slice)
                                 elif E[0] == 'I':
                                     E_slice = np.imag(E_slice)
 
-                                if E != 'eps_abs(E)':
+                                if E[-3:] != '(E)':
                                     max_E_lay = np.max(E_slice)
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
                                     min_E_lay = np.min(E_slice)
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
-                                else:
-                                    max_E_lay = np.max(np.real(E_fields_tot[lay]))
+                                elif E == 'Re(E)':
+                                    max_E_lay = np.max(np.real(np.sqrt(E_fields_tot[lay])))
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
-                                    min_E_lay = np.min(np.real(E_fields_tot[lay]))
+                                    min_E_lay = np.min(np.real(np.sqrt(E_fields_tot[lay])))
+                                    if min_E_lay < min_E or min_E == None:
+                                        min_E = min_E_lay
+                                elif E == 'Im(E)':
+                                    max_E_lay = np.max(np.imag(np.sqrt(E_fields_tot[lay])))
+                                    if max_E_lay > max_E or max_E == None:
+                                        max_E = max_E_lay
+                                    min_E_lay = np.min(np.imag(np.sqrt(E_fields_tot[lay])))
+                                    if min_E_lay < min_E or min_E == None:
+                                        min_E = min_E_lay
+                                else:
+                                    max_E_lay = np.max(np.real(epsE_fields_tot[lay]))
+                                    if max_E_lay > max_E or max_E == None:
+                                        max_E = max_E_lay
+                                    min_E_lay = np.min(np.real(epsE_fields_tot[lay]))
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
 
@@ -2270,28 +2293,23 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                         [ticktitles.append('%3.2f' % tick) for tick in ticks]
                                         ax1.yaxis.set_ticklabels(ticktitles)
 
-                                    if max_E_lay == max_E:
-                                        cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
-                                        cb = fig.colorbar(CS, cax=cax)
-                                        if E != 'eps_abs(E)':
-                                            cax.set_ylabel(E)
-                                            # cb.set_clim(-max_E, max_E)
-                                            cb.set_clim(min_E, max_E)
-                                        else:
-                                            cax.set_ylabel(r'Re($\epsilon$) |E|$^2$')
-                                            cb.set_clim(min_E, max_E)
-
                         if lay == 0:
                             ax1.set_xlabel('x (d)')
                         else:
                             ax1.set_xticklabels( () )
 
-                # plt.suptitle('%(name)s \n E_xz_slice_%(p)s, y = %(y_pos)s, heights = %(h)s \n \
-                # $\lambda$ = %(wl)f nm, period = %(d)f, PW = %(pw)i, %(add)s' % \
-                #     {'h':heights_list, 'p' : re_im, 'y_pos' : y1[y_of_xz],'wl' : wl, \
-                #     'd' : period, 'pw' : pw, 'add' : add_name} + '\n'
-                #     + '#prop = %(prop)s, #evan = %(evan)s, n = %(n)s, k = %(k)s' % {'evan' : evan,\
-                #     'prop' : prop, 'n' : n, 'k' : k[0]})
+
+                cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
+                cb = fig.colorbar(plt.contourf([0,1],[0,1],[[min_E,min_E],[max_E,max_E]], 15, cmap=plt.cm.jet, vmin=min_E, vmax=max_E), cax=cax)
+                cb.set_clim(min_E, max_E)
+                if E == 'eps_abs(E)':
+                    cax.set_ylabel(r'Re($\epsilon$) |E|$^2$')
+                elif E == 'Re(E)':
+                    cax.set_ylabel(r'Re(E)')
+                elif E == 'Im(E)':
+                    cax.set_ylabel(r'Im(E)')
+                else:
+                    cax.set_ylabel(E)
 
                 plt.savefig('%(dir_name)s/stack_%(stack_num)s_E_%(slice)s_slice_%(comp)s%(add)s.pdf'% \
                     {'dir_name' : dir_name, 'comp':E, 'slice':sli,\
