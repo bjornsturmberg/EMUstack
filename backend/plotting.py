@@ -57,7 +57,7 @@ def clear_previous():
 
     type_list = ['*.npz', '*.pdf', '*.txt', '*.gif', '*.png', '*.log', '*.svg',
     'fields_vertically -r', 'in_plane_fields -r', 'Bloch_fields -r',
-    'field_values-r', '3d_fields-r']
+    'field_values -r', '3d_fields -r']
     for typ in type_list:
         try:
             files_rm = 'rm %s'% typ
@@ -1835,7 +1835,8 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
 
 
 def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
-    semi_inf_height=1.0, gradient=None, no_incoming=False, add_name=''):
+    semi_inf_height=1.0, gradient=None, no_incoming=False, add_name='',
+    force_eq_ratio=False):
     """
     Plot fields in the x-y plane at chosen values of z, where z is \
     calculated from the bottom of chosen layer.
@@ -1862,6 +1863,8 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                 upward propagating scattered field).
 
             add_name  (str): concatenate add_name to title.
+
+            force_eq_ratio  (bool): each layer plotted on equal space.
     """
 
     from fortran import EMUstack
@@ -1896,13 +1899,13 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
             if layer.structure.world_1d == True:
                 slice_types = ['xz']
             else:
-                slice_types = ['xz','yz','diag+','diag-']
+                slice_types = ['xz']#,'yz','diag+','diag-'] #rest not implemented
                 if gradient != None: slice_types.append(('special+','special-'))
         else:
             if layer.structure.periodicity == '1D_array':
                 slice_types = ['xz']
             else:
-                slice_types = ['xz','yz','diag+','diag-']
+                slice_types = ['xz']#,'yz','diag+','diag-'] #rest not implemented
                 if gradient != None: slice_types.append(('special+','special-'))
 
         for sli in slice_types:
@@ -1911,9 +1914,13 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
             epsE_fields_tot = []
             for E in E_fields:
                 fig = plt.figure(figsize=(9,12))
-                gs = gridspec.GridSpec(num_lays, 1, wspace=0.0, hspace=0.0,
-                    width_ratios=[1,1],
-                    height_ratios=h_ratio)
+                if force_eq_ratio == True:
+                    h_ratio = [1 for h in ind_h_list[::-1]]
+                    gs = gridspec.GridSpec(num_lays, 1, wspace=0.0, hspace=0.0,
+                        width_ratios=[1,1], height_ratios=h_ratio)
+                else:
+                    gs = gridspec.GridSpec(num_lays, 1, wspace=0.0, hspace=0.0,
+                        width_ratios=[1,1], height_ratios=h_ratio)
                 # Find maximum field value to normalise plots.
                 max_E = None
                 min_E = None
@@ -1945,24 +1952,48 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                 pstack.vec_coef_up[vec_index]))
 
                             if layer.structure.periodicity == '2D_array':
-                                if not os.path.exists(dir_name+"/gmsh_BMs"):
-                                    os.mkdir(dir_name+"/gmsh_BMs")
-                                if not os.path.exists(dir_name+"/gmsh_BMs/anim"):
-                                    os.mkdir(dir_name+"/gmsh_BMs/anim")
+                                if max_E_field == 0 and E == 'Re(E_x)':
+                                    E_fields_tot.append(None)
+                                    epsE_fields_tot.append(None)
+                                elif max_E_field == 1:
+                                    if not os.path.exists(dir_name+"/gmsh_BMs"):
+                                        os.mkdir(dir_name+"/gmsh_BMs")
+                                    if not os.path.exists(dir_name+"/gmsh_BMs/anim"):
+                                        os.mkdir(dir_name+"/gmsh_BMs/anim")
 
-                                # TODO fix the scaling issue in 2D FEM plotting!
-                                # Then remove these arbitrary scaling params.
-                                scale_plot   = 2.0
-                                shift_x_plot = -.5
-                                h_normed = float(layer.structure.height_nm)/float(layer.structure.period)
-                                shift_v_plot = h_normed*0.75
-                                nnodes = 6
-                                EMUstack.gmsh_plot_slice(layer.E_H_field, layer.num_BM,
-                                    layer.n_msh_el, layer.n_msh_pts, nnodes, layer.type_el,
-                                    layer.structure.nb_typ_el, eps, layer.table_nod,
-                                    layer.x_arr, layer.k_z, layer.sol1, vec_coef_fem,
-                                    h_normed, wl_normed, gmsh_file_pos,
-                                    scale_plot, shift_v_plot, shift_x_plot)
+                                    # TODO fix the scaling issue in 2D FEM plotting!
+                                    # Then remove these arbitrary scaling params.
+                                    scale_plot   = 2.0
+                                    shift_x_plot = -.5
+                                    h_normed = float(layer.structure.height_nm)/float(layer.structure.period)
+                                    shift_v_plot = h_normed*0.75
+                                    nnodes = 6
+                                    EMUstack.gmsh_plot_slice(layer.E_H_field, layer.num_BM,
+                                        layer.n_msh_el, layer.n_msh_pts, nnodes, layer.type_el,
+                                        layer.structure.nb_typ_el, eps, layer.table_nod,
+                                        layer.x_arr, layer.k_z, layer.sol1, vec_coef_fem,
+                                        h_normed, wl_normed, gmsh_file_pos,
+                                        scale_plot, shift_v_plot, shift_x_plot)
+
+                                    z_plot = np.linspace(h_list[lay],h_list[lay+1],2)
+                                    (y_axis_plot,x_axis) = np.meshgrid(z_plot,[0,1])
+
+                                    CS = plt.contourf(x_axis,y_axis_plot,[[0,0],[0,0]],
+                                        cmap=plt.cm.binary, vmin=0, vmax=1)
+                                    CS.set_clim(0,1)
+                                    if abs(ind_h_list[lay]) < 0.05 * np.sum(ind_h_list):
+                                        tick_half = (h_list[lay]+h_list[lay+1])/2.
+                                        ax1.yaxis.set_ticks([tick_half])
+                                        ticktitles = ['%3.2f' % tick_half]
+                                        ax1.yaxis.set_ticklabels(ticktitles)
+                                    elif abs(ind_h_list[lay]) < 0.25 * np.sum(ind_h_list):
+                                        tick_half = (h_list[lay]+h_list[lay+1])/2.
+                                        tick_int = ind_h_list[lay]/4.
+                                        ticks = [tick_half-tick_int, tick_half, tick_half+tick_int]
+                                        ax1.yaxis.set_ticks(ticks)
+                                        ticktitles = []
+                                        [ticktitles.append('%3.2f' % tick) for tick in ticks]
+                                        ax1.yaxis.set_ticklabels(ticktitles)
 
                             else:
                                 struct  = layer.structure
@@ -2004,7 +2035,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if max_E_field == 0:
                                         if E[5] == 'x':
                                             E_fields_tot.append(E_slice*np.conj(E_slice))
-                                            epsE_fields_tot.append(E_slice)
+                                            epsE_fields_tot.append(np.zeros(np.shape(E_slice)))
                                         elif E[5] == 'y' or E[5] == 'z':
                                             E_fields_tot[lay] += E_slice*np.conj(E_slice)
                                 elif E == 'eps_abs(E)':
@@ -2039,13 +2070,6 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     min_E_lay = np.min(np.real(np.sqrt(E_fields_tot[lay])))
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
-                                elif E == 'Im(E)':
-                                    max_E_lay = np.max(np.imag(np.sqrt(E_fields_tot[lay])))
-                                    if max_E_lay > max_E or max_E == None:
-                                        max_E = max_E_lay
-                                    min_E_lay = np.min(np.imag(np.sqrt(E_fields_tot[lay])))
-                                    if min_E_lay < min_E or min_E == None:
-                                        min_E = min_E_lay
                                 else:
                                     max_E_lay = np.max(np.real(epsE_fields_tot[lay]))
                                     if max_E_lay > max_E or max_E == None:
@@ -2054,7 +2078,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
 
-                                if lay == 0 or lay == num_lays-1:
+                                if lay == 0:
                                     z_plot = np.linspace(h_list[lay],0.0,nu_pts_vert)
                                 else:
                                     z_plot = np.linspace(h_list[lay],h_list[lay+1],nu_pts_vert)
@@ -2226,13 +2250,13 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                             if sli == 'xz':
                                 E_slice = E_field[:,0,:]
                                 if max_E_field == 0:
-                                    if E[-3:] != '(E)':
+                                    if E[-3:] != '(E)' and E[0] == 'R':
                                         if E[5] == 'x':
                                             E_fields_tot.append(E_slice*np.conj(E_slice))
-                                            epsE_fields_tot.append(E_slice)
+                                            epsE_fields_tot.append(np.zeros(np.shape(E_slice)))
                                         elif E[5] == 'y' or E[5] == 'z':
                                             E_fields_tot[lay] += E_slice*np.conj(E_slice)
-                                    else:
+                                    elif E == 'eps_abs(E)':
                                         epsE_fields_tot[lay] = np.real(eps) * (E_fields_tot[lay])
                                 elif max_E_field == 1 and E == 'eps_abs(E)':
                                     E_slice = epsE_fields_tot[lay]
@@ -2256,13 +2280,6 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
                                     min_E_lay = np.min(np.real(np.sqrt(E_fields_tot[lay])))
-                                    if min_E_lay < min_E or min_E == None:
-                                        min_E = min_E_lay
-                                elif E == 'Im(E)':
-                                    max_E_lay = np.max(np.imag(np.sqrt(E_fields_tot[lay])))
-                                    if max_E_lay > max_E or max_E == None:
-                                        max_E = max_E_lay
-                                    min_E_lay = np.min(np.imag(np.sqrt(E_fields_tot[lay])))
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
                                 else:
@@ -2305,9 +2322,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                 if E == 'eps_abs(E)':
                     cax.set_ylabel(r'Re($\epsilon$) |E|$^2$')
                 elif E == 'Re(E)':
-                    cax.set_ylabel(r'Re(E)')
-                elif E == 'Im(E)':
-                    cax.set_ylabel(r'Im(E)')
+                    cax.set_ylabel(r'|E|')
                 else:
                     cax.set_ylabel(E)
 
@@ -2510,10 +2525,10 @@ def field_values(stacks_list, lay_interest=0, xyz_values=[(0.1,0.1,0.1)]):
             lay_interest  (int): the index of the layer considered within \
                 the stack. Must be a ThinFilm layer.
 
-            xyz_values  (list): list of distances from top surface of layer \
-                at which to calculate fields. If layer is semi-inf substrate \
-                then z_value is distance from top of this layer (i.e. bottom \
-                interface of stack).
+            xyz_values  (list): list of distances in normalised units of (d) \
+                from top surface of layer at which to calculate fields. \
+                For semi-inf substrate then z_value is distance from \
+                top of this layer (i.e. bottom interface of stack).
     """
 
     dir_name = 'field_values'
@@ -2521,6 +2536,7 @@ def field_values(stacks_list, lay_interest=0, xyz_values=[(0.1,0.1,0.1)]):
         os.mkdir(dir_name)
 
     stack_num = 0
+    super_points = []
     for pstack in stacks_list:
         try:
             if not isinstance(pstack.layers[lay_interest],mode_calcs.Anallo):
@@ -2530,7 +2546,7 @@ def field_values(stacks_list, lay_interest=0, xyz_values=[(0.1,0.1,0.1)]):
             wl = np.around(pstack.layers[-1].light.wl_nm,decimals=2)
 
             if lay_interest == 0: name_lay = "0_Substrate"
-            elif lay_interest == num_lays-1: name_lay = "%i_Superstrate" % num_lays-1
+            elif lay_interest == num_lays-1: name_lay = "%i_Superstrate" % (num_lays-1)
             else: name_lay = "%i_Thin_Film" % lay_interest
 
             n = pstack.layers[lay_interest].n()
@@ -2591,7 +2607,7 @@ def field_values(stacks_list, lay_interest=0, xyz_values=[(0.1,0.1,0.1)]):
 
             for i in xrange(len(xyz_values)):
 
-                (x1,y1,z1) = np.array(xyz_values[i])/float(pstack.layers[lay_interest].structure.period)
+                (x1,y1,z1) = np.array(xyz_values[i])#/float(pstack.layers[lay_interest].structure.period)
 
                 if pstack.layers[lay_interest].structure.world_1d == True: y1 = 0
 
@@ -2631,11 +2647,14 @@ def field_values(stacks_list, lay_interest=0, xyz_values=[(0.1,0.1,0.1)]):
                                 {'dir_name':dir_name, 'wl':wl,'name' : name_lay,'stack_num':stack_num},\
                                 np.array([np.real(calc_E_x_array), np.imag(calc_E_x_array), np.real(calc_E_y_array),\
                                 np.imag(calc_E_y_array), np.real(calc_E_z_array), np.imag(calc_E_z_array), np.real(calc_E_tot_array)]))
-
             stack_num += 1
+            super_points.append([calc_E_x_array,calc_E_y_array,calc_E_z_array,calc_E_tot_array])
+
         except ValueError:
             print "field_values can only calculate field values in ThinFilms."\
             "\nPlease select a different lay_interest.\n"
+
+        return super_points
 
 def fields_3d(stacks_list, lay_interest=1):
     """

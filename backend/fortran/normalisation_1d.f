@@ -21,7 +21,7 @@ c
 C              z_tmp2 =  1.0d0/z_tmp1**2
             do i=1,nddl_0
               sol_1(i,ival,iel) =
-     *           sol_1(i,ival,iel)   ! * z_tmp2
+     *           sol_1(i,ival,iel) * z_tmp2
               sol_2(i,ival,iel) =
      *           sol_2(i,ival,iel) * z_tmp2
             enddo

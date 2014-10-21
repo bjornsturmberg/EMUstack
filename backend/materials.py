@@ -61,6 +61,8 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    Sb2S3           |            |                        |
         +--------------------+------------+------------------------+
+        |    Sb2S3@ANU       |            |                        |
+        +--------------------+------------+------------------------+
         |    AlGaAs          |            |                        |
         +--------------------+------------+------------------------+
         |    Al2O3           |            |                        |
@@ -160,6 +162,7 @@ CdTe       = Material(np.loadtxt('%sCdTe.txt'% data_location))
 FeS2       = Material(np.loadtxt('%sFeS2.txt'% data_location))
 Zn3P2      = Material(np.loadtxt('%sZn3P2.txt'% data_location))
 Sb2S3      = Material(np.loadtxt('%sSb2S3.txt'% data_location))
+Sb2S3_ANU  = Material(np.loadtxt('%sSb2S3_ANU.txt'% data_location))
 AlGaAs     = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
 Al2O3      = Material(np.loadtxt('%sAl2O3.txt'% data_location))       # http://refractiveindex.info/?shelf=main&book=Al2O3&page=Malitson-o
 GaAs       = Material(np.loadtxt('%sGaAs.txt'% data_location))        # http://www.filmetrics.com/refractive-index-database/GaAs/Gallium-Arsenide
