@@ -680,6 +680,7 @@ class NanoStruct(object):
                 if self.small_space == None:
                     small_space = large_d = 0.5 - rad_1 - rad_2
                 else:
+                    small_space = self.small_space
                     large_d = 1.0 - small_space - (2*rad_1) - (2*rad_2)
                 for i_el in el_list:
                     x_1 = ls_x[2*i_el-1]

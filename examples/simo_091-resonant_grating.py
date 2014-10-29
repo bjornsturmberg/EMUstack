@@ -50,7 +50,7 @@ wl_2     = 1200
 no_wl_1  = 3
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 3) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 3, theta = 0.0, phi = 0.0) for wl in wavelengths]
 
 
 # period must be consistent throughout simulation!!!
@@ -58,21 +58,21 @@ period = 120
 num_BM = 90
 
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Material(3.5 + 0.0j), loss = True)
+    material = materials.Material(3.5 + 0.0j), loss = True, world_1d=True)
 
 homo_film  = objects.ThinFilm(period, height_nm = 5,
-    material = materials.Material(3.6 + 0.27j), loss = True)
+    material = materials.Material(3.6 + 0.27j), loss = True, world_1d=True)
 
 substrate = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Air, loss = False)
+    material = materials.Air, loss = False, world_1d=True)
 
 grating_diameter = 100
 grating = objects.NanoStruct('1D_array', period, grating_diameter, height_nm = 25,
     inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True,
-    make_mesh_now = True, force_mesh = True, lc_bkg = 0.05, lc2= 4.0)
+    make_mesh_now = True, force_mesh = True, lc_bkg = 0.03, lc2= 4.0)
 
 mirror = objects.ThinFilm(period, height_nm = 100,
-    material = materials.Ag, loss = True)
+    material = materials.Ag, loss = True, world_1d=True)
 
 
 def simulate_stack(light):
@@ -103,61 +103,16 @@ np.savez('Simo_results'+simotime, stacks_list=stacks_list)
 
 
 ######################## Plotting ########################
-last_light_object = light_list.pop()
-param_layer = grating_1 # Specify the layer for which the parameters should be printed on figures.
-params_string = plotting.gen_params_string(param_layer, last_light_object, max_num_BMs=num_BM)
-
-
 active_layer_nu = 3 # Specify which layer is the active one (where absorption generates charge carriers).
 # Plot total transmission, reflection, absorption & that of each layer.
 # Also calculate efficiency of active layer.
-Efficiency = plotting.t_r_a_plots(stacks_list, wavelengths, params_string, active_layer_nu=active_layer_nu)
-# Dispersion
-# plotting.omega_plot(stacks_list, wavelengths, params_string)
+[Efficiency, J_sc] = plotting.t_r_a_plots(stacks_list, wavelengths, params_layer=3, active_layer_nu=active_layer_nu, ult_eta=True, J_sc=True)
+
 # # Energy Concentration
 # which_layer = 2
 # which_modes = [1,2] # can be a single mode or multiple
 # plotting.E_conc_plot(stacks_list, which_layer, which_modes, wavelengths,
 #     params_string)
-
-
-######################## Single Wavelength Plotting ########################
-# Plot transmission as a function of k vector.
-# plotting.t_func_k_plot(stacks_list)
-
-
-# # Visualise the Scattering Matrices
-# for i in range(len(wavelengths)):
-#     extra_title = 'R_net'
-#     plotting.vis_scat_mats(stacks_list[i].R_net, i, extra_title)
-#     extra_title = 'R_12'
-#     plotting.vis_scat_mats(stacks_list[i].layers[2].T21, i, extra_title)
-
-
-
-
-
-
-
-# betas = stacks_wl_list[0][0][0].layers[1].k_z
-# print betas
-# betas = stacks_wl_list[0][0][0].layers[0].k_z
-# print betas
-
-# Rnet = stacks_wl_list[0][0][0].R_net
-# J_mat = stacks_wl_list[0][0][0].layers[1].J
-# T_c = np.sum((np.abs(stacks_wl_list[0][0][0].layers[1].T12)), axis=1)
-# print T_c
-# print Rnet
-# print J_mat
-# print_fmt = zip(np.real(betas),np.imag(betas),T_c)
-# np.savetxt('Coupling_beta.txt', print_fmt, fmt = '%7.4f')
-# print_fmt = zip(np.real(betas),np.imag(betas))
-# np.savetxt('Coupling_beta.txt', print_fmt)
-
-
-
-
 
 
 

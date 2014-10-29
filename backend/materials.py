@@ -55,13 +55,13 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    CdTe            |  Cu        |                        |
         +--------------------+------------+------------------------+
-        |    FeS2            |            |                        |
+        |    FeS2            |  Cu_Palik  |                        |
         +--------------------+------------+------------------------+
         |    Zn3P2           |            |                        |
         +--------------------+------------+------------------------+
         |    Sb2S3           |            |                        |
         +--------------------+------------+------------------------+
-        |    Sb2S3@ANU       |            |                        |
+        |    Sb2S3_ANU       |            |                        |
         +--------------------+------------+------------------------+
         |    AlGaAs          |            |                        |
         +--------------------+------------+------------------------+
@@ -177,13 +177,14 @@ AlN        = Material(np.loadtxt('%sAlN.txt'% data_location))         # http://w
 Ge         = Material(np.loadtxt('%sGe.txt'% data_location))          # http://www.filmetrics.com/refractive-index-database/Ge/Germanium
 CH3NH3PbI3 = Material(np.loadtxt('%sCH3NH3PbI3.txt'% data_location))  # doi:10.1038/nmat3911 - (noting bandedge @ 800nm) Michael Graetzel, Nature Materials
 # Metals
-Au         = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Default - Johnson and Christy
+Au         = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Johnson Christy
 Au_Palik   = Material(np.loadtxt('%sAu_Palik.txt'% data_location))    # Palik
-Ag         = Material(np.loadtxt('%sAg_JC.txt'% data_location))       # Default - Johnson and Christy
+Ag         = Material(np.loadtxt('%sAg_JC.txt'% data_location))       # Johnson Christy
 Ag_Palik   = Material(np.loadtxt('%sAg_Palik.txt'% data_location))    # Palik
-Cu         = Material(np.loadtxt('%sCu_Palik.txt'% data_location))    # Palik
+Cu         = Material(np.loadtxt('%sCu_JC.txt'% data_location))       # Johnson Christy
+Cu_Palik   = Material(np.loadtxt('%sCu_Palik.txt'% data_location))    # Palik
 # Drude model - need to give [omega_plasma, omega_gamma, eplison_infinity]
-Au_drude   = Material([1.36e16, 1.05e14, 9.5]) # Johnson and Christie
+Au_drude   = Material([1.36e16, 1.05e14, 9.5]) # Johnson Christy
 
 
 # Use the below to plot the interpolated refractive indices

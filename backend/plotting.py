@@ -195,7 +195,9 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
     params_2_print += ''.join('%4f, ' % num for num in height_list)
 
     xlabel = 'xvalues'
+    plt_eV = False
     if xvalues==None:
+        plt_eV = True
         if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
             xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
             xlabel = r'$\lambda$ (nm)'
@@ -252,17 +254,17 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
         total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
         # Plot t,r,a for each layer.
         layers_plot('Lay_Absorb', a_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt)
+            stack_label, add_name, save_pdf, save_txt, plt_eV)
         layers_plot('Lay_Trans',  t_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt)
+            stack_label, add_name, save_pdf, save_txt, plt_eV)
         layers_plot('Lay_Reflec', r_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt)
+            stack_label, add_name, save_pdf, save_txt, plt_eV)
 
     # Plot total t,r,a on a single plot.
     if save_pdf == True:
         plot_name = 'Total_Spectra'
         total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel, params_2_print,\
-            stack_label, add_name)
+            stack_label, add_name, plt_eV)
 
     if weight_spec == True:
         # Plot totals weighted by solar irradiance.
@@ -276,7 +278,7 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
         r_weighted = r_tot*weighting
         plot_name  = 'Weighted_Total_Spectra'
         total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, xvalues,
-            xlabel, params_2_print, stack_label, add_name)
+            xlabel, params_2_print, stack_label, add_name, plt_eV)
 
     if extinct == True:
         extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
@@ -287,7 +289,7 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
         return
 
 def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
-    params_2_print, stack_label, add_name, save_pdf, save_txt):
+    params_2_print, stack_label, add_name, save_pdf, save_txt, plt_eV):
     """ Plots one type of spectrum across all layers.
 
         Is called from t_r_a_plots.
@@ -303,19 +305,20 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
         av_array = zip(xvalues, layer_spec, h_array)
         ax1 = fig.add_subplot(nu_layers, 1, i+1)
         ax1.plot(xvalues, layer_spec, linewidth=linesstrength)
-        ax2 = ax1.twiny()
-        new_tick_values = np.linspace(10, 0.5, 20)
-        new_tick_locations = tick_function(new_tick_values)
-        new_tick_labels = ["%.1f" % z for z in new_tick_values]
-        ax2.set_xticks(new_tick_locations)
-        ax2.set_xticklabels(new_tick_labels)
-        ax2.set_xlim((xvalues[0], xvalues[-1]))
+        if plt_eV == True:
+            ax2 = ax1.twiny()
+            new_tick_values = np.linspace(10, 0.5, 20)
+            new_tick_locations = tick_function(new_tick_values)
+            new_tick_labels = ["%.1f" % z for z in new_tick_values]
+            ax2.set_xticks(new_tick_locations)
+            ax2.set_xticklabels(new_tick_labels)
+            ax2.set_xlim((xvalues[0], xvalues[-1]))
         if i == 0:
             if xlabel == r'$\lambda$ (nm)': ax2.set_xlabel('Energy (eV)')
         elif i == nu_layers-1:
             ax1.set_xlabel(xlabel)
             ax1.set_ylabel('Total')
-        if i != 0:
+        if i != 0 and plt_eV == True:
             ax2.set_xticklabels( () )
         if i != nu_layers-1:
             ax1.set_xticklabels( () )
@@ -367,7 +370,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
                 {'s': spectra_name, 'bon': stack_label, 'add' : add_name})
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
-    params_2_print, stack_label, add_name):
+    params_2_print, stack_label, add_name, plt_eV):
     """ Plots total t, r, a spectra on one plot.
 
         Is called from t_r_a_plots, t_r_a_plots_subs
@@ -379,13 +382,14 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     ax1.plot(xvalues, a_spec, linewidth=linesstrength)
     ax1.set_ylabel('Absorptance')
     ax1.set_xlim((xvalues[0], xvalues[-1]))
-    ax2 = ax1.twiny()
-    new_tick_values = np.linspace(10, 0.5, 20)
-    new_tick_locations = tick_function(new_tick_values)
-    new_tick_labels = ["%.1f" % z for z in new_tick_values]
-    ax2.set_xticks(new_tick_locations)
-    ax2.set_xticklabels(new_tick_labels)
-    ax2.set_xlim((xvalues[0], xvalues[-1]))
+    if plt_eV == True:
+        ax2 = ax1.twiny()
+        new_tick_values = np.linspace(10, 0.5, 20)
+        new_tick_locations = tick_function(new_tick_values)
+        new_tick_labels = ["%.1f" % z for z in new_tick_values]
+        ax2.set_xticks(new_tick_locations)
+        ax2.set_xticklabels(new_tick_labels)
+        ax2.set_xlim((xvalues[0], xvalues[-1]))
     if xlabel == r'$\lambda$ (nm)': ax2.set_xlabel('Energy (eV)')
     plt.ylim((0, 1))
 
@@ -393,10 +397,11 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     ax1.plot(xvalues, t_spec, linewidth=linesstrength)
     ax1.set_ylabel('Transmittance')
     ax1.set_xlim((xvalues[0], xvalues[-1]))
-    ax2 = ax1.twiny()
-    ax2.set_xticklabels( () )
-    ax2.set_xticks(new_tick_locations)
-    ax2.set_xlim((xvalues[0], xvalues[-1]))
+    if plt_eV == True:
+        ax2 = ax1.twiny()
+        ax2.set_xticklabels( () )
+        ax2.set_xticks(new_tick_locations)
+        ax2.set_xlim((xvalues[0], xvalues[-1]))
     plt.ylim((0, 1))
 
     ax1 = fig.add_subplot(3, 1, 3)
@@ -404,10 +409,11 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     ax1.set_xlabel(xlabel)
     ax1.set_ylabel('Reflectance')
     ax1.set_xlim((xvalues[0], xvalues[-1]))
-    ax2 = ax1.twiny()
-    ax2.set_xticklabels( () )
-    ax2.set_xticks(new_tick_locations)
-    ax2.set_xlim((xvalues[0], xvalues[-1]))
+    if plt_eV == True:
+        ax2 = ax1.twiny()
+        ax2.set_xticklabels( () )
+        ax2.set_xticks(new_tick_locations)
+        ax2.set_xlim((xvalues[0], xvalues[-1]))
     plt.ylim((0, 1))
 
     plt.suptitle(params_2_print, fontsize=title_font)
