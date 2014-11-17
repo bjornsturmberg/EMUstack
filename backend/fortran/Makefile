@@ -21,12 +21,12 @@ EMUstack.so: EMUstack.pyf lib/umf4_f77zwrapper64.o *.f
 	--link-lapack_opt --link-umfpack --link-blas_opt --fcompiler=$(COMPILER_VENDOR) \
 	#--f77exec=/usr/physics/ifortran11/bin/intel64/ifort
 # With installed libsuitesparse v. < 4.0.0
-#lib/umf4_f77zwrapper64.o: lib/umf4_f77zwrapper_SS_3.7.1.c
-#	gcc -O5 -DZLONG -I/usr/include/suitesparse -c lib/umf4_f77zwrapper_SS_3.7.1.c \
-#		-fPIC -o lib/umf4_f77zwrapper64.o
+lib/umf4_f77zwrapper64.o: lib/umf4_f77zwrapper_SS_3.7.1.c
+	gcc -O5 -DZLONG -I/usr/include/suitesparse -c lib/umf4_f77zwrapper_SS_3.7.1.c \
+		-fPIC -o lib/umf4_f77zwrapper64.o
 # With installed libsuitesparse v. >= 4.0.0
-lib/umf4_f77zwrapper64.o: lib/umf4_f77zwrapper_SS_4.2.0.c
-	gcc -O5 -DZLONG -I/usr/include/suitesparse -c lib/umf4_f77zwrapper_SS_4.2.0.c \
+#lib/umf4_f77zwrapper64.o: lib/umf4_f77zwrapper_SS_4.2.0.c
+#	gcc -O5 -DZLONG -I/usr/include/suitesparse -c lib/umf4_f77zwrapper_SS_4.2.0.c \
  		-fPIC -o lib/umf4_f77zwrapper64.o
 EMUstack.pyf: $(SUBROUTINES_FOR_PYTHON)
 	f2py -m EMUstack -h EMUstack.pyf $(SUBROUTINES_FOR_PYTHON) --overwrite-signature

@@ -247,8 +247,8 @@ class NanoStruct(object):
             if periodicity == '2D_array':
                 if not os.path.exists("Bloch_fields"):
                     os.mkdir("Bloch_fields")
-                if not os.path.exists("Bloch_fields/PNG"):
-                    os.mkdir("Bloch_fields/PNG")
+                if not os.path.exists("Bloch_fields/PDF"):
+                    os.mkdir("Bloch_fields/PDF")
         else: self.plotting_fields = 0
         self.plot_real       = plot_real
         self.plot_imag       = plot_imag
@@ -895,13 +895,13 @@ class Light(object):
             phi  (float): Azimuthal angle of incidence in degrees \
                 measured from x-axis.
     """
-    def __init__(self, wl_nm, max_order_PWs = 2, k_parallel = [0.,0.],
+    def __init__(self, wl_nm, max_order_PWs = 2, k_parallel = None,
         theta = None, phi = None, n_inc = 1.):
         self.wl_nm = float(wl_nm)
         self._air_anallos = {}
         self.max_order_PWs  = max_order_PWs
 
-        if None == theta and [0,0] == k_parallel:
+        if None == theta and None == k_parallel:
             raise ValueError, "Specify incident angle either by \n\
             k_parallel OR by theta, phi and n_inc."
 
@@ -913,7 +913,7 @@ class Light(object):
                 this can lead to degeneracies and errors."
         else:
             # Check for inconsistent input
-            if [0,0] != k_parallel or phi == None:
+            if None != k_parallel or phi == None:
                 raise ValueError, "Specify incident angle either by \n\
             k_parallel OR by theta, phi and n_inc."
             # Avoid the degeneracies that occur at normal incidence (FEM does not deal well with them)

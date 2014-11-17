@@ -1916,6 +1916,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
 
         for sli in slice_types:
             E_fields = ['Re(E_x)', 'Im(E_x)', 'Re(E_y)', 'Im(E_y)', 'Re(E_z)', 'Im(E_z)', 'Re(E)',  'eps_abs(E)']
+            E_fields = ['Re(E_x)','Re(E_y)']
             E_fields_tot = []
             epsE_fields_tot = []
             for E in E_fields:
@@ -1948,7 +1949,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                         # vec_coef sorted from top, everything else sorted from bottom
                         vec_index = num_lays - lay - 1
 
-                        # If 2D_array NanoStruct layer plot fields using fortran routine.
+                        # If NanoStruct layer
                         if isinstance(layer,mode_calcs.Simmo):
                             name_lay = "%i_NanoStruct"% lay
                             gmsh_file_pos = 'stack_%(stack_num)s_lay_%(name)s_'% \
@@ -1957,6 +1958,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                             vec_coef_fem = np.concatenate((pstack.vec_coef_down[vec_index],
                                 pstack.vec_coef_up[vec_index]))
 
+                            # If 2D_array plot fields using fortran routine.
                             if layer.structure.periodicity == '2D_array':
                                 if max_E_field == 0 and E == 'Re(E_x)':
                                     E_fields_tot.append(None)
@@ -2001,6 +2003,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                         [ticktitles.append('%3.2f' % tick) for tick in ticks]
                                         ax1.yaxis.set_ticklabels(ticktitles)
 
+                            # If 1D_array plot fields as follows.
                             else:
                                 struct  = layer.structure
                                 E_slice = np.zeros((struct.n_msh_pts,nu_pts_vert), dtype = 'complex128')
@@ -2320,6 +2323,9 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                             ax1.set_xlabel('x (d)')
                         else:
                             ax1.set_xticklabels( () )
+
+                        print max_E
+                        print min_E
 
 
                 cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])

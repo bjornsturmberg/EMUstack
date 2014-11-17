@@ -3,10 +3,10 @@ c  P1-element is used to represent the  3D vector field.
 c  P2-element is used to represent each component of the 3D vector field.
 c
 
-      subroutine gmsh_post_process (plot_val, E_H_field, nval, 
-     *     nel, npt, nnodes, table_nod, type_el, nb_typ_el, 
-     *     n_eff, x, val_cmplx, sol, visite, 
-     *     gmsh_file_pos, dir_name, 
+      subroutine gmsh_post_process (plot_val, E_H_field, nval,
+     *     nel, npt, nnodes, table_nod, type_el, nb_typ_el,
+     *     n_eff, x, val_cmplx, sol, visite,
+     *     gmsh_file_pos, dir_name,
      *     q_average, plot_real, plot_imag, plot_abs)
 
       implicit none
@@ -75,7 +75,7 @@ c
       elseif(E_H_field .eq. 2) then
         tE_H = "H"
       else
-        write(ui,*) "gmsh_post_process: E_H_field has invalid value: ", 
+        write(ui,*) "gmsh_post_process: E_H_field has invalid value: ",
      *    E_H_field
         write(ui,*) "Aborting..."
         stop
@@ -93,8 +93,8 @@ c
             i1 = table_nod(i,iel)
             visite(i1) = visite(i1) + 1
             do j=1,3
-              sol_avg(j,i1) = sol_avg(j,i1) + 
-     *          sol(j,i,plot_val,iel) 
+              sol_avg(j,i1) = sol_avg(j,i1) +
+     *          sol(j,i,plot_val,iel)
             enddo
           enddo
         enddo
@@ -122,7 +122,7 @@ c
       tval=tE_H//buf
 
       namelen = len_trim(gmsh_file_pos)
-      namelength = len_trim(dir_name) 
+      namelength = len_trim(dir_name)
 c
 c###############################################
 c
@@ -138,18 +138,55 @@ C      else
 C        write(34,*)
 C        write(34,*) "Delete View[0];"
 C      endif
-      
+C
+C
+C Convert from gmsh format to pdf
       write(34,*) "Delete View[0];"
-      
-      tchar = '../../'//dir_name(1:namelength)// '/' 
+      tchar = '../../'//dir_name(1:namelength)// '/'
      *  //gmsh_file_pos(1:namelen) // '_' // tval // '_abs2_eE.pos'
       namelen2 = len_trim(tchar)
       write(34,*) " Include """, tchar(1:namelen2), """;"
-      tchar = gmsh_file_pos(1:namelen) // '_' // tval // '_abs2_eE.png'
+      tchar = gmsh_file_pos(1:namelen) // '_' // tval // '_abs2_eE.pdf'
       namelen2 = len_trim(tchar)
       write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
 C
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
+      write(34,*) "Delete View[0];"
+      tchar = '../../'//dir_name(1:namelength)// '/'
+     *  //gmsh_file_pos(1:namelen) // '_' // tval // 'v_re.pos'
+      namelen2 = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen2), """;"
+      tchar = gmsh_file_pos(1:namelen) // '_' // tval // 'v_re.pdf'
+      namelen2 = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
+C
+      write(34,*) "Delete View[0];"
+      tchar = '../../'//dir_name(1:namelength)// '/'
+     *  //gmsh_file_pos(1:namelen) // '_' // tval // 'x_re.pos'
+      namelen2 = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen2), """;"
+      tchar = gmsh_file_pos(1:namelen) // '_' // tval // 'x_re.pdf'
+      namelen2 = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
+C
+      write(34,*) "Delete View[0];"
+      tchar = '../../'//dir_name(1:namelength)// '/'
+     *  //gmsh_file_pos(1:namelen) // '_' // tval // 'y_re.pos'
+      namelen2 = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen2), """;"
+      tchar = gmsh_file_pos(1:namelen) // '_' // tval // 'y_re.pdf'
+      namelen2 = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
+C
+      write(34,*) "Delete View[0];"
+      tchar = '../../'//dir_name(1:namelength)// '/'
+     *  //gmsh_file_pos(1:namelen) // '_' // tval // 'z_re.pos'
+      namelen2 = len_trim(tchar)
+      write(34,*) " Include """, tchar(1:namelen2), """;"
+      tchar = gmsh_file_pos(1:namelen) // '_' // tval // 'z_re.pdf'
+      namelen2 = len_trim(tchar)
+      write(34,*) "Print Sprintf(""", tchar(1:namelen2), """);"
+C
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // '_abs2.geo'
       open (unit=26,file=tchar)
       tchar = gmsh_file_pos(1:namelen) // '_' // tval // '_abs2.pos'
@@ -158,7 +195,7 @@ C
 C        write(26,*) "Merge ""interface_c4.geo"";"
       close (unit=26)
 C
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // '_abs2_eE.geo'
       open (unit=32,file=tchar)
       tchar = gmsh_file_pos(1:namelen) // '_' // tval // '_abs2_eE.pos'
@@ -166,8 +203,8 @@ C
         write(32,*) " Include """, tchar(1:namelen2), """;"
 C        write(32,*) "Merge ""interface_c4.geo"";"
       close (unit=32)
-      
-C      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
+
+C      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
 C     *           // '_' // tval // '_abs2_iE.geo'
 C      open (unit=33,file=tchar)
 C      tchar = gmsh_file_pos(1:namelen) // '_' // tval // '_abs2_eE.pos'
@@ -176,7 +213,7 @@ C        write(33,*) " Include """, tchar(1:namelen2), """;"
 C        write(33,*) "Merge ""interface_c4.geo"";"
 C      close (unit=33)
 
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // '_abs2.pos'
       open (unit=26,file=tchar)
         write(26,*) "View.ArrowSizeMax = 40;"
@@ -192,7 +229,7 @@ c        write(26,*) "View ""|E|^2: n = ", "|",tE_H,"|^2: n = ",
         write(26,*) "View ""|",tE_H,"|^2: n = ",
      *     plot_val, ", beta_n =", v_re, "+ I *", v_im, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *            // '_' // tval // 'x_re.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.ArrowSizeMax = 40;"
@@ -203,11 +240,11 @@ c
         write(27,*) "View.MaxRecursionLevel = 2;"
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "View.Light = 0;"
-c        write(27,*) "View ""Re Ex: n = ", 
-        write(27,*) "View ""Re ",tE_H,"x: n = ", 
+c        write(27,*) "View ""Re Ex: n = ",
+        write(27,*) "View ""Re ",tE_H,"x: n = ",
      *     plot_val, ", beta_n =", v_re, "+ I *", v_im, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // 'y_re.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.ArrowSizeMax = 40;"
@@ -218,10 +255,10 @@ c
         write(28,*) "View.MaxRecursionLevel = 2;"
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "View.Light = 0;"
-        write(28,*) "View ""Re ",tE_H,"y: n = ", 
+        write(28,*) "View ""Re ",tE_H,"y: n = ",
      *     plot_val, ", beta_n =", v_re, "+ I *", v_im, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // 'z_re.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.ArrowSizeMax = 40;"
@@ -232,10 +269,10 @@ c
         write(29,*) "View.MaxRecursionLevel = 2;"
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "View.Light = 0;"
-        write(29,*) "View ""Re ",tE_H,"z: n = ", 
+        write(29,*) "View ""Re ",tE_H,"z: n = ",
      *     plot_val, ", beta_n =", v_re, "+ I *", v_im, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // 'v_re.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.ArrowSizeMax = 40;"
@@ -246,10 +283,10 @@ c
         write(30,*) "View.MaxRecursionLevel = 2;"
         write(30,*) "View.IntervalsType = 3;"
         write(30,*) "View.Light = 0;"
-        write(30,*) "View ""Re ",tE_H,": n = ", 
+        write(30,*) "View ""Re ",tE_H,": n = ",
      *     plot_val, ", beta_n =", v_re, "+ I *", v_im, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           //'_ind.pos'
       open (unit=31,file=tchar)
         write(31,*) "View.ArrowSizeMax = 40;"
@@ -262,7 +299,7 @@ c
         write(31,*) "View.Light = 0;"
         write(31,*) "View ""Refrac. index ", " "" {"
 C
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // '_abs2_eE.pos'
       open (unit=32,file=tchar)
         write(32,*) "View.ArrowSizeMax = 40;"
@@ -276,7 +313,7 @@ C
         write(32,*) "View ""|",tE_H,"|^2: n = ",
      *     plot_val, ", beta_n =", v_re, "+ I *", v_im, " "" {"
 C
-C      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen) 
+C      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
 C     *           // '_' // tval // '_abs2_iD.pos'
 C      open (unit=33,file=tchar)
 C        write(33,*) "View.AdaptVisualizationGrid =1;"
@@ -317,19 +354,19 @@ C            sol_el_abs2_iD(i) = 0.0
                 z_tmp1 = sol_avg(j,i1)
                 sol_el(j,i) = z_tmp1
                 sol_el_abs2(i) = sol_el_abs2(i) + abs(z_tmp1)**2
-                sol_el_abs2_eE(i) = sol_el_abs2_eE(i) + 
+                sol_el_abs2_eE(i) = sol_el_abs2_eE(i) +
      *               ls_index(i)**2 * abs(z_tmp1)**2
-C                sol_el_abs2_iD(i) = sol_el_abs2_iD(i) + 
+C                sol_el_abs2_iD(i) = sol_el_abs2_iD(i) +
 C     *               ls_im_index(i)**2 * abs(z_tmp1)**2
               enddo
             else
               do j=1,3
-                z_tmp1 = sol(j,i,plot_val,iel) 
+                z_tmp1 = sol(j,i,plot_val,iel)
                 sol_el(j,i) = z_tmp1
                 sol_el_abs2(i) = sol_el_abs2(i) + abs(z_tmp1)**2
-                sol_el_abs2_eE(i) = sol_el_abs2_eE(i) + 
+                sol_el_abs2_eE(i) = sol_el_abs2_eE(i) +
      *               ls_index(i)**2 * abs(z_tmp1)**2
-C                sol_el_abs2_iD(i) = sol_el_abs2_iD(i) + 
+C                sol_el_abs2_iD(i) = sol_el_abs2_iD(i) +
 C     *               ls_im_index(i)**2 * abs(z_tmp1)**2
               enddo
             endif
@@ -372,7 +409,7 @@ c###############################################
 c
       if (plot_imag .eq. 1) then
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // 'x_im.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.ArrowSizeMax = 40;"
@@ -383,10 +420,10 @@ c
         write(27,*) "View.MaxRecursionLevel = 2;"
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "View.Light = 0;"
-        write(27,*) "View ""Im ",tE_H,"x: n = ", 
+        write(27,*) "View ""Im ",tE_H,"x: n = ",
      *     plot_val, ", beta_n  =", v_re, "+ I *", v_im, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // 'y_im.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.ArrowSizeMax = 40;"
@@ -397,10 +434,10 @@ c
         write(28,*) "View.MaxRecursionLevel = 2;"
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "View.Light = 0;"
-        write(28,*) "View ""Im ",tE_H,"y: n = ", 
+        write(28,*) "View ""Im ",tE_H,"y: n = ",
      *     plot_val, ", beta_n  =", v_re, "+ I *", v_im, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // 'z_im.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.ArrowSizeMax = 40;"
@@ -411,10 +448,10 @@ c
         write(29,*) "View.MaxRecursionLevel = 2;"
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "View.Light = 0;"
-        write(29,*) "View ""Im ",tE_H,"z: n = ", 
+        write(29,*) "View ""Im ",tE_H,"z: n = ",
      *     plot_val, ", beta_n  =", v_re, "+ I *", v_im, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // 'v_im.pos'
       open (unit=30,file=tchar)
         write(30,*) "View.ArrowSizeMax = 40;"
@@ -425,7 +462,7 @@ c
         write(30,*) "View.MaxRecursionLevel = 2;"
         write(30,*) "View.IntervalsType = 3;"
         write(30,*) "View.Light = 0;"
-        write(30,*) "View ""Im ",tE_H,": n = ", 
+        write(30,*) "View ""Im ",tE_H,": n = ",
      *     plot_val, ", beta_n  =", v_re, "+ I *", v_im, " "" {"
 c
         sol_max(4) = 0.0d0
@@ -453,7 +490,7 @@ c
               enddo
             else
               do j=1,3
-                z_tmp1 = sol(j,i,plot_val,iel) 
+                z_tmp1 = sol(j,i,plot_val,iel)
                 sol_el(j,i) = z_tmp1
               enddo
             endif
@@ -480,7 +517,7 @@ c###############################################
 c
       if (plot_abs .eq. 1) then
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // 'x_abs.pos'
       open (unit=27,file=tchar)
         write(27,*) "View.ArrowSizeMax = 40;"
@@ -491,10 +528,10 @@ c
         write(27,*) "View.MaxRecursionLevel = 2;"
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "View.Light = 0;"
-        write(27,*) "View ""|",tE_H,"x|: n = ", 
+        write(27,*) "View ""|",tE_H,"x|: n = ",
      *     plot_val, ", beta_n  =", v_re, "+ I *", v_im, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // 'y_abs.pos'
       open (unit=28,file=tchar)
         write(28,*) "View.ArrowSizeMax = 40;"
@@ -505,10 +542,10 @@ c
         write(28,*) "View.MaxRecursionLevel = 2;"
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "View.Light = 0;"
-        write(28,*) "View ""|",tE_H,"y|: n = ", 
+        write(28,*) "View ""|",tE_H,"y|: n = ",
      *     plot_val, ", beta_n  =", v_re, "+ I *", v_im, " "" {"
 c
-      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)  
+      tchar=dir_name(1:namelength)// '/' // gmsh_file_pos(1:namelen)
      *           // '_' // tval // 'z_abs.pos'
       open (unit=29,file=tchar)
         write(29,*) "View.ArrowSizeMax = 40;"
@@ -519,7 +556,7 @@ c
         write(29,*) "View.MaxRecursionLevel = 2;"
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "View.Light = 0;"
-        write(29,*) "View ""|",tE_H,"z|: n = ", 
+        write(29,*) "View ""|",tE_H,"z|: n = ",
      *     plot_val, ", beta_n  =", v_re, "+ I *", v_im, " "" {"
 c
         sol_max(4) = 0.0d0
@@ -541,7 +578,7 @@ c
               enddo
             else
               do j=1,3
-                z_tmp1 = sol(j,i,plot_val,iel) 
+                z_tmp1 = sol(j,i,plot_val,iel)
                 sol_el(j,i) = z_tmp1
               enddo
             endif
@@ -560,11 +597,11 @@ c
 c
 c###############################################
 c
-c     ST : Scalar triangle 
+c     ST : Scalar triangle
 10    format("ST2(",f10.6,17(",",f10.6),"){",
      *     g24.16,5(",",g24.16),"};")
 
-c     VT : Vector triangle 
+c     VT : Vector triangle
 11    format("VT(",f10.6,8(",",f10.6),"){",
      *     g24.16,8(",",g24.16),"};")
 

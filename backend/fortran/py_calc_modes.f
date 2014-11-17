@@ -750,7 +750,7 @@ C        call write_param (E_H_field, lambda, npt, nel, i_cond,
 C     *       nval, nvect, itermax, tol, shift, lx, ly,
 C     *       mesh_file, mesh_format, n_conv, nb_typ_el, eps_eff,
 C     *       bloch_vec, dir_name)
-        tchar = "Bloch_fields/PNG/All_plots_png_abs2_eE.geo"
+        tchar = "Bloch_fields/PDF/All_plots_pdf.geo"
         open (unit=34,file=tchar)
           do i=1,nval
             call gmsh_post_process (i, E_H_field, nval, nel, npt,
