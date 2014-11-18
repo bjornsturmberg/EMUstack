@@ -1840,7 +1840,7 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
             # # vec_coef_down[neq_PW] = 1.0
 
 
-def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
+def fields_vertically(stacks_list, factor_pts_vert=41, nu_pts_hori=81,
     semi_inf_height=1.0, gradient=None, no_incoming=False, add_name='',
     force_eq_ratio=False):
     """
@@ -2094,7 +2094,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
 
                                 if max_E_field == 1:
                                     CS = plt.contourf(x_axis,y_axis_plot,E_slice,
-                                        35, cmap=plt.cm.jet, vmin=min_E, vmax=max_E)
+                                        50, cmap=plt.cm.jet, vmin=min_E, vmax=max_E)
                                     CS.set_clim(min_E,max_E)
                                     ax1.set_xlim((x_range[0],x_range[-1]))
                                     if abs(ind_h_list[lay]) < 0.05 * np.sum(ind_h_list):
@@ -2301,7 +2301,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
 
                                 if max_E_field == 1:
                                     CS = plt.contourf(x_axis,y_axis_plot,E_slice,
-                                        35, cmap=plt.cm.jet, vmin=min_E, vmax=max_E)
+                                        50, cmap=plt.cm.jet, vmin=min_E, vmax=max_E)
                                     CS.set_clim(min_E,max_E)
                                     ax1.set_xlim((x_range[0],x_range[-1]))
                                     if abs(ind_h_list[lay]) < 0.05 * np.sum(ind_h_list):
@@ -2325,7 +2325,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
 
 
                 cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
-                cb = fig.colorbar(plt.contourf([0,1],[0,1],[[min_E,min_E],[max_E,max_E]], 35, cmap=plt.cm.jet, vmin=min_E, vmax=max_E), cax=cax)
+                cb = fig.colorbar(plt.contourf([0,1],[0,1],[[min_E,min_E],[max_E,max_E]], 50, cmap=plt.cm.jet, vmin=min_E, vmax=max_E), cax=cax)
                 cb.set_clim(min_E, max_E)
                 if E == 'eps_abs(E)':
                     cax.set_ylabel(r'Re($\epsilon$) |E|$^2$')

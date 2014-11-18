@@ -540,6 +540,12 @@ C
         write(ui,*) "pair, increase num_BMs to include the other."
       endif
 C
+C  Normalisation
+      if(debug .eq. 1) then
+        write(ui,*) "py_calc_modes_1d.f: Field  Normalisation"
+      endif
+      call normalisation_1d (nval, nel, sol_1, sol_2, overlap_L)
+C
 C    Save Original solution
       if (plot_modes .eq. 1) then
         call array_sol_P2_1d (nval, nel, sol_1, sol_P2)
@@ -558,12 +564,6 @@ C      *       q_average, plot_real, plot_imag, plot_abs)
 C         enddo
 C         close (unit=34)
       endif
-C
-C  Normalisation
-      if(debug .eq. 1) then
-        write(ui,*) "py_calc_modes_1d.f: Field  Normalisation"
-      endif
-      call normalisation_1d (nval, nel, sol_1, sol_2, overlap_L)
 C
 C  Orthonormal integral
       if (debug .eq. 1) then
