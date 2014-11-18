@@ -1916,7 +1916,6 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
 
         for sli in slice_types:
             E_fields = ['Re(E_x)', 'Im(E_x)', 'Re(E_y)', 'Im(E_y)', 'Re(E_z)', 'Im(E_z)', 'Re(E)',  'eps_abs(E)']
-            E_fields = ['Re(E_x)','Re(E_y)']
             E_fields_tot = []
             epsE_fields_tot = []
             for E in E_fields:
@@ -2041,7 +2040,7 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                                             E_slice[2*x+3,h] += BM_sol[1,-1] * coef_tot
                                             E_slice[2*x+4,h] += BM_sol[2,-1] * coef_tot
 
-                                    if max_E_field == 0:
+                                    if max_E_field == 0 and E[0] == 'R':
                                         if E[5] == 'x':
                                             E_fields_tot.append(E_slice*np.conj(E_slice))
                                             epsE_fields_tot.append(np.zeros(np.shape(E_slice)))
@@ -2323,9 +2322,6 @@ def fields_vertically(stacks_list, factor_pts_vert=10, nu_pts_hori=51,
                             ax1.set_xlabel('x (d)')
                         else:
                             ax1.set_xticklabels( () )
-
-                        print max_E
-                        print min_E
 
 
                 cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
