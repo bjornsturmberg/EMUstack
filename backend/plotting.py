@@ -1403,7 +1403,7 @@ def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
         if save_pdf == True:
             handles, labels = ax1.get_legend_handles_labels()
             lgd = ax1.legend(handles, labels, loc='center left', bbox_to_anchor=(1.0,0.5))
-            ax1.set_ylabel(r'$|E|_{trans}$')
+            ax1.set_ylabel(r'$|E|$')
             ax1.set_xlabel(xlabel)
             plt.suptitle(add_name)
             plt.savefig('PW_amplitudes-lay_%s' % add_name, \
@@ -1840,9 +1840,9 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
             # # vec_coef_down[neq_PW] = 1.0
 
 
-def fields_vertically(stacks_list, factor_pts_vert=41, nu_pts_hori=81,
+def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
     semi_inf_height=1.0, gradient=None, no_incoming=False, add_name='',
-    force_eq_ratio=False):
+    force_eq_ratio=False, colour_res=30):
     """
     Plot fields in the x-y plane at chosen values of z, where z is \
     calculated from the bottom of chosen layer.
@@ -1871,6 +1871,8 @@ def fields_vertically(stacks_list, factor_pts_vert=41, nu_pts_hori=81,
             add_name  (str): concatenate add_name to title.
 
             force_eq_ratio  (bool): each layer plotted on equal space.
+
+            colour_res  (int): number of colour intervals to use.
     """
 
     from fortran import EMUstack
@@ -2093,8 +2095,12 @@ def fields_vertically(stacks_list, factor_pts_vert=41, nu_pts_hori=81,
                                 (y_axis_plot,x_axis) = np.meshgrid(z_plot,struct.x_arr)
 
                                 if max_E_field == 1:
+                                    if E == 'eps_abs(E)' or E == 'Re(E)':
+                                        choice_cmap = plt.cm.hot
+                                    else:
+                                        choice_cmap = plt.cm.jet
                                     CS = plt.contourf(x_axis,y_axis_plot,E_slice,
-                                        50, cmap=plt.cm.jet, vmin=min_E, vmax=max_E)
+                                        colour_res, cmap=choice_cmap, vmin=min_E, vmax=max_E)
                                     CS.set_clim(min_E,max_E)
                                     ax1.set_xlim((x_range[0],x_range[-1]))
                                     if abs(ind_h_list[lay]) < 0.05 * np.sum(ind_h_list):
@@ -2300,8 +2306,12 @@ def fields_vertically(stacks_list, factor_pts_vert=41, nu_pts_hori=81,
 
 
                                 if max_E_field == 1:
+                                    if E == 'eps_abs(E)' or E == 'Re(E)':
+                                        choice_cmap = plt.cm.hot
+                                    else:
+                                        choice_cmap = plt.cm.jet
                                     CS = plt.contourf(x_axis,y_axis_plot,E_slice,
-                                        50, cmap=plt.cm.jet, vmin=min_E, vmax=max_E)
+                                        colour_res, cmap=choice_cmap, vmin=min_E, vmax=max_E)
                                     CS.set_clim(min_E,max_E)
                                     ax1.set_xlim((x_range[0],x_range[-1]))
                                     if abs(ind_h_list[lay]) < 0.05 * np.sum(ind_h_list):
@@ -2325,7 +2335,7 @@ def fields_vertically(stacks_list, factor_pts_vert=41, nu_pts_hori=81,
 
 
                 cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
-                cb = fig.colorbar(plt.contourf([0,1],[0,1],[[min_E,min_E],[max_E,max_E]], 50, cmap=plt.cm.jet, vmin=min_E, vmax=max_E), cax=cax)
+                cb = fig.colorbar(plt.contourf([0,1],[0,1],[[min_E,min_E],[max_E,max_E]], colour_res, cmap=plt.cm.jet, vmin=min_E, vmax=max_E), cax=cax)
                 cb.set_clim(min_E, max_E)
                 if E == 'eps_abs(E)':
                     cax.set_ylabel(r'Re($\epsilon$) |E|$^2$')
@@ -2766,7 +2776,8 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
 
                 fields = ['Re(E_x)', 'Im(E_x)', 'Re(E_y)', 'Im(E_y)', 'Re(E_z)', 'Im(E_z)']
                 for BM in range(meat.num_BM):
-                    fig = plt.figure(figsize=(12, 8))
+                    fig = plt.figure(figsize=(12, 12))
+                    plot_sol_abs = np.zeros(struct.n_msh_pts)
                     plot_sol_eps_abs = np.zeros(struct.n_msh_pts)
                     # plot_sol_2_FT    = np.zeros(struct.n_msh_pts)
                     for i in range(len(fields)):
@@ -2775,6 +2786,7 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                         BM_sol = meat.sol1[i/2,:,BM,:]
                         if E[0] == 'R': plot_sol = [np.real(BM_sol[0,0])]
                         else: plot_sol = [np.imag(BM_sol[0,0])]
+                        plot_sol_abs[0] += np.real(np.sqrt((BM_sol[0,0])* np.conj(BM_sol[0,0])))
                         plot_sol_eps_abs[0] += np.real(eps[struct.type_el[0]-1] * np.sqrt((BM_sol[0,0])* np.conj(BM_sol[0,0])))
                         for x in range(struct.n_msh_el - 1):
                             if E[0] == 'R':
@@ -2783,9 +2795,10 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                             else:
                                 plot_sol.append(np.imag(BM_sol[1,x]))
                                 plot_sol.append(np.imag(BM_sol[2,x] + BM_sol[0,x+1]) / 2)
+                            plot_sol_abs[2*x+1] += np.real(np.sqrt((BM_sol[1,x])* np.conj(BM_sol[1,x])))
+                            plot_sol_abs[2*x+2] += np.real(np.sqrt(((BM_sol[2,x] + BM_sol[0,x+1]) / 2)* np.conj((BM_sol[2,x] + BM_sol[0,x+1]) / 2)))
                             plot_sol_eps_abs[2*x+1] += np.real(eps[struct.type_el[x]-1] * np.sqrt((BM_sol[1,x])* np.conj(BM_sol[1,x])))
-                            plot_sol_eps_abs[2*x+2] += np.real(eps[struct.type_el[x]-1] * \
-                                np.sqrt(((BM_sol[2,x] + BM_sol[0,x+1]) / 2)* np.conj((BM_sol[2,x] + BM_sol[0,x+1]) / 2)))
+                            plot_sol_eps_abs[2*x+2] += np.real(eps[struct.type_el[x]-1] * np.sqrt(((BM_sol[2,x] + BM_sol[0,x+1]) / 2)* np.conj((BM_sol[2,x] + BM_sol[0,x+1]) / 2)))
 
                         if E[0] == 'R':
                             plot_sol.append(np.real(BM_sol[1,-1]))
@@ -2793,13 +2806,21 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                         else:
                             plot_sol.append(np.imag(BM_sol[1,-1]))
                             plot_sol.append(np.imag(BM_sol[2,-1]))
+                        plot_sol_abs[-2] += np.real(np.sqrt((BM_sol[1,x])* np.conj(BM_sol[1,x])))
+                        plot_sol_abs[-1] += np.real(np.sqrt((BM_sol[2,x])* np.conj(BM_sol[2,x])))
                         plot_sol_eps_abs[-2] += np.real(eps[struct.type_el[-1]-1] * np.sqrt((BM_sol[1,x])* np.conj(BM_sol[1,x])))
                         plot_sol_eps_abs[-1] += np.real(eps[struct.type_el[-1]-1] * np.sqrt((BM_sol[2,x])* np.conj(BM_sol[2,x])))
 
                         ax1 = fig.add_subplot(6, 2, i+1)
                         ax1.plot(struct.x_arr, plot_sol)
                         ax1.set_ylabel(E)
-                        ax1.set_xticklabels( () )
+                        if E == 'Re(E_x)' or E == 'Im(E_x)':
+                            ax1.xaxis.set_label_position("top")
+                            ax1.xaxis.tick_top()
+                            ax1.xaxis.set_ticks_position('both')
+                            ax1.set_xlabel('x (d)')
+                        else:
+                            ax1.set_xticklabels( () )
                         start, end = ax1.get_ylim()
                         ax1.yaxis.set_ticks(np.linspace(start, end, 3))
                         for b in boundary:
@@ -2814,13 +2835,24 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                         if E == 'Re(E_y)': plot_sol_2_FT = plot_sol
                         if E == 'Im(E_y)': plot_sol_2_FT2 = plot_sol
                     ax1 = fig.add_subplot(6, 2, 7)
-                    ax1.plot(struct.x_arr, plot_sol_eps_abs)
+                    ax1.plot(struct.x_arr, plot_sol_abs)
+                    ax1.set_xticklabels( () )
                     start, end = ax1.get_ylim()
                     ax1.yaxis.set_ticks(np.linspace(start, end, 3))
                     for b in boundary:
                         ax1.plot([b,b],[start,end],'k')
+                    ax1.set_ylabel(r'|E|')
+                    ax1 = fig.add_subplot(6, 2, 8)
+                    ax1.plot(struct.x_arr, plot_sol_eps_abs)
+                    ax1.set_xticklabels( () )
+                    start, end = ax1.get_ylim()
+                    ax1.yaxis.set_ticks(np.linspace(start, end, 3))
+                    for b in boundary:
+                        ax1.plot([b,b],[start,end],'k')
+                    ax1.yaxis.set_label_position("right")
+                    ax1.yaxis.tick_right()
+                    ax1.yaxis.set_ticks_position('both')
                     ax1.set_ylabel(r'Re($\epsilon$) |E|')
-                    ax1.set_xlabel('x (d)')
 
 
                     ax1 = fig.add_subplot(6, 2, 9)
@@ -2833,7 +2865,7 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                     ax1.plot(freqs, np.abs(FT),'ro', linewidth=3.0)
                     start, end = ax1.get_ylim()
                     ax1.yaxis.set_ticks(np.linspace(start, end, 3))
-                    ax1.set_ylabel(r'FT Re(E$_y$)')
+                    ax1.set_ylabel(r'FT Re(E$_x$)')
                     ax1.set_xlim((0,10))
 
 
@@ -2846,7 +2878,7 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                     ax1.plot(freqs, np.abs(FT),'ro', linewidth=3.0)
                     start, end = ax1.get_ylim()
                     ax1.yaxis.set_ticks(np.linspace(start, end, 3))
-                    ax1.set_ylabel(r'FT Im(E$_y$)')
+                    ax1.set_ylabel(r'FT Im(E$_x$)')
                     ax1.set_xlim((0,10))
                     ax1.yaxis.set_label_position("right")
                     ax1.yaxis.tick_right()
@@ -2865,6 +2897,7 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                     ax1.yaxis.set_ticks(np.linspace(start, end, 3))
                     ax1.set_ylabel(r'FT Re(E$_y$)')
                     ax1.set_xlim((0,10))
+                    ax1.set_xlabel('Diffraction order')
 
 
                     ax1 = fig.add_subplot(6, 2, 12)
@@ -2878,6 +2911,7 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                     ax1.yaxis.set_ticks(np.linspace(start, end, 3))
                     ax1.set_ylabel(r'FT Im(E$_y$)')
                     ax1.set_xlim((0,10))
+                    ax1.set_xlabel('Diffraction order')
                     ax1.yaxis.set_label_position("right")
                     ax1.yaxis.tick_right()
                     ax1.yaxis.set_ticks_position('both')
@@ -2887,8 +2921,7 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
 
                     plt.suptitle(r'BM %(BM)i, k$_z$ = %(re)7.3f + %(im)7.3fi (d)'% \
                         {'re' : np.real(meat.k_z[BM]), 'im' : np.imag(meat.k_z[BM]), 'BM' : BM})
-                    plt.savefig(dir_name + '/' + name_lay)#,
-                        # bbox_inches = 'tight')
+                    plt.savefig(dir_name + '/' + name_lay, bbox_inches = 'tight')
 
             except ValueError:
                 print "fields_1d can only plot 1D fields of 1D_array "\
