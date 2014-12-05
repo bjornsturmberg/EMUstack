@@ -137,12 +137,6 @@ Extraordinary Optical Transmission
     :lines: 20-
 
 
-Resonant Grating
-------------------------------------------------
-
-.. literalinclude:: ../../examples/simo_091-resonant_grating.py
-    :lines: 20-
-
 
 .. toctree::
     :maxdepth: 4
