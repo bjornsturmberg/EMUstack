@@ -13,7 +13,7 @@ UPDATE: the current version of SuiteSparse is not fully compatible with 64 bit L
 
 On other linux distributions either use the pre-compiled libraries of install them from the package manager or manually.
 
-All that is required to use the pre-compiled libraries is to switch to a slightly modified Makefileand then run setup.sh. ::
+All that is required to use the pre-compiled libraries is to switch to a slightly modified Makefile and then run setup.sh. ::
 
     $ cd backend/fortran/
     $ mv Makefile Makefile_ubuntu
@@ -23,6 +23,7 @@ All that is required to use the pre-compiled libraries is to switch to a slightl
 
 The Fortran components (EMUstack source code and libraries) have been successfully compiled with intel's ifortran as well as open-source gfortran. In this documentation we use gfortran.
 
+NOTE: different versions of gmsh can give errors in the final test. This is okay, provided the test simulation ran, i.e. the test gives E rather than F.
 
 SuiteSparse
 ----------------
