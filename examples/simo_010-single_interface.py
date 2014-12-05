@@ -1,7 +1,7 @@
 """
     simo_011-single_interface.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg
+    Copyright (C) 2015  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,9 +41,9 @@ wl_2     = 600
 no_wl_1  = 4
 # Set up light objects, starting with the wavelengths,
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-# and also specifying angles of incidence and refractive medium of semi-infinite 
+# and also specifying angles of incidence and refractive medium of semi-infinite
 # layer that the light is incident upon (default value is n_inc = 1.0).
-# Fields in homogeneous layers are expressed in a Fourier series of diffraction 
+# Fields in homogeneous layers are expressed in a Fourier series of diffraction
 # orders,where all orders within a radius of max_order_PWs in k-space are included.
 light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0, \
     n_inc=1.5) for wl in wavelengths]
@@ -59,7 +59,7 @@ superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Material(3.0 + 0.0j))
 
-def simulate_stack(light):    
+def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
@@ -88,8 +88,8 @@ np.savez('Simo_results', stacks_list=stacks_list)
 # and be output into an interactive python instance were you
 # have access to all simulation objects and results for further
 # manipulation. In this case you run this file as
-# $ python -i simo_010-single_interface.py 
-# In this session the docstrings of objects/classes/methods 
+# $ python -i simo_010-single_interface.py
+# In this session the docstrings of objects/classes/methods
 # can be accessed by typing
 
 # >>> from pydoc import help
@@ -114,24 +114,24 @@ np.savetxt('Substrate_k_zs.txt', betas.view(float).reshape(-1, 2))
 # However txt files may be easily read by other programs...
 
 
-# We can also access the scattering matrices of individual layers, 
+# We can also access the scattering matrices of individual layers,
 # and of interfaces of the stack.
-# For instance the reflection scattering matrix off the top 
+# For instance the reflection scattering matrix off the top
 # of the substrate when considered as an isolated layer.
 wl_num = -1
 lay = 0
 R12_sub = stacks_list[wl_num].layers[lay].R12
 print 'R12 of substrate \n', R12_sub
 
-# The reflection matrix for the reflection off the top of the 
+# The reflection matrix for the reflection off the top of the
 # superstrate-substrate interface meanwhile is a property of the stack.
 R_interface = stacks_list[wl_num].R_net
 # Let us plot this matrix in greyscale.
 plotting.vis_scat_mats(R_interface)
-# Since all layers are homogeneous this matrix should only have non-zero 
+# Since all layers are homogeneous this matrix should only have non-zero
 # entries on the diagonal.
 
-# Lastly, we can also plot the transmission, reflection, absorption 
+# Lastly, we can also plot the transmission, reflection, absorption
 # of each layer and of the stack as a whole.
 plotting.t_r_a_plots(stacks_list)
 

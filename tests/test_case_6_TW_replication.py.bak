@@ -1,7 +1,7 @@
 """
     test_case_6_TW.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2015  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ import testing
 # Number of CPUs to use im simulation
 num_cores = 7
 # # Alternatively specify the number of CPUs to leave free on machine
-# leave_cpus = 4 
+# leave_cpus = 4
 # num_cores = mp.cpu_count() - leave_cpus
 
 # Remove results of previous simulations
@@ -81,7 +81,7 @@ bottom = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 grating_diameter = 100
-grating_1 = objects.NanoStruct('1D_array', period, grating_diameter, height_nm = 25, 
+grating_1 = objects.NanoStruct('1D_array', period, grating_diameter, height_nm = 25,
     inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True,
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.05, lc2= 4.0)
 
@@ -92,7 +92,7 @@ mirror = objects.ThinFilm(period = period, height_nm = 100,
 stack_list = []
 
 def simulate_stack(light):
-    
+
     ################ Evaluate each layer individually ##############
     sim_cover = cover.calc_modes(light)
     sim_homo_film = homo_film.calc_modes(light)
@@ -120,7 +120,7 @@ def setup_module(module):
     active_layer_nu = 3 # Specify which layer is the active one (where absorption generates charge carriers).
 
     plotting.t_r_a_plots(stack_list, active_layer_nu=active_layer_nu,\
-        save_txt=True) 
+        save_txt=True)
 
 
 

@@ -1,7 +1,7 @@
 """
     test_case_5_EOT_5_degrees.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2015  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 """
 
 """
-Test simulation Extraordinary Optical Transmission replicating 
+Test simulation Extraordinary Optical Transmission replicating
 Fig 2 of Lie, H - Microscopic theory of the extraordinary optical transmission
 doi:10.1038/nature06762
 """
@@ -40,7 +40,7 @@ from numpy.testing import assert_equal
 import testing
 
 
-def setup_module(module):  
+def setup_module(module):
     ################ Light parameters #####################
     wl_1     = 1.11*940
     wl_2     = 1.15*940
@@ -54,7 +54,7 @@ def setup_module(module):
     #period must be consistent throughout simulation!!!
     period = 940
     diameter = 266
-    NHs = objects.NanoStruct('2D_array', period, diameter, height_nm = 200, 
+    NHs = objects.NanoStruct('2D_array', period, diameter, height_nm = 200,
         inclusion_a = materials.Air, background = materials.Au, loss = True,
         square = True, make_mesh_now = False, mesh_file='4testing-940_266_sq.mail')
 

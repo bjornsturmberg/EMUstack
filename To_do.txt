@@ -1,3 +1,0 @@
-EMUstack to do list.
-
-- Incorporate different lattices (hex, triangular)

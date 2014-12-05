@@ -1,7 +1,7 @@
 """
     simo_101-resonant_grating.py is a simulation script template for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg
+    Copyright (C) 2015  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 """
 
 """
-
+Simulate a resonant grating structure.
 """
 
 
@@ -47,15 +47,14 @@ plotting.clear_previous()
 ################ Light parameters #####################
 wl_1     = 900
 wl_2     = 1200
-no_wl_1  = 3
+no_wl_1  = 5
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
-light_list  = [objects.Light(wl, max_order_PWs = 3, theta = 0.0, phi = 0.0) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 15, theta = 0.0, phi = 0.0) for wl in wavelengths]
 
 
 # period must be consistent throughout simulation!!!
 period = 120
-num_BM = 90
 
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Material(3.5 + 0.0j), loss = True, world_1d=True)
@@ -69,7 +68,7 @@ substrate = objects.ThinFilm(period, height_nm = 'semi_inf',
 grating_diameter = 100
 grating = objects.NanoStruct('1D_array', period, grating_diameter, height_nm = 25,
     inclusion_a = materials.Ag, background = materials.Material(1.5 + 0.0j), loss = True,
-    make_mesh_now = True, force_mesh = True, lc_bkg = 0.03, lc2= 4.0)
+    make_mesh_now = True, force_mesh = True, lc_bkg = 0.005)
 
 mirror = objects.ThinFilm(period, height_nm = 100,
     material = materials.Ag, loss = True, world_1d=True)
@@ -80,7 +79,7 @@ def simulate_stack(light):
     sim_superstrate = superstrate.calc_modes(light)
     sim_homo_film   = homo_film.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
-    sim_grating     = grating.calc_modes(light, num_BM = num_BM)
+    sim_grating     = grating.calc_modes(light)
     sim_mirror      = mirror.calc_modes(light)
 
     ###################### Evaluate structure ######################

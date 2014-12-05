@@ -1,7 +1,7 @@
 """
     simo_041-combining_1D_and_2D_array.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg
+    Copyright (C) 2015  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -8,7 +8,7 @@ Welcome to EMUstack's documentation!
 
 
 ==================
-Introduction 
+Introduction
 ==================
 
 .. toctree::
@@ -18,7 +18,7 @@ Introduction
 
 
 ==================
-Installation 
+Installation
 ==================
 
 .. toctree::

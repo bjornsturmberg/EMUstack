@@ -1,7 +1,7 @@
 """
     test_case_0_thin_film_multistack.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2015  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 """
 Test simulation of a very simple structure;
 a stack of lossy homogeneous dielectric films.
-NOTE: This calculation is entirely analytical & should produce excellent 
+NOTE: This calculation is entirely analytical & should produce excellent
 agreement on all machines.
 """
 
@@ -52,7 +52,7 @@ light_list  = [objects.Light(wl, max_order_PWs = 1, theta = 0.0, phi = 0.0) for 
 
 ################ Scattering matrices (for distinct layers) ##############
 """ Calculate scattering matrices for each distinct layer.
-Calculated in the order listed below, however this does not influence final 
+Calculated in the order listed below, however this does not influence final
 structure which is defined later
 """
 
@@ -77,7 +77,7 @@ substrate   = objects.ThinFilm(period = period, height_nm = 'semi_inf',
 stack_list = []
 
 def simulate_stack(light):
-    
+
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_homo_film1  = homo_film1.calc_modes(light)

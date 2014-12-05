@@ -1,7 +1,7 @@
 """
     simo_080-convergence_stacked_grating.py is a simulation script template for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg
+    Copyright (C) 2015  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

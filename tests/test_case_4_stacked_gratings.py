@@ -1,7 +1,7 @@
 """
     test_case_4_stacked_gratings.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2015  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ from numpy.testing import assert_allclose as assert_ac
 from numpy.testing import assert_equal
 
 
-def setup_module(module): 
+def setup_module(module):
     # Remove results of previous simulations
     plotting.clear_previous('.log')
     plotting.clear_previous('.pdf')
@@ -58,15 +58,15 @@ def setup_module(module):
         material = materials.Air, loss = False)
 
     grating_1 = objects.NanoStruct('1D_array', period,
-        diameter1=int(round(0.25*period)), diameter2=int(round(0.25*period)), height_nm = 150, 
+        diameter1=int(round(0.25*period)), diameter2=int(round(0.25*period)), height_nm = 150,
         inclusion_a = materials.Material(1.46 + 0.0j), inclusion_b = materials.Material(1.46 + 0.0j),
-        background = materials.Material(3.61 + 0.0j), 
+        background = materials.Material(3.61 + 0.0j),
         loss = True, lc_bkg = 0.005)
 
-    grating_2 = objects.NanoStruct('1D_array', period, int(round(0.25*period)), height_nm = 900, 
-        background = materials.Material(3.61 + 0.0j), inclusion_a = materials.Material(1.46 + 0.0j), 
+    grating_2 = objects.NanoStruct('1D_array', period, int(round(0.25*period)), height_nm = 900,
+        background = materials.Material(3.61 + 0.0j), inclusion_a = materials.Material(1.46 + 0.0j),
         loss = True, lc_bkg = 0.005)
-   
+
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)

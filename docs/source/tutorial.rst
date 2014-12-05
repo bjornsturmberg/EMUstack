@@ -81,17 +81,24 @@ Angles of Incidence & Eliptical Inclusions
     :lines: 20-
 
 
-Plotting Fields
+Plotting Fields 1D
 ------------------------------------------------
 
-.. literalinclude:: ../../examples/simo_050-plotting_fields.py
+.. literalinclude:: ../../examples/simo_050-plotting_fields_1d.py
+    :lines: 20-
+
+
+Plotting Fields 2D
+------------------------------------------------
+
+.. literalinclude:: ../../examples/simo_051-plotting_fields_2d.py
     :lines: 20-
 
 
 Plotting Amplitudes
 ------------------------------------------------
 
-.. literalinclude:: ../../examples/simo_051-plotting_amplitudes.py
+.. literalinclude:: ../../examples/simo_052-plotting_amplitudes.py
     :lines: 20-
 
 

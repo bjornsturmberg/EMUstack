@@ -2,7 +2,7 @@
     plotting.py is a subroutine of EMUstack that contains numerous plotting
     routines.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2015  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

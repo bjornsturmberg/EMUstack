@@ -1,7 +1,7 @@
 """
     simo_053-plotting_k_space.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg
+    Copyright (C) 2015  Bjorn Sturmberg
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,9 +43,9 @@ num_cores = 5
 plotting.clear_previous()
 
 ################ Light parameters #####################
-azi_angles = np.linspace(-50,50,11)
+azi_angles = np.linspace(-89,89,91)
 wl = 1600
-light_list  = [objects.Light(wl, max_order_PWs = 4, theta = p, phi = 0.0) \
+light_list  = [objects.Light(wl, max_order_PWs = 10, theta = p, phi = 0.0) \
     for p in azi_angles]
 
 
@@ -54,13 +54,13 @@ light_list  = [objects.Light(wl, max_order_PWs = 4, theta = p, phi = 0.0) \
 period = 700
 
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Air, loss = False)
+    material = materials.Air, loss = False, world_1d =True)
 
 substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.Air, loss = False)
+    material = materials.Air, loss = False, world_1d =True)
 
 absorber    = objects.ThinFilm(period, height_nm = 10,
-    material = materials.Material(2.0 + 0.05j), loss = True)
+    material = materials.Material(2.0 + 0.05j), loss = True, world_1d =True)
 
 grating_1 = objects.NanoStruct('1D_array', period, int(round(0.75*period)),
     height_nm = 2900, background = materials.Material(1.46 + 0.0j),

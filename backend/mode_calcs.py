@@ -3,7 +3,7 @@
     calculate the modes of a given layer, either analytically
     (class 'Anallo') or from the FEM routine (class 'Simmo').
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2015  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     EMUstack is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

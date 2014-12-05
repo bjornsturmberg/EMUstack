@@ -1,7 +1,7 @@
 """
     test_case_4_EOT.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2015  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 """
 
 """
-Test simulation Extraordinary Optical Transmission replicating 
+Test simulation Extraordinary Optical Transmission replicating
 Fig 2 of Lie, H - Microscopic theory of the extraordinary optical transmission
 doi:10.1038/nature06762
 """
@@ -45,7 +45,7 @@ import testing
 # Number of CPUs to use im simulation
 # num_cores = 1
 
-def setup_module(module):  
+def setup_module(module):
     # Remove results of previous simulations
     plotting.clear_previous('.txt')
     plotting.clear_previous('.pdf')
@@ -64,9 +64,9 @@ def setup_module(module):
     #period must be consistent throughout simulation!!!
     period = 940
     diam1 = 266
-    NHs = objects.NanoStruct('2D_array', period, diam1, height_nm = 200, 
+    NHs = objects.NanoStruct('2D_array', period, diam1, height_nm = 200,
         inclusion_a = materials.Air, background = materials.Au, loss = True,
-        square = True,    
+        square = True,
         make_mesh_now = True, force_mesh = True, lc_bkg = 0.05, lc2= 5.0, lc3= 3.0)#lc_bkg = 0.08, lc2= 5.0)
 
     cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',

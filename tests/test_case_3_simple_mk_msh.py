@@ -1,7 +1,7 @@
 """
     test_case_3_simple_mk_msh.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2015  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ from numpy.testing import assert_equal
 
 
 
-def setup_module(module):  
+def setup_module(module):
     ################ Light parameters #####################
 
     # Set up light objects
@@ -119,4 +119,4 @@ def test_stack_list_matches_saved(casefile_name = 'case_3'):
             #TODO: yield assert_ac, lay.sol1, rlay['sol1']
         yield assert_ac, stack.R_net, rstack['R_net'], rtol, atol, lbl_s + 'R_net'
         yield assert_ac, stack.T_net, rstack['T_net'], rtol, atol, lbl_s + 'T_net'
-        
+

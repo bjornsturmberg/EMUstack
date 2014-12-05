@@ -1,7 +1,7 @@
 """
     test_case_2_simple_non_norm_inc.py is a simulation example for EMUstack.
 
-    Copyright (C) 2013  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
+    Copyright (C) 2015  Bjorn Sturmberg, Kokou Dossou, Felix Lawrence
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ def setup_module(module):
 
     ################ Scattering matrices (for distinct layers) ##############
     """ Calculate scattering matrices for each distinct layer.
-    Calculated in the order listed below, however this does not influence final 
+    Calculated in the order listed below, however this does not influence final
     structure which is defined later
     """
 
