@@ -2335,7 +2335,7 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
 
 
                 cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
-                cb = fig.colorbar(plt.contourf([0,1],[0,1],[[min_E,min_E],[max_E,max_E]], colour_res, cmap=plt.cm.jet, vmin=min_E, vmax=max_E), cax=cax)
+                cb = fig.colorbar(plt.contourf([0,1],[0,1],[[min_E,min_E],[max_E,max_E]], colour_res, cmap=choice_cmap, vmin=min_E, vmax=max_E), cax=cax)
                 cb.set_clim(min_E, max_E)
                 if E == 'eps_abs(E)':
                     cax.set_ylabel(r'Re($\epsilon$) |E|$^2$')
