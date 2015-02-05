@@ -115,7 +115,7 @@ np.savez('Simo_results', stacks_list=stacks_list)
 # We could also calculate the 'ultimate efficiency' by setting ult_eta=True.
 plotting.t_r_a_plots(stacks_list, active_layer_nu=1, J_sc=True)
 
-# We also plot the dispersion relation for the NW layer.
+# We also plot the dispersion relation for each layer.
 plotting.omega_plot(stacks_list, wavelengths)
 
 ######################## Wrapping up ########################

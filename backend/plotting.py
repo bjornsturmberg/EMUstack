@@ -147,7 +147,7 @@ def gen_params_string(stack, layer=1):
 def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
     active_layer_nu=1, stack_label=1, ult_eta=False, J_sc=False,
     weight_spec=False, extinct=False, add_height=0, add_name='',
-    save_pdf=True, save_txt=False):
+    save_pdf=True, save_txt=False, set_y_lim=True):
     """ Plot t, r, a for each layer & in total.
 
         Args:
@@ -167,26 +167,28 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
             stack_label  (int): Label to differentiate plots of different \
                 :Stack:s.
 
-            ult_eta  (bool): If True, calculate the 'ultimate efficiency'.
+            ult_eta  (bool): If True; calculate the 'ultimate efficiency'.
 
-            J_sc  (bool): If True, calculate the idealised short circuit \
+            J_sc  (bool): If True; calculate the idealised short circuit \
                 current.
 
-            weight_spec  (bool): If True, plot t, r, a spectra weighted by \
+            weight_spec  (bool): If True; plot t, r, a spectra weighted by \
                 the ASTM 1.5 solar spectrum.
 
-            extinct  (bool): If True, calculate the extinction ratio in \
+            extinct  (bool): If True; calculate the extinction ratio in \
                 transmission.
 
             add_height  (float): Print the heights of :Stack: layer in title.
 
             add_name  (str): Add add_name to title.
 
-            save_pdf  (bool): If True save spectra as pdf files. \
+            save_pdf  (bool): If True; save spectra as pdf files. \
                 True by default.
 
-            save_txt  (bool): If True, save spectra data to text \
+            save_txt  (bool): If True; save spectra data to text \
                 files.
+
+            set_y_lim  (bool): If True; set y limits to (0,1).
     """
 
     height_list = stacks_list[0].heights_nm()[::-1]
@@ -254,17 +256,17 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
         total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
         # Plot t,r,a for each layer.
         layers_plot('Lay_Absorb', a_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt, plt_eV)
+            stack_label, add_name, save_pdf, save_txt, plt_eV, set_y_lim)
         layers_plot('Lay_Trans',  t_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt, plt_eV)
+            stack_label, add_name, save_pdf, save_txt, plt_eV, set_y_lim)
         layers_plot('Lay_Reflec', r_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt, plt_eV)
+            stack_label, add_name, save_pdf, save_txt, plt_eV, set_y_lim)
 
     # Plot total t,r,a on a single plot.
     if save_pdf == True:
         plot_name = 'Total_Spectra'
-        total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel, params_2_print,\
-            stack_label, add_name, plt_eV)
+        total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel, \
+            params_2_print, stack_label, add_name, plt_eV, set_y_lim)
 
     if weight_spec == True:
         # Plot totals weighted by solar irradiance.
@@ -278,7 +280,7 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
         r_weighted = r_tot*weighting
         plot_name  = 'Weighted_Total_Spectra'
         total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, xvalues,
-            xlabel, params_2_print, stack_label, add_name, plt_eV)
+            xlabel, params_2_print, stack_label, add_name, plt_eV, set_y_lim)
 
     if extinct == True:
         extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
@@ -289,7 +291,8 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
         return
 
 def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
-    params_2_print, stack_label, add_name, save_pdf, save_txt, plt_eV):
+    params_2_print, stack_label, add_name, save_pdf, save_txt, plt_eV,
+    set_y_lim):
     """ Plots one type of spectrum across all layers.
 
         Is called from t_r_a_plots.
@@ -332,7 +335,8 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
             if i == nu_layers-1:
                 ax1.set_ylabel('Total')
                 lay_spec_name = 'Absorptance'
-                plt.ylim((0, 1))
+                if set_y_lim==True:
+                    plt.ylim((0, 1))
         elif spectra_name == 'Lay_Trans':
             if i == 0: ax1.set_ylabel('Top Layer')
             if i == nu_layers-2: ax1.set_ylabel('Bottom Layer')
@@ -342,7 +346,8 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
             if i == nu_layers-1:
                 ax1.set_ylabel('Total')
                 lay_spec_name = 'Transmittance'
-                plt.ylim((0, 1))
+                if set_y_lim==True:
+                    plt.ylim((0, 1))
         elif spectra_name == 'Lay_Reflec':
             if i == 0: ax1.set_ylabel('Top Layer')
             if i == nu_layers-3: ax1.set_ylabel('Bottom Layer')
@@ -353,7 +358,8 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
             if i == nu_layers-1:
                 ax1.set_ylabel('Total')
                 lay_spec_name = 'Reflectance'
-                plt.ylim((0, 1))
+                if set_y_lim==True:
+                    plt.ylim((0, 1))
         ax1.set_xlim((xvalues[0], xvalues[-1]))
 
         if save_txt == True:
@@ -370,7 +376,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
                 {'s': spectra_name, 'bon': stack_label, 'add' : add_name})
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
-    params_2_print, stack_label, add_name, plt_eV):
+    params_2_print, stack_label, add_name, plt_eV, set_y_lim):
     """ Plots total t, r, a spectra on one plot.
 
         Is called from t_r_a_plots, t_r_a_plots_subs
@@ -390,8 +396,10 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
         ax2.set_xticks(new_tick_locations)
         ax2.set_xticklabels(new_tick_labels)
         ax2.set_xlim((xvalues[0], xvalues[-1]))
-    if xlabel == r'$\lambda$ (nm)': ax2.set_xlabel('Energy (eV)')
-    plt.ylim((0, 1))
+    if xlabel == r'$\lambda$ (nm)':
+        ax2.set_xlabel('Energy (eV)')
+    if set_y_lim==True:
+        plt.ylim((0, 1))
 
     ax1 = fig.add_subplot(3, 1, 2)
     ax1.plot(xvalues, t_spec, linewidth=linesstrength)
@@ -402,7 +410,8 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
         ax2.set_xticklabels( () )
         ax2.set_xticks(new_tick_locations)
         ax2.set_xlim((xvalues[0], xvalues[-1]))
-    plt.ylim((0, 1))
+    if set_y_lim==True:
+        plt.ylim((0, 1))
 
     ax1 = fig.add_subplot(3, 1, 3)
     ax1.plot(xvalues, r_spec, linewidth=linesstrength)
@@ -414,7 +423,8 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
         ax2.set_xticklabels( () )
         ax2.set_xticks(new_tick_locations)
         ax2.set_xlim((xvalues[0], xvalues[-1]))
-    plt.ylim((0, 1))
+    if set_y_lim==True:
+        plt.ylim((0, 1))
 
     plt.suptitle(params_2_print, fontsize=title_font)
     # plt.suptitle(plot_name+add_name+'\n'+params_2_print)
@@ -783,16 +793,24 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label,
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% \
         {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
 
-def EOT_plot(stacks_list, wavelengths, params_layer=1, num_pw_per_pol=0,
-    add_name=''):
+def EOT_plot(stacks_list, wavelengths, pol='TM', params_layer=1,
+    add_name='', savetxt=False):
     """ Plot T_{00} as in Martin-Moreno PRL 86 2001.
-        To plot {9,0} component of TM polarisation set num_pw_per_pol = num_pw_per_pol.
+
+        Args:
+            pol  (str): Take the (0,0) component for TE->TE scattering
+                or the (0,0) component for TM->TM scattering.
     """
 
     height_list = stacks_list[0].heights_nm()[::-1]
     params_2_print = gen_params_string(stacks_list, params_layer)
     params_2_print += r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4d, ' % num for num in height_list)
+
+    if pol == 'TM':
+        num_pw_per_pol = stacks_list[0].layers[-1].structure.num_pw_per_pol
+    else:
+        num_pw_per_pol = 0
 
     T_00 = []
     for i in range(len(wavelengths)):
@@ -822,7 +840,13 @@ def EOT_plot(stacks_list, wavelengths, params_layer=1, num_pw_per_pol=0,
     # plt.ylim((0.2, 1.0))
     plot_name = 'EOT'
     plt.suptitle(params_2_print,fontsize=title_font)
-    plt.savefig('%(s)s_%(add)s'% {'s' : plot_name, 'add' : add_name})
+    plt.savefig('%(s)s%(add)s'% {'s' : plot_name, 'add' : add_name})
+
+    if savetxt == True:
+        np.savetxt('Trans_%(s)s%(add)s.txt'% {'s' : plot_name, 'add' : add_name}, \
+        zip(wavelengths, T_00), fmt = '%10.6f')
+        np.savetxt('Refl_%(s)s%(add)s.txt'% {'s' : plot_name, 'add' : add_name}, \
+        zip(wavelengths, R_00), fmt = '%10.6f')
 ###############################################################################
 
 
@@ -1041,8 +1065,8 @@ def vis_scat_mats(scat_mat, nu_prop_PWs=0, wl=None, add_name='',
         scat_mat_dim_y = np.shape(scat_mat)[1]
         half_dim_x = scat_mat_dim_x/2-0.5
         half_dim_y = scat_mat_dim_y/2-0.5
-        ax1.plot([-0.5, scat_mat_dim_y-0.5],[half_dim_x,half_dim_x],'w', linewidth=2)
-        ax1.plot([half_dim_y,half_dim_y],[-0.5, scat_mat_dim_x-0.5],'w', linewidth=2)
+        ax1.plot([-0.5, scat_mat_dim_x-0.5],[half_dim_y,half_dim_y],'w', linewidth=2)
+        ax1.plot([half_dim_x,half_dim_x],[-0.5, scat_mat_dim_y-0.5],'w', linewidth=2)
         ax1.axis([-0.5, scat_mat_dim_y-0.5, scat_mat_dim_x-0.5,  -0.5])
         ax1.set_xticks([half_dim_y/2, scat_mat_dim_y-half_dim_y/2],['TE', 'TM'])
         ax1.set_yticks([half_dim_x/2, scat_mat_dim_x-half_dim_x/2],['TE', 'TM'])

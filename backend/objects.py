@@ -165,7 +165,7 @@ class NanoStruct(object):
         diameter10=0, diameter11=0, diameter12=0, diameter13=0,
         diameter14=0, diameter15=0, diameter16=0,
         hyperbolic=False, world_1d=None, posx=0, posy=0,
-        make_mesh_now=True, force_mesh=False,
+        make_mesh_now=True, force_mesh=True,
         mesh_file='NEED_FILE.mail',
         lc_bkg=0.09, lc2=1.0, lc3=1.0, lc4=1.0, lc5=1.0, lc6=1.0,
         plotting_fields=False, plot_real=1, plot_imag=0, plot_abs=0,

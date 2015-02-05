@@ -50,7 +50,7 @@ no_wl_1  = 600
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 # wavelengths = np.array([785,788,790,792,795])
-light_list  = [objects.Light(wl, max_order_PWs = 4) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 4, theta = 0.0, phi = 0.0) for wl in wavelengths]
 
 
 #period must be consistent throughout simulation!!!
@@ -58,12 +58,10 @@ period = 940
 diam1 = 266
 NHs = objects.NanoStruct('2D_array', period, diam1, height_nm = 200,
     inclusion_a = materials.Air, background = materials.Au, loss = True,
-    square = True,
+    inc_shape = 'square',
     make_mesh_now = True, force_mesh = True, lc_bkg = 0.12, lc2= 5.0, lc3= 3.0)#lc_bkg = 0.08, lc2= 5.0)
 
-superstrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
-    material = materials.Air, loss = False)
-substrate   = objects.ThinFilm(period = period, height_nm = 'semi_inf',
+strate  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 NH_heights = [200]
@@ -71,16 +69,14 @@ NH_heights = [200]
 # NH_heights = np.linspace(50,3000,num_h)
 
 def simulate_stack(light):
-
     ################ Evaluate each layer individually ##############
-    sim_NHs          = NHs.calc_modes(light)
-    sim_superstrate  = superstrate.calc_modes(light)
-    sim_substrate    = substrate.calc_modes(light)
+    sim_NHs    = NHs.calc_modes(light)
+    sim_strate = strate.calc_modes(light)
 
 # Loop over heights
     height_list = []
     for h in NH_heights:
-        stackSub = Stack((sim_substrate, sim_NHs, sim_superstrate), heights_nm = ([h]))
+        stackSub = Stack((sim_strate, sim_NHs, sim_strate), heights_nm = ([h]))
         stackSub.calc_scat(pol = 'TE')
         height_list.append(stackSub)
 
@@ -107,7 +103,7 @@ for h in range(len(NH_heights)):
     for wl in range(len(wavelengths)):
         wl_list.append(stacks_list[wl][stack_label][h])
     mess_name = '_h%(h)i'% {'h'   : h, }
-    plotting.EOT_plot(wl_list, wls_normed, add_name = mess_name)
+    plotting.EOT_plot(wl_list, wls_normed, add_name = mess_name, savetxt = True)
 # Dispersion
 plotting.omega_plot(wl_list, wavelengths)
 
