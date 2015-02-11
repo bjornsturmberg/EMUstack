@@ -44,6 +44,9 @@ class Stack(object):
                 Only required if wish to shift layers relative to each\
                 other. Only relative difference matters.
 
+        Note that: scattering matrices, are organised as \
+                | TE -> TE | TM -> TE | \
+                | TE -> TM | TM -> TM |
     """
     def __init__(self, layers, heights_nm = None, shears = None):
         self.layers = tuple(layers)

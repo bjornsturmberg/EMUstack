@@ -50,7 +50,7 @@ no_wl_1  = 600
 # Set up light objects
 wavelengths = np.linspace(wl_1, wl_2, no_wl_1)
 # wavelengths = np.array([785,788,790,792,795])
-light_list  = [objects.Light(wl, max_order_PWs = 4, theta = 0.0, phi = 0.0) for wl in wavelengths]
+light_list  = [objects.Light(wl, max_order_PWs = 5, theta = 0.0, phi = 0.0) for wl in wavelengths]
 
 
 #period must be consistent throughout simulation!!!

@@ -49,7 +49,7 @@ class NanoStruct(object):
 
         Keyword Args:
             inc_shape  (str): Shape of inclusions that have template mesh, \
-                currently; 'circle', 'ellipse', 'square', 'SRR'.
+                currently; 'circle', 'ellipse', 'square', 'ring', 'SRR'.
 
             ellipticity  (float): If != 0, inclusion has given ellipticity, \
                 with b = diameter, a = diameter-ellipticity * diameter. \
@@ -408,6 +408,21 @@ class NanoStruct(object):
                     geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
                     geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
                     geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
+
+
+            elif self.inc_shape == 'ring':
+                msh_name  =  'ring_%(d)s_%(dia_out)s_%(dia_in)s' % {
+                   'd' : dec_float_str(self.period), 'dia_out' : dec_float_str(self.diameter1), 'dia_in' : dec_float_str(self.diameter2)}
+                if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
+                    geo_tmp = open(msh_location + 'ring1_msh_template.geo', "r").read()
+                    geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
+                    geo = geo.replace('d_in_nm = 0;', "d_in_nm  = %f;" % self.period)
+                    geo = geo.replace('a1 = 0;', "a1 = %f;" % self.diameter1)
+                    geo = geo.replace('a2 = 0;', "a2 = %f;" % self.diameter2)
+                    geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
+                    geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
+                    geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
+
 
             else:
                 raise NotImplementedError, "\n Selected inc_shape = '%s' \n \
