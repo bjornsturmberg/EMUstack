@@ -49,7 +49,7 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    Si_a            |  Au_Palik  |   ITO                  |
         +--------------------+------------+------------------------+
-        |    SiO2_a          |  Ag        |                        |
+        |    SiO2_a          |  Ag        |   ZnO                  |
         +--------------------+------------+------------------------+
         |    CuO             |  Ag_Palik  |                        |
         +--------------------+------------+------------------------+
@@ -150,9 +150,12 @@ class Material(object):
 
 Air        = Material(1.00 + 0.0j)
 H2O        = Material(np.loadtxt('%sH2O.txt'% data_location))         # G. M. Hale and M. R. Querry. doi:10.1364/AO.12.000555
+
 # Transparent oxides
 TiO2       = Material(np.loadtxt('%sTiO2.txt'% data_location))
 ITO        = Material(np.loadtxt('%sITO.txt'% data_location))         # Filmetrics.com
+ZnO = Material(np.loadtxt('%sZnO.txt'% data_location)) # Z. Holman 2012 unpublished http://www.pvlighthouse.com.au/resources/photovoltaic%20materials/refractive%20index/refractive%20index.aspx
+
 # Semiconductors
 Si_c       = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
 Si_a       = Material(np.loadtxt('%sSi_a.txt'% data_location))
@@ -176,6 +179,7 @@ GaN        = Material(np.loadtxt('%sGaN.txt'% data_location))         # http://w
 AlN        = Material(np.loadtxt('%sAlN.txt'% data_location))         # http://www.filmetrics.com/refractive-index-database/AlN/Aluminium-Nitride
 Ge         = Material(np.loadtxt('%sGe.txt'% data_location))          # http://www.filmetrics.com/refractive-index-database/Ge/Germanium
 CH3NH3PbI3 = Material(np.loadtxt('%sCH3NH3PbI3.txt'% data_location))  # doi:10.1038/nmat3911 - (noting bandedge @ 800nm) Michael Graetzel, Nature Materials
+
 # Metals
 Au         = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Johnson Christy
 Au_Palik   = Material(np.loadtxt('%sAu_Palik.txt'% data_location))    # Palik
@@ -183,6 +187,7 @@ Ag         = Material(np.loadtxt('%sAg_JC.txt'% data_location))       # Johnson 
 Ag_Palik   = Material(np.loadtxt('%sAg_Palik.txt'% data_location))    # Palik
 Cu         = Material(np.loadtxt('%sCu_JC.txt'% data_location))       # Johnson Christy
 Cu_Palik   = Material(np.loadtxt('%sCu_Palik.txt'% data_location))    # Palik
+
 # Drude model - need to give [omega_plasma, omega_gamma, eplison_infinity]
 Au_drude   = Material([1.36e16, 1.05e14, 9.5]) # Johnson Christy
 

@@ -285,7 +285,9 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
     if extinct == True:
         extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
 
-    if J_sc == True or ult_eta == True:
+    if J_sc == True:
+        return out
+    elif ult_eta == True:
         return out
     else:
         return
