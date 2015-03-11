@@ -50,7 +50,7 @@ class NanoStruct(object):
         Keyword Args:
             inc_shape  (str): Shape of inclusions that have template mesh, \
                 currently; 'circle', 'ellipse', 'square', 'ring', 'SRR',
-                'dimer'.
+                'dimer', 'square_dimer'.
 
             ellipticity  (float): If != 0, inclusion has given ellipticity, \
                 with b = diameter, a = diameter-ellipticity * diameter. \
