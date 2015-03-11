@@ -1621,7 +1621,8 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
         os.mkdir(dir_name)
 
     # always make odd
-    if nu_calc_pts % 2 == 0: nu_calc_pts += 1
+    if nu_calc_pts % 2 == 0:
+        nu_calc_pts += 1
 
     stack_num = 0
     for pstack in stacks_list:
@@ -1864,9 +1865,138 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
             # # vec_coef_down[neq_PW] = 1.0
 
 
+# field interpolators for Nanostruct layers
+def fields_interpolator_in_plane(pstack, lay_interest=1, z_value=0.1):
+    """
+    Returns linear interpolators in the x-y plane at chosen value of z for
+    Re[Ex],Re[Ey],Re[Ez],Im[Ex],Im[Ey],Im[Ez],|E|
+
+        Args:
+            pstack: Stack object (not a list!!!) containing data to plot.
+
+        Keyword Args:
+            lay_interest  (int): the index of the layer considered within \
+                the stack.
+
+            z_value  (float): distance in nm from bottom surface of layer \
+                at which to calculate fields. If layer is semi-inf substrate \
+                then z_value is distance from top of this layer (i.e. bottom \
+                interface of stack).
+    """
+    from fortran import EMUstack
+
+    num_lays = len(pstack.layers)
+    # If selected z location is within a NanoStruct layer
+    # plot fields in Bloch Mode Basis using fortran routine.
+    if isinstance(pstack.layers[lay_interest],mode_calcs.Simmo):
+        meat = pstack.layers[lay_interest]
+
+        try:
+            if not meat.structure.periodicity == '2D_array':
+                raise ValueError
+            eps = meat.n_effs**2
+            h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
+
+            # fortran routine naturally measure z top down
+            z_value = z_value/float(meat.structure.period)
+            z_value = h_normed - z_value
+            wl_normed = pstack.layers[lay_interest].wl_norm()
+
+            nnodes=6
+
+            # vec_coef sorted from top of stack, everything else is sorted from bottom
+            vec_index = num_lays - lay_interest - 1
+            vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+
+            # piling up of all the bloch modes to get all the fields
+            m_E = EMUstack.field_value_plane(meat.num_BM,
+                                             meat.n_msh_el, meat.n_msh_pts, nnodes,
+                                             meat.structure.nb_typ_el,
+                                             meat.table_nod, meat.type_el,
+                                             eps, meat.x_arr, meat.k_z, meat.sol1,
+                                             vec_coef, h_normed, z_value)
+
+            # unrolling data for the interpolators
+            table_nod = meat.table_nod.T
+            x_arr = meat.x_arr.T
+
+            # dense triangulation with multiple points
+            v_x6p = np.zeros(6*meat.n_msh_el)
+            v_y6p = np.zeros(6*meat.n_msh_el)
+            v_Ex6p = np.zeros(6*meat.n_msh_el,dtype=np.complex128)
+            v_Ey6p = np.zeros(6*meat.n_msh_el,dtype=np.complex128)
+            v_Ez6p = np.zeros(6*meat.n_msh_el,dtype=np.complex128)
+            v_triang6p = []
+
+            i=0
+            for i_el in np.arange(meat.n_msh_el):
+
+                # triangles
+                idx=np.arange(6*i_el,6*(i_el+1))
+                triangles=[[idx[0],idx[3],idx[5]],
+                           [idx[1],idx[4],idx[3]],
+                           [idx[2],idx[5],idx[4]],
+                           [idx[3],idx[4],idx[5]]]
+                v_triang6p.extend(triangles)
+
+                for i_node in np.arange(6):
+
+                    # index for the coordinates
+                    i_ex = table_nod[i_el,i_node]-1
+
+                    # values
+                    v_x6p[i] = x_arr[i_ex,0]
+                    v_y6p[i] = x_arr[i_ex,1]
+                    v_Ex6p[i] = m_E[i_el,i_node,0]
+                    v_Ey6p[i] = m_E[i_el,i_node,1]
+                    v_Ez6p[i] = m_E[i_el,i_node,2]
+
+                    i+=1
+
+            v_E6p = np.sqrt(np.abs(v_Ex6p)**2 +
+                            np.abs(v_Ey6p)**2 +
+                            np.abs(v_Ez6p)**2)
+
+            # dense triangulation with unique points
+            v_triang1p = []
+            for i_el in np.arange(meat.n_msh_el):
+
+                # triangles
+                triangles = [[table_nod[i_el,0]-1,table_nod[i_el,3]-1,table_nod[i_el,5]-1],
+                             [table_nod[i_el,1]-1,table_nod[i_el,4]-1,table_nod[i_el,3]-1],
+                             [table_nod[i_el,2]-1,table_nod[i_el,5]-1,table_nod[i_el,4]-1],
+                             [table_nod[i_el,3]-1,table_nod[i_el,4]-1,table_nod[i_el,5]-1]]
+                v_triang1p.extend(triangles)
+
+            # triangulations
+            triang6p = matplotlib.tri.Triangulation(v_x6p,v_y6p,v_triang6p)
+            triang1p = matplotlib.tri.Triangulation(x_arr[:,0],x_arr[:,1],v_triang1p)
+
+            # building interpolators: triang1p for the finder, triang6p for the values
+            finder = matplotlib.tri.TrapezoidMapTriFinder(triang1p)
+            ReEx = matplotlib.tri.LinearTriInterpolator(triang6p,v_Ex6p.real,trifinder=finder)
+            ImEx = matplotlib.tri.LinearTriInterpolator(triang6p,v_Ex6p.imag,trifinder=finder)
+            ReEy = matplotlib.tri.LinearTriInterpolator(triang6p,v_Ey6p.real,trifinder=finder)
+            ImEy = matplotlib.tri.LinearTriInterpolator(triang6p,v_Ey6p.imag,trifinder=finder)
+            ReEz = matplotlib.tri.LinearTriInterpolator(triang6p,v_Ez6p.real,trifinder=finder)
+            ImEz = matplotlib.tri.LinearTriInterpolator(triang6p,v_Ez6p.imag,trifinder=finder)
+            AbsE = matplotlib.tri.LinearTriInterpolator(triang6p,v_E6p,trifinder=finder)
+
+            return ReEx, ImEx, ReEy, ImEy, ReEz, ImEz, AbsE
+
+        except ValueError as e:
+            print e
+            print "fields_in_plane cannot plot fields in 1D-arrays."\
+                  "\nPlease select a different lay_interest.\n"
+
+    # If selected z location is within a ThinFilm layer
+    # plot fields in Plane Wave Basis using python routine.
+    else:
+        raise Exception("Not a NanoStruct Layer")
+
 def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
-    semi_inf_height=1.0, gradient=None, no_incoming=False, add_name='',
-    force_eq_ratio=False, colour_res=30):
+                      semi_inf_height=1.0, gradient=None, no_incoming=False, add_name='',
+                      force_eq_ratio=False, colour_res=30):
     """
     Plot fields in the x-y plane at chosen values of z, where z is \
     calculated from the bottom of chosen layer.

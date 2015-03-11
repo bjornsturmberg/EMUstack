@@ -49,7 +49,8 @@ class NanoStruct(object):
 
         Keyword Args:
             inc_shape  (str): Shape of inclusions that have template mesh, \
-                currently; 'circle', 'ellipse', 'square', 'ring', 'SRR'.
+                currently; 'circle', 'ellipse', 'square', 'ring', 'SRR',
+                'dimer'.
 
             ellipticity  (float): If != 0, inclusion has given ellipticity, \
                 with b = diameter, a = diameter-ellipticity * diameter. \
@@ -63,6 +64,13 @@ class NanoStruct(object):
 
             diameter2-16  (float): The diameters of further inclusions in nm. \
                 Implemented up to diameter6 for 1D_arrays.
+
+            gap (float): The dimer gap in nm. \
+                (if inc_shape = 'dimer' or 'square_dimer').
+
+            smooth (float): smoothness of square_dimer angles, between 0 (sharp). \
+                and 1 (circle).
+                (if inc_shape = square_dimer').
 
             inclusion_a  : A :Material: instance for first inclusion, \
                 specified as dispersive refractive index (eg. materials.Si_c) \
@@ -163,7 +171,7 @@ class NanoStruct(object):
         diameter2=0,  diameter3=0, diameter4=0, diameter5=0,
         diameter6=0, diameter7=0, diameter8=0, diameter9=0,
         diameter10=0, diameter11=0, diameter12=0, diameter13=0,
-        diameter14=0, diameter15=0, diameter16=0,
+        diameter14=0, diameter15=0, diameter16=0, gap=0, smooth=0,
         hyperbolic=False, world_1d=None, posx=0, posy=0,
         make_mesh_now=True, force_mesh=True,
         mesh_file='NEED_FILE.mail',
@@ -195,6 +203,8 @@ class NanoStruct(object):
         self.diameter14     = diameter14
         self.diameter15     = diameter15
         self.diameter16     = diameter16
+        self.gap     = gap
+        self.smooth     = smooth
         self.len_vertical   = len_vertical
         self.len_horizontal = len_horizontal
         self.ellipticity    = ellipticity
@@ -423,6 +433,37 @@ class NanoStruct(object):
                     geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
                     geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
 
+            elif self.inc_shape == 'dimer':
+                msh_name = 'dimer_%(d)s_%(d_one)s_%(d_two)s_%(gap)s' % {
+                           'd':dec_float_str(self.period), 'd_one':dec_float_str(self.diameter1),
+                           'd_two':dec_float_str(self.diameter2),'gap':dec_float_str(self.gap)}
+                if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
+                    geo_tmp = open(msh_location + 'dimer1_msh_template.geo', "r").read()
+                    geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
+                    geo = geo.replace('d_in_nm = 0;', "d_in_nm  = %f;" % self.period)
+                    geo = geo.replace('a1 = 0;', "a1 = %f;" % self.diameter1)
+                    geo = geo.replace('a2 = 0;', "a2 = %f;" % self.diameter2)
+                    geo = geo.replace('gap = 0;', "gap = %f;" % self.gap)
+                    geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
+                    geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
+                    geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
+
+            elif self.inc_shape == 'square_dimer':
+                msh_name = 'square_dimer_%(d)s_%(d_one)s_%(d_two)s_%(gap)s_%(smooth)s' % {
+                           'd':dec_float_str(self.period), 'd_one':dec_float_str(self.diameter1),
+                           'd_two':dec_float_str(self.diameter2),'gap':dec_float_str(self.gap),
+                           'smooth':dec_float_str(self.smooth)}
+                if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh == True:
+                    geo_tmp = open(msh_location + 'square_dimer1_msh_template.geo', "r").read()
+                    geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
+                    geo = geo.replace('d_in_nm = 0;', "d_in_nm  = %f;" % self.period)
+                    geo = geo.replace('a1 = 0;', "a1 = %f;" % self.diameter1)
+                    geo = geo.replace('a2 = 0;', "a2 = %f;" % self.diameter2)
+                    geo = geo.replace('gap = 0;', "gap = %f;" % self.gap)
+                    geo = geo.replace('smooth = 0;', "smooth = %f;" % self.smooth)
+                    geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
+                    geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
+                    geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
 
             else:
                 raise NotImplementedError, "\n Selected inc_shape = '%s' \n \
@@ -1009,6 +1050,8 @@ def calculate_ff(inc_shape, d, a1, a2=0, a3=0, a4=0, a5=0, a6=0, a7=0, a8=0,
     elif inc_shape == 'square':
         ff = ((a1)**2 + (a2)**2 + (a3)**2 + (a4)**2 + (a5)**2 + (a6)**2 + (a7)**2 + (a8)**2 + (a9)**2
             + (a10)**2 + (a11)**2 + (a12)**2 + (a13)**2 + (a14)**2 + (a15)**2 + (a16)**2)/(d)**2
+    elif inc_shape == 'dimer':
+        ff = np.pi*((a1/2.0)**2+(a2/2.0)**2)/(d**2)
     else:
         ff = 0.0
     return ff
