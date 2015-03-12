@@ -74,12 +74,12 @@ substrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 # Again for this example we fix the number of BMs.
-num_BM = 50
+num_BMs = 50
 
 def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
-    sim_Au   = Au_NHs.calc_modes(light, num_BM = num_BM)
+    sim_Au   = Au_NHs.calc_modes(light, num_BMs = num_BMs)
     sim_substrate = substrate.calc_modes(light)
 
     stackSub = Stack((sim_substrate, sim_Au, sim_superstrate))

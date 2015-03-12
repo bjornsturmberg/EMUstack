@@ -71,7 +71,7 @@ for PWs in np.linspace(1,10,10):
         background = materials.Material(1.46 + 0.0j), inclusion_a = materials.Material(3.61 + 0.0j),
         loss = True, make_mesh_now = True, force_mesh = True, lc_bkg = 0.1, lc2= 3.0)
 
-    num_BM = BMs[B]+30
+    num_BMs = BMs[B]+30
     B += 1
 
 
@@ -80,8 +80,8 @@ for PWs in np.linspace(1,10,10):
         ################ Evaluate each layer individually ##############
         sim_superstrate = superstrate.calc_modes(light)
         sim_substrate   = substrate.calc_modes(light)
-        sim_grating_1   = grating_1.calc_modes(light, num_BM = num_BM)
-        sim_grating_2   = grating_2.calc_modes(light, num_BM = num_BM)
+        sim_grating_1   = grating_1.calc_modes(light, num_BMs = num_BMs)
+        sim_grating_2   = grating_2.calc_modes(light, num_BMs = num_BMs)
 
         ###################### Evaluate structure ######################
         """ Now define full structure. Here order is critical and

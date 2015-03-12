@@ -58,7 +58,7 @@ superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air)
 # Define a thin film with (finite) thickness in nm and constant refractive index
 TF_1 = objects.ThinFilm(period, height_nm = 100,
-    material = materials.Material(2.0 + 0.1j))
+    material = materials.Material(1.0 + 0.05j))
 # EMUstack calculation time is independent dispersion and thickness of layer!
 # This layer is made of Indium Phosphide, the tabulated refractive index of which
 # is stored in EMUstack/data/

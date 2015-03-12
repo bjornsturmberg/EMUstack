@@ -257,7 +257,7 @@ class Simmo(Modes):
         self.prop_consts    = None
         self.mode_pol       = None
 
-    def calc_modes(self, num_BM = None):
+    def calc_modes(self, num_BMs = None):
         """ Run a Fortran FEM caluculation to find the modes of a \
         structured layer. """
         st = self.structure
@@ -278,12 +278,12 @@ class Simmo(Modes):
                 either '1D_array' or '2D_array'."
 
         num_pw_per_pol = pxs.size
-        if num_BM == None: self.num_BM = num_pw_per_pol * 2 + 20
-        else: self.num_BM = num_BM
-        assert self.num_BM > num_pw_per_pol * 2, \
+        if num_BMs == None: self.num_BMs = num_pw_per_pol * 2 + 20
+        else: self.num_BMs = num_BMs
+        assert self.num_BMs > num_pw_per_pol * 2, \
         "You must include at least as many BMs as PWs. \n" + \
         "Currently you have %(bm)i BMs < %(np)i PWs." % {
-            'bm': self.num_BM, 'np': num_pw_per_pol * 2}
+            'bm': self.num_BMs, 'np': num_pw_per_pol * 2}
 
         # Parameters that control how FEM routine runs
         self.E_H_field = 1  # Selected formulation (1=E-Field, 2=H-Field)
@@ -323,7 +323,7 @@ class Simmo(Modes):
 
             try:
                 struct = self.structure
-                resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BM,
+                resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BMs,
                     self.max_order_PWs, struct.nb_typ_el, struct.n_msh_pts,
                     struct.n_msh_el, struct.table_nod,
                     struct.type_el, struct.x_arr, itermax, FEM_debug,
@@ -358,7 +358,7 @@ class Simmo(Modes):
 
             try:
                 resm = EMUstack.calc_modes_2d(
-                    self.wl_norm(), self.num_BM, self.max_order_PWs, FEM_debug,
+                    self.wl_norm(), self.num_BMs, self.max_order_PWs, FEM_debug,
                     self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
                     self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(),
                     shift, self.E_H_field, i_cond, itermax,

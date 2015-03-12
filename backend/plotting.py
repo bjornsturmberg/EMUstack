@@ -126,7 +126,7 @@ def gen_params_string(stack, layer=1):
         elif param_layer.periodicity == '1D_array':
             params_2_print += ''
         params_2_print += '%(BMs)dBMs, PW_radius = %(PWs)d, '% \
-        {'BMs' : stack[0].layers[layer].num_BM, \
+        {'BMs' : stack[0].layers[layer].num_BMs, \
         'PWs' : stack[0].layers[layer].max_order_PWs}
     else:
         params_2_print = 'PW_radius = %(PWs)d, ' \
@@ -1273,7 +1273,7 @@ def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
             xlabel = r'$\lambda$ (nm)'
             print "BM_amplitudes is guessing you have a single wavelength, else specify xvalues."
 
-    if chosen_BMs == None: chosen_BMs = range(stacks_list[-1].layers[lay_interest].num_BM)
+    if chosen_BMs == None: chosen_BMs = range(stacks_list[-1].layers[lay_interest].num_BMs)
     try:
         save_trans = []
         for BM in chosen_BMs:
@@ -1655,7 +1655,7 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
                     vec_index = num_lays - lay_interest - 1
                     vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
 
-                    EMUstack.gmsh_plot_field (meat.num_BM,
+                    EMUstack.gmsh_plot_field (meat.num_BMs,
                         meat.n_msh_el, meat.n_msh_pts, nnodes, meat.structure.nb_typ_el, meat.table_nod, meat.type_el,
                         eps, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, z_value,
                         gmsh_file_pos, meat.structure.plot_real,
@@ -2003,7 +2003,7 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                     h_normed = float(layer.structure.height_nm)/float(layer.structure.period)
                                     shift_v_plot = h_normed*0.75
                                     nnodes = 6
-                                    EMUstack.gmsh_plot_slice(layer.E_H_field, layer.num_BM,
+                                    EMUstack.gmsh_plot_slice(layer.E_H_field, layer.num_BMs,
                                         layer.n_msh_el, layer.n_msh_pts, nnodes, layer.type_el,
                                         layer.structure.nb_typ_el, eps, layer.table_nod,
                                         layer.x_arr, layer.k_z, layer.sol1, vec_coef_fem,
@@ -2045,7 +2045,7 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                     if E[5] == 'y': comp = 1
                                     if E[5] == 'z': comp = 2
                                     ### sol1 = sol_P2([Ex,Ey,Ez],P2_interpolation_points,nval,nel)
-                                    for BM in range(layer.num_BM):
+                                    for BM in range(layer.num_BMs):
                                         BM_sol = layer.sol1[comp,:,BM,:]
                                         beta = layer.k_z[BM]
                                         for h in range(len(z_range)):
@@ -2054,7 +2054,7 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                             P_up = np.exp(1j*beta*hz) # Introduce Propagation in +z
 
                                             coef_down = vec_coef_fem[BM] * P_down
-                                            coef_up = vec_coef_fem[BM+layer.num_BM] * P_up
+                                            coef_up = vec_coef_fem[BM+layer.num_BMs] * P_up
                                             if E[5] == 'z':
                                                 coef_tot = (coef_up - coef_down)/beta # Taking into account the change of variable for Ez
                                             else:
@@ -2151,7 +2151,7 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                 # scale_plot = 2.0
                                 # shift_x_plot = -.5
                                 # shift_v_plot = h_normed*0.75
-                                # EMUstack.gmsh_plot_slice_1d(layer.E_H_field, layer.num_BM,
+                                # EMUstack.gmsh_plot_slice_1d(layer.E_H_field, layer.num_BMs,
                                 #     struct.n_msh_el, struct.n_msh_pts, struct.type_el,
                                 #     struct.nb_typ_el, n_eff, struct.table_nod,
                                 #     struct.x_arr, layer.k_z, layer.sol1, vec_coef,
@@ -2745,7 +2745,7 @@ def fields_3d(stacks_list, lay_interest=1):
 
             layer_name = 'Lay_' + zeros_int_str(lay_interest) + 'Stack_' + str(stack_num)
 
-            EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BM,
+            EMUstack.gmsh_plot_field_3d(wl_normed, h_normed, meat.num_BMs,
                 meat.E_H_field, meat.n_msh_el, meat.n_msh_pts,
                 nnodes, meat.type_el, meat.structure.nb_typ_el, meat.table_nod,
                 meat.k_z, meat.sol1, vec_coef, meat.x_arr, gmsh_file_pos, layer_name)
@@ -2801,7 +2801,7 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                         boundary.append(struct.x_arr[2*(i+1)])
 
                 fields = ['Re(E_x)', 'Im(E_x)', 'Re(E_y)', 'Im(E_y)', 'Re(E_z)', 'Im(E_z)']
-                for BM in range(meat.num_BM):
+                for BM in range(meat.num_BMs):
                     fig = plt.figure(figsize=(12, 12))
                     plot_sol_abs = np.zeros(struct.n_msh_pts)
                     plot_sol_eps_abs = np.zeros(struct.n_msh_pts)
@@ -2983,8 +2983,8 @@ def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0,
     n_kxs   = len(kx_list)
     height = stacks_list[-1].heights_nm()[lay_interest-1] # assumes all stacks have equal height
     period = stacks_list[-1].period
-    num_BMs = stacks_list[-1].layers[lay_interest].num_BM
-    I_mat = np.matrix(np.eye(num_BMs),dtype='D')
+    num_BMss = stacks_list[-1].layers[lay_interest].num_BMs
+    I_mat = np.matrix(np.eye(num_BMss),dtype='D')
 
     plot_mat = np.zeros(shape=(n_freqs,n_kxs),dtype='complex128')
     for i in range(n_kxs):

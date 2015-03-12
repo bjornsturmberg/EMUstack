@@ -56,7 +56,7 @@ period = 600
 
 # In this example we set the number of Bloch modes to use in the simulation
 # Be default it is set to be slightly greater than the number of PWs.
-num_BM = 200
+num_BMs = 200
 
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
@@ -84,7 +84,7 @@ def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
-    sim_NWs         = NW_array.calc_modes(light, num_BM=num_BM)
+    sim_NWs         = NW_array.calc_modes(light, num_BMs=num_BMs)
 
     ###################### Evaluate structure ######################
     """ Now define full structure. Here order is critical and

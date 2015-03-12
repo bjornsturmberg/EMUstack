@@ -51,7 +51,7 @@ def setup_module(module):
     #period must be consistent throughout simulation!!!
     period = 500
     NW_diameter = 120
-    num_BM = 40
+    num_BMs = 40
     NW_array = objects.NanoStruct('2D_array', period, NW_diameter, height_nm = 2330,
         inclusion_a = materials.InP, background = materials.Air,
         loss = True, make_mesh_now = True, force_mesh = True,
@@ -65,7 +65,7 @@ def setup_module(module):
 
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
-    sim_NW_array = NW_array.calc_modes(light, num_BM = num_BM)
+    sim_NW_array = NW_array.calc_modes(light, num_BMs = num_BMs)
     sim_substrate = substrate.calc_modes(light)
 
     stack = Stack((sim_substrate, sim_NW_array, sim_superstrate))

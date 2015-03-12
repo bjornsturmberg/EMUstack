@@ -70,15 +70,15 @@ grating_2 = objects.NanoStruct('1D_array', period, int(round(0.75*period)),
     inclusion_a = materials.Material(3.61 + 0.0j),
     loss = True, make_mesh_now = True, force_mesh = False, lc_bkg = 0.1, lc2= 3.0)
 
-num_BM = 60
+num_BMs = 60
 
 
 def simulate_stack(light):
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
     sim_substrate   = substrate.calc_modes(light)
-    sim_grating_1   = grating_1.calc_modes(light, num_BM = num_BM)
-    sim_grating_2   = grating_2.calc_modes(light, num_BM = num_BM)
+    sim_grating_1   = grating_1.calc_modes(light, num_BMs = num_BMs)
+    sim_grating_2   = grating_2.calc_modes(light, num_BMs = num_BMs)
 
     ###################### Evaluate structure ######################
     """ Now define full structure. Here order is critical and
