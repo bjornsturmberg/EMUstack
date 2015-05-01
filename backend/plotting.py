@@ -943,18 +943,18 @@ def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
             ax3.plot(real_k_zs,om,'bo', linewidth=linesstrength)
             om = np.ones(len(imag_k_zs))*normed_omegas[i]
             ax4.plot(imag_k_zs, om,'ro', linewidth=linesstrength)
-        ax1.set_ylabel(r'Real $k_z$'), ax2.set_ylabel(r'Imaginary $k_z$')
+        ax1.set_ylabel(r'Real $k_z$ (d)'), ax2.set_ylabel(r'Imaginary $k_z$ (d)')
         ax3.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)'), ax4.set_ylabel(r'Frequency ($\omega$d/2$\pi$c)')
         if l == 0:
             ax1.set_ylabel('Bottom Layer'), ax2.set_ylabel('Bottom Layer')
             ax3.set_ylabel('Bottom Layer'), ax4.set_ylabel('Bottom Layer')
-            ax3.set_xlabel(r'Real $k_z$'), ax4.set_xlabel(r'Imaginary $k_z$')
+            ax3.set_xlabel(r'Real $k_z$ (d)'), ax4.set_xlabel(r'Imaginary $k_z$ (d)')
             ax1.set_xlabel('Wavelength (nm)'), ax2.set_xlabel('Wavelength (nm)')
-        else:
-            ax1.set_xticklabels( () )
-            ax2.set_xticklabels( () )
-            ax3.set_xticklabels( () )
-            ax4.set_xticklabels( () )
+        # else:
+            # ax1.set_xticklabels( () )
+            # ax2.set_xticklabels( () )
+            # ax3.set_xticklabels( () )
+            # ax4.set_xticklabels( () )
         if l == num_layers-1:
             ax1.set_ylabel('Top Layer'), ax2.set_ylabel('Top Layer')
             ax3.set_ylabel('Top Layer'), ax4.set_ylabel('Top Layer')

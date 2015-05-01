@@ -49,7 +49,7 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    Si_a            |  Au_Palik  |   ITO                  |
         +--------------------+------------+------------------------+
-        |    SiO2_a          |  Ag        |   ZnO                  |
+        |    SiO2            |  Ag        |   ZnO                  |
         +--------------------+------------+------------------------+
         |    CuO             |  Ag_Palik  |                        |
         +--------------------+------------+------------------------+
@@ -159,7 +159,7 @@ ZnO = Material(np.loadtxt('%sZnO.txt'% data_location)) # Z. Holman 2012 unpublis
 # Semiconductors
 Si_c       = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
 Si_a       = Material(np.loadtxt('%sSi_a.txt'% data_location))
-SiO2_a     = Material(np.loadtxt('%sSiO2_a.txt'% data_location))
+SiO2       = Material(np.loadtxt('%sSiO2.txt'% data_location))
 CuO        = Material(np.loadtxt('%sCuO.txt'% data_location))
 CdTe       = Material(np.loadtxt('%sCdTe.txt'% data_location))
 FeS2       = Material(np.loadtxt('%sFeS2.txt'% data_location))
