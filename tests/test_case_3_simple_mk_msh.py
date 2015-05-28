@@ -61,7 +61,7 @@ def setup_module(module):
         material = materials.Air, loss = False)
 
     substrate = objects.ThinFilm(period = period, height_nm = 'semi_inf',
-        material = materials.SiO2_a, loss = False)
+        material = materials.SiO2, loss = False)
 
     ################ Evaluate each layer individually ##############
     sim_superstrate = superstrate.calc_modes(light)
