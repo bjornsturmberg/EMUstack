@@ -59,7 +59,7 @@ class Stack(object):
         """ Update heights of each layer to those given in Keyword Arg
         'heights_nm'. If no heights specified in Stack, the heights of
         each layer object are used. """
-        if None != self._heights_nm:
+        if self._heights_nm is not None:
             return self._heights_nm
         else:
             return [float(lay.structure.height_nm) for lay in self.layers[1:-1]]
