@@ -75,7 +75,7 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    MgF2            |            |   H2O                  |
         +--------------------+------------+------------------------+
-        |    InP             |            |                        |
+        |    InP             |            |   GO                   |
         +--------------------+------------+------------------------+
         |    InAs            |            |                        |
         +--------------------+------------+------------------------+
@@ -88,6 +88,8 @@ class Material(object):
         |    GaN             |            |                        |
         +--------------------+------------+------------------------+
         |    CH3NH3PbI3      |            |                        |
+        +--------------------+------------+------------------------+
+        |    MoO3            |            |                        |
         +--------------------+------------+------------------------+
 
 
@@ -178,7 +180,9 @@ GaP        = Material(np.loadtxt('%sGaP.txt'% data_location))         # Filmetri
 GaN        = Material(np.loadtxt('%sGaN.txt'% data_location))         # http://www.filmetrics.com/refractive-index-database/GaN/Gallium-Nitride
 AlN        = Material(np.loadtxt('%sAlN.txt'% data_location))         # http://www.filmetrics.com/refractive-index-database/AlN/Aluminium-Nitride
 Ge         = Material(np.loadtxt('%sGe.txt'% data_location))          # http://www.filmetrics.com/refractive-index-database/Ge/Germanium
-CH3NH3PbI3 = Material(np.loadtxt('%sCH3NH3PbI3.txt'% data_location))  # doi:10.1038/nmat3911 - (noting bandedge @ 800nm) Michael Graetzel, Nature Materials
+CH3NH3PbI3 = Material(np.loadtxt('%sCH3NH3PbI3.txt'% data_location))  # doi:10.1021/jz502471h - EPFL
+MoO3 = Material(np.loadtxt('%sMoO3.txt'% data_location))  # http://dx.doi.org/10.1103/PhysRevB.88.115141
+GO = Material(np.loadtxt('%sGO.txt'% data_location))  # measured at Swinbourne
 
 # Metals
 Au         = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Johnson Christy
@@ -189,25 +193,4 @@ Cu         = Material(np.loadtxt('%sCu_JC.txt'% data_location))       # Johnson 
 Cu_Palik   = Material(np.loadtxt('%sCu_Palik.txt'% data_location))    # Palik
 
 # Drude model - need to give [omega_plasma, omega_gamma, eplison_infinity]
-Au_drude   = Material([1.36e16, 1.05e14, 9.5]) # Johnson Christy
-
-
-# Use the below to plot the interpolated refractive indices
-
-# import matplotlib
-# matplotlib.use('pdf')
-# import matplotlib.pyplot as plt
-# def n_plot(spectra_name, wavelengths, data):
-#     fig = plt.figure(num=None, figsize=(9, 12), dpi=80, facecolor='w', edgecolor='k')
-#     ax1 = fig.add_subplot(2,1,1)
-#     ax1.plot(wavelengths, np.real(data))
-#     ax1.set_xlabel('Wavelength (nm)')
-#     ax1.set_ylabel('n')
-#     ax1 = fig.add_subplot(2,1,2)
-#     ax1.plot(wavelengths, np.imag(data))
-#     ax1.set_xlabel('Wavelength (nm)')
-#     ax1.set_ylabel('k')
-#     # plt.axis([wavelengths[0], wavelengths[-1], 0, 1])
-#     plt.suptitle(spectra_name)
-#     plt.savefig(spectra_name)
-
+Au_drude   = Material([1.36e16, 1.05e14, 9.5])  # Johnson Christy

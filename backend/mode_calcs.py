@@ -71,16 +71,16 @@ class Modes(object):
 
     def shear_transform(self, coords):
         """ Return the matrix Q corresponding to a shear transformation to coordinats coords. """
-        alphas = np.append(self.air_ref().alphas,self.air_ref().alphas)
+        alphas = np.append(self.air_ref().alphas, self.air_ref().alphas)
         if np.shape(coords) == (1,):
             return np.mat(np.diag(np.exp(1j * (alphas * coords[0]))))
         else:
-            betas  = np.append(self.air_ref().betas,self.air_ref().betas)
+            betas = np.append(self.air_ref().betas, self.air_ref().betas)
             return np.mat(np.diag(np.exp(1j * (alphas * coords[0] + betas * coords[1]))))
 
     def __del__(self):
         # Clean up _interfaces_i_have_known to avoid memory leak
-        if _interfaces_i_have_known != None:
+        if _interfaces_i_have_known is not None:
             for key in _interfaces_i_have_known.keys():
                 if id(self) in key:
                     _interfaces_i_have_known.pop(key)
@@ -94,22 +94,22 @@ class Anallo(Modes):
         Like a :Simmo:, but for a thin film, and calculated analytically.
     """
     def __init__(self, thin_film, light):
-        self.structure     = thin_film
-        self.light         = light
+        self.structure = thin_film
+        self.light = light
         self.max_order_PWs = light.max_order_PWs
-        self.is_air_ref    = False
+        self.is_air_ref = False
 
     def calc_modes(self):
         """ Calculate the modes of homogeneous layer analytically. """
         kzs = self.calc_kz()
-        self.k_z = np.append(kzs, kzs) # add 2nd polarisation
+        self.k_z = np.append(kzs, kzs)  # add 2nd polarisation
         self.structure.num_pw_per_pol = len(kzs)
 
     def calc_kz(self):
         """ Return a sorted 1D array of grating orders' kz. """
-        d = 1 #TODO: are lx, ly relevant here??
+        d = 1  # TODO: are lx, ly relevant here??
 
-        if self.structure.world_1d == True:
+        if self.structure.world_1d is True:
             # Calculate vectors of pxs
             pxs = self.calc_1d_grating_orders(self.max_order_PWs)
             # Calculate k_x (alphas) and k_y (betas) components of
@@ -121,13 +121,13 @@ class Anallo(Modes):
             self.betas = betas
             k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
 
-        elif self.structure.world_1d == False:
+        elif self.structure.world_1d is False:
             # Calculate vectors of pxs and pys of all orders
             # with px^2 + py^2 <= self.max_order_PWs
             pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
             alpha0, beta0 = self.k_pll_norm()
             alphas = alpha0 + pxs * 2 * pi / d
-            betas  = beta0 + pys * 2 * pi / d
+            betas = beta0 + pys * 2 * pi / d
             self.alphas = alphas
             self.betas = betas
             k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
@@ -137,21 +137,20 @@ class Anallo(Modes):
 
         if np.shape(np.nonzero(k_z_unsrt))[1] != np.shape(k_z_unsrt)[0]:
             print "Warning: selected [k_x, k_y] hits a Wood Anomaly!\n EMUstack changed [k_x, k_y] -> (1-1e-9)*[k_x, k_y]."
-            if self.structure.world_1d == True:
+            if self.structure.world_1d is True:
                 alpha0, beta0 = (1-1e-9)*self.k_pll_norm()
                 alphas = alpha0 + pxs * 2 * pi / d
-                betas  = beta0
+                betas = beta0
                 self.alphas = alphas
                 self.betas = betas
                 k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
-            elif self.structure.world_1d == False:
+            elif self.structure.world_1d is False:
                 alpha0, beta0 = (1-1e-9)*self.k_pll_norm()
                 alphas = alpha0 + pxs * 2 * pi / d
-                betas  = beta0 + pys * 2 * pi / d
+                betas = beta0 + pys * 2 * pi / d
                 self.alphas = alphas
                 self.betas = betas
                 k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
-
 
         if self.is_air_ref:
             assert not hasattr(self, 'sort_order'), \
@@ -164,8 +163,7 @@ class Anallo(Modes):
         else:
             s = self.air_ref().sort_order
             self.sort_order = s
-            assert s.shape == k_z_unsrt.shape, (s.shape,
-                k_z_unsrt.shape)
+            assert s.shape == k_z_unsrt.shape, (s.shape, k_z_unsrt.shape)
 
         # Find element of k_z_unsrt corresponding to zeroth order
         if self.structure.world_1d == True:
@@ -184,7 +182,6 @@ class Anallo(Modes):
             return self.structure.material.n(self.light.wl_nm)
         else:
             return self.structure.material.n(self.light.wl_nm).real
-
 
     def k(self):
         """ Return the normalised wavenumber in the background material. """
@@ -211,7 +208,7 @@ class Anallo(Modes):
         # TE is always represented first
         return np.concatenate((Zcr * k_on_kz, Zcr / k_on_kz))
 
-    def specular_incidence(self, pol = 'TE'):
+    def specular_incidence(self, pol='TE'):
         """ Return a vector of plane wave amplitudes corresponding \
             to specular incidence in the specified polarisation.
 
@@ -224,7 +221,7 @@ class Anallo(Modes):
         tot_num_pw = self.structure.num_pw_per_pol * 2
 
         inc_amp = np.mat(np.zeros(tot_num_pw, dtype='complex128')).T
-        if   'TE' == pol:
+        if 'TE' == pol:
             inc_amp[spec_TE] = 1
         elif 'TM' == pol:
             inc_amp[spec_TM] = 1
@@ -251,23 +248,22 @@ class Simmo(Modes):
         Stores the calculated modes of :NanoStruc: for illumination by :Light:
     """
     def __init__(self, structure, light):
-        self.structure      = structure
-        self.light          = light
-        self.max_order_PWs  = light.max_order_PWs
-        self.prop_consts    = None
-        self.mode_pol       = None
+        self.structure = structure
+        self.light = light
+        self.max_order_PWs = light.max_order_PWs
+        self.prop_consts = None
+        self.mode_pol = None
 
-    def calc_modes(self, num_BMs = None):
+    def calc_modes(self, num_BMs=None):
         """ Run a Fortran FEM caluculation to find the modes of a \
         structured layer. """
         st = self.structure
         wl = self.light.wl_nm
         self.n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl),
-            st.inclusion_b.n(wl)])
+                                st.inclusion_b.n(wl)])
         self.n_effs = self.n_effs[:self.structure.nb_typ_el]
-        if self.structure.loss == False:
+        if self.structure.loss is False:
             self.n_effs = self.n_effs.real
-
 
         if self.structure.periodicity == '1D_array':
             pxs = self.calc_1d_grating_orders(self.max_order_PWs)
@@ -278,7 +274,7 @@ class Simmo(Modes):
                 either '1D_array' or '2D_array'."
 
         num_pw_per_pol = pxs.size
-        if num_BMs == None: self.num_BMs = num_pw_per_pol * 2 + 20
+        if num_BMs is None: self.num_BMs = num_pw_per_pol * 2 + 20
         else: self.num_BMs = num_BMs
         assert self.num_BMs > num_pw_per_pol * 2, \
         "You must include at least as many BMs as PWs. \n" + \
@@ -287,9 +283,9 @@ class Simmo(Modes):
 
         # Parameters that control how FEM routine runs
         self.E_H_field = 1  # Selected formulation (1=E-Field, 2=H-Field)
-        i_cond         = 2  # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
-        itermax        = 30 # Maximum number of iterations for convergence
-        FEM_debug      = 0   # Fortran routines will display & save add. info
+        i_cond = 2  # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
+        itermax = 30  # Maximum number of iterations for convergence
+        FEM_debug = 0  # Fortran routines will display & save add. info
 
         # Calculate where to center the Eigenmode solver around.
         # (Shift and invert FEM method)
@@ -313,7 +309,7 @@ class Simmo(Modes):
                 os.mkdir("Output")
 
         if self.structure.periodicity == '1D_array':
-            if self.structure.world_1d == True:
+            if self.structure.world_1d is True:
                 world_1d = 1
                 num_pw_per_pol_2d = 1
             else:
@@ -334,7 +330,7 @@ class Simmo(Modes):
 
                 self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1 = resm
 
-                if self.structure.world_1d == True:
+                if self.structure.world_1d is True:
                     self.J, self.J_dag = np.mat(J), np.mat(J_dag)
                 else:
                     self.J, self.J_dag = np.mat(J_2d), np.mat(J_dag_2d)
@@ -354,7 +350,7 @@ class Simmo(Modes):
             # Size of Fortran's complex superarray (scales with mesh)
             # In theory could do some python-based preprocessing
             # on the mesh file to work out RAM requirements
-            cmplx_max = 2**27#30
+            cmplx_max = 2**27  # 30
 
             try:
                 resm = EMUstack.calc_modes_2d(
@@ -434,6 +430,7 @@ def r_t_mat(lay1, lay2):
     _interfaces_i_have_known[id(lay1), id(lay2)] = ref_trans
     return ref_trans
 
+
 def r_t_mat_anallo(an1, an2):
     """ Returns R12, T12, R21, T21 at an interface between thin films.
 
@@ -462,6 +459,7 @@ def r_t_mat_anallo(an1, an2):
 
     return R12, T12, R21, T21
 
+
 def r_t_mat_tf_ns(an1, sim2):
     """ Returns R12, T12, R21, T21 at an1-sim2 interface.
 
@@ -472,7 +470,7 @@ def r_t_mat_tf_ns(an1, sim2):
         But we use Zw = 1/(Zcr X) instead of X, so that an1 does not
         have to be free space.
     """
-    Z1_sqrt_inv = np.sqrt(1/an1.Z()).reshape((1,-1))
+    Z1_sqrt_inv = np.sqrt(1/an1.Z()).reshape((1, -1))
 
     # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
     # Same difference.

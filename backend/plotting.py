@@ -223,36 +223,42 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
         r_list.extend(stack.r_list)
 
     layers_steps = len(stacks_list[0].layers) - 1
-    a_tot      = []
-    t_tot      = []
-    r_tot      = []
+    a_tot = []
+    t_tot = []
+    r_tot = []
     for i in range(len(xvalues)):
         a_tot.append(float(a_list[layers_steps-1+(i*layers_steps)]))
         t_tot.append(float(t_list[layers_steps-1+(i*layers_steps)]))
         r_tot.append(float(r_list[i]))
 
-    if ult_eta == True or J_sc == True:
+    if ult_eta is True or J_sc is True:
         active_abs = []
         active_layer_nu = len(stacks_list[0].layers) - active_layer_nu - 1
         if not 0 < active_layer_nu < len(stacks_list[0].layers)-1:
             raise ValueError, "active_layer_nu must refer to a finite layer."
         for i in range(len(xvalues)):
-            active_abs.append(float(a_list[active_layer_nu - 1 + i*layers_steps]))
+            active_abs.append(float(a_list[active_layer_nu - 1 +
+                              i*layers_steps]))
         out = []
 
-    if ult_eta == True:
-        Efficiency = ult_efficiency(active_abs, xvalues, params_2_print, stack_label, add_name)
-        params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
+    if ult_eta is True:
+        Efficiency = ult_efficiency(active_abs, xvalues,
+                                    params_2_print=params_2_print,
+                                    stack_label=stack_label, add_name=add_name)
+        params_2_print += r'$\eta$ = %(Efficiency)6.2f' % {'Efficiency':
+                                                           Efficiency*100, }
         params_2_print += ' %'
         out.append(Efficiency)
 
-    if J_sc == True:
-        J = J_short_circuit(active_abs, xvalues, params_2_print, stack_label, add_name)
+    if J_sc is True:
+        J = J_short_circuit(active_abs, xvalues,
+                            params_2_print=params_2_print,
+                            stack_label=stack_label, add_name=add_name)
         params_2_print += r'$J_{sc}$ = %(J)6.2f'% {'J' : J, }
         params_2_print += r' mA/cm$^2$'
         out.append(J)
 
-    if save_txt == True or save_pdf == True:
+    if save_txt is True or save_pdf is True:
         total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
         # Plot t,r,a for each layer.
         layers_plot('Lay_Absorb', a_list, xvalues, xlabel, total_h, params_2_print, \
@@ -431,14 +437,14 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     plt.suptitle(params_2_print, fontsize=title_font)
     # plt.suptitle(plot_name+add_name+'\n'+params_2_print)
     plt.savefig('%(s)s_stack%(bon)s%(add)s'% \
-        {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+                {'s': plot_name, 'bon': stack_label, 'add': add_name})
 ###############################################################################
 
 
 #### Plot spectra indicating Wood anomalies in substrate ######################
 def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n,
-    params_layer = 1, active_layer_nu = 1, stack_label = 1, ult_eta = False,
-    J_sc = False, weight_spec = False, extinct = False, add_name = ''):
+    params_layer=1, active_layer_nu=1, stack_label=1, ult_eta=False,
+    J_sc=False, weight_spec=False, extinct=False, add_name=''):
     """ Plot t, r, a indicating Wood anomalies in substrate for each layer \
         & total.
 
@@ -512,12 +518,16 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n,
 
 
     if ult_eta == True:
-        Efficiency = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,add_name)
+        Efficiency = ult_efficiency(active_abs, wavelengths,
+                                    params_2_print=params_2_print,
+                                    stack_label=stack_label, add_name=add_name)
         params_2_print += r'$\eta$ = %(Efficiency)6.2f'% {'Efficiency' : Efficiency*100, }
         params_2_print += ' %'
 
     if J_sc == True:
-        J = J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_name)
+        J = J_short_circuit(active_abs, wavelengths,
+                            params_2_print=params_2_print,
+                            stack_label=stack_label, add_name=add_name)
         params_2_print += r'$J_{sc}$ = %(J)6.2f'% {'J' : J, }
         params_2_print += r' mA/cm$^2$'
 
@@ -693,11 +703,15 @@ def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1,
     if not 0 < active_layer_nu < len(stacks_list[0].layers)-1:
         raise ValueError, "active_layer_nu must refer to a finite layer."
     for i in range(len(wavelengths)):
-        active_abs.append(float(a_list[active_layer_nu -1 + i*layers_steps]))
+        active_abs.append(float(a_list[active_layer_nu - 1 + i*layers_steps]))
 
-    Efficiency = ult_efficiency(active_abs, wavelengths, params_2_print, stack_label, add_name)
+    Efficiency = ult_efficiency(active_abs, wavelengths,
+                                params_2_print=params_2_print,
+                                stack_label=stack_label, add_name=add_name)
 
-    J = J_short_circuit(active_abs, wavelengths, params_2_print, stack_label, add_name)
+    J = J_short_circuit(active_abs, wavelengths,
+                        params_2_print=params_2_print,
+                        stack_label=stack_label, add_name=add_name)
     return
 ###############################################################################
 
@@ -853,36 +867,41 @@ def EOT_plot(stacks_list, wavelengths, pol='TM', params_layer=1,
 
 
 #### Calculate short circuit current and ultimate efficiency ##################
-def J_short_circuit(active_abs, wavelengths, params_2_print, stack_label,
-    add_name):
+def J_short_circuit(active_abs, wavelengths, params_2_print='',
+                    stack_label='', add_name=''):
     """ Calculate the short circuit current J_sc under ASTM 1.5 illumination.
         Assuming every absorbed photon produces a pair of charge carriers.
     """
 
     Irrad_spec_file = '../backend/data/ASTMG173'
-    i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
-    i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
-    expression   = i_spec*active_abs*wavelengths
+    i_data = np.loadtxt('%s.txt' % Irrad_spec_file)
+    i_spec = np.interp(wavelengths, i_data[:, 0], i_data[:, 3])
+    expression = i_spec*active_abs*wavelengths
     integral_tmp = np.trapz(expression, x=wavelengths)
-    J = (charge_e/(Plancks_h*speed_c)) * integral_tmp *1e-10 # in mA/cm^2
+    J = (charge_e/(Plancks_h*speed_c)) * integral_tmp * 1e-10  # in mA/cm^2
     nums_2_print = params_2_print.split()
-    np.savetxt('J_sc_stack%(bon)s%(add)s.txt'% {'bon' : stack_label,'add' : add_name}, \
-        np.array([J]), fmt = '%10.6f')
+    np.savetxt('J_sc_stack%(bon)s%(add)s.txt' % {'bon': stack_label,
+               'add': add_name}, np.array([J]), fmt='%10.6f')
     return J
 
-def ult_efficiency(active_abs, wavelengths, params_2_print, stack_label,
-    add_name):
+
+def ult_efficiency(active_abs, wavelengths, bandgap_wl=None,
+                   params_2_print='', stack_label='', add_name=''):
     """ Calculate the photovoltaic ultimate efficiency achieved in the specified active layer.
 
         For definition see `Sturmberg et al., Optics Express, Vol. 19, Issue S5, pp. A1067-A1081 (2011)\
          <http://dx.doi.org/10.1364/OE.19.0A1067>`_.
-    """
-    # TODO make E_g a property of material, not just longest wl included.
 
+        Args:
+            bandgap_wl  (float): allows you to set the wavelength equivalent
+                to the bandgap. Else it is assumed to be the maximum wavelength
+                simulated.
+    """
+    if bandgap_wl is None:
+        bandgap_wl = np.max(wavelengths)
     Irrad_spec_file = '../backend/data/ASTMG173'
     i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
     i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
-    bandgap_wl   = wavelengths[-1] #have as property of material.
     expression   = i_spec*active_abs*wavelengths
     integral_tmp = np.trapz(expression, x=wavelengths)
     Efficiency   = integral_tmp/(bandgap_wl*ASTM15_tot_I)
@@ -1224,7 +1243,7 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
 #### Plot amplitudes of modes #################################################
 def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
     lay_interest=1, up_and_down=True, add_height=None, add_name='',
-    save_pdf=True, save_npz=False):
+    save_pdf=True, save_npz=False, save_txt=False):
     """ Plot the amplitudes of Bloch modes in selected layer.
 
         Args:
@@ -1253,6 +1272,8 @@ def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
                 True by default.
 
             save_npz  (bool): If True, saves lists of BM amplitudes to file.
+
+            save_txt  (bool): If True, saves lists of BM amps to txt file.
     """
 
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
@@ -1290,10 +1311,10 @@ def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
                     store_trans = np.append(store_trans,trans)
             if save_pdf == True:
                 ax1.plot(xvalues,store_trans, label="BM %i" % BM)
-            if save_npz == True:
+            if save_npz == True or save_txt == True:
                 save_trans.append(store_trans)
 
-        if save_pdf == True or save_npz == True:
+        if save_pdf == True or save_npz == True or save_txt == True:
             if add_height!= None: add_name += '_' + zeros_int_str(add_height)
             add_name = str(lay_interest) + add_name
 
@@ -1309,13 +1330,18 @@ def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
         if save_npz == True:
             np.savez('BM_amplitudes-lay_%s' % add_name, save_trans=save_trans)
 
+        if save_txt == True:
+            np.savetxt('BM_amplitudes-lay_%s.txt' % add_name, \
+                save_trans, fmt = '%18.11f')
+
+
     except ValueError:
         print "BM_amplitudes only works in NanoStruct layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
 
 def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
     lay_interest=0, up_and_down=True, add_height=None, add_name='',
-    save_pdf=True, save_npz=False):
+    save_pdf=True, save_npz=False, save_txt=False):
     """ Plot the amplitudes of plane wave orders in selected layer.
 
         Assumes dealing with 1D grating and only have 1D diffraction orders.
@@ -1346,6 +1372,8 @@ def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
                 True by default.
 
             save_npz  (bool): If True, saves lists of PW amplitudes to file.
+
+            save_txt  (bool): If True, saves lists of PW amps to txt file.
     """
 
     fig = plt.figure(num=None, dpi=80, facecolor='w', edgecolor='k')
@@ -1419,7 +1447,7 @@ def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
                         store_trans = np.append(store_trans,trans)
             if save_pdf == True:
                 ax1.plot(xvalues,store_trans, label="m = %i" % pxs)
-            if save_npz == True:
+            if save_npz == True or save_txt == True:
                 save_trans.append(store_trans)
 
         if save_pdf == True or save_npz == True:
@@ -1437,6 +1465,10 @@ def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
 
         if save_npz == True:
             np.savez('PW_amplitudes-lay_%s' % add_name, save_trans=save_trans)
+
+        if save_txt == True:
+            np.savetxt('PW_amplitudes-lay_%s.txt' % add_name, \
+                save_trans, fmt = '%18.11f')
 
     except ValueError:
         print "PW_amplitudes only works in ThinFilm layers."\
