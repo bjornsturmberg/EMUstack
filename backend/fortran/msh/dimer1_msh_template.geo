@@ -5,6 +5,8 @@
 d = 1; // grating period
 ff = 0;
 d_in_nm = 0; // input geo params
+dy_in_nm = 0;
+dy = dy_in_nm/d_in_nm;
 a1 = 0;
 a2 = 0;
 gap = 0;
@@ -20,7 +22,7 @@ c1 = (center1/d_in_nm)*d;
 c2 = (center2/d_in_nm)*d;
 ell = ellipticity;
 
-hy = d; // Thickness: Square profile => hy=d
+hy = dy; // Thickness: Square profile => hy=d
 hx = 0.;
 
 

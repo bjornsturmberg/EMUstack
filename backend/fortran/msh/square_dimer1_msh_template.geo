@@ -7,6 +7,8 @@ ff = 0;
 
 // input geo params
 d_in_nm = 0;
+dy_in_nm = 0;
+dy = dy_in_nm/d_in_nm;
 a1 = 0;
 a2 = 0;
 gap = 0;
@@ -18,7 +20,7 @@ lc = 0; // 0.501 0.201 0.0701;
 lc2 = lc/1; // on cylinder surfaces and center
 lc3 = lc/1; // on gap
 
-hy = d; // Thickness: Square profile => hy=d
+hy = dy; // Thickness: Square profile => hy=d
 hx = 0.;
 
 // derived params

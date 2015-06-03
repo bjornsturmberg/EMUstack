@@ -1,6 +1,8 @@
 d=1; // grating period
 ff = 0;
 d_in_nm = 0;
+dy_in_nm = 0;
+dy = dy_in_nm/d_in_nm;
 d1 = 0;
 d2 = 0;
 d3 = 0;
@@ -38,9 +40,9 @@ lc2 = lc/1; // on cylinder surfaces
 lc3 = lc/1; // cylinder1 centres
 
 
-b = d;
-d = d*3/4; // To turn 3 by 3 into 4 by 4
-hy = d; // Thickness: Squre profile => hy=d
+b = dy;
+dy = dy*3/4; // To turn 3 by 3 into 4 by 4
+hy = dy; // Thickness: Squre profile => hy=d
 hyb = b; // Thickness: Squre profile => hy=b
 hx = 0.;
 

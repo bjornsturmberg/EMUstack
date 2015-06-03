@@ -5,6 +5,8 @@
 d = 1; // grating period
 ff = 0;
 d_in_nm = 0;
+dy_in_nm = 0;
+dy = dy_in_nm/d_in_nm;
 a1 = 0;
 radius1 = (a1/(2*d_in_nm))*d;
 a2 = 0;
@@ -15,7 +17,7 @@ lc = 0; // 0.501 0.201 0.0701;
 lc2 = lc/1; // on cylinder surfaces
 lc3 = lc/1; // cylinder1 centres
 
-hy = d; // Thickness: Squre profile => hy=d
+hy = dy; // Thickness: Squre profile => hy=d
 hx = 0.;
 
 
