@@ -1,11 +1,11 @@
 C  Calculate the Projection integral of the Plane Waves & adjoint Bloch modes
 C
-      subroutine J_dagger_overlap(nval, nel, npt, nnodes, 
-     *  type_el, table_nod, x, sol, 
+      subroutine J_dagger_overlap(nval, nel, npt, nnodes,
+     *  type_el, table_nod, x, sol,
      *  lat_vecs, lambda, freq, overlap_J_dagger, neq_PW,
      *  bloch_vec, index_pw_inv, PrintAll, ordre_ls)
-C 
-      implicit none 
+C
+      implicit none
 C  input output parameters
       integer*8 nval, nel, npt, nnodes
       integer*8 type_el(nel)
@@ -32,7 +32,7 @@ C  variables for quadrature interpolation
       double precision wq(nquad_max)
       double precision xq(nquad_max), yq(nquad_max)
       double precision xx(2), xx_g(2), ww, det
-      double precision mat_B(2,2), mat_T(2,2), d
+      double precision mat_B(2,2), mat_T(2,2), d, dy
 C
       integer alloc_stat
       complex*16, dimension(:,:), allocatable :: PlaneW_RK
@@ -91,17 +91,18 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 C
       call quad_triangle(nquad,nquad_max,wq,xq,yq);
-C        
+C
 C set up final solution matrix
         do i=1,neq_PW
           do j=1,nval
             overlap_K(i,j) = 0.0D0
             overlap_E(i,j) = 0.0D0
           enddo
-        enddo 
+        enddo
 C
       ii = dcmplx(0.0d0, 1.0d0)
-      d = lat_vecs(1,1)  
+      d = lat_vecs(1,1)
+      dy = lat_vecs(2,2)
       pi = 3.141592653589793d0
       bloch1 = bloch_vec(1)
       bloch2 = bloch_vec(2)
@@ -124,31 +125,31 @@ C
           xx(2) = yq(iq)
           ww = wq(iq)
           call phi2_2d_mat_J(xx, phi2_list)
-          call jacobian_p1_2d(xx, xel, nnodes, 
+          call jacobian_p1_2d(xx, xel, nnodes,
      *               xx_g, det, mat_B, mat_T)
 C
-C     prefactors of plane waves order s(px,py) 
+C     prefactors of plane waves order s(px,py)
             s = 1
             do px = -ordre_ls, ordre_ls
               do py = -ordre_ls, ordre_ls
               if (px**2 + py**2 .le. ordre_ls**2) then
                 alpha = bloch1 + vec_kx*px      ! Bloch vector along x
                 beta  = bloch2 + vec_ky*py      ! Bloch vector along y
-                norm = 1.0d0/DSQRT(alpha**2 + beta**2) ! sqrt term             
+                norm = 1.0d0/DSQRT(alpha**2 + beta**2) ! sqrt term
                 r_tmp = alpha*xx_g(1) + beta*xx_g(2)
                 s2 = index_pw_inv(s)
                 val_exp = EXP(ii*r_tmp)*norm
 C
-C     Plane waves order s (1-neq_PW) not conjugated (-ii) -> ii 
+C     Plane waves order s (1-neq_PW) not conjugated (-ii) -> ii
 C   RK   x component
                 PlaneW_RK(s2,1) = alpha*val_exp
 C             y component
                 PlaneW_RK(s2,2) = beta*val_exp
-C  
+C
 C   RE   x component
                 PlaneW_RE(s2,1) = beta*val_exp
 C             y component
-                PlaneW_RE(s2,2) = -alpha*val_exp        
+                PlaneW_RE(s2,2) = -alpha*val_exp
 C
                 s = s + 1
               endif
@@ -183,7 +184,7 @@ C
         enddo
       enddo
 C
-C  Save as J_mat = | J_E |                
+C  Save as J_mat = | J_E |
 C                  | J_K |
 C
       do twos = 1, 2*neq_PW
@@ -204,8 +205,8 @@ C
      * status='unknown')
       open (unit=33, file="Matrices/J_dagger_K.txt", status='unknown')
       open (unit=32, file="Matrices/J_dagger_E.txt", status='unknown')
-      write(35,131) lambda, freq     
-      write(33,131) lambda, freq   
+      write(35,131) lambda, freq
+      write(33,131) lambda, freq
       write(32,131) lambda, freq
 C
       do n = 1, nval
@@ -227,7 +228,7 @@ C
 C
       close(35)
       close(33)
-      close(32) 
+      close(32)
       endif
 C
 c

@@ -45,7 +45,9 @@ class Modes(object):
 
     def air_ref(self):
         """ Return an :Anallo: for air for the same :Light: as this. """
-        return self.light._air_ref(self.structure.period, self.structure.world_1d)
+        return self.light._air_ref(self.structure.period,
+                                   self.structure.period_y,
+                                   self.structure.world_1d)
 
     def calc_1d_grating_orders(self, max_order):
         """ Return the grating order indices px and py, unsorted. """
@@ -107,7 +109,8 @@ class Anallo(Modes):
 
     def calc_kz(self):
         """ Return a sorted 1D array of grating orders' kz. """
-        d = 1  # TODO: are lx, ly relevant here??
+        d = 1
+        dy = self.structure.period_y / self.structure.period
 
         if self.structure.world_1d is True:
             # Calculate vectors of pxs
@@ -127,7 +130,7 @@ class Anallo(Modes):
             pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
             alpha0, beta0 = self.k_pll_norm()
             alphas = alpha0 + pxs * 2 * pi / d
-            betas = beta0 + pys * 2 * pi / d
+            betas = beta0 + pys * 2 * pi / dy
             self.alphas = alphas
             self.betas = betas
             k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
@@ -147,7 +150,7 @@ class Anallo(Modes):
             elif self.structure.world_1d is False:
                 alpha0, beta0 = (1-1e-9)*self.k_pll_norm()
                 alphas = alpha0 + pxs * 2 * pi / d
-                betas = beta0 + pys * 2 * pi / d
+                betas = beta0 + pys * 2 * pi / dy
                 self.alphas = alphas
                 self.betas = betas
                 k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
@@ -354,10 +357,10 @@ class Simmo(Modes):
 
             try:
                 resm = EMUstack.calc_modes_2d(
-                    self.wl_norm(), self.num_BMs, self.max_order_PWs, FEM_debug,
-                    self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-                    self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(),
-                    shift, self.E_H_field, i_cond, itermax,
+                    self.wl_norm(), self.num_BMs, self.max_order_PWs,
+                    FEM_debug, self.structure.mesh_file, self.n_msh_pts,
+                    self.n_msh_el, self.structure.nb_typ_el, self.n_effs,
+                    self.k_pll_norm(), shift, self.E_H_field, i_cond, itermax,
                     self.structure.plotting_fields, self.structure.plot_real,
                     self.structure.plot_imag, self.structure.plot_abs,
                     num_pw_per_pol, cmplx_max)

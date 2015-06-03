@@ -49,7 +49,7 @@ class NanoStruct(object):
 
         Keyword Args:
             period_y  (float): The period of the unit cell in the y-direction.\
-                If None period_y = period.
+                If None, period_y = period.
 
             inc_shape  (str): Shape of inclusions that have template mesh, \
                 currently; 'circle', 'ellipse', 'square', 'ring', 'SRR',
@@ -182,12 +182,12 @@ class NanoStruct(object):
         plotting_fields=False, plot_real=1, plot_imag=0, plot_abs=0,
         plot_field_conc=False, plt_msh=True):
         self.periodicity = periodicity
-        self.period = period
+        self.period = float(period)
         self.diameter1 = diameter1
         if period_y is None:
-            period_y = period
+            period_y = float(period)
         else:
-            self.period_y = period_y
+            self.period_y = float(period_y)
         self.inc_shape = inc_shape
         self.height_nm = height_nm
         self.inclusion_a = inclusion_a
@@ -916,7 +916,7 @@ class ThinFilm(object):
 
         Keyword Args:
             period_y  (float): The period of the unit cell in the y-direction.\
-                If None period_y = period.
+                If None, period_y = period.
 
             height_nm  (float): The thickness of the layer in nm or 'semi_inf'\
                 for a semi-infinte layer.
@@ -935,11 +935,11 @@ class ThinFilm(object):
     def __init__(self, period, period_y=None, height_nm=1.0, num_pw_per_pol=0,
                  world_1d=False, material=materials.Material(3.0 + 0.001),
                  loss=True):
-        self.period = period
+        self.period = float(period)
         if period_y is None:
-            self.period_y = period
+            self.period_y = float(period)
         else:
-            self.period_y = period_y
+            self.period_y = float(period_y)
         self.world_1d = world_1d
         self.height_nm = height_nm
         self.num_pw_per_pol = num_pw_per_pol
@@ -1030,13 +1030,16 @@ class Light(object):
 
 
 
-    def _air_ref(self, period, world_1d):
+    def _air_ref(self, period, period_y, world_1d):
         """ Return an :Anallo: corresponding to this :Light: in free space.
 
             The :Anallo: will have len(anallo.k_z) == 2 * num_pw.
 
             Args:
                 period  (float): period imposed on homogeneous film.
+
+                period_y  (float): period imposed on homogeneous film \
+                    along y-axis.
 
                 world_1d  (bool): Specify whether to use 1D or 2D \
                     diffraction orders.
@@ -1045,7 +1048,8 @@ class Light(object):
         if (period) in self._air_anallos:
             return self._air_anallos[(period)]
         else:
-            air = ThinFilm(period = period, material = materials.Air, world_1d = world_1d)
+            air = ThinFilm(period=period, period_y=period_y,
+                           material=materials.Air, world_1d=world_1d)
             an = Anallo(air, self)
 
             an.is_air_ref = True
