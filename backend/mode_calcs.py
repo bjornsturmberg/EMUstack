@@ -355,6 +355,8 @@ class Simmo(Modes):
             # In theory could do some python-based preprocessing
             # on the mesh file to work out RAM requirements
             cmplx_max = 2**27  # 30
+            real_max = 2**23
+            int_max = 2**22
 
             try:
                 resm = EMUstack.calc_modes_2d(
@@ -364,7 +366,7 @@ class Simmo(Modes):
                     self.k_pll_norm(), shift, self.E_H_field, i_cond, itermax,
                     self.structure.plotting_fields, self.structure.plot_real,
                     self.structure.plot_imag, self.structure.plot_abs,
-                    num_pw_per_pol, cmplx_max)
+                    num_pw_per_pol, cmplx_max, real_max, int_max)
 
                 self.k_z, J, J_dag, self.sol1, self.mode_pol, \
                 self.table_nod, self.type_el, self.x_arr = resm

@@ -195,7 +195,7 @@ class NanoStruct(object):
         self.period = float(period)
         self.diameter1 = diameter1
         if period_y is None:
-            period_y = float(period)
+            self.period_y = float(period)
         else:
             self.period_y = float(period_y)
         self.inc_shape = inc_shape

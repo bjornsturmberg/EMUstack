@@ -5,7 +5,7 @@ c     Explicit inputs
      *    nb_typ_el, n_eff, bloch_vec, shift,
      *    E_H_field, i_cond, itermax,
      *    plot_modes, plot_real, plot_imag, plot_abs,
-     *    neq_PW, cmplx_max,
+     *    neq_PW, cmplx_max, real_max, int_max,
 c     Outputs
      *    beta1, overlap_J, overlap_J_dagger, sol1, mode_pol,
      *    table_nod, type_el, x_arr)
@@ -147,7 +147,7 @@ Cf2py intent(in) debug, mesh_file, npt, nel
 Cf2py intent(in) n_eff, bloch_vec, shift
 Cf2py intent(in) E_H_field, i_cond, itermax, neq_PW
 Cf2py intent(in) plot_modes, plot_real, plot_imag, plot_abs
-Cf2py intent(in) cmplx_max, nb_typ_el
+Cf2py intent(in) cmplx_max, real_max, int_max, nb_typ_el
 
 Cf2py depend(n_eff) nb_typ_el
 Cf2py depend(index_pw_inv) neq_PW
@@ -159,8 +159,8 @@ Cf2py intent(out) sol1, mode_pol, table_nod, type_el, x_arr
       n_64 = 2
 C     !n_64**28 on Vayu, **27 before
 C      cmplx_max=n_64**25
-      real_max = n_64**23
-      int_max  = n_64**22
+C      real_max = n_64**23
+C      int_max  = n_64**22
 c      3*npt+nel+nnodes*nel
 
 C      write(*,*) "cmplx_max = ", cmplx_max
