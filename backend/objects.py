@@ -81,6 +81,15 @@ class NanoStruct(object):
             inclusion_b  : A :Material: instance for the second \
                 inclusion medium.
 
+            inclusion_c  : A :Material: instance for the third \
+                inclusion medium.
+
+            inclusion_d  : A :Material: instance for the fourth \
+                inclusion medium.
+
+            inclusion_e  : A :Material: instance for the fifth \
+                inclusion medium.
+
             background  : A :Material: instance for the background medium.
 
             loss  (bool): If False, Im(n) = 0, if True n as in \
@@ -165,9 +174,12 @@ class NanoStruct(object):
                  period_y=None, inc_shape='circle', ellipticity=0.0,
                  ff=0, ff_rand=False, small_space=None, edge_spacing=False,
                  len_vertical=0, len_horizontal=0,
-                 inclusion_a=materials.Material(3.0 + 0.05j),
-                 inclusion_b=materials.Material(3.0 + 0.05j),
                  background=materials.Material(1.0 + 0.0j),
+                 inclusion_a=materials.Material(1.0 + 0.0j),
+                 inclusion_b=materials.Material(1.0 + 0.0j),
+                 inclusion_c=materials.Material(1.0 + 0.0j),
+                 inclusion_d=materials.Material(1.0 + 0.0j),
+                 inclusion_e=materials.Material(1.0 + 0.0j),
                  loss=True, height_nm=100.0,
                  diameter2=0,  diameter3=0, diameter4=0, diameter5=0,
                  diameter6=0, diameter7=0, diameter8=0, diameter9=0,
@@ -188,9 +200,12 @@ class NanoStruct(object):
             self.period_y = float(period_y)
         self.inc_shape = inc_shape
         self.height_nm = height_nm
+        self.background = background
         self.inclusion_a = inclusion_a
         self.inclusion_b = inclusion_b
-        self.background = background
+        self.inclusion_c = inclusion_c
+        self.inclusion_d = inclusion_d
+        self.inclusion_e = inclusion_e
         self.loss = loss
         self.hyperbolic = hyperbolic
         self.diameter2 = diameter2
@@ -215,7 +230,9 @@ class NanoStruct(object):
         self.ellipticity = ellipticity
         if ellipticity > 1.0:
             raise ValueError, "ellipticity must be less than 1.0"
-        if diameter2 != 0:
+        if diameter3 != 0:
+            self.nb_typ_el = 4
+        elif diameter2 != 0:
             self.nb_typ_el = 3
         else:
             self.nb_typ_el = 2

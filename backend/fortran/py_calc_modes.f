@@ -159,7 +159,7 @@ Cf2py intent(out) sol1, mode_pol, table_nod, type_el, x_arr
       n_64 = 2
 C     !n_64**28 on Vayu, **27 before
 C      cmplx_max=n_64**25
-      real_max = n_64**22
+      real_max = n_64**23
       int_max  = n_64**22
 c      3*npt+nel+nnodes*nel
 

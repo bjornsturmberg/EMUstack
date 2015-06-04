@@ -263,7 +263,8 @@ class Simmo(Modes):
         st = self.structure
         wl = self.light.wl_nm
         self.n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl),
-                                st.inclusion_b.n(wl)])
+                                st.inclusion_b.n(wl), st.inclusion_c.n(wl),
+                                st.inclusion_d.n(wl), st.inclusion_e.n(wl)])
         self.n_effs = self.n_effs[:self.structure.nb_typ_el]
         if self.structure.loss is False:
             self.n_effs = self.n_effs.real
