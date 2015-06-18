@@ -258,7 +258,7 @@ class Simmo(Modes):
         self.mode_pol = None
 
     def calc_modes(self, num_BMs=None):
-        """ Run a Fortran FEM caluculation to find the modes of a \
+        """ Run a Fortran FEM calculation to find the modes of a \
         structured layer. """
         st = self.structure
         wl = self.light.wl_nm
@@ -301,7 +301,7 @@ class Simmo(Modes):
             shift = 1.1*max_n**2 * k_0**2
         else:
             shift = 1.1*max_n**2 * k_0**2  \
-            - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
+                - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
 
         if FEM_debug == 1:
             print 'shift', shift
@@ -322,15 +322,16 @@ class Simmo(Modes):
                 num_pw_per_pol_2d = pxs.size
 
             try:
-                struct = self.structure
                 resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BMs,
-                    self.max_order_PWs, struct.nb_typ_el, struct.n_msh_pts,
-                    struct.n_msh_el, struct.table_nod,
-                    struct.type_el, struct.x_arr, itermax, FEM_debug,
-                    struct.mesh_file, self.n_effs, self.k_pll_norm()[0],
-                    self.k_pll_norm()[1], shift, struct.plotting_fields,
-                    struct.plot_real, struct.plot_imag, struct.plot_abs,
-                    num_pw_per_pol, num_pw_per_pol_2d, world_1d )
+                    self.max_order_PWs, self.structure.nb_typ_el,
+                    self.structure.n_msh_pts, self.structure.n_msh_el,
+                    self.structure.table_nod, self.structure.type_el,
+                    self.structure.x_arr, itermax, FEM_debug,
+                    self.structure.mesh_file, self.n_effs,
+                    self.k_pll_norm()[0], self.k_pll_norm()[1], shift,
+                    self.structure.plotting_fields, self.structure.plot_real,
+                    self.structure.plot_imag, self.structure.plot_abs,
+                    num_pw_per_pol, num_pw_per_pol_2d, world_1d)
 
                 self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1 = resm
 
@@ -370,14 +371,18 @@ class Simmo(Modes):
 
                 self.k_z, J, J_dag, self.sol1, self.mode_pol, \
                 self.table_nod, self.type_el, self.x_arr = resm
-                self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+                # self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+
+                area = self.structure.period * self.structure.period_y
+                area_norm = area/self.structure.period**2
+                self.J, self.J_dag = np.mat(J)/area_norm, np.mat(J_dag)
 
             except KeyboardInterrupt:
                 print "\n\n2D FEM routine calc_modes_2d",\
                 "interrupted by keyboard.\n\n"
 
         else:
-            raise ValueError,  "NanoStruct layer must have periodicity of \
+            raise ValueError, "NanoStruct layer must have periodicity of \
                 either '1D_array' or '2D_array'."
 
         if not self.structure.plot_field_conc:
@@ -447,7 +452,7 @@ def r_t_mat_anallo(an1, an2):
     """
     if len(an1.k_z) != len(an2.k_z):
         raise ValueError, "Need the same number of plane waves in \
-        Anallos %(an1)s and %(an2)s" % {'an1' : an1, 'an2' : an2}
+        Anallos %(an1)s and %(an2)s" % {'an1': an1, 'an2': an2}
 
     Z1 = an1.Z()
     Z2 = an2.Z()
