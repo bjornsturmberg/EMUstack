@@ -1,6 +1,8 @@
 d=1; // grating period
 ff = 0;
 d_in_nm = 0;
+dy_in_nm = 0;
+dy = dy_in_nm/d_in_nm;
 a1 = 0;
 a2 = 0;
 a3 = 0;
@@ -20,7 +22,7 @@ lc6 = lc/1; // cylinder4 centres
 posx = 0;//
 posy = 0;//
 
-hy = d; // Thickness: Squre profile => hy=d
+hy = dy; // Thickness: Squre profile => hy=d
 hx = 0;
 
 // 2*2 supercell outline

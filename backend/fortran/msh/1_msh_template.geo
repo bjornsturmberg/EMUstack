@@ -5,6 +5,8 @@
 d = 1; // grating period
 ff = 0;
 d_in_nm = 0;
+dy_in_nm = 0;
+dy = dy_in_nm/d_in_nm;
 a1 = 0;
 radius1 = (a1/(2*d_in_nm))*d;
 ellipticity = 0;
@@ -12,8 +14,9 @@ square = 0;
 lc = 0; // 0.501 0.201 0.0701;
 lc2 = lc/1; // on cylinder surfaces
 lc3 = lc/1; // cylinder1 centres
+lc4 = lc/1; // centres of top and bottom
 
-hy = d; // Thickness: Squre profile => hy=d
+hy = dy; // Thickness: Square profile => hy=d
 hx = 0.;
 
 
@@ -31,9 +34,9 @@ Point(7) = {-hx+d/2-radius1, -hy/2, 0, lc2};
 Point(8) = {-hx+d/2, -hy/2-(radius1-ellipticity*radius1), 0, lc2};
 Point(9) = {-hx+d/2+radius1, -hy/2, 0, lc2};
 
-Point(10) = {-hx+d/2, 0, 0, lc};
+Point(10) = {-hx+d/2, 0, 0, lc4};
 Point(11) = {0,-hy/2, 0, lc};
-Point(12) = {-hx+d/2, -hy, 0, lc};
+Point(12) = {-hx+d/2, -hy, 0, lc4};
 Point(13) = {d, -hy/2, 0, lc};
 Line(1) = {1,10};
 Line(2) = {10,4};

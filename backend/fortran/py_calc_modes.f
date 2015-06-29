@@ -5,7 +5,7 @@ c     Explicit inputs
      *    nb_typ_el, n_eff, bloch_vec, shift,
      *    E_H_field, i_cond, itermax,
      *    plot_modes, plot_real, plot_imag, plot_abs,
-     *    neq_PW, cmplx_max,
+     *    neq_PW, cmplx_max, real_max, int_max,
 c     Outputs
      *    beta1, overlap_J, overlap_J_dagger, sol1, mode_pol,
      *    table_nod, type_el, x_arr)
@@ -147,7 +147,7 @@ Cf2py intent(in) debug, mesh_file, npt, nel
 Cf2py intent(in) n_eff, bloch_vec, shift
 Cf2py intent(in) E_H_field, i_cond, itermax, neq_PW
 Cf2py intent(in) plot_modes, plot_real, plot_imag, plot_abs
-Cf2py intent(in) cmplx_max, nb_typ_el
+Cf2py intent(in) cmplx_max, real_max, int_max, nb_typ_el
 
 Cf2py depend(n_eff) nb_typ_el
 Cf2py depend(index_pw_inv) neq_PW
@@ -159,8 +159,8 @@ Cf2py intent(out) sol1, mode_pol, table_nod, type_el, x_arr
       n_64 = 2
 C     !n_64**28 on Vayu, **27 before
 C      cmplx_max=n_64**25
-      real_max = n_64**22
-      int_max  = n_64**22
+C      real_max = n_64**23
+C      int_max  = n_64**22
 c      3*npt+nel+nnodes*nel
 
 C      write(*,*) "cmplx_max = ", cmplx_max
@@ -172,8 +172,8 @@ C      mesh_format = 1
 C      Checks = 0 ! check completeness, energy conservation
       PrintAll = debug ! only need to print when debugging J overlap, orthogonal
       tol = 0.0 ! ARPACK accuracy (0.0 for machine precision)
-      lx=1 ! Diameter of unit cell. Default, lx = 1.0.
-      ly=1 ! NOTE: currently requires ly=lx, ie square unit cell.
+      lx=1.0 ! Diameter of unit cell. Default, lx = 1.0.
+      ly=1.0 ! NOTE: currently requires ly=lx, ie rectangular unit cell.
 
       if (debug .eq. 1) then
         write(*,*) "WELCOME TO DEBUG MODE"
@@ -298,7 +298,7 @@ C
      *     lx, ly, type_nod, type_el, table_nod,
      *     x_arr, mesh_file)
 C
-      call lattice_vec (npt, x_arr, lat_vecs)
+      call lattice_vec (npt, x_arr, lat_vecs, debug)
 C
 C      V = number of vertices
 C      E = number of edges
@@ -619,16 +619,16 @@ C     finite element equations
       call asmbly (i_cond, i_base, nel, npt, n_ddl, neq, nnodes,
      *  shift, bloch_vec_k, nb_typ_el, pp, qq, table_nod,
      *  a(ip_table_N_E_F), type_el, a(ip_eq),
-     *   a(ip_period_N), a(ip_period_N_E_F), x_arr, b(jp_x_N_E_F),
-     *   nonz, a(ip_row), a(ip_col_ptr), c(kp_mat1_re),
-     *   c(kp_mat1_im), b(jp_mat2), a(ip_work))
+     *  a(ip_period_N), a(ip_period_N_E_F), x_arr, b(jp_x_N_E_F),
+     *  nonz, a(ip_row), a(ip_col_ptr), c(kp_mat1_re),
+     *  c(kp_mat1_im), b(jp_mat2), a(ip_work))
       call cpu_time(time2_asmbl)
 C
 C     factorization of the globale matrice
 C     -----------------------------------
 C
       if (debug .eq. 1) then
-        write(ui,*) "py_calc_modes.f:        Adjoint(1) / Prime(2)", n_k
+        write(ui,*) "py_calc_modes.f: Adjoint(1) / Prime(2)", n_k
 c        write(ui,*) "py_calc_modes.f: factorisation: call to znsy"
       endif
 C

@@ -24,6 +24,7 @@ from scipy.interpolate import UnivariateSpline, interp1d
 
 data_location = '../backend/data/'
 
+
 class Material(object):
     """ Represents a material with a refractive index n.
 
@@ -47,23 +48,17 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    Si_c            |  Au        |   TiO2                 |
         +--------------------+------------+------------------------+
-        |    Si_a            |  Au_Palik  |   ITO                  |
+        |    Si_a            |  Au_Palik  |   TiO2_anatase         |
         +--------------------+------------+------------------------+
-        |    SiO2            |  Ag        |   ZnO                  |
+        |    SiO2            |  Ag        |   ITO                  |
         +--------------------+------------+------------------------+
-        |    CuO             |  Ag_Palik  |                        |
+        |    CuO             |  Ag_Palik  |   ZnO                  |
         +--------------------+------------+------------------------+
         |    CdTe            |  Cu        |                        |
         +--------------------+------------+------------------------+
         |    FeS2            |  Cu_Palik  |                        |
         +--------------------+------------+------------------------+
         |    Zn3P2           |            |                        |
-        +--------------------+------------+------------------------+
-        |    Sb2S3           |            |                        |
-        +--------------------+------------+------------------------+
-        |    Sb2S3_ANU2014   |            |                        |
-        +--------------------+------------+------------------------+
-        |    Sb2S3_ANU2015   |            |                        |
         +--------------------+------------+------------------------+
         |    AlGaAs          |            |                        |
         +--------------------+------------+------------------------+
@@ -77,21 +72,21 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    MgF2            |            |   H2O                  |
         +--------------------+------------+------------------------+
-        |    InP             |            |   GO                   |
+        |    InP             |            |                        |
         +--------------------+------------+------------------------+
         |    InAs            |            |                        |
         +--------------------+------------+------------------------+
-        |    GaP             |            |                        |
+        |    GaP             |            | **Experimental** incl. |
         +--------------------+------------+------------------------+
-        |    Ge              |            |                        |
+        |    Ge              |            |    CH3NH3PbI3          |
         +--------------------+------------+------------------------+
-        |    AlN             |            |                        |
+        |    AlN             |            |    Sb2S3               |
         +--------------------+------------+------------------------+
-        |    GaN             |            |                        |
+        |    GaN             |            |    Sb2S3_ANU2014       |
         +--------------------+------------+------------------------+
-        |    CH3NH3PbI3      |            |                        |
+        |    MoO3            |            |    Sb2S3_ANU2015       |
         +--------------------+------------+------------------------+
-        |    MoO3            |            |                        |
+        |                    |            |    GO                  |
         +--------------------+------------+------------------------+
 
 
@@ -106,19 +101,19 @@ class Material(object):
             # we will calculate n from the Drude model with input omega_p, omega_g, eps_inf values
             c = 299792458
             omega_plasma = n[0]
-            omega_gamma  = n[1]
-            eps_inf      = n[2]
+            omega_gamma = n[1]
+            eps_inf = n[2]
             self.data_wls = 'Drude'
-            self.data_ns = [omega_plasma,omega_gamma,eps_inf,c]
+            self.data_ns = [omega_plasma, omega_gamma, eps_inf, c]
             self._n = lambda x: np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
-        elif np.shape(n) >= (2,1):
-            self.data_wls = n[:,0]
+        elif np.shape(n) >= (2, 1):
+            self.data_wls = n[:, 0]
             if len(n[0]) == 2:
                 # n is an array of wavelengths and (possibly-complex)
                 # refractive indices.
-                self.data_ns = n[:,1]
+                self.data_ns = n[:, 1]
             elif len(n[0]) == 3:
-                self.data_ns = n[:,1] + 1j * n[:,2]
+                self.data_ns = n[:, 1] + 1j * n[:, 2]
             else:
                 raise ValueError
             # Do cubic interpolation if we get the chance
@@ -129,7 +124,6 @@ class Material(object):
         # else:
         #     raise ValueError, "You must either set a constant refractive \
         #         index, provide tabulated data, or Drude parameters"
-
 
     def n(self, wl_nm):
         """ Return n for the specified wavelength."""
@@ -144,7 +138,7 @@ class Material(object):
     def __setstate__(self, d):
         """ Recreate self._n when unpickling."""
         self.__dict__ = d
-        if None == self.data_wls:
+        if None is self.data_wls:
             self._n = lambda x: self.data_ns
         elif self.data_wls == 'Drude':
             self._n = lambda x: np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
@@ -152,48 +146,99 @@ class Material(object):
             self._n = interp1d(self.data_wls, self.data_ns)
 
 
-Air        = Material(1.00 + 0.0j)
-H2O        = Material(np.loadtxt('%sH2O.txt'% data_location))         # G. M. Hale and M. R. Querry. doi:10.1364/AO.12.000555
+Air = Material(1.00 + 0.0j)
+H2O = Material(np.loadtxt('%sH2O.txt'% data_location))
+# G. M. Hale and M. R. Querry. doi:10.1364/AO.12.000555
+
 
 # Transparent oxides
-TiO2       = Material(np.loadtxt('%sTiO2.txt'% data_location))
-ITO        = Material(np.loadtxt('%sITO.txt'% data_location))         # Filmetrics.com
-ZnO = Material(np.loadtxt('%sZnO.txt'% data_location)) # Z. Holman 2012 unpublished http://www.pvlighthouse.com.au/resources/photovoltaic%20materials/refractive%20index/refractive%20index.aspx
+TiO2 = Material(np.loadtxt('%sTiO2.txt'% data_location))
+# Filmetrics.com
+TiO2_anatase = Material(np.loadtxt('%sTiO2_anatase.txt'% data_location))
+# 500C anneal PV Lighthouse doi:/10.1016/S0927-0248(02)00473-7
+ITO = Material(np.loadtxt('%sITO.txt'% data_location))
+# Filmetrics.com
+ZnO = Material(np.loadtxt('%sZnO.txt'% data_location))
+# Z. Holman 2012 unpublished http://www.pvlighthouse.com.au/resources/photovoltaic%20materials/refractive%20index/refractive%20index.aspx
+
 
 # Semiconductors
-Si_c       = Material(np.loadtxt('%sSi_c.txt'% data_location))        # M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
-Si_a       = Material(np.loadtxt('%sSi_a.txt'% data_location))
-SiO2       = Material(np.loadtxt('%sSiO2.txt'% data_location))
-CuO        = Material(np.loadtxt('%sCuO.txt'% data_location))
-CdTe       = Material(np.loadtxt('%sCdTe.txt'% data_location))
-FeS2       = Material(np.loadtxt('%sFeS2.txt'% data_location))
-Zn3P2      = Material(np.loadtxt('%sZn3P2.txt'% data_location))
-Sb2S3      = Material(np.loadtxt('%sSb2S3.txt'% data_location))
-Sb2S3_ANU2014 = Material(np.loadtxt('%sSb2S3_ANU2014.txt'% data_location))
-Sb2S3_ANU2015 = Material(np.loadtxt('%sSb2S3_ANU2015.txt'% data_location))
-AlGaAs     = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
-Al2O3      = Material(np.loadtxt('%sAl2O3.txt'% data_location))       # http://refractiveindex.info/?shelf=main&book=Al2O3&page=Malitson-o
-GaAs       = Material(np.loadtxt('%sGaAs.txt'% data_location))        # http://www.filmetrics.com/refractive-index-database/GaAs/Gallium-Arsenide
-InGaAs     = Material(np.loadtxt('%sInGaAs.txt'% data_location))      # http://refractiveindex.info/?group=CRYSTALS&material=InGaAs
-Si3N4      = Material(np.loadtxt('%sSi3N4.txt'% data_location))       # http://www.filmetrics.com/refractive-index-database/Si3N4/Silicon-Nitride-SiN
-MgF2       = Material(np.loadtxt('%sMgF2.txt'% data_location))        # http://www.filmetrics.com/refractive-index-database/MgF2/Magnesium-Fluoride
-InP        = Material(np.loadtxt('%sInP.txt'% data_location))
-InAs       = Material(np.loadtxt('%sInAs.txt'% data_location))        # Filmetrics.com
-GaP        = Material(np.loadtxt('%sGaP.txt'% data_location))         # Filmetrics.com
-GaN        = Material(np.loadtxt('%sGaN.txt'% data_location))         # http://www.filmetrics.com/refractive-index-database/GaN/Gallium-Nitride
-AlN        = Material(np.loadtxt('%sAlN.txt'% data_location))         # http://www.filmetrics.com/refractive-index-database/AlN/Aluminium-Nitride
-Ge         = Material(np.loadtxt('%sGe.txt'% data_location))          # http://www.filmetrics.com/refractive-index-database/Ge/Germanium
-CH3NH3PbI3 = Material(np.loadtxt('%sCH3NH3PbI3.txt'% data_location))  # doi:10.1021/jz502471h - EPFL
-MoO3 = Material(np.loadtxt('%sMoO3.txt'% data_location))  # http://dx.doi.org/10.1103/PhysRevB.88.115141
-GO = Material(np.loadtxt('%sGO.txt'% data_location))  # measured at Swinbourne
+Si_c = Material(np.loadtxt('%sSi_c.txt'% data_location))
+# M. Green Prog. PV 1995 doi:10.1002/pip.4670030303
+Si_a = Material(np.loadtxt('%sSi_a.txt'% data_location))
+SiO2 = Material(np.loadtxt('%sSiO2.txt'% data_location))
+CuO = Material(np.loadtxt('%sCuO.txt'% data_location))
+CdTe = Material(np.loadtxt('%sCdTe.txt'% data_location))
+FeS2 = Material(np.loadtxt('%sFeS2.txt'% data_location))
+Zn3P2 = Material(np.loadtxt('%sZn3P2.txt'% data_location))
+Sb2S3 = Material(np.loadtxt('%sSb2S3.txt'% data_location))
+AlGaAs = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
+Al2O3 = Material(np.loadtxt('%sAl2O3.txt'% data_location))
+# http://refractiveindex.info/?shelf=main&book=Al2O3&page=Malitson-o
+GaAs = Material(np.loadtxt('%sGaAs.txt'% data_location))
+# http://www.filmetrics.com/refractive-index-database/GaAs/Gallium-Arsenide
+InGaAs = Material(np.loadtxt('%sInGaAs.txt'% data_location))
+# http://refractiveindex.info/?group=CRYSTALS&material=InGaAs
+Si3N4 = Material(np.loadtxt('%sSi3N4.txt'% data_location))
+# http://www.filmetrics.com/refractive-index-database/Si3N4/Silicon-Nitride-SiN
+MgF2 = Material(np.loadtxt('%sMgF2.txt'% data_location))
+# http://www.filmetrics.com/refractive-index-database/MgF2/Magnesium-Fluoride
+InP = Material(np.loadtxt('%sInP.txt'% data_location))
+InAs = Material(np.loadtxt('%sInAs.txt'% data_location))
+# Filmetrics.com
+GaP = Material(np.loadtxt('%sGaP.txt'% data_location))
+# Filmetrics.com
+GaN = Material(np.loadtxt('%sGaN.txt'% data_location))
+# http://www.filmetrics.com/refractive-index-database/GaN/Gallium-Nitride
+AlN = Material(np.loadtxt('%sAlN.txt'% data_location))
+# http://www.filmetrics.com/refractive-index-database/AlN/Aluminium-Nitride
+Ge = Material(np.loadtxt('%sGe.txt'% data_location))
+# http://www.filmetrics.com/refractive-index-database/Ge/Germanium
+MoO3 = Material(np.loadtxt('%sMoO3.txt'% data_location))
+# doi:10.1103/PhysRevB.88.115141
+
 
 # Metals
-Au         = Material(np.loadtxt('%sAu_JC.txt'% data_location))       # Johnson Christy
-Au_Palik   = Material(np.loadtxt('%sAu_Palik.txt'% data_location))    # Palik
-Ag         = Material(np.loadtxt('%sAg_JC.txt'% data_location))       # Johnson Christy
-Ag_Palik   = Material(np.loadtxt('%sAg_Palik.txt'% data_location))    # Palik
-Cu         = Material(np.loadtxt('%sCu_JC.txt'% data_location))       # Johnson Christy
-Cu_Palik   = Material(np.loadtxt('%sCu_Palik.txt'% data_location))    # Palik
+Au = Material(np.loadtxt('%sAu_JC.txt'% data_location))
+# Johnson Christy
+Au_Palik = Material(np.loadtxt('%sAu_Palik.txt'% data_location))
+# Palik
+Ag = Material(np.loadtxt('%sAg_JC.txt'% data_location))
+# Johnson Christy
+Ag_Palik = Material(np.loadtxt('%sAg_Palik.txt'% data_location))
+# Palik
+Cu = Material(np.loadtxt('%sCu_JC.txt'% data_location))
+# Johnson Christy
+Cu_Palik = Material(np.loadtxt('%sCu_Palik.txt'% data_location))
+# Palik
 
-# Drude model - need to give [omega_plasma, omega_gamma, eplison_infinity]
-Au_drude   = Material([1.36e16, 1.05e14, 9.5])  # Johnson Christy
+
+# Drude model
+# Need to provide [omega_plasma, omega_gamma, eplison_infinity]
+Au_drude = Material([1.36e16, 1.05e14, 9.5])
+# Johnson Christy
+
+
+# Less Validated
+CH3NH3PbI3 = Material(np.loadtxt('%sCH3NH3PbI3.txt'% data_location))
+# doi:10.1021/jz502471h - EPFL
+Sb2S3_ANU2014 = Material(np.loadtxt('%sSb2S3_ANU2014.txt'% data_location))
+# measured at Australian National Uni.
+Sb2S3_ANU2015 = Material(np.loadtxt('%sSb2S3_ANU2015.txt'% data_location))
+# measured at Australian National Uni.
+GO = Material(np.loadtxt('%sGO.txt'% data_location))
+# measured at Swinbourne Uni.
+
+# SnO2       = Material(np.loadtxt('%sSnO2.txt'% data_location))
+# Spiro      = Material(np.loadtxt('%sSpiro.txt'% data_location))
+# Spiro_nk   = Material(np.loadtxt('%sSpiro_nk_Filipic.txt'% data_location))
+
+# Glass      = Material(np.loadtxt('%sSoda_lime_glass_nk_Chen.txt'% data_location))
+# Low_Fe_Glass = Material(np.loadtxt('%sLow_Fe_Glass_Pil.txt'% data_location))
+# FTO_Wenger = Material(np.loadtxt('%sFTO_Wenger.txt'% data_location))
+# FTO_Wengerk5 = Material(np.loadtxt('%sFTO_Wengerk5.txt'% data_location))
+# Al2O3_PV =  Material(np.loadtxt('%sAl2O3_PV.txt'% data_location))
+# SiON_Low = Material(np.loadtxt('%sSiON_Low.txt'% data_location))
+# SiON_High = Material(np.loadtxt('%sSiON_High.txt'% data_location))
+# ZnS = Material(np.loadtxt('%sZnS.txt'% data_location))
+# AlN_PV        = Material(np.loadtxt('%sAlN_PV.txt'% data_location))

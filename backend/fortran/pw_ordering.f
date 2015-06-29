@@ -17,7 +17,7 @@ C
       complex*16, dimension(:), allocatable :: beta_z_pw
       integer*8 ui
       integer*8 px, py, s, s2
-      double precision vec_kx, vec_ky, d
+      double precision vec_kx, vec_ky, d, dy
       double precision bloch1, bloch2, pi, alpha, beta
       complex*16 z_tmp
 C
@@ -42,11 +42,12 @@ C
       endif
 C
       d = lat_vecs(1,1)
+      dy = lat_vecs(2,2)
       pi = 3.141592653589793d0
       bloch1 = bloch_vec(1)
       bloch2 = bloch_vec(2)
       vec_kx = 2.0d0*pi/d
-      vec_ky = 2.0d0*pi/d
+      vec_ky = 2.0d0*pi/dy
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C     Ordering

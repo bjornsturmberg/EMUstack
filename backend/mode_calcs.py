@@ -45,7 +45,9 @@ class Modes(object):
 
     def air_ref(self):
         """ Return an :Anallo: for air for the same :Light: as this. """
-        return self.light._air_ref(self.structure.period, self.structure.world_1d)
+        return self.light._air_ref(self.structure.period,
+                                   self.structure.period_y,
+                                   self.structure.world_1d)
 
     def calc_1d_grating_orders(self, max_order):
         """ Return the grating order indices px and py, unsorted. """
@@ -107,7 +109,8 @@ class Anallo(Modes):
 
     def calc_kz(self):
         """ Return a sorted 1D array of grating orders' kz. """
-        d = 1  # TODO: are lx, ly relevant here??
+        d = 1
+        dy = self.structure.period_y / self.structure.period
 
         if self.structure.world_1d is True:
             # Calculate vectors of pxs
@@ -127,7 +130,7 @@ class Anallo(Modes):
             pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
             alpha0, beta0 = self.k_pll_norm()
             alphas = alpha0 + pxs * 2 * pi / d
-            betas = beta0 + pys * 2 * pi / d
+            betas = beta0 + pys * 2 * pi / dy
             self.alphas = alphas
             self.betas = betas
             k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
@@ -147,7 +150,7 @@ class Anallo(Modes):
             elif self.structure.world_1d is False:
                 alpha0, beta0 = (1-1e-9)*self.k_pll_norm()
                 alphas = alpha0 + pxs * 2 * pi / d
-                betas = beta0 + pys * 2 * pi / d
+                betas = beta0 + pys * 2 * pi / dy
                 self.alphas = alphas
                 self.betas = betas
                 k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
@@ -255,12 +258,13 @@ class Simmo(Modes):
         self.mode_pol = None
 
     def calc_modes(self, num_BMs=None):
-        """ Run a Fortran FEM caluculation to find the modes of a \
+        """ Run a Fortran FEM calculation to find the modes of a \
         structured layer. """
         st = self.structure
         wl = self.light.wl_nm
         self.n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl),
-                                st.inclusion_b.n(wl)])
+                                st.inclusion_b.n(wl), st.inclusion_c.n(wl),
+                                st.inclusion_d.n(wl), st.inclusion_e.n(wl)])
         self.n_effs = self.n_effs[:self.structure.nb_typ_el]
         if self.structure.loss is False:
             self.n_effs = self.n_effs.real
@@ -297,7 +301,7 @@ class Simmo(Modes):
             shift = 1.1*max_n**2 * k_0**2
         else:
             shift = 1.1*max_n**2 * k_0**2  \
-            - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
+                - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
 
         if FEM_debug == 1:
             print 'shift', shift
@@ -318,15 +322,16 @@ class Simmo(Modes):
                 num_pw_per_pol_2d = pxs.size
 
             try:
-                struct = self.structure
                 resm = EMUstack.calc_modes_1d(self.wl_norm(), self.num_BMs,
-                    self.max_order_PWs, struct.nb_typ_el, struct.n_msh_pts,
-                    struct.n_msh_el, struct.table_nod,
-                    struct.type_el, struct.x_arr, itermax, FEM_debug,
-                    struct.mesh_file, self.n_effs, self.k_pll_norm()[0],
-                    self.k_pll_norm()[1], shift, struct.plotting_fields,
-                    struct.plot_real, struct.plot_imag, struct.plot_abs,
-                    num_pw_per_pol, num_pw_per_pol_2d, world_1d )
+                    self.max_order_PWs, self.structure.nb_typ_el,
+                    self.structure.n_msh_pts, self.structure.n_msh_el,
+                    self.structure.table_nod, self.structure.type_el,
+                    self.structure.x_arr, itermax, FEM_debug,
+                    self.structure.mesh_file, self.n_effs,
+                    self.k_pll_norm()[0], self.k_pll_norm()[1], shift,
+                    self.structure.plotting_fields, self.structure.plot_real,
+                    self.structure.plot_imag, self.structure.plot_abs,
+                    num_pw_per_pol, num_pw_per_pol_2d, world_1d)
 
                 self.k_z, J, J_dag, J_2d, J_dag_2d, self.sol1 = resm
 
@@ -351,27 +356,33 @@ class Simmo(Modes):
             # In theory could do some python-based preprocessing
             # on the mesh file to work out RAM requirements
             cmplx_max = 2**27  # 30
+            real_max = 2**23
+            int_max = 2**22
 
             try:
                 resm = EMUstack.calc_modes_2d(
-                    self.wl_norm(), self.num_BMs, self.max_order_PWs, FEM_debug,
-                    self.structure.mesh_file, self.n_msh_pts, self.n_msh_el,
-                    self.structure.nb_typ_el, self.n_effs, self.k_pll_norm(),
-                    shift, self.E_H_field, i_cond, itermax,
+                    self.wl_norm(), self.num_BMs, self.max_order_PWs,
+                    FEM_debug, self.structure.mesh_file, self.n_msh_pts,
+                    self.n_msh_el, self.structure.nb_typ_el, self.n_effs,
+                    self.k_pll_norm(), shift, self.E_H_field, i_cond, itermax,
                     self.structure.plotting_fields, self.structure.plot_real,
                     self.structure.plot_imag, self.structure.plot_abs,
-                    num_pw_per_pol, cmplx_max)
+                    num_pw_per_pol, cmplx_max, real_max, int_max)
 
                 self.k_z, J, J_dag, self.sol1, self.mode_pol, \
                 self.table_nod, self.type_el, self.x_arr = resm
-                self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+                # self.J, self.J_dag = np.mat(J), np.mat(J_dag)
+
+                area = self.structure.period * self.structure.period_y
+                area_norm = area/self.structure.period**2
+                self.J, self.J_dag = np.mat(J)/area_norm, np.mat(J_dag)
 
             except KeyboardInterrupt:
                 print "\n\n2D FEM routine calc_modes_2d",\
                 "interrupted by keyboard.\n\n"
 
         else:
-            raise ValueError,  "NanoStruct layer must have periodicity of \
+            raise ValueError, "NanoStruct layer must have periodicity of \
                 either '1D_array' or '2D_array'."
 
         if not self.structure.plot_field_conc:
@@ -441,7 +452,7 @@ def r_t_mat_anallo(an1, an2):
     """
     if len(an1.k_z) != len(an2.k_z):
         raise ValueError, "Need the same number of plane waves in \
-        Anallos %(an1)s and %(an2)s" % {'an1' : an1, 'an2' : an2}
+        Anallos %(an1)s and %(an2)s" % {'an1': an1, 'an2': an2}
 
     Z1 = an1.Z()
     Z2 = an2.Z()

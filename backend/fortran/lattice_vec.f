@@ -1,7 +1,7 @@
 c
 c***********************************************************************
 c
-      subroutine lattice_vec (npt, x, lat_vecs)
+      subroutine lattice_vec (npt, x, lat_vecs, debug)
 c
 c***********************************************************************
 c
@@ -22,7 +22,6 @@ c
       double precision tol
       integer*8 i, n1, n2, debug
 c
-      debug = 0
       x_min = x(1,1)
       x_max = x(1,1)
       do i=1,npt

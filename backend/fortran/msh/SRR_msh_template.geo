@@ -4,6 +4,8 @@
 d = 1; // grating period
 
 d_in_nm  = 0;
+dy_in_nm = 0;
+dy = dy_in_nm/d_in_nm;
 lvert_nm = 0;
 lhori_nm = 0;
 width_nm = 0;
@@ -16,7 +18,7 @@ lc = 0;
 lc2 = lc/1; // on SRR edgesq
 lc3 = lc/1; //in centre of SRR
 
-hy = d; // Thickness: Squre profile => hy=d
+hy = dy; // Thickness: Squre profile => hy=d
 hx = 0.;
 
 Point(1) = {0, 0, 0, lc};

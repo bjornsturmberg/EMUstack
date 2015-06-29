@@ -65,6 +65,7 @@ def clear_previous():
         except:
             pass
 
+
 def zeros_int_str(zero_int):
     """ Convert integer into string with '0' in place of ' '. """
     # if zero_int == 0:
@@ -76,10 +77,12 @@ def zeros_int_str(zero_int):
     fmt_string = string.replace(' ','0')
     return fmt_string
 
+
 def tick_function(energies):
     """ Convert energy in eV into wavelengths in nm """
     wls = Plancks_h*speed_c/(energies*charge_e)*1e9
     return wls
+
 
 def max_n(stacks_list):
     """ Find maximum refractive index n in stacks_list. """
@@ -94,6 +97,7 @@ def max_n(stacks_list):
                 ns.append(l.structure.inclusion_a.n(wl))
                 ns.append(l.structure.inclusion_b.n(wl))
     return np.real(np.max(ns))
+
 
 def gen_params_string(stack, layer=1):
     """ Generate the string of simulation info that is to be printed \
@@ -298,6 +302,7 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
     else:
         return
 
+
 def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
     params_2_print, stack_label, add_name, save_pdf, save_txt, plt_eV,
     set_y_lim):
@@ -382,6 +387,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
         if save_pdf == True:
             plt.savefig('%(s)s_stack%(bon)s%(add)s'% \
                 {'s': spectra_name, 'bon': stack_label, 'add' : add_name})
+
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     params_2_print, stack_label, add_name, plt_eV, set_y_lim):
@@ -554,6 +560,7 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n,
         extinction_plot(t_tot, wavelengths, params_2_print, stack_label, add_name)
     if ult_eta == True or J_sc == True: del active_abs
     return
+
 
 def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths,
     params_2_print, stack_label, add_name, period, sub_n):
@@ -756,6 +763,7 @@ def t_r_a_write_files(stacks_list, wavelengths, stack_label=1,
     layers_print('Lay_Trans',  t_list, wavelengths, total_h, stack_label)
     layers_print('Lay_Reflec', r_list, wavelengths, total_h, stack_label)
 
+
 def layers_print(spectra_name, spec_list, wavelengths, total_h,
     stack_label=1, add_name=''):
     """ Save spectra to text files.
@@ -808,6 +816,7 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label,
         fontsize = title_font)
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% \
         {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+
 
 def EOT_plot(stacks_list, wavelengths, pol='TM', params_layer=1,
     add_name='', savetxt=False):
@@ -994,6 +1003,7 @@ def omega_plot(stacks_list, wavelengths, params_layer=1, stack_label=1):
     # Uncomment if you wish to save the dispersion data of a simulation to file.
     # np.savetxt('Disp_Data_stack%(bon)i.txt'% {'bon' : stack_label}, av_array, fmt = '%18.11f')
 
+
 def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths,
     params_layer=1, stack_label=1):
     """ Plots the energy concentration (epsilon E_cyl / epsilon E_cell) of given layer.
@@ -1113,6 +1123,7 @@ def vis_scat_mats(scat_mat, nu_prop_PWs=0, wl=None, add_name='',
 
     plt.suptitle('Scattering Matrices' + add_name)
     plt.savefig('Scat_mat' + add_name)
+
 
 def vis_matrix(scat_mat, add_name='', max_scale=None, only_real=False):
     """ Plot given matrix as a greyscale image.
@@ -1339,6 +1350,7 @@ def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
         print "BM_amplitudes only works in NanoStruct layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
 
+
 def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
     lay_interest=0, up_and_down=True, add_height=None, add_name='',
     save_pdf=True, save_npz=False, save_txt=False):
@@ -1473,6 +1485,7 @@ def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
     except ValueError:
         print "PW_amplitudes only works in ThinFilm layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
+
 
 def evanescent_merit(stacks_list, xvalues=None, chosen_PWs=None,
     lay_interest=0, add_height=None, add_name='',
@@ -2027,6 +2040,7 @@ def fields_interpolator_in_plane(pstack, lay_interest=1, z_value=0.1):
     # plot fields in Plane Wave Basis using python routine.
     else:
         raise Exception("Not a NanoStruct Layer")
+
 
 def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                       semi_inf_height=1.0, gradient=None, no_incoming=False, add_name='',

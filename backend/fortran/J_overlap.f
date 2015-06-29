@@ -1,12 +1,12 @@
 C  Calculate the Projection integral of the conjugate Plane Waves & Bloch Modes
 C
-      subroutine J_overlap(nval, nel, npt, nnodes, 
+      subroutine J_overlap(nval, nel, npt, nnodes,
      *  type_el, table_nod, x, sol,
      *  lat_vecs, lambda, freq, overlap_J, neq_PW,
      *  bloch_vec, index_pw_inv, PrintAll,
      *  ordre_ls)
 C
-      implicit none 
+      implicit none
 C  input output parameters
       integer*8 nval, nel, npt, nnodes
       integer*8 type_el(nel)
@@ -34,7 +34,7 @@ C  variables for quadrature interpolation
       double precision wq(nquad_max)
       double precision xq(nquad_max), yq(nquad_max)
       double precision xx(2), xx_g(2), ww, det
-      double precision mat_B(2,2), mat_T(2,2), d
+      double precision mat_B(2,2), mat_T(2,2), d, dy
 C
       integer alloc_stat
       complex*16, dimension(:,:), allocatable :: PlaneW_RK
@@ -56,7 +56,7 @@ C
         write(ui,*) "overlap_J: nnodes should be equal to 6!"
         write(ui,*) "overlap_J: Aborting..."
         stop
-      endif 
+      endif
       allocate(PlaneW_RK(neq_PW,2), STAT=alloc_stat)
       if (alloc_stat /= 0) then
         write(*,*) "J_overlap: Mem. allocation is unseccesfull"
@@ -97,15 +97,16 @@ C set up final solution matrix
           overlap_K(i,j) = 0.0D0
           overlap_E(i,j) = 0.0D0
         enddo
-      enddo 
+      enddo
 C
       ii = dcmplx(0.0d0, 1.0d0)
       d = lat_vecs(1,1)
+      dy = lat_vecs(2,2)
       pi = 3.141592653589793d0
       bloch1 = bloch_vec(1)
       bloch2 = bloch_vec(2)
       vec_kx = 2.0d0*pi/d
-      vec_ky = 2.0d0*pi/d
+      vec_ky = 2.0d0*pi/dy
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
@@ -127,7 +128,7 @@ C
           xx(2) = yq(iq)
           ww = wq(iq)
           call phi2_2d_mat_J(xx, phi2_list)
-          call jacobian_p1_2d(xx, xel, nnodes, 
+          call jacobian_p1_2d(xx, xel, nnodes,
      *               xx_g, det, mat_B, mat_T)
 C
 C     prefactors of plane waves order s(px,py)
@@ -157,7 +158,7 @@ C         y component
             enddo
 C
             coeff_1 = ww * ABS(det)      !!!!!!!!!!!!!!!!   * pp(typ_e)
-            do s=1,neq_PW 
+            do s=1,neq_PW
               do trans=1,2              ! transverse field components
                 K_tmp(trans) = PlaneW_RK(s,trans)
                 E_tmp(trans) = PlaneW_RE(s,trans)
@@ -168,7 +169,7 @@ C
                 enddo
                 do ltest=1,nnodes
                   do trans=1,2          ! transverse field components
-                    vec_phi(trans) = vec_phi(trans) + 
+                    vec_phi(trans) = vec_phi(trans) +
      *                  sol(trans,ltest,n,iel) * phi2_list(ltest)
                   enddo
                 enddo
@@ -183,7 +184,7 @@ C
         enddo
       enddo
 C
-C  Save as J_mat = | J_E |                
+C  Save as J_mat = | J_E |
 C                  | J_K |
       do n = 1, nval
         do twos = 1, 2*neq_PW
@@ -192,7 +193,7 @@ C                  | J_K |
           else
             overlap_J(twos,n) = overlap_K(twos-neq_PW,n)
           endif
-        enddo     
+        enddo
       enddo
 C
 CCCCCCCCCCCCCCCCC	  save results   CCCCCCCCCCCCCCCC
@@ -202,16 +203,16 @@ C
       open (unit=35, file="Matrices/J_mat.txt", status='unknown')
       open (unit=33, file="Matrices/J_K.txt", status='unknown')
       open (unit=32, file="Matrices/J_E.txt", status='unknown')
-C      write(34,131) lambda, freq      
-      write(35,131) lambda, freq     
-      write(33,131) lambda, freq   
-      write(32,131) lambda, freq 
+C      write(34,131) lambda, freq
+      write(35,131) lambda, freq
+      write(33,131) lambda, freq
+      write(32,131) lambda, freq
 C
       do n = 1, nval
         do twos = 1, 2*neq_PW
           write(35,132) twos,n,overlap_J(twos,n),
      *         abs(overlap_J(twos,n))
-        enddo    
+        enddo
       enddo
       do n=1,nval
         do s=1,neq_PW
@@ -220,10 +221,10 @@ C
         enddo
       enddo
 C
-      close(35)    
+      close(35)
       close(34)
       close(33)
-      close(32) 
+      close(32)
 C
 131   format(2(f12.4))
 132   format(2(I4),2(g25.17),g18.10)
@@ -241,4 +242,4 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
       return
-      end 
+      end
