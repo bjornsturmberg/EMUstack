@@ -30,6 +30,7 @@ from fortran import EMUstack
 _interfaces_i_have_known = {}
 pi = np.pi
 
+
 class Modes(object):
     """ Super-class from which Simmo and Anallo inherit common functionality. """
     def k_pll_norm(self):
@@ -228,6 +229,9 @@ class Anallo(Modes):
             inc_amp[spec_TE] = 1
         elif 'TM' == pol:
             inc_amp[spec_TM] = 1
+        elif 'un' == pol:
+            inc_amp[spec_TE] = 1/np.sqrt(2.)
+            inc_amp[spec_TM] = 1/np.sqrt(2.)
         elif 'R Circ' == pol:
             inc_amp[spec_TE] = 1/np.sqrt(2.)
             inc_amp[spec_TM] = +1j/np.sqrt(2.)
