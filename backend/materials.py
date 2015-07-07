@@ -86,7 +86,11 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    MoO3            |            |    Sb2S3_ANU2015       |
         +--------------------+------------+------------------------+
-        |                    |            |    GO                  |
+        |                    |            |    GO_2014             |
+        +--------------------+------------+------------------------+
+        |                    |            |    GO_2015             |
+        +--------------------+------------+------------------------+
+        |                    |            |    rGO_2015            |
         +--------------------+------------+------------------------+
 
 
@@ -173,6 +177,10 @@ FeS2 = Material(np.loadtxt('%sFeS2.txt'% data_location))
 Zn3P2 = Material(np.loadtxt('%sZn3P2.txt'% data_location))
 Sb2S3 = Material(np.loadtxt('%sSb2S3.txt'% data_location))
 AlGaAs = Material(np.loadtxt('%sAlGaAs.txt'% data_location))
+ZnS = Material(np.loadtxt('%sZnS.txt'% data_location))
+SnO2 = Material(np.loadtxt('%sSnO2.txt'% data_location))
+Glass = Material(np.loadtxt('%sSoda_lime_glass_nk_Pil.txt'% data_location))
+# PV lighthouse, unpublished
 Al2O3 = Material(np.loadtxt('%sAl2O3.txt'% data_location))
 # http://refractiveindex.info/?shelf=main&book=Al2O3&page=Malitson-o
 GaAs = Material(np.loadtxt('%sGaAs.txt'% data_location))
@@ -226,19 +234,32 @@ Sb2S3_ANU2014 = Material(np.loadtxt('%sSb2S3_ANU2014.txt'% data_location))
 # measured at Australian National Uni.
 Sb2S3_ANU2015 = Material(np.loadtxt('%sSb2S3_ANU2015.txt'% data_location))
 # measured at Australian National Uni.
-GO = Material(np.loadtxt('%sGO.txt'% data_location))
-# measured at Swinbourne Uni.
+GO_2014 = Material(np.loadtxt('%sGO_2014.txt'% data_location))
+# Graphene Oxide measured at Swinbourne Uni.
+GO_2015 = Material(np.loadtxt('%sGO_2015.txt'% data_location))
+# Graphene Oxide measured at Swinbourne Uni.
+rGO_2015 = Material(np.loadtxt('%srGO_2015.txt'% data_location))
+# reduced Graphene Oxide measured at Swinbourne Uni.
+SiON_Low = Material(np.loadtxt('%sSiON_Low.txt'% data_location))
+# measured at Australian National Uni.
+SiON_High = Material(np.loadtxt('%sSiON_High.txt'% data_location))
+# measured at Australian National Uni.
 
-# SnO2       = Material(np.loadtxt('%sSnO2.txt'% data_location))
-# Spiro      = Material(np.loadtxt('%sSpiro.txt'% data_location))
-# Spiro_nk   = Material(np.loadtxt('%sSpiro_nk_Filipic.txt'% data_location))
-
-# Glass      = Material(np.loadtxt('%sSoda_lime_glass_nk_Chen.txt'% data_location))
-# Low_Fe_Glass = Material(np.loadtxt('%sLow_Fe_Glass_Pil.txt'% data_location))
-# FTO_Wenger = Material(np.loadtxt('%sFTO_Wenger.txt'% data_location))
-# FTO_Wengerk5 = Material(np.loadtxt('%sFTO_Wengerk5.txt'% data_location))
-# Al2O3_PV =  Material(np.loadtxt('%sAl2O3_PV.txt'% data_location))
-# SiON_Low = Material(np.loadtxt('%sSiON_Low.txt'% data_location))
-# SiON_High = Material(np.loadtxt('%sSiON_High.txt'% data_location))
-# ZnS = Material(np.loadtxt('%sZnS.txt'% data_location))
-# AlN_PV        = Material(np.loadtxt('%sAlN_PV.txt'% data_location))
+Spiro = Material(np.loadtxt('%sSpiro.txt'% data_location))
+# M. Filipic et al, "CH3NH3PbI3 perovskite / silicon tandem solar cells: characterization based optical simulations", Optics Express 23 (2015)
+Spiro_nk = Material(np.loadtxt('%sSpiro_nk_Filipic.txt'% data_location))
+# Extended Filipic data
+Low_Fe_Glass = Material(np.loadtxt('%sLow_Fe_Glass_Pil.txt'% data_location))
+# PV lighthouse, unpublished Pilkington data
+FTO_Wenger = Material(np.loadtxt('%sFTO_Wenger.txt'% data_location))
+# doi:10.1021/jp111565q
+FTO_Wengerk5 = Material(np.loadtxt('%sFTO_Wengerk5.txt'% data_location))
+# doi:10.1021/jp111565q
+Al2O3_PV = Material(np.loadtxt('%sAl2O3_PV.txt'% data_location))
+# PV lighthouse
+AlN_PV = Material(np.loadtxt('%sAlN_PV.txt'% data_location))
+# PV lighthouse doi:10.1002/pssr.201307153
+Perovskite_00 = Material(np.loadtxt('%sPerovskite_E_u_00.txt'% data_location))
+# doi:10.1021/jz502471h
+Perovskite = Material(np.loadtxt('%sPerovskite_E_u_0485.txt'% data_location))
+# doi:10.1021/jz502471h, with extended urbach tail for parasitic absorption
