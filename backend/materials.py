@@ -54,15 +54,17 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    CuO             |  Ag_Palik  |   ZnO                  |
         +--------------------+------------+------------------------+
-        |    CdTe            |  Cu        |                        |
+        |    CdTe            |  Cu        |   SnO2                 |
         +--------------------+------------+------------------------+
-        |    FeS2            |  Cu_Palik  |                        |
+        |    FeS2            |  Cu_Palik  |   FTO_Wenger           |
         +--------------------+------------+------------------------+
-        |    Zn3P2           |            |                        |
+        |    Zn3P2           |            |   FTO_Wengerk5         |
         +--------------------+------------+------------------------+
         |    AlGaAs          |            |                        |
         +--------------------+------------+------------------------+
         |    Al2O3           |            |                        |
+        +--------------------+------------+------------------------+
+        |    Al2O3_PV        |            |                        |
         +--------------------+------------+------------------------+
         |    GaAs            |            |                        |
         +--------------------+------------+------------------------+
@@ -72,19 +74,33 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    MgF2            |            |   H2O                  |
         +--------------------+------------+------------------------+
-        |    InP             |            |                        |
+        |    InP             |            |   Glass                |
         +--------------------+------------+------------------------+
-        |    InAs            |            |                        |
+        |    InAs            |            |   Spiro                |
         +--------------------+------------+------------------------+
-        |    GaP             |            | **Experimental** incl. |
+        |    GaP             |            |   Spiro_nk             |
         +--------------------+------------+------------------------+
-        |    Ge              |            |    CH3NH3PbI3          |
+        |    Ge              |            |                        |
         +--------------------+------------+------------------------+
-        |    AlN             |            |    Sb2S3               |
+        |    AlN             |            |                        |
         +--------------------+------------+------------------------+
-        |    GaN             |            |    Sb2S3_ANU2014       |
+        |    GaN             |            |                        |
         +--------------------+------------+------------------------+
-        |    MoO3            |            |    Sb2S3_ANU2015       |
+        |    MoO3            |            |                        |
+        +--------------------+------------+------------------------+
+        |    ZnS             |            |                        |
+        +--------------------+------------+------------------------+
+        |    AlN_PV          |            |                        |
+        +--------------------+------------+------------------------+
+        |                    |            | **Experimental** incl. |
+        +--------------------+------------+------------------------+
+        |                    |            |    CH3NH3PbI3          |
+        +--------------------+------------+------------------------+
+        |                    |            |    Sb2S3               |
+        +--------------------+------------+------------------------+
+        |                    |            |    Sb2S3_ANU2014       |
+        +--------------------+------------+------------------------+
+        |                    |            |    Sb2S3_ANU2015       |
         +--------------------+------------+------------------------+
         |                    |            |    GO_2014             |
         +--------------------+------------+------------------------+
@@ -92,8 +108,16 @@ class Material(object):
         +--------------------+------------+------------------------+
         |                    |            |    rGO_2015            |
         +--------------------+------------+------------------------+
-
-
+        |                    |            |    SiON_Low            |
+        +--------------------+------------+------------------------+
+        |                    |            |    SiON_High           |
+        +--------------------+------------+------------------------+
+        |                    |            |    Low_Fe_Glass        |
+        +--------------------+------------+------------------------+
+        |                    |            |    Perovskite_00       |
+        +--------------------+------------+------------------------+
+        |                    |            |    Perovskite          |
+        +--------------------+------------+------------------------+
     """
     def __init__(self, n):
         if () == np.shape(n):
@@ -183,6 +207,8 @@ Glass = Material(np.loadtxt('%sSoda_lime_glass_nk_Pil.txt'% data_location))
 # PV lighthouse, unpublished
 Al2O3 = Material(np.loadtxt('%sAl2O3.txt'% data_location))
 # http://refractiveindex.info/?shelf=main&book=Al2O3&page=Malitson-o
+Al2O3_PV = Material(np.loadtxt('%sAl2O3_PV.txt'% data_location))
+# PV lighthouse
 GaAs = Material(np.loadtxt('%sGaAs.txt'% data_location))
 # http://www.filmetrics.com/refractive-index-database/GaAs/Gallium-Arsenide
 InGaAs = Material(np.loadtxt('%sInGaAs.txt'% data_location))
@@ -204,7 +230,16 @@ Ge = Material(np.loadtxt('%sGe.txt'% data_location))
 # http://www.filmetrics.com/refractive-index-database/Ge/Germanium
 MoO3 = Material(np.loadtxt('%sMoO3.txt'% data_location))
 # doi:10.1103/PhysRevB.88.115141
-
+Spiro = Material(np.loadtxt('%sSpiro.txt'% data_location))
+# M. Filipic et al, "CH3NH3PbI3 perovskite / silicon tandem solar cells: characterization based optical simulations", Optics Express 23 (2015)
+Spiro_nk = Material(np.loadtxt('%sSpiro_nk_Filipic.txt'% data_location))
+# Extended Filipic data
+FTO_Wenger = Material(np.loadtxt('%sFTO_Wenger.txt'% data_location))
+# doi:10.1021/jp111565q
+FTO_Wengerk5 = Material(np.loadtxt('%sFTO_Wengerk5.txt'% data_location))
+# doi:10.1021/jp111565q
+AlN_PV = Material(np.loadtxt('%sAlN_PV.txt'% data_location))
+# PV lighthouse doi:10.1002/pssr.201307153
 
 # Metals
 Au = Material(np.loadtxt('%sAu_JC.txt'% data_location))
@@ -245,20 +280,8 @@ SiON_Low = Material(np.loadtxt('%sSiON_Low.txt'% data_location))
 SiON_High = Material(np.loadtxt('%sSiON_High.txt'% data_location))
 # measured at Australian National Uni.
 
-Spiro = Material(np.loadtxt('%sSpiro.txt'% data_location))
-# M. Filipic et al, "CH3NH3PbI3 perovskite / silicon tandem solar cells: characterization based optical simulations", Optics Express 23 (2015)
-Spiro_nk = Material(np.loadtxt('%sSpiro_nk_Filipic.txt'% data_location))
-# Extended Filipic data
 Low_Fe_Glass = Material(np.loadtxt('%sLow_Fe_Glass_Pil.txt'% data_location))
 # PV lighthouse, unpublished Pilkington data
-FTO_Wenger = Material(np.loadtxt('%sFTO_Wenger.txt'% data_location))
-# doi:10.1021/jp111565q
-FTO_Wengerk5 = Material(np.loadtxt('%sFTO_Wengerk5.txt'% data_location))
-# doi:10.1021/jp111565q
-Al2O3_PV = Material(np.loadtxt('%sAl2O3_PV.txt'% data_location))
-# PV lighthouse
-AlN_PV = Material(np.loadtxt('%sAlN_PV.txt'% data_location))
-# PV lighthouse doi:10.1002/pssr.201307153
 Perovskite_00 = Material(np.loadtxt('%sPerovskite_E_u_00.txt'% data_location))
 # doi:10.1021/jz502471h
 Perovskite = Material(np.loadtxt('%sPerovskite_E_u_0485.txt'% data_location))
