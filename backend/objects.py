@@ -615,10 +615,10 @@ class NanoStruct(object):
 
             if self.diameter6 > 0:
                 msh_name = '%(d)s_%(di)s_%(dis)s_%(diss)s_%(disss)s_%(dissss)s_%(disssss)s' % {
-               'd': dec_float_str(self.period), 'di': dec_float_str(self.diameter1),
-               'dis': dec_float_str(self.diameter2), 'diss': dec_float_str(self.diameter3),
-               'disss': dec_float_str(self.diameter4), 'dissss': dec_float_str(self.diameter5),
-               'disssss': dec_float_str(self.diameter6)}
+                'd': dec_float_str(self.period), 'di': dec_float_str(self.diameter1),
+                'dis': dec_float_str(self.diameter2), 'diss': dec_float_str(self.diameter3),
+                'disss': dec_float_str(self.diameter4), 'dissss': dec_float_str(self.diameter5),
+                'disssss': dec_float_str(self.diameter6)}
                 # End-points of the elements
                 rad_1 = self.diameter1/(2.0*self.period)
                 rad_2 = self.diameter2/(2.0*self.period)

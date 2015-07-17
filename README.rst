@@ -44,6 +44,48 @@ TESTING
 EMUstack comes with a range of tests to ensure it is running correctly. These are found in the EMUstack/tests directories.
 
 
+FILE MAP
+--------
+
+**backend** contains all the modules that make up EMUstack.
+
+____ **data** contains refractive index data for materials and solar irradiance spectra.
+
+____ **fortran** the Fortran code for the FEM solvers and the scattering matrix calculations.
+
+________ **lib** libraries used by the Fortran routines.
+
+________ **msh** location of Gmsh FEM mesh files, including template files.
+
+**docs** contains the documentation.
+
+____ **build** the documentation you want to read.
+
+________ **doctrees** created by sphynix in compilation of docs.
+
+________ **html** in web format.
+
+________ **latex** in pdf format.
+
+____ **source** the documentation you want to edit.
+
+**examples** contains example simulations. Numbered files form a tutorial.
+
+**reload_simo** contains python script demonstrating how to load a .npz file.
+
+**tests** test files, best run with nosetests.
+
+____ **ref** reference data for tests.
+
+*dependencies.txt* list of linux packages needed to run EMUstack.
+
+*LICENSE.txt* GNU GPL software license.
+
+*README.rst* this file...
+
+*setup.sh* bash script that compiles Fortran code and runs tests.
+
+
 HELP!
 -----
 
