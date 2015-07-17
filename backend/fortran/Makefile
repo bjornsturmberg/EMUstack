@@ -4,7 +4,7 @@ COMPILER_VENDOR = gnu95
 #COMPILER_VENDOR = intelem
 
 SUBROUTINES_FOR_PYTHON = py_calc_modes.f py_calc_modes_1d.f conv_gmsh.f \
-	gmsh_plot_field_3d.f gmsh_plot_field.f gmsh_plot_PW.f \
+	gmsh_plot_field_3d.f gmsh_plot_field.f gmsh_plot_PW.f field_value_plane.f \
 	gmsh_plot_slice.f
 
 LIB_LOCATION = lib

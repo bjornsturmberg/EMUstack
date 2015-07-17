@@ -1956,7 +1956,7 @@ def fields_interpolator_in_plane(pstack, lay_interest=1, z_value=0.1):
             vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
 
             # piling up of all the bloch modes to get all the fields
-            m_E = EMUstack.field_value_plane(meat.num_BM,
+            m_E = EMUstack.field_value_plane(meat.num_BMs,
                                              meat.n_msh_el, meat.n_msh_pts, nnodes,
                                              meat.structure.nb_typ_el,
                                              meat.table_nod, meat.type_el,
