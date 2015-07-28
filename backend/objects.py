@@ -1073,7 +1073,10 @@ class Light(object):
     """
     def __init__(self, wl_nm, max_order_PWs=2, k_parallel=None,
                  theta=None, phi=None, n_inc=1.):
-        self.wl_nm = float(wl_nm)
+        if np.imag(wl_nm) != 0:
+            self.wl_nm = complex(wl_nm)
+        else:
+            self.wl_nm = float(np.real(wl_nm))
         self._air_anallos = {}
         self.max_order_PWs = max_order_PWs
 

@@ -38,9 +38,9 @@ class Modes(object):
 
     def wl_norm(self):
         """ Return normalised wavelength (wl/period). """
-        wl = float(self.light.wl_nm) / self.structure.period
+        wl = self.light.wl_nm / self.structure.period
         # Avoid Wood Anomalies
-        if self.light.wl_nm % self.structure.period == 0:
+        if np.real(self.light.wl_nm) % self.structure.period == 0:
             wl += 1e-10
         return wl
 
@@ -120,7 +120,7 @@ class Anallo(Modes):
             # scattered PWs using the grating equation.
             alpha0, beta0 = self.k_pll_norm()
             alphas = alpha0 + pxs * 2 * pi / d
-            betas  = beta0
+            betas = beta0
             self.alphas = alphas
             self.betas = betas
             k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)

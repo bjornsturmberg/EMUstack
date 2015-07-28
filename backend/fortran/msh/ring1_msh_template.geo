@@ -7,9 +7,9 @@ ff = 0;
 d_in_nm = 0;
 dy_in_nm = 0;
 dy = dy_in_nm/d_in_nm;
-a1 = 0;
+a1 = 0; // outside radius
 radius1 = (a1/(2*d_in_nm))*d;
-a2 = 0;
+a2 = 0; // inside radius
 radius2 = (a2/(2*d_in_nm))*d;
 ellipticity = 0;
 square = 0;
@@ -107,8 +107,9 @@ Physical Line(54) = {3, 4};
 Physical Line(55) = {5, 6};
 Physical Line(56) = {7, 8};
 
-Physical Surface(1) = {32, 34, 36, 30, 44, 38, 40, 42};
+Physical Surface(1) = {32, 34, 36, 30};
 Physical Surface(2) = {46, 48, 50, 52};
+Physical Surface(3) = {44, 38, 40, 42};
 
 
 
