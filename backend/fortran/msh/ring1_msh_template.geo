@@ -40,10 +40,10 @@ Point(11) = {0,-hy/2, 0, lc};
 Point(12) = {-hx+d/2, -hy, 0, lc};
 Point(13) = {d, -hy/2, 0, lc};
 
-Point(14) = {-hx+d/2, -hy/2+(radius2-ellipticity*radius2), 0, lc2};
-Point(15) = {-hx+d/2-radius2, -hy/2, 0, lc2};
-Point(16) = {-hx+d/2, -hy/2-(radius2-ellipticity*radius2), 0, lc2};
-Point(17) = {-hx+d/2+radius2, -hy/2, 0, lc2};
+Point(14) = {-hx+d/2, -hy/2+(radius2-ellipticity*radius2), 0, lc3};
+Point(15) = {-hx+d/2-radius2, -hy/2, 0, lc3};
+Point(16) = {-hx+d/2, -hy/2-(radius2-ellipticity*radius2), 0, lc3};
+Point(17) = {-hx+d/2+radius2, -hy/2, 0, lc3};
 
 Line(1) = {1, 10};
 Line(2) = {10, 4};
@@ -116,14 +116,14 @@ Physical Surface(3) = {44, 38, 40, 42};
 EndIf
 If(square == 1)
 // square
-Point(150) = {-hx+d/2+radius1, -hy/2+radius1, 0,lc3};
-Point(151) = {-hx+d/2-radius1, -hy/2+radius1, 0,lc3};
-Point(152) = {-hx+d/2+radius1, -hy/2-radius1, 0,lc3};
-Point(153) = {-hx+d/2-radius1, -hy/2-radius1, 0,lc3};
-Point(154) = {-hx+d/2+radius2, -hy/2+radius2, 0,lc3};
-Point(155) = {-hx+d/2-radius2, -hy/2+radius2, 0,lc3};
-Point(156) = {-hx+d/2+radius2, -hy/2-radius2, 0,lc3};
-Point(157) = {-hx+d/2-radius2, -hy/2-radius2, 0,lc3};
+Point(150) = {-hx+d/2+radius1, -hy/2+radius1, 0,lc2};
+Point(151) = {-hx+d/2-radius1, -hy/2+radius1, 0,lc2};
+Point(152) = {-hx+d/2+radius1, -hy/2-radius1, 0,lc2};
+Point(153) = {-hx+d/2-radius1, -hy/2-radius1, 0,lc2};
+Point(154) = {-hx+d/2+radius2, -hy/2+radius2, 0,lc2};
+Point(155) = {-hx+d/2-radius2, -hy/2+radius2, 0,lc2};
+Point(156) = {-hx+d/2+radius2, -hy/2-radius2, 0,lc2};
+Point(157) = {-hx+d/2-radius2, -hy/2-radius2, 0,lc2};
 
 Line(21) = {151, 6};
 Line(22) = {6, 150};
