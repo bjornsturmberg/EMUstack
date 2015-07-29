@@ -40,7 +40,7 @@ class Modes(object):
         """ Return normalised wavelength (wl/period). """
         wl = self.light.wl_nm / self.structure.period
         # Avoid Wood Anomalies
-        if np.real(self.light.wl_nm) % self.structure.period == 0:
+        if self.light.wl_nm % self.structure.period == 0:
             wl += 1e-10
         return wl
 
