@@ -148,10 +148,10 @@ def gen_params_string(stack, layer=1):
 
 
 #### Standard plotting of spectra #############################################
-def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
+def t_r_a_plots(stacks_list, xvalues=None, xlabel='', params_layer=1,
     active_layer_nu=1, stack_label=1, ult_eta=False, J_sc=False,
     weight_spec=False, extinct=False, add_height=0, add_name='',
-    save_pdf=True, save_txt=False, set_y_lim=True):
+    save_pdf=True, save_txt=False, set_y_lim=True, label_eV=False):
     """ Plot t, r, a for each layer & in total.
 
         Args:
@@ -193,6 +193,8 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
                 files.
 
             set_y_lim  (bool): If True; set y limits to (0,1).
+
+            label_eV  (bool): If True; add energy label in eV.
     """
 
     height_list = stacks_list[0].heights_nm()[::-1]
@@ -200,10 +202,7 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
     params_2_print += '\n'r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4f, ' % num for num in height_list)
 
-    xlabel = 'xvalues'
-    plt_eV = False
-    if xvalues==None:
-        plt_eV = True
+    if xvalues == None:
         if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
             xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
             xlabel = r'$\lambda$ (nm)'
@@ -265,32 +264,37 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
     if save_txt is True or save_pdf is True:
         total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
         # Plot t,r,a for each layer.
-        layers_plot('Lay_Absorb', a_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt, plt_eV, set_y_lim)
-        layers_plot('Lay_Trans',  t_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt, plt_eV, set_y_lim)
-        layers_plot('Lay_Reflec', r_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt, plt_eV, set_y_lim)
+        layers_plot('Lay_Absorb', a_list, xvalues, xlabel, total_h,
+                    params_2_print, stack_label, add_name, save_pdf, save_txt,
+                    label_eV, set_y_lim)
+        layers_plot('Lay_Trans',  t_list, xvalues, xlabel, total_h,
+                    params_2_print, stack_label, add_name, save_pdf, save_txt,
+                    label_eV, set_y_lim)
+        layers_plot('Lay_Reflec', r_list, xvalues, xlabel, total_h,
+                    params_2_print, stack_label, add_name, save_pdf, save_txt,
+                    label_eV, set_y_lim)
 
     # Plot total t,r,a on a single plot.
     if save_pdf == True:
         plot_name = 'Total_Spectra'
-        total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel, \
-            params_2_print, stack_label, add_name, plt_eV, set_y_lim)
+        total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel,
+                       params_2_print, stack_label, add_name, label_eV,
+                       set_y_lim)
 
     if weight_spec == True:
         # Plot totals weighted by solar irradiance.
         Irrad_spec_file = '../backend/data/ASTMG173'
-        i_data          = np.loadtxt('%s.txt' % Irrad_spec_file)
-        i_spec          = np.interp(xvalues, i_data[:,0], i_data[:,3])
-        bandgap_wl      = xvalues[-1]
-        weighting  = i_spec/i_spec.max()*(xvalues/bandgap_wl)
+        i_data = np.loadtxt('%s.txt' % Irrad_spec_file)
+        i_spec = np.interp(xvalues, i_data[:,0], i_data[:,3])
+        bandgap_wl = xvalues[-1]
+        weighting = i_spec/i_spec.max()*(xvalues/bandgap_wl)
         a_weighted = a_tot*weighting
         t_weighted = t_tot*weighting
         r_weighted = r_tot*weighting
-        plot_name  = 'Weighted_Total_Spectra'
+        plot_name = 'Weighted_Total_Spectra'
         total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, xvalues,
-            xlabel, params_2_print, stack_label, add_name, plt_eV, set_y_lim)
+                       xlabel, params_2_print, stack_label, add_name, label_eV,
+                       set_y_lim)
 
     if extinct == True:
         extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
@@ -304,8 +308,8 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
 
 
 def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
-    params_2_print, stack_label, add_name, save_pdf, save_txt, plt_eV,
-    set_y_lim):
+                params_2_print, stack_label, add_name, save_pdf, save_txt,
+                label_eV, set_y_lim):
     """ Plots one type of spectrum across all layers.
 
         Is called from t_r_a_plots.
@@ -321,7 +325,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
         av_array = zip(xvalues, layer_spec, h_array)
         ax1 = fig.add_subplot(nu_layers, 1, i+1)
         ax1.plot(xvalues, layer_spec, linewidth=linesstrength)
-        if plt_eV == True:
+        if label_eV == True:
             ax2 = ax1.twiny()
             new_tick_values = np.linspace(10, 0.5, 20)
             new_tick_locations = tick_function(new_tick_values)
@@ -330,11 +334,12 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
             ax2.set_xticklabels(new_tick_labels)
             ax2.set_xlim((xvalues[0], xvalues[-1]))
         if i == 0:
-            if xlabel == r'$\lambda$ (nm)': ax2.set_xlabel('Energy (eV)')
+            if xlabel == r'$\lambda$ (nm)' and label_eV == True:
+                ax2.set_xlabel('Energy (eV)')
         elif i == nu_layers-1:
             ax1.set_xlabel(xlabel)
             ax1.set_ylabel('Total')
-        if i != 0 and plt_eV == True:
+        if i != 0 and label_eV == True:
             ax2.set_xticklabels( () )
         if i != nu_layers-1:
             ax1.set_xticklabels( () )
@@ -390,7 +395,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
 
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
-    params_2_print, stack_label, add_name, plt_eV, set_y_lim):
+    params_2_print, stack_label, add_name, label_eV, set_y_lim):
     """ Plots total t, r, a spectra on one plot.
 
         Is called from t_r_a_plots, t_r_a_plots_subs
@@ -402,7 +407,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     ax1.plot(xvalues, a_spec, linewidth=linesstrength)
     ax1.set_ylabel('Absorptance')
     ax1.set_xlim((xvalues[0], xvalues[-1]))
-    if plt_eV == True:
+    if label_eV == True:
         ax2 = ax1.twiny()
         new_tick_values = np.linspace(10, 0.5, 20)
         new_tick_locations = tick_function(new_tick_values)
@@ -410,8 +415,8 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
         ax2.set_xticks(new_tick_locations)
         ax2.set_xticklabels(new_tick_labels)
         ax2.set_xlim((xvalues[0], xvalues[-1]))
-    if xlabel == r'$\lambda$ (nm)':
-        ax2.set_xlabel('Energy (eV)')
+        if xlabel == r'$\lambda$ (nm)':
+            ax2.set_xlabel('Energy (eV)')
     if set_y_lim==True:
         plt.ylim((0, 1))
 
@@ -419,7 +424,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     ax1.plot(xvalues, t_spec, linewidth=linesstrength)
     ax1.set_ylabel('Transmittance')
     ax1.set_xlim((xvalues[0], xvalues[-1]))
-    if plt_eV == True:
+    if label_eV == True:
         ax2 = ax1.twiny()
         ax2.set_xticklabels( () )
         ax2.set_xticks(new_tick_locations)
@@ -432,7 +437,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     ax1.set_xlabel(xlabel)
     ax1.set_ylabel('Reflectance')
     ax1.set_xlim((xvalues[0], xvalues[-1]))
-    if plt_eV == True:
+    if label_eV == True:
         ax2 = ax1.twiny()
         ax2.set_xticklabels( () )
         ax2.set_xticks(new_tick_locations)
@@ -2054,8 +2059,9 @@ def fields_interpolator_in_plane(pstack, lay_interest=1, z_value=0.1):
 
 
 def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
-                      semi_inf_height=1.0, gradient=None, no_incoming=False, add_name='',
-                      force_eq_ratio=False, colour_res=30):
+                      semi_inf_height=1.0, gradient=None, no_incoming=False,
+                      add_name='', force_eq_ratio=False, colour_res=30,
+                      plot_boundaries=True):
     """
     Plot fields in the x-y plane at chosen values of z, where z is \
     calculated from the bottom of chosen layer.
@@ -2086,6 +2092,8 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
             force_eq_ratio  (bool): each layer plotted on equal space.
 
             colour_res  (int): number of colour intervals to use.
+
+            plot_boundaries  (bool): plot boundaries of inclusions.
     """
 
     from fortran import EMUstack
@@ -2205,6 +2213,8 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
 
                                     CS = plt.contourf(x_axis, y_axis_plot,[[0,0],[0,0]],
                                         cmap=plt.cm.binary, vmin=0, vmax=1)
+                                    CS = plt.contourf(x_axis, y_axis_plot,[[0,0],[0,0]],
+                                        cmap=plt.cm.binary, vmin=0, vmax=1)
                                     CS.set_clim(0, 1)
                                     if abs(ind_h_list[lay]) < 0.05 * np.sum(ind_h_list):
                                         tick_half = (h_list[lay]+h_list[lay+1])/2.
@@ -2266,12 +2276,13 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                             E_fields_tot[lay] += E_slice*np.conj(E_slice)
                                 elif E == 'eps_abs(E)':
                                     if max_E_field == 0:
-                                        type_el = np.vstack((struct.type_el,struct.type_el)).reshape((-1,),order='F')
-                                        type_el = np.append(type_el,type_el[-1])
-                                        type_el[type_el == 1] = np.real(eps[0])
-                                        type_el[type_el == 2] = np.real(eps[1])
+                                        type_el = np.vstack((struct.type_el, struct.type_el)).reshape((-1,),order='F')
+                                        # type_el = np.append(type_el, type_el[-1])
+                                        type_el = np.append(type_el[-1], type_el)
+                                        type_el[type_el == 1] = np.abs(eps[0])
+                                        type_el[type_el == 2] = np.abs(eps[1])
                                         type_el = np.diag(type_el)
-                                        epsE_fields_tot[lay] = np.dot(type_el,(E_fields_tot[lay]))
+                                        epsE_fields_tot[lay] = np.dot(type_el, (E_fields_tot[lay]))
                                     else:
                                         E_slice = epsE_fields_tot[lay]
                                 elif E[-3:] == '(E)' and max_E_field == 1:
@@ -2282,7 +2293,7 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                 elif E[0] == 'I':
                                     E_slice = np.imag(E_slice)
 
-                                if E[-3:] != '(E)':
+                                if E[-3:] != '(E)':  # Re(x,y,z), Im(x,y,z)
                                     max_E_lay = np.max(E_slice)
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
@@ -2297,10 +2308,10 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
                                 else:
-                                    max_E_lay = np.max(np.real(epsE_fields_tot[lay]))
+                                    max_E_lay = np.max(np.abs(epsE_fields_tot[lay]))
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
-                                    min_E_lay = np.min(np.real(epsE_fields_tot[lay]))
+                                    min_E_lay = np.min(np.abs(epsE_fields_tot[lay]))
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
 
@@ -2315,6 +2326,10 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                         choice_cmap = plt.cm.hot
                                     else:
                                         choice_cmap = plt.cm.jet
+                                    CS = plt.contourf(x_axis, y_axis_plot,
+                                                      E_slice, colour_res,
+                                                      cmap=choice_cmap,
+                                                      vmin=min_E, vmax=max_E)
                                     CS = plt.contourf(x_axis, y_axis_plot,
                                                       E_slice, colour_res,
                                                       cmap=choice_cmap,
@@ -2335,10 +2350,11 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                         [ticktitles.append('%3.2f' % tick) for tick in ticks]
                                         ax1.yaxis.set_ticklabels(ticktitles)
 
-                                    start, end = ax1.get_ylim()
-                                    for b in boundary:
-                                        ax1.plot([b, b], [start, end], 'w',
-                                                 linewidth=3)
+                                    if plot_boundaries == True:
+                                        start, end = ax1.get_ylim()
+                                        for b in boundary:
+                                            ax1.plot([b, b], [start, end], 'w',
+                                                     linewidth=2)
 
                                 # else:
                                 # scale_plot = 2.0
@@ -2531,6 +2547,9 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                         choice_cmap = plt.cm.jet
                                     CS = plt.contourf(x_axis,y_axis_plot,E_slice,
                                         colour_res, cmap=choice_cmap, vmin=min_E, vmax=max_E)
+                                    # hack to remove white contour lines
+                                    CS = plt.contourf(x_axis,y_axis_plot,E_slice,
+                                        colour_res, cmap=choice_cmap, vmin=min_E, vmax=max_E)
                                     CS.set_clim(min_E,max_E)
                                     ax1.set_xlim((x_range[0],x_range[-1]))
                                     if abs(ind_h_list[lay]) < 0.05 * np.sum(ind_h_list):
@@ -2627,7 +2646,7 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                   cax=cax)
                 cb.set_clim(min_E, max_E)
                 if E == 'eps_abs(E)':
-                    cax.set_ylabel(r'Re($\epsilon$) |E|$^2$')
+                    cax.set_ylabel(r'$|\epsilon|$ |E|$^2$')
                 elif E == 'Re(E)':
                     cax.set_ylabel(r'|E|')
                 else:
