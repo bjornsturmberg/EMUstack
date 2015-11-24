@@ -148,10 +148,10 @@ def gen_params_string(stack, layer=1):
 
 
 #### Standard plotting of spectra #############################################
-def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
+def t_r_a_plots(stacks_list, xvalues=None, xlabel='', params_layer=1,
     active_layer_nu=1, stack_label=1, ult_eta=False, J_sc=False,
     weight_spec=False, extinct=False, add_height=0, add_name='',
-    save_pdf=True, save_txt=False, set_y_lim=True):
+    save_pdf=True, save_txt=False, set_y_lim=True, label_eV=False):
     """ Plot t, r, a for each layer & in total.
 
         Args:
@@ -193,6 +193,8 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
                 files.
 
             set_y_lim  (bool): If True; set y limits to (0,1).
+
+            label_eV  (bool): If True; add energy label in eV.
     """
 
     height_list = stacks_list[0].heights_nm()[::-1]
@@ -200,10 +202,7 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
     params_2_print += '\n'r'$h_t,...,h_b$ = '
     params_2_print += ''.join('%4f, ' % num for num in height_list)
 
-    xlabel = 'xvalues'
-    plt_eV = False
-    if xvalues==None:
-        plt_eV = True
+    if xvalues == None:
         if stacks_list[0].layers[0].light.wl_nm != stacks_list[-1].layers[0].light.wl_nm:
             xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
             xlabel = r'$\lambda$ (nm)'
@@ -265,32 +264,37 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
     if save_txt is True or save_pdf is True:
         total_h = sum(stacks_list[0].heights_nm()) # look at first wl result to find h.
         # Plot t,r,a for each layer.
-        layers_plot('Lay_Absorb', a_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt, plt_eV, set_y_lim)
-        layers_plot('Lay_Trans',  t_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt, plt_eV, set_y_lim)
-        layers_plot('Lay_Reflec', r_list, xvalues, xlabel, total_h, params_2_print, \
-            stack_label, add_name, save_pdf, save_txt, plt_eV, set_y_lim)
+        layers_plot('Lay_Absorb', a_list, xvalues, xlabel, total_h,
+                    params_2_print, stack_label, add_name, save_pdf, save_txt,
+                    label_eV, set_y_lim)
+        layers_plot('Lay_Trans',  t_list, xvalues, xlabel, total_h,
+                    params_2_print, stack_label, add_name, save_pdf, save_txt,
+                    label_eV, set_y_lim)
+        layers_plot('Lay_Reflec', r_list, xvalues, xlabel, total_h,
+                    params_2_print, stack_label, add_name, save_pdf, save_txt,
+                    label_eV, set_y_lim)
 
     # Plot total t,r,a on a single plot.
     if save_pdf == True:
         plot_name = 'Total_Spectra'
-        total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel, \
-            params_2_print, stack_label, add_name, plt_eV, set_y_lim)
+        total_tra_plot(plot_name, a_tot, t_tot, r_tot, xvalues, xlabel,
+                       params_2_print, stack_label, add_name, label_eV,
+                       set_y_lim)
 
     if weight_spec == True:
         # Plot totals weighted by solar irradiance.
         Irrad_spec_file = '../backend/data/ASTMG173'
-        i_data          = np.loadtxt('%s.txt' % Irrad_spec_file)
-        i_spec          = np.interp(xvalues, i_data[:,0], i_data[:,3])
-        bandgap_wl      = xvalues[-1]
-        weighting  = i_spec/i_spec.max()*(xvalues/bandgap_wl)
+        i_data = np.loadtxt('%s.txt' % Irrad_spec_file)
+        i_spec = np.interp(xvalues, i_data[:,0], i_data[:,3])
+        bandgap_wl = xvalues[-1]
+        weighting = i_spec/i_spec.max()*(xvalues/bandgap_wl)
         a_weighted = a_tot*weighting
         t_weighted = t_tot*weighting
         r_weighted = r_tot*weighting
-        plot_name  = 'Weighted_Total_Spectra'
+        plot_name = 'Weighted_Total_Spectra'
         total_tra_plot(plot_name, a_weighted, t_weighted, r_weighted, xvalues,
-            xlabel, params_2_print, stack_label, add_name, plt_eV, set_y_lim)
+                       xlabel, params_2_print, stack_label, add_name, label_eV,
+                       set_y_lim)
 
     if extinct == True:
         extinction_plot(t_tot, xvalues, params_2_print, stack_label, add_name)
@@ -304,8 +308,8 @@ def t_r_a_plots(stacks_list, xvalues=None, params_layer=1,
 
 
 def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
-    params_2_print, stack_label, add_name, save_pdf, save_txt, plt_eV,
-    set_y_lim):
+                params_2_print, stack_label, add_name, save_pdf, save_txt,
+                label_eV, set_y_lim):
     """ Plots one type of spectrum across all layers.
 
         Is called from t_r_a_plots.
@@ -321,7 +325,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
         av_array = zip(xvalues, layer_spec, h_array)
         ax1 = fig.add_subplot(nu_layers, 1, i+1)
         ax1.plot(xvalues, layer_spec, linewidth=linesstrength)
-        if plt_eV == True:
+        if label_eV == True:
             ax2 = ax1.twiny()
             new_tick_values = np.linspace(10, 0.5, 20)
             new_tick_locations = tick_function(new_tick_values)
@@ -330,11 +334,12 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
             ax2.set_xticklabels(new_tick_labels)
             ax2.set_xlim((xvalues[0], xvalues[-1]))
         if i == 0:
-            if xlabel == r'$\lambda$ (nm)': ax2.set_xlabel('Energy (eV)')
+            if xlabel == r'$\lambda$ (nm)' and label_eV == True:
+                ax2.set_xlabel('Energy (eV)')
         elif i == nu_layers-1:
             ax1.set_xlabel(xlabel)
             ax1.set_ylabel('Total')
-        if i != 0 and plt_eV == True:
+        if i != 0 and label_eV == True:
             ax2.set_xticklabels( () )
         if i != nu_layers-1:
             ax1.set_xticklabels( () )
@@ -390,7 +395,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
 
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
-    params_2_print, stack_label, add_name, plt_eV, set_y_lim):
+    params_2_print, stack_label, add_name, label_eV, set_y_lim):
     """ Plots total t, r, a spectra on one plot.
 
         Is called from t_r_a_plots, t_r_a_plots_subs
@@ -402,7 +407,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     ax1.plot(xvalues, a_spec, linewidth=linesstrength)
     ax1.set_ylabel('Absorptance')
     ax1.set_xlim((xvalues[0], xvalues[-1]))
-    if plt_eV == True:
+    if label_eV == True:
         ax2 = ax1.twiny()
         new_tick_values = np.linspace(10, 0.5, 20)
         new_tick_locations = tick_function(new_tick_values)
@@ -410,8 +415,8 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
         ax2.set_xticks(new_tick_locations)
         ax2.set_xticklabels(new_tick_labels)
         ax2.set_xlim((xvalues[0], xvalues[-1]))
-    if xlabel == r'$\lambda$ (nm)':
-        ax2.set_xlabel('Energy (eV)')
+        if xlabel == r'$\lambda$ (nm)':
+            ax2.set_xlabel('Energy (eV)')
     if set_y_lim==True:
         plt.ylim((0, 1))
 
@@ -419,7 +424,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     ax1.plot(xvalues, t_spec, linewidth=linesstrength)
     ax1.set_ylabel('Transmittance')
     ax1.set_xlim((xvalues[0], xvalues[-1]))
-    if plt_eV == True:
+    if label_eV == True:
         ax2 = ax1.twiny()
         ax2.set_xticklabels( () )
         ax2.set_xticks(new_tick_locations)
@@ -432,7 +437,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     ax1.set_xlabel(xlabel)
     ax1.set_ylabel('Reflectance')
     ax1.set_xlim((xvalues[0], xvalues[-1]))
-    if plt_eV == True:
+    if label_eV == True:
         ax2 = ax1.twiny()
         ax2.set_xticklabels( () )
         ax2.set_xticks(new_tick_locations)
@@ -1606,33 +1611,35 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PWs=None,
             if len(store_m_p)  != 0: ax1.plot(store_x_p,store_m_p, 'b', label="prop")
             if len(store_m_ne) != 0: ax1.plot(store_x_ne,store_m_ne, 'g', label="near ev")
             if len(store_m_fe) != 0: ax1.plot(store_x_fe,store_m_fe, 'r', label="far ev")
-            ax1.plot(xvalues,store_mean_ev, 'k', label=r'$\Sigma|p| |a_p| / \Sigma|a_p|$')
-            ax2 = fig.add_subplot(2,1,2)
-            ax2.plot(xvalues,store_tot_amps, 'k', label="prop")
+            ax1.plot(xvalues, store_mean_ev, 'k', label=r'$\Sigma|p| |a_p| / \Sigma|a_p|$')
+            ax2 = fig.add_subplot(2, 1, 2)
+            ax2.plot(xvalues, store_tot_amps, 'k', label="prop")
 
             handles, labels = ax1.get_legend_handles_labels()
-            lgd = ax1.legend(handles, labels, ncol=4, loc='upper center', bbox_to_anchor=(0.5,1.6))
+            lgd = ax1.legend(handles, labels, ncol=4, loc='upper center',
+                             bbox_to_anchor=(0.5, 1.6))
             ax1.set_ylabel('Ev FoM')
-            ax1.set_xticklabels( () )
+            ax1.set_xticklabels(())
             ax2.set_ylabel(r'$\Sigma|a_p|^2$')
             ax2.set_xlabel(xlabel)
             plt.suptitle(add_name)
-            plt.savefig('evanescent_merit-lay_%s' % add_name, \
-                fontsize=title_font, bbox_extra_artists=(lgd,), bbox_inches='tight')
+            plt.savefig('evanescent_merit-lay_%s' % add_name,
+                        fontsize=title_font, bbox_extra_artists=(lgd,),
+                        bbox_inches='tight')
 
-        if save_txt == True:
+        if save_txt is True:
             av_diff = [np.mean(store_m_p)]
-            np.savetxt('prop_diff_order-lay_%s.txt' % add_name, \
-                av_diff, fmt = '%18.11f')
+            np.savetxt('prop_diff_order-lay_%s.txt' % add_name,
+                       av_diff, fmt='%18.11f')
             av_diff = [np.mean(store_m_ne)]
-            np.savetxt('near_ev_diff_order-lay_%s.txt' % add_name, \
-                av_diff, fmt = '%18.11f')
+            np.savetxt('near_ev_diff_order-lay_%s.txt' % add_name,
+                       av_diff, fmt='%18.11f')
             av_diff = [np.mean(store_m_fe)]
-            np.savetxt('far_ev_diff_order-lay_%s.txt' % add_name, \
-                av_diff, fmt = '%18.11f')
+            np.savetxt('far_ev_diff_order-lay_%s.txt' % add_name,
+                       av_diff, fmt='%18.11f')
             av_diff = [np.mean(store_mean_ev)]
-            np.savetxt('average_diff_order-lay_%s.txt' % add_name, \
-                av_diff, fmt = '%18.11f')
+            np.savetxt('average_diff_order-lay_%s.txt' % add_name,
+                       av_diff, fmt='%18.11f')
 
     except ValueError:
         print "evanescent_merit only works in ThinFilm layers."\
@@ -1642,7 +1649,7 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PWs=None,
 
 #### Field plotting routines ##################################################
 def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
-    nu_calc_pts=51):
+                    nu_calc_pts=51):
     """
     Plot fields in the x-y plane at chosen values of z.
 
@@ -1677,7 +1684,7 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
         num_lays = len(pstack.layers)
         # If selected z location is within a NanoStruct layer
         # plot fields in Bloch Mode Basis using fortran routine.
-        if isinstance(pstack.layers[lay_interest],mode_calcs.Simmo):
+        if isinstance(pstack.layers[lay_interest], mode_calcs.Simmo):
             meat = pstack.layers[lay_interest]
             try:
                 if not meat.structure.periodicity == '2D_array':
@@ -1686,11 +1693,11 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
                 eps = meat.n_effs**2
                 h_normed = float(meat.structure.height_nm)/float(meat.structure.period)
                 for z_value in z_values:
-                    # fortran routine naturally measure z top down
+                    # Fortran routine naturally measure z top down
                     z_value = h_normed - z_value
                     wl_normed = pstack.layers[lay_interest].wl_norm()
 
-                    nnodes=6
+                    nnodes = 6
                     if meat.E_H_field == 1:
                         EH_name = "E_"
                     else:
@@ -1699,13 +1706,20 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
 
                     # vec_coef sorted from top of stack, everything else is sorted from bottom
                     vec_index = num_lays - lay_interest - 1
-                    vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+                    vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],
+                                              pstack.vec_coef_up[vec_index]))
 
-                    EMUstack.gmsh_plot_field (meat.num_BMs,
-                        meat.n_msh_el, meat.n_msh_pts, nnodes, meat.structure.nb_typ_el, meat.table_nod, meat.type_el,
-                        eps, meat.x_arr, meat.k_z, meat.sol1, vec_coef, h_normed, z_value,
-                        gmsh_file_pos, meat.structure.plot_real,
-                        meat.structure.plot_imag, meat.structure.plot_abs, extra_name)
+                    EMUstack.gmsh_plot_field(meat.num_BMs,
+                                             meat.n_msh_el, meat.n_msh_pts,
+                                             nnodes, meat.structure.nb_typ_el,
+                                             meat.table_nod, meat.type_el, eps,
+                                             meat.x_arr, meat.k_z, meat.sol1,
+                                             vec_coef, h_normed, z_value,
+                                             gmsh_file_pos,
+                                             meat.structure.plot_real,
+                                             meat.structure.plot_imag,
+                                             meat.structure.plot_abs,
+                                             extra_name)
 
             except ValueError:
                 print "fields_in_plane cannot plot fields in 1D-arrays."\
@@ -1916,7 +1930,9 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
 def fields_interpolator_in_plane(pstack, lay_interest=1, z_value=0.1):
     """
     Returns linear interpolators in the x-y plane at chosen value of z for
-    Re[Ex],Re[Ey],Re[Ez],Im[Ex],Im[Ey],Im[Ez],|E|
+    Re[Ex],Re[Ey],Re[Ez],Im[Ex],Im[Ey],Im[Ez],|E|.
+
+    Requires matplotlib v1.3.0 or later.
 
         Args:
             pstack: Stack object (not a list!!!) containing data to plot.
@@ -1935,7 +1951,7 @@ def fields_interpolator_in_plane(pstack, lay_interest=1, z_value=0.1):
     num_lays = len(pstack.layers)
     # If selected z location is within a NanoStruct layer
     # plot fields in Bloch Mode Basis using fortran routine.
-    if isinstance(pstack.layers[lay_interest],mode_calcs.Simmo):
+    if isinstance(pstack.layers[lay_interest], mode_calcs.Simmo):
         meat = pstack.layers[lay_interest]
 
         try:
@@ -1949,11 +1965,11 @@ def fields_interpolator_in_plane(pstack, lay_interest=1, z_value=0.1):
             z_value = h_normed - z_value
             wl_normed = pstack.layers[lay_interest].wl_norm()
 
-            nnodes=6
+            nnodes = 6
 
             # vec_coef sorted from top of stack, everything else is sorted from bottom
             vec_index = num_lays - lay_interest - 1
-            vec_coef = np.concatenate((pstack.vec_coef_down[vec_index],pstack.vec_coef_up[vec_index]))
+            vec_coef = np.concatenate((pstack.vec_coef_down[vec_index], pstack.vec_coef_up[vec_index]))
 
             # piling up of all the bloch modes to get all the fields
             m_E = EMUstack.field_value_plane(meat.num_BMs,
@@ -1970,35 +1986,35 @@ def fields_interpolator_in_plane(pstack, lay_interest=1, z_value=0.1):
             # dense triangulation with multiple points
             v_x6p = np.zeros(6*meat.n_msh_el)
             v_y6p = np.zeros(6*meat.n_msh_el)
-            v_Ex6p = np.zeros(6*meat.n_msh_el,dtype=np.complex128)
-            v_Ey6p = np.zeros(6*meat.n_msh_el,dtype=np.complex128)
-            v_Ez6p = np.zeros(6*meat.n_msh_el,dtype=np.complex128)
+            v_Ex6p = np.zeros(6*meat.n_msh_el, dtype=np.complex128)
+            v_Ey6p = np.zeros(6*meat.n_msh_el, dtype=np.complex128)
+            v_Ez6p = np.zeros(6*meat.n_msh_el, dtype=np.complex128)
             v_triang6p = []
 
-            i=0
+            i = 0
             for i_el in np.arange(meat.n_msh_el):
 
                 # triangles
-                idx=np.arange(6*i_el,6*(i_el+1))
-                triangles=[[idx[0],idx[3],idx[5]],
-                           [idx[1],idx[4],idx[3]],
-                           [idx[2],idx[5],idx[4]],
-                           [idx[3],idx[4],idx[5]]]
+                idx = np.arange(6*i_el, 6*(i_el+1))
+                triangles = [[idx[0], idx[3], idx[5]],
+                             [idx[1], idx[4], idx[3]],
+                             [idx[2], idx[5], idx[4]],
+                             [idx[3], idx[4], idx[5]]]
                 v_triang6p.extend(triangles)
 
                 for i_node in np.arange(6):
 
                     # index for the coordinates
-                    i_ex = table_nod[i_el,i_node]-1
+                    i_ex = table_nod[i_el, i_node]-1
 
                     # values
-                    v_x6p[i] = x_arr[i_ex,0]
-                    v_y6p[i] = x_arr[i_ex,1]
-                    v_Ex6p[i] = m_E[i_el,i_node,0]
-                    v_Ey6p[i] = m_E[i_el,i_node,1]
-                    v_Ez6p[i] = m_E[i_el,i_node,2]
+                    v_x6p[i] = x_arr[i_ex, 0]
+                    v_y6p[i] = x_arr[i_ex, 1]
+                    v_Ex6p[i] = m_E[i_el, i_node, 0]
+                    v_Ey6p[i] = m_E[i_el, i_node, 1]
+                    v_Ez6p[i] = m_E[i_el, i_node, 2]
 
-                    i+=1
+                    i += 1
 
             v_E6p = np.sqrt(np.abs(v_Ex6p)**2 +
                             np.abs(v_Ey6p)**2 +
@@ -2043,8 +2059,9 @@ def fields_interpolator_in_plane(pstack, lay_interest=1, z_value=0.1):
 
 
 def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
-                      semi_inf_height=1.0, gradient=None, no_incoming=False, add_name='',
-                      force_eq_ratio=False, colour_res=30):
+                      semi_inf_height=1.0, gradient=None, no_incoming=False,
+                      add_name='', force_eq_ratio=False, colour_res=30,
+                      plot_boundaries=True):
     """
     Plot fields in the x-y plane at chosen values of z, where z is \
     calculated from the bottom of chosen layer.
@@ -2075,6 +2092,8 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
             force_eq_ratio  (bool): each layer plotted on equal space.
 
             colour_res  (int): number of colour intervals to use.
+
+            plot_boundaries  (bool): plot boundaries of inclusions.
     """
 
     from fortran import EMUstack
@@ -2119,27 +2138,30 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                 if gradient != None: slice_types.append(('special+','special-'))
 
         for sli in slice_types:
-            E_fields = ['Re(E_x)', 'Im(E_x)', 'Re(E_y)', 'Im(E_y)', 'Re(E_z)', 'Im(E_z)', 'Re(E)',  'eps_abs(E)']
+            E_fields = ['Re(E_x)', 'Im(E_x)', 'Re(E_y)', 'Im(E_y)', 'Re(E_z)',
+                        'Im(E_z)', 'Re(E)',  'eps_abs(E)']
             E_fields_tot = []
             epsE_fields_tot = []
             for E in E_fields:
-                fig = plt.figure(figsize=(9,12))
+                fig = plt.figure(figsize=(9, 12))
                 if force_eq_ratio == True:
                     h_ratio = [1 for h in ind_h_list[::-1]]
                     gs = gridspec.GridSpec(num_lays, 1, wspace=0.0, hspace=0.0,
-                        width_ratios=[1,1], height_ratios=h_ratio)
+                                           width_ratios=[1, 1],
+                                           height_ratios=h_ratio)
                 else:
                     gs = gridspec.GridSpec(num_lays, 1, wspace=0.0, hspace=0.0,
-                        width_ratios=[1,1], height_ratios=h_ratio)
+                                           width_ratios=[1, 1],
+                                           height_ratios=h_ratio)
                 # Find maximum field value to normalise plots.
                 max_E = None
                 min_E = None
-                for max_E_field in [0,1]:
+                for max_E_field in [0, 1]:
                     # Iterate through layers
                     for lay in range(num_lays):
                         layer = pstack.layers[lay]
                         ax1 = plt.subplot(gs[num_lays-lay-1])
-                        if isinstance(layer,mode_calcs.Simmo):
+                        if isinstance(layer, mode_calcs.Simmo):
                             eps = layer.n_effs**2
                         else:
                             eps = layer.n()**2
@@ -2148,18 +2170,18 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                         if lay == 0:
                             z_range = np.linspace(h_list[lay],0.0,nu_pts_vert)
                         else:
-                            z_range = np.linspace(0.0,ind_h_list[lay],nu_pts_vert)
+                            z_range = np.linspace(0.0, ind_h_list[lay], nu_pts_vert)
                         # vec_coef sorted from top, everything else sorted from bottom
                         vec_index = num_lays - lay - 1
 
                         # If NanoStruct layer
-                        if isinstance(layer,mode_calcs.Simmo):
+                        if isinstance(layer, mode_calcs.Simmo):
                             name_lay = "%i_NanoStruct"% lay
                             gmsh_file_pos = 'stack_%(stack_num)s_lay_%(name)s_'% \
-                                            {'name' : name_lay,'stack_num':stack_num}
+                                            {'name': name_lay, 'stack_num': stack_num}
 
                             vec_coef_fem = np.concatenate((pstack.vec_coef_down[vec_index],
-                                pstack.vec_coef_up[vec_index]))
+                                                          pstack.vec_coef_up[vec_index]))
 
                             # If 2D_array plot fields using fortran routine.
                             if layer.structure.periodicity == '2D_array':
@@ -2174,7 +2196,7 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
 
                                     # TODO fix the scaling issue in 2D FEM plotting!
                                     # Then remove these arbitrary scaling params.
-                                    scale_plot   = 2.0
+                                    scale_plot = 2.0
                                     shift_x_plot = -.5
                                     h_normed = float(layer.structure.height_nm)/float(layer.structure.period)
                                     shift_v_plot = h_normed*0.75
@@ -2186,12 +2208,14 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                         h_normed, wl_normed, gmsh_file_pos,
                                         scale_plot, shift_v_plot, shift_x_plot)
 
-                                    z_plot = np.linspace(h_list[lay],h_list[lay+1],2)
-                                    (y_axis_plot,x_axis) = np.meshgrid(z_plot,[0,1])
+                                    z_plot = np.linspace(h_list[lay], h_list[lay+1],2)
+                                    (y_axis_plot, x_axis) = np.meshgrid(z_plot,[0,1])
 
-                                    CS = plt.contourf(x_axis,y_axis_plot,[[0,0],[0,0]],
+                                    CS = plt.contourf(x_axis, y_axis_plot,[[0,0],[0,0]],
                                         cmap=plt.cm.binary, vmin=0, vmax=1)
-                                    CS.set_clim(0,1)
+                                    CS = plt.contourf(x_axis, y_axis_plot,[[0,0],[0,0]],
+                                        cmap=plt.cm.binary, vmin=0, vmax=1)
+                                    CS.set_clim(0, 1)
                                     if abs(ind_h_list[lay]) < 0.05 * np.sum(ind_h_list):
                                         tick_half = (h_list[lay]+h_list[lay+1])/2.
                                         ax1.yaxis.set_ticks([tick_half])
@@ -2208,7 +2232,7 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
 
                             # If 1D_array plot fields as follows.
                             else:
-                                struct  = layer.structure
+                                struct = layer.structure
                                 E_slice = np.zeros((struct.n_msh_pts,nu_pts_vert), dtype = 'complex128')
 
                                 boundary = []
@@ -2252,12 +2276,13 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                             E_fields_tot[lay] += E_slice*np.conj(E_slice)
                                 elif E == 'eps_abs(E)':
                                     if max_E_field == 0:
-                                        type_el = np.vstack((struct.type_el,struct.type_el)).reshape((-1,),order='F')
-                                        type_el = np.append(type_el,type_el[-1])
-                                        type_el[type_el == 1] = np.real(eps[0])
-                                        type_el[type_el == 2] = np.real(eps[1])
+                                        type_el = np.vstack((struct.type_el, struct.type_el)).reshape((-1,),order='F')
+                                        # type_el = np.append(type_el, type_el[-1])
+                                        type_el = np.append(type_el[-1], type_el)
+                                        type_el[type_el == 1] = np.abs(eps[0])
+                                        type_el[type_el == 2] = np.abs(eps[1])
                                         type_el = np.diag(type_el)
-                                        epsE_fields_tot[lay] = np.dot(type_el,(E_fields_tot[lay]))
+                                        epsE_fields_tot[lay] = np.dot(type_el, (E_fields_tot[lay]))
                                     else:
                                         E_slice = epsE_fields_tot[lay]
                                 elif E[-3:] == '(E)' and max_E_field == 1:
@@ -2268,7 +2293,7 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                 elif E[0] == 'I':
                                     E_slice = np.imag(E_slice)
 
-                                if E[-3:] != '(E)':
+                                if E[-3:] != '(E)':  # Re(x,y,z), Im(x,y,z)
                                     max_E_lay = np.max(E_slice)
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
@@ -2283,28 +2308,34 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
                                 else:
-                                    max_E_lay = np.max(np.real(epsE_fields_tot[lay]))
+                                    max_E_lay = np.max(np.abs(epsE_fields_tot[lay]))
                                     if max_E_lay > max_E or max_E == None:
                                         max_E = max_E_lay
-                                    min_E_lay = np.min(np.real(epsE_fields_tot[lay]))
+                                    min_E_lay = np.min(np.abs(epsE_fields_tot[lay]))
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
 
                                 if lay == 0:
-                                    z_plot = np.linspace(h_list[lay],0.0,nu_pts_vert)
+                                    z_plot = np.linspace(h_list[lay], 0.0, nu_pts_vert)
                                 else:
-                                    z_plot = np.linspace(h_list[lay],h_list[lay+1],nu_pts_vert)
-                                (y_axis_plot,x_axis) = np.meshgrid(z_plot,struct.x_arr)
+                                    z_plot = np.linspace(h_list[lay], h_list[lay+1],nu_pts_vert)
+                                (y_axis_plot, x_axis) = np.meshgrid(z_plot,struct.x_arr)
 
                                 if max_E_field == 1:
                                     if E == 'eps_abs(E)' or E == 'Re(E)':
                                         choice_cmap = plt.cm.hot
                                     else:
                                         choice_cmap = plt.cm.jet
-                                    CS = plt.contourf(x_axis,y_axis_plot,E_slice,
-                                        colour_res, cmap=choice_cmap, vmin=min_E, vmax=max_E)
-                                    CS.set_clim(min_E,max_E)
-                                    ax1.set_xlim((x_range[0],x_range[-1]))
+                                    CS = plt.contourf(x_axis, y_axis_plot,
+                                                      E_slice, colour_res,
+                                                      cmap=choice_cmap,
+                                                      vmin=min_E, vmax=max_E)
+                                    CS = plt.contourf(x_axis, y_axis_plot,
+                                                      E_slice, colour_res,
+                                                      cmap=choice_cmap,
+                                                      vmin=min_E, vmax=max_E)
+                                    CS.set_clim(min_E, max_E)
+                                    ax1.set_xlim((x_range[0], x_range[-1]))
                                     if abs(ind_h_list[lay]) < 0.05 * np.sum(ind_h_list):
                                         tick_half = (h_list[lay]+h_list[lay+1])/2.
                                         ax1.yaxis.set_ticks([tick_half])
@@ -2319,9 +2350,11 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                         [ticktitles.append('%3.2f' % tick) for tick in ticks]
                                         ax1.yaxis.set_ticklabels(ticktitles)
 
-                                    start, end = ax1.get_ylim()
-                                    for b in boundary:
-                                        ax1.plot([b,b],[start,end],'w', linewidth=3)
+                                    if plot_boundaries == True:
+                                        start, end = ax1.get_ylim()
+                                        for b in boundary:
+                                            ax1.plot([b, b], [start, end], 'w',
+                                                     linewidth=2)
 
                                 # else:
                                 # scale_plot = 2.0
@@ -2336,14 +2369,14 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
 
                         # ThinFilm layer, using Plane Wave basis.
                         else:
-                            x_range = np.linspace(0.0,1.0,nu_pts_hori)
-                            y_range = np.linspace(0.0,1.0,nu_pts_hori)
+                            x_range = np.linspace(0.0, 1.0, nu_pts_hori)
+                            y_range = np.linspace(0.0, 1.0, nu_pts_hori)
 
                             s = layer.sort_order
                             alpha_unsrt = np.array(layer.alphas)
                             beta_unsrt = np.array(layer.betas)
                             alpha = alpha_unsrt[s]
-                            if layer.structure.world_1d == True:
+                            if layer.structure.world_1d is True:
                                 beta = beta_unsrt
                             else:
                                 beta = beta_unsrt[s]
@@ -2352,14 +2385,14 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                             num_pws = layer.structure.num_pw_per_pol
 
                             if lay == num_lays-1 and no_incoming == True:
-                                vec_coef_down = np.zeros((2*num_pws), dtype = 'complex')
+                                vec_coef_down = np.zeros((2*num_pws), dtype='complex')
                             else:
                                 vec_coef_down = np.array(pstack.vec_coef_down[vec_index]).flatten()
                             vec_coef_down_TE = vec_coef_down[0:num_pws]
                             vec_coef_down_TM = vec_coef_down[num_pws::]
 
                             if lay == 0:
-                                vec_coef_up = np.zeros((2*num_pws), dtype = 'complex')
+                                vec_coef_up = np.zeros((2*num_pws), dtype='complex')
                             else:
                                 vec_coef_up = np.array(pstack.vec_coef_up[vec_index]).flatten()
                             vec_coef_up_TE = vec_coef_up[0:num_pws]
@@ -2392,40 +2425,40 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                             eta_TE_up = (vec_coef_up_TE*TE_coef)/chi_TE
                             eta_TM_up = (vec_coef_up_TM*TM_coef)/chi_TM
 
-                            x_axis = np.zeros((nu_pts_hori,nu_pts_hori), dtype = 'float')
-                            y_axis = np.zeros((nu_pts_hori,nu_pts_hori), dtype = 'float')
+                            x_axis = np.zeros((nu_pts_hori, nu_pts_hori), dtype='float')
+                            y_axis = np.zeros((nu_pts_hori, nu_pts_hori), dtype='float')
 
                             if sli == 'xz':
                                 x1 = x_range
                                 if layer.structure.world_1d == True:
                                     y1 = np.array([0])
                                 else:
-                                    y1 = np.array([0,0.5])
-                                (y_axis,x_axis) = np.meshgrid(z_range,x1)
+                                    y1 = np.array([0, 0.5])
+                                (y_axis, x_axis) = np.meshgrid(z_range, x1)
                             elif sli == 'yz':
-                                x1 = np.array([0,0.5])
-                                y1= y_range
-                                (y_axis,x_axis) = np.meshgrid(z_range,y1)
+                                x1 = np.array([0, 0.5])
+                                y1 = y_range
+                                (y_axis, x_axis) = np.meshgrid(z_range, y1)
                             elif sli == 'diag+':
                                 x1 = x_range
                                 y1 = np.array([0])
                                 y2 = x_range
-                                (y_axis,x_axis) = np.meshgrid(z_range,sqrt(2)*x1)
+                                (y_axis, x_axis) = np.meshgrid(z_range, sqrt(2)*x1)
                             elif sli == 'diag-':
                                 x1 = x_range[::-1]
                                 y1 = np.array([0])
                                 y2 = x_range
-                                (y_axis,x_axis) = np.meshgrid(z_range,sqrt(2)*x1[::-1])
+                                (y_axis, x_axis) = np.meshgrid(z_range, sqrt(2)*x1[::-1])
                             elif sli == 'special+':
                                 x1 = x_range
                                 y1 = np.array([0])
                                 y2 = gradient*x_range
                                 for i in xrange(np.size(y2)):
                                     if y2[i] > 1:
-                                        y2 = np.resize(y2,(i,))
-                                        x1 = np.resize(x1,(i,))
+                                        y2 = np.resize(y2, (i,))
+                                        x1 = np.resize(x1, (i,))
                                         break
-                                (y_axis,x_axis) = np.meshgrid(z_range,sqrt(1+gradient**2)*x1)
+                                (y_axis, x_axis) = np.meshgrid(z_range,sqrt(1+gradient**2)*x1)
                             elif sli == 'special-':
                                 x1 = x_range[::-1]
                                 y1 = np.array([0])
@@ -2435,9 +2468,10 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                         y2 = np.resize(y2,(i,))
                                         x1 = np.resize(x1,(i,))
                                         break
-                                (y_axis,x_axis) = np.meshgrid(z_range,sqrt(1+gradient**2)*(x1[::-1]-x1[-1]))
+                                (y_axis, x_axis) = np.meshgrid(z_range, sqrt(1+gradient**2)*(x1[::-1]-x1[-1]))
 
-                            E_field = np.zeros((np.size(x1),np.size(y1),np.size(z_range)), dtype = 'complex')
+                            E_field = np.zeros((np.size(x1), np.size(y1),
+                                               np.size(z_range)), dtype='complex')
 
                             for z in xrange(np.size(z_range)):
                                 for y in xrange(np.size(y1)):
@@ -2461,10 +2495,10 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                 z_plot = np.linspace(h_list[lay],0.0,nu_pts_vert)
                             else:
                                 z_plot = np.linspace(h_list[lay],h_list[lay+1],nu_pts_vert)
-                            (y_axis_plot,x_axis) = np.meshgrid(z_plot,x_range)
+                            (y_axis_plot, x_axis) = np.meshgrid(z_plot, x_range)
 
                             if sli == 'xz':
-                                E_slice = E_field[:,0,:]
+                                E_slice = E_field[:, 0, :]
                                 if max_E_field == 0:
                                     if E[-3:] != '(E)' and E[0] == 'R':
                                         if E[5] == 'x':
@@ -2506,12 +2540,14 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                     if min_E_lay < min_E or min_E == None:
                                         min_E = min_E_lay
 
-
                                 if max_E_field == 1:
                                     if E == 'eps_abs(E)' or E == 'Re(E)':
                                         choice_cmap = plt.cm.hot
                                     else:
                                         choice_cmap = plt.cm.jet
+                                    CS = plt.contourf(x_axis,y_axis_plot,E_slice,
+                                        colour_res, cmap=choice_cmap, vmin=min_E, vmax=max_E)
+                                    # hack to remove white contour lines
                                     CS = plt.contourf(x_axis,y_axis_plot,E_slice,
                                         colour_res, cmap=choice_cmap, vmin=min_E, vmax=max_E)
                                     CS.set_clim(min_E,max_E)
@@ -2530,32 +2566,102 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                                         [ticktitles.append('%3.2f' % tick) for tick in ticks]
                                         ax1.yaxis.set_ticklabels(ticktitles)
 
-                        if lay == 0:
-                            ax1.set_xlabel('x (d)')
-                        else:
-                            ax1.set_xticklabels( () )
+                            # elif sli == 'yz':
+                            #     E_slice = E_field[0, :, :]
+                            #     if max_E_field == 0:
+                            #         if E[-3:] != '(E)' and E[0] == 'R':
+                            #             if E[5] == 'x':
+                            #                 E_fields_tot.append(E_slice*np.conj(E_slice))
+                            #                 epsE_fields_tot.append(np.zeros(np.shape(E_slice)))
+                            #             elif E[5] == 'y' or E[5] == 'z':
+                            #                 E_fields_tot[lay] += E_slice*np.conj(E_slice)
+                            #         elif E == 'eps_abs(E)':
+                            #             epsE_fields_tot[lay] = np.real(eps) * (E_fields_tot[lay])
+                            #     elif max_E_field == 1 and E == 'eps_abs(E)':
+                            #         E_slice = epsE_fields_tot[lay]
+                            #     elif max_E_field == 1 and E[-3:] == '(E)':
+                            #         E_slice = np.sqrt(E_fields_tot[lay])
 
+                            #     if E[0] == 'R' or E[0] == 'e':
+                            #         E_slice = np.real(E_slice)
+                            #     elif E[0] == 'I':
+                            #         E_slice = np.imag(E_slice)
+
+                            #     if E[-3:] != '(E)':
+                            #         max_E_lay = np.max(E_slice)
+                            #         if max_E_lay > max_E or max_E == None:
+                            #             max_E = max_E_lay
+                            #         min_E_lay = np.min(E_slice)
+                            #         if min_E_lay < min_E or min_E == None:
+                            #             min_E = min_E_lay
+                            #     elif E == 'Re(E)':
+                            #         max_E_lay = np.max(np.real(np.sqrt(E_fields_tot[lay])))
+                            #         if max_E_lay > max_E or max_E == None:
+                            #             max_E = max_E_lay
+                            #         min_E_lay = np.min(np.real(np.sqrt(E_fields_tot[lay])))
+                            #         if min_E_lay < min_E or min_E == None:
+                            #             min_E = min_E_lay
+                            #     else:
+                            #         max_E_lay = np.max(np.real(epsE_fields_tot[lay]))
+                            #         if max_E_lay > max_E or max_E == None:
+                            #             max_E = max_E_lay
+                            #         min_E_lay = np.min(np.real(epsE_fields_tot[lay]))
+                            #         if min_E_lay < min_E or min_E == None:
+                            #             min_E = min_E_lay
+
+                            #     if max_E_field == 1:
+                            #         if E == 'eps_abs(E)' or E == 'Re(E)':
+                            #             choice_cmap = plt.cm.hot
+                            #         else:
+                            #             choice_cmap = plt.cm.jet
+                            #         CS = plt.contourf(x_axis, y_axis_plot, E_slice,
+                            #             colour_res, cmap=choice_cmap, vmin=min_E, vmax=max_E)
+                            #         CS.set_clim(min_E, max_E)
+                            #         ax1.set_xlim((x_range[0], x_range[-1]))
+                            #         if abs(ind_h_list[lay]) < 0.05 * np.sum(ind_h_list):
+                            #             tick_half = (h_list[lay]+h_list[lay+1])/2.
+                            #             ax1.yaxis.set_ticks([tick_half])
+                            #             ticktitles = ['%3.2f' % tick_half]
+                            #             ax1.yaxis.set_ticklabels(ticktitles)
+                            #         elif abs(ind_h_list[lay]) < 0.25 * np.sum(ind_h_list):
+                            #             tick_half = (h_list[lay]+h_list[lay+1])/2.
+                            #             tick_int = ind_h_list[lay]/4.
+                            #             ticks = [tick_half-tick_int, tick_half, tick_half+tick_int]
+                            #             ax1.yaxis.set_ticks(ticks)
+                            #             ticktitles = []
+                            #             [ticktitles.append('%3.2f' % tick) for tick in ticks]
+                            #             ax1.yaxis.set_ticklabels(ticktitles)
+
+                        if lay == 0 and sli == 'xz':
+                            ax1.set_xlabel('x (d)')
+                        elif lay == 0 and sli == 'yz':
+                            ax1.set_xlabel('y (d)')
+                        else:
+                            ax1.set_xticklabels(())
 
                 cax = fig.add_axes([0.6, 0.1, 0.03, 0.8])
-                cb = fig.colorbar(plt.contourf([0,1],[0,1],[[min_E,min_E],[max_E,max_E]], colour_res, cmap=choice_cmap, vmin=min_E, vmax=max_E), cax=cax)
+                cb = fig.colorbar(plt.contourf([0, 1], [0, 1], [[min_E, min_E],
+                                  [max_E, max_E]], colour_res,
+                                  cmap=choice_cmap, vmin=min_E, vmax=max_E),
+                                  cax=cax)
                 cb.set_clim(min_E, max_E)
                 if E == 'eps_abs(E)':
-                    cax.set_ylabel(r'Re($\epsilon$) |E|$^2$')
+                    cax.set_ylabel(r'$|\epsilon|$ |E|$^2$')
                 elif E == 'Re(E)':
                     cax.set_ylabel(r'|E|')
                 else:
                     cax.set_ylabel(E)
 
                 plt.savefig('%(dir_name)s/stack_%(stack_num)s_E_%(slice)s_slice_%(comp)s%(add)s.pdf'% \
-                    {'dir_name' : dir_name, 'comp':E, 'slice':sli,\
-                     'stack_num':stack_num, 'add' : add_name},
-                        bbox_inches = 'tight')
+                    {'dir_name': dir_name, 'comp': E, 'slice': sli,\
+                     'stack_num': stack_num, 'add': add_name},
+                        bbox_inches='tight')
 
                             # elif sli == 'yz':
                             #     for x_of_yz in xrange(np.size(x1)):
-                            #         fig1 = plt.figure(num=None, figsize=(12,21), dpi=80, facecolor='w', edgecolor='k')
+                            #         fig1 = plt.figure(num=None, figsize=(12, 21), dpi=80, facecolor='w', edgecolor='k')
                             #         for i in range(len(E_super)):
-                            #             ax1 = fig1.add_subplot(4,1,i+1)
+                            #             ax1 = fig1.add_subplot(4, 1, i+1)
                             #             if re_im == 'real':
                             #                 E_slice = np.real(E_super[i][x_of_yz,:,:])
                             #             elif re_im == 'imag':
@@ -2576,15 +2682,15 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                             #             ax1.set_ylim((z_min,z_max))
                             #             if np.abs(z_max-z_min) < x_max: ax1.yaxis.set_ticks([z_min,z_max])
 
-                            #         # plt.suptitle('%(name)s \n E_yz_slice_%(p)s, x = %(x_pos)s, heights = %(h)s \n \
-                            #         #     $\lambda$ = %(wl)snm, period = %(d)f, PW = %(pw)i, %(add)s' % \
-                            #         #     {'name' : name_lay, 'h':heights_list, 'p' : p, 'x_pos' : x1[x_of_yz],'wl' : wl, \
-                            #         #     'd' : period, 'pw' : pw, 'add' : add_name} + '\n'
-                            #         #     + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , \
-                            #         #     n = %(n)s, k = %(k)s' % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
-                            #         # plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_yz_slice=%(x_pos)s_wl=%(wl)s_%(p)s%(add)s.pdf'% \
-                            #         #     {'dir_name' : dir_name, 'p':p, 'wl' : wl, 'x_pos' : x1[x_of_yz],\
-                            #         #     'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
+                                    # plt.suptitle('%(name)s \n E_yz_slice_%(p)s, x = %(x_pos)s, heights = %(h)s \n \
+                                    #     $\lambda$ = %(wl)snm, period = %(d)f, PW = %(pw)i, %(add)s' % \
+                                    #     {'name' : name_lay, 'h':heights_list, 'p' : p, 'x_pos' : x1[x_of_yz],'wl' : wl, \
+                                    #     'd' : period, 'pw' : pw, 'add' : add_name} + '\n'
+                                    #     + '# prop. ords = %(prop)s, # evan. ords = %(evan)s , \
+                                    #     n = %(n)s, k = %(k)s' % {'evan' : evan, 'prop' : prop, 'n' : n, 'k' : k[0]})
+                                    # plt.savefig('%(dir_name)s/stack_%(stack_num)s_lay_%(name)s_E_yz_slice=%(x_pos)s_wl=%(wl)s_%(p)s%(add)s.pdf'% \
+                                    #     {'dir_name' : dir_name, 'p':p, 'wl' : wl, 'x_pos' : x1[x_of_yz],\
+                                    #     'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
 
                             # elif sli == 'diag+':
                             #     diag = 1
@@ -2730,7 +2836,8 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                             #     #     {'dir_name' : dir_name, 'diag*gradient':diag*gradient, 'p':p,'wl' : wl,\
                             #     #     'name' : name_lay,'stack_num':stack_num, 'add' : add_name})
 
-    stack_num += 1
+        stack_num += 1
+
 
 def field_values(stacks_list, lay_interest=0, xyz_values=[(0.1,0.1,0.1)]):
     """
@@ -2776,7 +2883,7 @@ def field_values(stacks_list, lay_interest=0, xyz_values=[(0.1,0.1,0.1)]):
             alpha_unsrt = np.array(pstack.layers[lay_interest].alphas)
             beta_unsrt = np.array(pstack.layers[lay_interest].betas)
             alpha = alpha_unsrt[s]
-            if pstack.layers[lay_interest].structure.world_1d == True:
+            if pstack.layers[lay_interest].structure.world_1d is True:
                 beta = beta_unsrt
             else:
                 beta = beta_unsrt[s]
@@ -2832,7 +2939,7 @@ def field_values(stacks_list, lay_interest=0, xyz_values=[(0.1,0.1,0.1)]):
                 if pstack.layers[lay_interest].structure.world_1d == True: y1 = 0
 
                 if lay_interest == 0: z1 = -1*z1
-                else:z1 = np.abs(z1)
+                else: z1 = np.abs(z1)
 
                 if pstack.layers[lay_interest].structure.height_nm == 'semi_inf':
                     calc_expo_down = np.exp(1j*(alpha*x1+beta*y1-gamma*z1))
@@ -2875,6 +2982,7 @@ def field_values(stacks_list, lay_interest=0, xyz_values=[(0.1,0.1,0.1)]):
             "\nPlease select a different lay_interest.\n"
 
         return super_points
+
 
 def fields_3d(stacks_list, lay_interest=1):
     """
@@ -2930,6 +3038,7 @@ def fields_3d(stacks_list, lay_interest=1):
         except ValueError:
             print "fields_3d can only plot 3D fields within 2D_array "\
             "Nanostruct layers. \nPlease select a different lay_interest.\n"
+
 
 def Bloch_fields_1d(stacks_list, lay_interest=None):
     """
@@ -3056,7 +3165,6 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                     ax1.yaxis.set_ticks_position('both')
                     ax1.set_ylabel(r'Re($\epsilon$) |E|')
 
-
                     ax1 = fig.add_subplot(6, 2, 9)
                     xshape = struct.x_arr.size
                     # plot_sol_2_FT = np.sin(3*np.linspace(0,2*np.pi,xshape))
@@ -3069,7 +3177,6 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                     ax1.yaxis.set_ticks(np.linspace(start, end, 3))
                     ax1.set_ylabel(r'FT Re(E$_x$)')
                     ax1.set_xlim((0,10))
-
 
                     ax1 = fig.add_subplot(6, 2, 10)
                     xshape = struct.x_arr.size
@@ -3086,8 +3193,6 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                     ax1.yaxis.tick_right()
                     ax1.yaxis.set_ticks_position('both')
 
-
-
                     ax1 = fig.add_subplot(6, 2, 11)
                     xshape = struct.x_arr.size
                     FT = np.fft.fft(plot_sol_2_FT)
@@ -3100,7 +3205,6 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                     ax1.set_ylabel(r'FT Re(E$_y$)')
                     ax1.set_xlim((0,10))
                     ax1.set_xlabel('Diffraction order')
-
 
                     ax1 = fig.add_subplot(6, 2, 12)
                     xshape = struct.x_arr.size
@@ -3131,10 +3235,8 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
 
 ###############################################################################
 
-
 #### Fabry-Perot resonances ###################################################
-def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0,
-    lay_interest=1):
+def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0, lay_interest=1):
     """ Calculate the Fabry-Perot resonance condition for a resonances within a layer.
 
         This is equivalent to finding the slab waveguide modes of the layer.
@@ -3156,8 +3258,9 @@ def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0,
     """
 
     n_freqs = len(freq_list)
-    n_kxs   = len(kx_list)
-    height = stacks_list[-1].heights_nm()[lay_interest-1] # assumes all stacks have equal height
+    n_kxs = len(kx_list)
+    # assuming all stacks have equal height
+    height = stacks_list[-1].heights_nm()[lay_interest-1]
     period = stacks_list[-1].period
     num_BMss = stacks_list[-1].layers[lay_interest].num_BMs
     I_mat = np.matrix(np.eye(num_BMss),dtype='D')
@@ -3167,22 +3270,22 @@ def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0,
         kx_slice = stacks_list[i*n_freqs:(i+1)*n_freqs]
         j = 0
         for stack in kx_slice:
-            P   = stack.layers[lay_interest].prop_fwd(height/period)
+            P = stack.layers[lay_interest].prop_fwd(height/period)
             R21 = stack.layers[lay_interest].R21
             FP_term = np.linalg.det(I_mat - R21*P*R21*P)
-            plot_mat[j,i] = FP_term
+            plot_mat[j, i] = FP_term
             j += 1
     image = np.log(np.abs(plot_mat))
 
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 1, 1)
-    cax = ax1.imshow(image, cmap = plt.cm.gray_r, interpolation = 'none')
+    cax = ax1.imshow(image, cmap=plt.cm.gray_r, interpolation='none')
 
     from matplotlib.ticker import MultipleLocator, FormatStrFormatter
     shape = np.shape(plot_mat)
-    majorLocator   = MultipleLocator(shape[1]-1)
+    majorLocator = MultipleLocator(shape[1]-1)
     ax1.xaxis.set_major_locator(majorLocator)
-    majorLocator   = MultipleLocator(shape[0]-1)
+    majorLocator = MultipleLocator(shape[0]-1)
     ax1.yaxis.set_major_locator(majorLocator)
     xlims = [kx_list[0]/k_0, kx_list[-1]/k_0]
     ax1.set_xticklabels(xlims)

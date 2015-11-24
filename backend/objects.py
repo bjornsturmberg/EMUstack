@@ -882,6 +882,7 @@ class NanoStruct(object):
             self.n_msh_el = nel
             self.n_msh_pts = npt
             self.table_nod = table_nod[:,1:]
+            # self.type_el = type_el[1:]
             self.type_el = type_el[1:]
             self.x_arr = ls_x[1:]
             self.mesh_file = msh_name

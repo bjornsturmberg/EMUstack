@@ -409,7 +409,6 @@ class Simmo(Modes):
         #     os.system(gmsh_cmd)
 
 
-
 def r_t_mat(lay1, lay2):
     """ Return R12, T12, R21, T21 at an interface between lay1 \
         and lay2.
