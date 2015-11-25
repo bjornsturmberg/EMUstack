@@ -54,8 +54,9 @@ class Stack(object):
         self.shears = shears
         self.period = float(layers[0].structure.period)
         self._check_periods_are_consistent()
-        for i_lay, lay in enumerate(self.layers[1:-1]):
-            lay.structure.height_nm = heights_nm[i_lay]
+        if self._heights_nm is not None:
+            for i_lay, lay in enumerate(self.layers[1:-1]):
+                lay.structure.height_nm = heights_nm[i_lay]
 
     def heights_nm(self):
         """ Update heights of each layer to those given in Keyword Arg
