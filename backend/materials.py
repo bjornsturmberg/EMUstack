@@ -308,7 +308,9 @@ Low_Fe_Glass = Material(np.loadtxt('%sLow_Fe_Glass_Pil.txt' % data_location))
 # PV lighthouse, unpublished Pilkington data
 Perovskite_00 = Material(np.loadtxt('%sPerovskite_E_u_00.txt' % data_location))
 # doi:10.1021/jz502471h
-Perovskite = Material(np.loadtxt('%sPerovskite_E_u_0485.txt' % data_location))
+Perovskite = Material(np.loadtxt('%sPerovskite_Loper_E_u_080.txt' % data_location))
 # doi:10.1021/jz502471h, with extended urbach tail for parasitic absorption
 Ge_Doped = Material(np.loadtxt('%sGe_Doped.txt'% data_location))
 # doi:10.1109/IRMMW-THz.2014.6956438, heavily doped Germanium for mid-infrared plasmonics
+ITO_annealed = Material(np.loadtxt('%sITO_anneal_Gen_Osc.txt'% data_location))
+# ANU measurement
