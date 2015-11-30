@@ -26,7 +26,8 @@ import materials
 from mode_calcs import Simmo, Anallo
 from fortran import EMUstack
 
-msh_location = '../backend/fortran/msh/'
+emu_path = os.path.dirname(os.path.abspath(__file__))
+msh_location = emu_path + '/fortran/msh/'
 
 # Acknowledgements
 print '\n##################################################################\n'\
