@@ -354,7 +354,7 @@ class Simmo(Modes):
 
         elif self.structure.periodicity == '2D_array':
             # Prepare for the mesh
-            with open("../backend/fortran/msh/"+self.structure.mesh_file) as f:
+            with open(emu_path + "/fortran/msh/"+self.structure.mesh_file) as f:
                 self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
 
             # Size of Fortran's complex superarray (scales with mesh)
