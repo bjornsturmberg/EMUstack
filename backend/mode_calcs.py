@@ -23,7 +23,8 @@ import numpy as np
 import sys
 # from scipy import sqrt
 import os
-sys.path.append("../backend/")
+emu_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(emu_path)
 
 from fortran import EMUstack
 
