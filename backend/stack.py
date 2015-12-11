@@ -429,3 +429,5 @@ class Stack(object):
         for lay in self.layers:
             assert lay.structure.period == self.period, \
                 "All layers in a multilayer stack must have the same period."
+            assert lay.structure.period_y == self.period_y, \
+                "All layers in a multilayer stack must have the same period_y."
