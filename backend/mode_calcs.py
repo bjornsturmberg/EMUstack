@@ -65,7 +65,12 @@ class Modes(object):
         pys_mesh, pxs_mesh = np.meshgrid(pys, pxs)
         # Which elements of pys_mesh and pxs_mesh correspond to
         # orders low enough that we're interested in?
-        low_ord = (pxs_mesh**2 + pys_mesh**2 <= max_order**2)
+        dx = self.structure.period
+        dy = self.structure.period_y
+        low_ord = ((pxs_mesh/dx)**2 + (pys_mesh/dy)**2 <=
+            (max_order/max(dx, dy))**2)
+        # low_ord = (pxs_mesh**2 + pys_mesh**2 <= max_order**2)
+        print pxs_mesh[low_ord], pys_mesh[low_ord]
         return pxs_mesh[low_ord], pys_mesh[low_ord]
 
     def prop_fwd(self, height_norm):

@@ -132,7 +132,8 @@ C     prefactors of plane waves order s(px,py)
             s = 1
             do px = -ordre_ls, ordre_ls
               do py = -ordre_ls, ordre_ls
-              if (px**2 + py**2 .le. ordre_ls**2) then
+              if ((px/d)**2 + (py/dy)**2
+     *           .le. (ordre_ls/MAX(d, dy))**2) then
                 alpha = bloch1 + vec_kx*px      ! Bloch vector along x
                 beta  = bloch2 + vec_ky*py      ! Bloch vector along y
                 norm = 1.0d0/DSQRT(alpha**2 + beta**2) ! sqrt term
