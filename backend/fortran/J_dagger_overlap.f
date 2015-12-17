@@ -107,7 +107,7 @@ C
       bloch1 = bloch_vec(1)
       bloch2 = bloch_vec(2)
       vec_kx = 2.0d0*pi/d
-      vec_ky = 2.0d0*pi/d
+      vec_ky = 2.0d0*pi/dy
 C
 CCCCCCCCCCCCCCCCC loop over all elements CCCCCCCCCCCCCCCC
 C
