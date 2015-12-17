@@ -53,6 +53,7 @@ class Stack(object):
         self._heights_nm = heights_nm
         self.shears = shears
         self.period = float(layers[0].structure.period)
+        self.period_y = float(layers[0].structure.period_y)
         self._check_periods_are_consistent()
         if self._heights_nm is not None:
             for i_lay, lay in enumerate(self.layers[1:-1]):
@@ -429,3 +430,5 @@ class Stack(object):
         for lay in self.layers:
             assert lay.structure.period == self.period, \
                 "All layers in a multilayer stack must have the same period."
+            assert lay.structure.period_y == self.period_y, \
+                "All layers in a multilayer stack must have the same period_y."

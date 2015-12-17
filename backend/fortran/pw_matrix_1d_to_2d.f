@@ -1,11 +1,11 @@
 C
-      subroutine pw_matrix_1d_to_2d (neq_PW_1d, neq_PW_2d, nval, 
+      subroutine pw_matrix_1d_to_2d (neq_PW_1d, neq_PW_2d, nval,
      *  period_x, bloch_vec_x, bloch_vec_y, index_pw_inv_1d,
      *  debug, ordre_ls, overlap_J_1d, overlap_J_2d,
      *  overlap_J_dagger_1d, overlap_J_dagger_2d,
      *  k_0, PrintAll)
-C 
-      implicit none 
+C
+      implicit none
 C  input output parameters
       integer*8 neq_PW_1d, neq_PW_2d, nval
       integer*8 PrintAll, ordre_ls, debug
@@ -70,7 +70,7 @@ C
       endif
 
 C
-cc      d = lat_vecs(1,1)  
+cc      d = lat_vecs(1,1)
       pi = 3.141592653589793d0
       bloch1 = bloch_vec_x
       bloch2 = bloch_vec_y
@@ -83,7 +83,8 @@ C     Ordering
       s_1d = 1
       do px = -ordre_ls, ordre_ls
         do py = -ordre_ls, ordre_ls
-          if (px**2 + py**2 .le. ordre_ls**2) then
+          if ((px/period_x)**2 + (py/period_x)**2
+     *      .le. (ordre_ls/MAX(period_x, period_x))**2) then
             alpha = bloch1 + vec_kx*px  ! Bloch vector along x
             beta  = bloch2 + vec_ky*py  ! Bloch vector along y
             z_tmp = k_0**2 - alpha**2 - beta**2
@@ -95,7 +96,7 @@ C     Ordering
           endif
         enddo
       enddo
-C      
+C
 
       call z_indexx (neq_PW_2d, beta_z_pw_2d, index_pw_2d)
       if (debug .eq. 1) then
@@ -120,7 +121,7 @@ C
       do jval= 1, nval
         do ipw = 1, 2*neq_PW_2d
           overlap_J_2d(ipw,jval) = 0
-        enddo    
+        enddo
       enddo
       do jval= 1, nval
         do ipw = 1, neq_PW_1d
@@ -131,7 +132,7 @@ C
           overlap_J_2d(s_2d,jval) = z_tmp
           z_tmp = overlap_J_1d(s_1d+neq_PW_1d,jval)
           overlap_J_2d(s_2d+neq_PW_2d,jval) = z_tmp
-        enddo    
+        enddo
       enddo
 c        do ipw = 1, 2*neq_PW_2d
 C
@@ -140,7 +141,7 @@ C
       do ipw = 1, 2*neq_PW_2d
         do jval= 1, nval
           overlap_J_dagger_2d(jval,ipw) = 0
-        enddo    
+        enddo
       enddo
 
       do ipw = 1, neq_PW_1d
@@ -163,7 +164,7 @@ C
         do ipw = 1, 2*neq_PW_2d
           write(35,132) ipw,jval,overlap_J_2d(ipw,jval),
      *         abs(overlap_J_2d(ipw,jval))
-        enddo    
+        enddo
       enddo
       close(35)
       open (unit=34, file="Matrices/J_dagger_mat_2d.txt",
@@ -196,4 +197,4 @@ C
       deallocate(beta_z_pw_2d)
 C
       return
-      end 
+      end

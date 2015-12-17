@@ -2,10 +2,10 @@ c  Write an ASCII file that can be read into GMSH.
 c  P1-element is used to represent the  3D vector field.
 c  P2-element is used to represent each component of the 3D vector field.
 c
-      subroutine gmsh_plot_PW ( 
-     *     nel, npt, nnodes, neq_PW, bloch_vec, 
+      subroutine gmsh_plot_PW (
+     *     nel, npt, nnodes, neq_PW, bloch_vec,
      *     table_nod, x, lat_vecs, lambda, n_eff_0,
-     *     vec_coef_down, vec_coef_up, 
+     *     vec_coef_down, vec_coef_up,
      *     index_pw_inv, ordre_ls, hz, gmsh_file_pos,
      *     plot_real, plot_imag, plot_abs, extra_name)
 c
@@ -36,7 +36,7 @@ c     Local variables
 
       integer*8 px, py, s, s2
 
-      double precision d, r_tmp, xx_g(3)
+      double precision d, dy, r_tmp, xx_g(3)
       double precision k_0, k, vec_kx, vec_ky, lambda
       double precision bloch1, bloch2, pi, alpha, beta, norm
       complex*16 chi_TE, chi_TM, gamma, val_exp
@@ -59,7 +59,7 @@ c     Local variables
 Cf2py intent(in) nel, npt, nnodes, neq_PW, bloch_vec,
 Cf2py intent(in) table_nod, x, lat_vecs, lambda, n_eff_0
 Cf2py intent(in) vec_coef_down, vec_coef_up,
-Cf2py intent(in) index_pw_inv, ordre_ls, hz, 
+Cf2py intent(in) index_pw_inv, ordre_ls, hz,
 Cf2py intent(in) gmsh_file_pos, extra_name
 Cf2py intent(in) plot_real, plot_imag, plot_abs
 
@@ -79,13 +79,14 @@ c
       debug = 0
 c
       d = lat_vecs(1,1)
+      dy = lat_vecs(2,2)
       pi = 3.141592653589793d0
       bloch1 = bloch_vec(1)
       bloch2 = bloch_vec(2)
       k_0 = (2.0d0*pi)/lambda
       k = real(n_eff_0*k_0)
       vec_kx = 2.0d0*pi/d
-      vec_ky = 2.0d0*pi/d
+      vec_ky = 2.0d0*pi/dy
       if (debug .eq. 1) then
         write(ui,*) "gmsh_plot_PW: ", lambda, n_eff_0, bloch_vec
       endif
@@ -143,8 +144,8 @@ c
         write(27,*) "View.AdaptVisualizationGrid =1;"
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "View.Light = 0;"
-c        write(27,*) "View ""Re Ex: n = ", plot_val, 
-        write(27,*) "View ""Re ",extra_name(1:2),"x:",  
+c        write(27,*) "View ""Re Ex: n = ", plot_val,
+        write(27,*) "View ""Re ",extra_name(1:2),"x:",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
       tchar=dir_name(1:namelength)// '/' // extra_name // '_PWy_re_'
@@ -153,7 +154,7 @@ c
         write(28,*) "View.AdaptVisualizationGrid =1;"
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "View.Light = 0;"
-        write(28,*) "View ""Re ",extra_name(1:2),"y:",  
+        write(28,*) "View ""Re ",extra_name(1:2),"y:",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
       tchar=dir_name(1:namelength)// '/' // extra_name // '_PWz_re_'
@@ -162,7 +163,7 @@ c
         write(29,*) "View.AdaptVisualizationGrid =1;"
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "View.Light = 0;"
-        write(29,*) "View ""Re ",extra_name(1:2),"z:",  
+        write(29,*) "View ""Re ",extra_name(1:2),"z:",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
       tchar=dir_name(1:namelength)// '/' // extra_name // '_PWv_re_'
@@ -171,7 +172,7 @@ c
         write(30,*) "View.AdaptVisualizationGrid =1;"
         write(30,*) "View.IntervalsType = 3;"
         write(30,*) "View.Light = 0;"
-        write(30,*) "View ""Re ",extra_name(1:2),":",  
+        write(30,*) "View ""Re ",extra_name(1:2),":",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
       do iel=1,nel
@@ -185,7 +186,8 @@ c
       s = 1
       do px = -ordre_ls, ordre_ls
         do py = -ordre_ls, ordre_ls
-          if (px**2 + py**2 .le. ordre_ls**2) then
+            if ((px/d)**2 + (py/dy)**2
+     *         .le. (ordre_ls/MAX(d, dy))**2) then
             alpha = bloch1 + vec_kx*px  ! Bloch vector along x
             beta  = bloch2 + vec_ky*py  ! Bloch vector along y
             z_tmp1 = k**2 - alpha**2 - beta**2
@@ -194,7 +196,7 @@ c
             chi_TM = SQRT(gamma/(n_eff_0*k))
 C            chi_TE = SQRT(gamma/k)
 C            chi_TM = SQRT(gamma/k)
-            norm = SQRT(alpha**2 + beta**2) !sqrt term    
+            norm = SQRT(alpha**2 + beta**2) !sqrt term
             s2 = index_pw_inv(s)
 C
 C           Plane waves order s
@@ -309,7 +311,7 @@ c
         write(27,*) "View.AdaptVisualizationGrid =1;"
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "View.Light = 0;"
-        write(27,*) "View ""Im ",extra_name(1:2),"x:", 
+        write(27,*) "View ""Im ",extra_name(1:2),"x:",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
       tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_y_im_'
@@ -318,7 +320,7 @@ c
         write(28,*) "View.AdaptVisualizationGrid =1;"
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "View.Light = 0;"
-        write(28,*) "View ""Im ",extra_name(1:2),"y:", 
+        write(28,*) "View ""Im ",extra_name(1:2),"y:",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
       tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_z_im_'
@@ -327,7 +329,7 @@ c
         write(29,*) "View.AdaptVisualizationGrid =1;"
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "View.Light = 0;"
-        write(29,*) "View ""Im ",extra_name(1:2),"z:", 
+        write(29,*) "View ""Im ",extra_name(1:2),"z:",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
       tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_v_im_'
@@ -336,7 +338,7 @@ c
         write(30,*) "View.AdaptVisualizationGrid =1;"
         write(30,*) "View.IntervalsType = 3;"
         write(30,*) "View.Light = 0;"
-        write(30,*) "View ""Im ",extra_name(1:2),":", 
+        write(30,*) "View ""Im ",extra_name(1:2),":",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
         sol_max(4) = 0.0d0
@@ -388,7 +390,7 @@ c
         write(27,*) "View.AdaptVisualizationGrid =1;"
         write(27,*) "View.IntervalsType = 3;"
         write(27,*) "View.Light = 0;"
-        write(27,*) "View ""|",extra_name(1:2),"x|:", 
+        write(27,*) "View ""|",extra_name(1:2),"x|:",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
       tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_y_abs_'
@@ -397,7 +399,7 @@ c
         write(28,*) "View.AdaptVisualizationGrid =1;"
         write(28,*) "View.IntervalsType = 3;"
         write(28,*) "View.Light = 0;"
-        write(28,*) "View ""|",extra_name(1:2),"y|:", 
+        write(28,*) "View ""|",extra_name(1:2),"y|:",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
       tchar=dir_name(1:namelength)// '/' // extra_name // '_PW_z_abs_'
@@ -406,7 +408,7 @@ c
         write(29,*) "View.AdaptVisualizationGrid =1;"
         write(29,*) "View.IntervalsType = 3;"
         write(29,*) "View.Light = 0;"
-        write(29,*) "View ""|",extra_name(1:2),"z|:", 
+        write(29,*) "View ""|",extra_name(1:2),"z|:",
      *     "; ordre = ", ordre_ls, "; hz = ", hz, " "" {"
 c
         sol_max(4) = 0.0d0
@@ -438,11 +440,11 @@ c
 c
 c###############################################
 c
-c     ST : Scalar triangle 
+c     ST : Scalar triangle
 10    format("ST2(",f10.6,17(",",f10.6),"){",
      *     g24.16,5(",",g24.16),"};")
 
-c     VT : Vector triangle 
+c     VT : Vector triangle
 11    format("VT(",f10.6,8(",",f10.6),"){",
      *     g24.16,8(",",g24.16),"};")
 
