@@ -185,6 +185,7 @@ class NanoStruct(object):
                  inclusion_c=materials.Material(1.0 + 0.0j),
                  inclusion_d=materials.Material(1.0 + 0.0j),
                  inclusion_e=materials.Material(1.0 + 0.0j),
+                 inclusion_f=materials.Material(1.0 + 0.0j),
                  loss=True, height_nm=100.0,
                  diameter2=0,  diameter3=0, diameter4=0, diameter5=0,
                  diameter6=0, diameter7=0, diameter8=0, diameter9=0,
@@ -211,6 +212,7 @@ class NanoStruct(object):
         self.inclusion_c = inclusion_c
         self.inclusion_d = inclusion_d
         self.inclusion_e = inclusion_e
+        self.inclusion_f = inclusion_f
         self.loss = loss
         self.hyperbolic = hyperbolic
         self.diameter2 = diameter2
@@ -645,19 +647,19 @@ class NanoStruct(object):
                             type_el[i_el] = 3
                         elif x_1 <= 0.5 + i_d + 2.0*rad_3 + rad_1 and 0.5 + i_d + rad_1 <= x_1 \
                         and  x_2 <= 0.5 + i_d + 2.0*rad_3 + rad_1 and 0.5 + i_d + rad_1 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif x_1 <= 0.5 - 2.0*i_d - 2.0*rad_2 - rad_1 and 0.5 - 2.0*i_d - 2.0*rad_2 - 2.0*rad_4 - rad_1 <= x_1 \
                         and  x_2 <= 0.5 - 2.0*i_d - 2.0*rad_2 - rad_1 and 0.5 - 2.0*i_d - 2.0*rad_2 - 2.0*rad_4 - rad_1 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         elif 0.5 + 2.0*i_d + 2.0*rad_3 + rad_1 <= x_1 and x_1 <= 0.5 + 2.0*i_d + 2.0*rad_3 + 2.0*rad_5 + rad_1 \
                         and  0.5 + 2.0*i_d + 2.0*rad_3 + rad_1 <= x_2 and x_2 <= 0.5 + 2.0*i_d + 2.0*rad_3 + 2.0*rad_5 + rad_1:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 6
                         elif x_1 <= 0.5 - 3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4 and x_1 >= 0.5 - 3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4 - rad_5\
                         and  x_2 <= 0.5 - 3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4 and x_2 >= 0.5 - 3.0*i_d - rad_1 - 2.0*rad_2 - 2.0*rad_4 - rad_5:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 6
                         elif x_1 >= 0.5 + 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5 and x_1 <= 0.5 + 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5 + 2.0*rad_6\
                         and  x_2 >= 0.5 + 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5 and x_2 <= 0.5 + 3.0*i_d + rad_1 + 2.0*rad_3 + 2.0*rad_5 + 2.0*rad_6:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 7
                         else:
                             type_el[i_el] = 1
                 elif self.split_touching_incs is True:
@@ -675,28 +677,28 @@ class NanoStruct(object):
                             type_el[i_el] = 3
                         elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif  x_1 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 <= x_1 \
                         and x_2 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 and 0.5 + rad_1 + rad_2 + rad_3 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 and 0.5 + rad_1 + rad_2 + rad_3 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         elif  x_1 <= 0.5 - rad_1 - rad_2 - rad_3 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 <= x_1 \
                         and x_2 <= 0.5 - rad_1 - rad_2 - rad_3 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 + rad_5 and 0.5 + rad_1 + rad_2 + rad_3 + rad_4 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 + rad_5 and 0.5 + rad_1 + rad_2 + rad_3 + rad_4 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 6
                         elif  x_1 <= 0.5 - rad_1 - rad_2 - rad_3 - rad_4 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 - rad_5 <= x_1 \
                         and x_2 <= 0.5 - rad_1 - rad_2 - rad_3 - rad_4 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 - rad_5 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 6
                         elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 + rad_5 + rad_6 and 0.5 + rad_1 + rad_2 + rad_3 + rad_4 +rad_5 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 + rad_5 + rad_6 and 0.5 + rad_1 + rad_2 + rad_3 + rad_4 +rad_5 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 7
                         elif  x_1 <= 0.5 - rad_1 - rad_2 - rad_3 - rad_4 - rad_5 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 - rad_5 -rad_6 <= x_1 \
                         and x_2 <= 0.5 - rad_1 - rad_2 - rad_3 - rad_4 -rad_5 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 - rad_5 -rad_6 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 7
                         else:
                             type_el[i_el] = 1
                 else:
@@ -712,17 +714,17 @@ class NanoStruct(object):
                             type_el[i_el] = 3
                         elif 0.5 + i_d - rad_3 <= x_1 and x_1 <= 0.5 + i_d + rad_3 \
                         and  0.5 + i_d - rad_3 <= x_2 and x_2 <= 0.5 + i_d + rad_3:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif 0.5 - 2.0*i_d - rad_4 <= x_1 and x_1 <= 0.5 - 2.0*i_d + rad_4 \
                         and  0.5 - 2.0*i_d - rad_4 <= x_2 and x_2 <= 0.5 - 2.0*i_d + rad_4:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         elif 0.5 + 2.0*i_d - rad_5 <= x_1 and x_1 <= 0.5 + 2.0*i_d + rad_5 \
                         and  0.5 + 2.0*i_d - rad_5 <= x_2 and x_2 <= 0.5 + 2.0*i_d + rad_5:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 6
                         elif x_1 <= rad_6 and x_2 <= rad_6:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 7
                         elif x_1 >= 1.0 - rad_6 and x_2 >= 1.0 - rad_6:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 7
                         else:
                             type_el[i_el] = 1
             elif self.diameter5 > 0:
@@ -752,13 +754,13 @@ class NanoStruct(object):
                             type_el[i_el] = 3
                         elif x_1 <= 0.5 + i_d + 2.0*rad_3 + rad_1 and 0.5 + i_d + rad_1 <= x_1 \
                         and x_2 <= 0.5 + i_d + 2.0*rad_3 + rad_1 and 0.5 + i_d + rad_1 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif x_1 <= 0.5 - 2.0*i_d - 2.0*rad_2 - rad_1 and 0.5 - 2.0*i_d - 2.0*rad_2 - 2.0*rad_4 - rad_1 <= x_1 \
                         and x_2 <= 0.5 - 2.0*i_d - 2.0*rad_2 - rad_1 and 0.5 - 2.0*i_d - 2.0*rad_2 - 2.0*rad_4 - rad_1 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         elif 0.5 + 2.0*i_d + 2.0*rad_3 + rad_1 <= x_1 and x_1 <= 0.5 + 2.0*i_d + 2.0*rad_3 + 2.0*rad_5 + rad_1 \
                         and 0.5 + 2.0*i_d + 2.0*rad_3 + rad_1 <= x_2 and x_2 <= 0.5 + 2.0*i_d + 2.0*rad_3 + 2.0*rad_5 + rad_1:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         else:
                             type_el[i_el] = 1
                 elif self.split_touching_incs is True:
@@ -776,22 +778,22 @@ class NanoStruct(object):
                             type_el[i_el] = 3
                         elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif  x_1 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 <= x_1 \
                         and x_2 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 and 0.5 + rad_1 + rad_2 + rad_3 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 and 0.5 + rad_1 + rad_2 + rad_3 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         elif  x_1 <= 0.5 - rad_1 - rad_2 - rad_3 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 <= x_1 \
                         and x_2 <= 0.5 - rad_1 - rad_2 - rad_3 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 + rad_5 and 0.5 + rad_1 + rad_2 + rad_3 + rad_4 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 + rad_5 and 0.5 + rad_1 + rad_2 + rad_3 + rad_4 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 6
                         elif  x_1 <= 0.5 - rad_1 - rad_2 - rad_3 - rad_4 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 - rad_5 <= x_1 \
                         and x_2 <= 0.5 - rad_1 - rad_2 - rad_3 - rad_4 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 - rad_5 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 6
                         else:
                             type_el[i_el] = 1
                 else:
@@ -807,13 +809,13 @@ class NanoStruct(object):
                             type_el[i_el] = 3
                         elif 0.5 + i_d - rad_3 <= x_1 and x_1 <= 0.5 + i_d + rad_3 \
                         and 0.5 + i_d - rad_3 <= x_2 and x_2 <= 0.5 + i_d + rad_3:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif 0.5 - 2.0*i_d - rad_4 <= x_1 and x_1 <= 0.5 - 2.0*i_d + rad_4 \
                         and 0.5 - 2.0*i_d - rad_4 <= x_2 and x_2 <= 0.5 - 2.0*i_d + rad_4:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         elif 0.5 + 2.0*i_d - rad_5 <= x_1 and x_1 <= 0.5 + 2.0*i_d + rad_5 \
                         and 0.5 + 2.0*i_d - rad_5 <= x_2 and x_2 <= 0.5 + 2.0*i_d + rad_5:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 6
                         else:
                             type_el[i_el] = 1
             elif self.diameter4 > 0:
@@ -841,10 +843,10 @@ class NanoStruct(object):
                             type_el[i_el] = 3
                         elif 0.5 + i_d + rad_1 <= x_1 and x_1 <= 0.5 + i_d + rad_1 + 2.0*rad_3 \
                         and 0.5 + i_d + rad_1 <= x_2 and x_2 <= 0.5 + i_d + rad_1 + 2.0*rad_3:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif x_1 >= 0.5 + 2.0*i_d + rad_1 + 2.0*rad_3 \
                         and x_2 >= 0.5 + 2.0*i_d + rad_1 + 2.0*rad_3:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif x_1 <= 0.5 - 2.0*i_d - rad_1 - 2.0*rad_2 \
                         and x_2 <= 0.5 - 2.0*i_d - rad_1 - 2.0*rad_2:
                             type_el[i_el] = 3
@@ -865,16 +867,16 @@ class NanoStruct(object):
                             type_el[i_el] = 3
                         elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif  x_1 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 <= x_1 \
                         and x_2 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 and 0.5 + rad_1 + rad_2 + rad_3 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 + rad_4 and 0.5 + rad_1 + rad_2 + rad_3 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         elif  x_1 <= 0.5 - rad_1 - rad_2 - rad_3 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 <= x_1 \
                         and x_2 <= 0.5 - rad_1 - rad_2 - rad_3 and 0.5 - rad_1 - rad_2 - rad_3 - rad_4 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         else:
                             type_el[i_el] = 1
                 else:
@@ -890,11 +892,11 @@ class NanoStruct(object):
                             type_el[i_el] = 3
                         elif 0.5 + i_d - rad_3 <= x_1 and x_1 <= 0.5 + i_d + rad_3 \
                         and  0.5 + i_d - rad_3 <= x_2 and x_2 <= 0.5 + i_d + rad_3:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif x_1 <= rad_4 and x_2 <= rad_4:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         elif x_1 >= 1.0 - rad_4 and x_2 >= 1.0 - rad_4:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 5
                         else:
                             type_el[i_el] = 1
             elif self.diameter3 > 0:
@@ -923,7 +925,7 @@ class NanoStruct(object):
                         # inclusion 3
                         elif x_1 <= 0.5 + i_d + 2.0*rad_3 + rad_1 and 0.5 + i_d + rad_1 <= x_1 \
                         and  x_2 <= 0.5 + i_d + 2.0*rad_3 + rad_1 and 0.5 + i_d + rad_1 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         else:
                             type_el[i_el] = 1
                 elif self.split_touching_incs is True:
@@ -941,10 +943,10 @@ class NanoStruct(object):
                             type_el[i_el] = 3
                         elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         elif  x_1 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 <= x_1 \
                         and x_2 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 <= x_2:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         else:
                             type_el[i_el] = 1
                 else:
@@ -960,7 +962,7 @@ class NanoStruct(object):
                             type_el[i_el] = 3
                         elif 0.5 + i_d - rad_3 <= x_1 and x_1 <= 0.5 + i_d + rad_3 \
                         and  0.5 + i_d - rad_3 <= x_2 and x_2 <= 0.5 + i_d + rad_3:
-                            type_el[i_el] = 3
+                            type_el[i_el] = 4
                         else:
                             type_el[i_el] = 1
             elif self.diameter2 > 0:
@@ -1037,9 +1039,10 @@ class NanoStruct(object):
                 ax1.plot(el_list,self.type_el)
                 ax1.fill_between(el_list,self.type_el,0)
                 ax1.set_xlim(el_list[0],el_list[-1])
-                ax1.set_ylim(1,3)
-                ax1.set_yticks([1,2,3])
-                ax1.set_yticklabels(['bkg', 'inc_a', 'inc_b'])
+                ax1.set_ylim(1,7)
+                ax1.set_yticks([1,2,3,4,5,6,7])
+                ax1.set_yticklabels(['bkg', 'inc_a', 'inc_b',
+                    'inc_c', 'inc_d','inc_e', 'inc_f'])
                 ax1.set_xlabel('Element Number')
                 ax1.set_ylabel('Material Type')
                 plt.savefig(msh_name, bbox_inches='tight')
