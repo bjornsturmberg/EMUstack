@@ -392,6 +392,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
         if save_pdf == True:
             plt.savefig('%(s)s_stack%(bon)s%(add)s'% \
                 {'s': spectra_name, 'bon': stack_label, 'add' : add_name})
+    fig.clf()
 
 
 def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
@@ -449,6 +450,7 @@ def total_tra_plot(plot_name, a_spec, t_spec, r_spec, xvalues, xlabel,
     # plt.suptitle(plot_name+add_name+'\n'+params_2_print)
     plt.savefig('%(s)s_stack%(bon)s%(add)s'% \
                 {'s': plot_name, 'bon': stack_label, 'add': add_name})
+    fig.clf()
 ###############################################################################
 
 
@@ -671,6 +673,7 @@ def total_tra_plot_subs(plot_name, a_spec, t_spec, r_spec, wavelengths,
     plt.suptitle(params_2_print,fontsize=title_font)
     # plt.suptitle(plot_name+add_name+'\n'+params_2_print)
     plt.savefig('%(s)s_stack%(bon)s__%(add)s'% {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+    fig.clf()
 ###############################################################################
 
 
@@ -821,6 +824,7 @@ def extinction_plot(t_spec, wavelengths, params_2_print, stack_label,
         fontsize = title_font)
     plt.savefig('%(s)s_stack%(bon)s_%(add)s'% \
         {'s' : plot_name, 'bon' : stack_label,'add' : add_name})
+    fig.clf()
 
 
 def EOT_plot(stacks_list, wavelengths, pol='TM', params_layer=1,
@@ -871,6 +875,7 @@ def EOT_plot(stacks_list, wavelengths, pol='TM', params_layer=1,
     plot_name = 'EOT'
     plt.suptitle(params_2_print,fontsize=title_font)
     plt.savefig('%(s)s%(add)s'% {'s' : plot_name, 'add' : add_name})
+    fig.clf()
 
     if savetxt == True:
         np.savetxt('Trans_%(s)s%(add)s.txt'% {'s' : plot_name, 'add' : add_name}, \
@@ -1128,6 +1133,7 @@ def vis_scat_mats(scat_mat, nu_prop_PWs=0, wl=None, add_name='',
 
     plt.suptitle('Scattering Matrices' + add_name)
     plt.savefig('Scat_mat' + add_name)
+    fig.clf()
 
 
 def vis_matrix(scat_mat, add_name='', max_scale=None, only_real=False):
@@ -1167,6 +1173,7 @@ def vis_matrix(scat_mat, add_name='', max_scale=None, only_real=False):
 
     plt.suptitle(add_name)
     plt.savefig('Matrix' + add_name)
+    fig.clf()
 ###############################################################################
 
 
@@ -1253,6 +1260,7 @@ def t_func_k_plot_1D(stacks_list, lay_interest=0, pol='TE'):
     ax1.set_xlabel(r'$k_\parallel$')
     ax1.set_ylabel(r'$|E|$')
     plt.savefig('k_vector_excitation-lay_%s' % lay_interest, bbox_inches='tight')
+    fig.clf()
 ###############################################################################
 
 
@@ -1350,11 +1358,11 @@ def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
             np.savetxt('BM_amplitudes-lay_%s.txt' % add_name, \
                 save_trans, fmt = '%18.11f')
 
-
     except ValueError:
         print "BM_amplitudes only works in NanoStruct layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
 
+    fig.clf()
 
 def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
     lay_interest=0, up_and_down=True, add_height=None, add_name='',
@@ -1490,6 +1498,8 @@ def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
     except ValueError:
         print "PW_amplitudes only works in ThinFilm layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
+
+    fig.clf()
 
 
 def evanescent_merit(stacks_list, xvalues=None, chosen_PWs=None,
@@ -1644,6 +1654,8 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PWs=None,
     except ValueError:
         print "evanescent_merit only works in ThinFilm layers."\
         "\nPlease select lay_interest !=%i.\n" % lay_interest
+
+    fig.clf()
 ###############################################################################
 
 
@@ -1886,6 +1898,8 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
                     plt.savefig('%(dir_name)s/stack_%(stack_num)s_%(p)s_E_%(name)s_slice=%(z_pos)s_wl=%(wl)s.pdf'% \
                         {'dir_name' : dir_name, 'wl' : wl, 'p' : re_im, 'z_pos' : z1[z_of_xy], \
                         'name' : name_lay,'stack_num':stack_num})
+
+                    fig.clf()
 
         stack_num += 1
 
@@ -2657,6 +2671,8 @@ def fields_vertically(stacks_list, factor_pts_vert=31, nu_pts_hori=41,
                      'stack_num': stack_num, 'add': add_name},
                         bbox_inches='tight')
 
+                fig.clf()
+
                             # elif sli == 'yz':
                             #     for x_of_yz in xrange(np.size(x1)):
                             #         fig1 = plt.figure(num=None, figsize=(12, 21), dpi=80, facecolor='w', edgecolor='k')
@@ -3228,6 +3244,7 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                     plt.suptitle(r'BM %(BM)i, k$_z$ = %(re)7.3f + %(im)7.3fi (d)'% \
                         {'re' : np.real(meat.k_z[BM]), 'im' : np.imag(meat.k_z[BM]), 'BM' : BM})
                     plt.savefig(dir_name + '/' + name_lay, bbox_inches = 'tight')
+                    fig.clf()
 
             except ValueError:
                 print "fields_1d can only plot 1D fields of 1D_array "\
@@ -3298,4 +3315,5 @@ def Fabry_Perot_res(stacks_list, freq_list, kx_list, f_0, k_0, lay_interest=1):
     ax1.set_ylabel(r'$f/f_0$')
     ax1.axis('image')
     plt.savefig('Fabry-Perot_resonances', bbox_inches = 'tight')
+    fig.clf()
 ###############################################################################
