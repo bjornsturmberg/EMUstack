@@ -61,7 +61,7 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    FeS2            |  Cu_Palik  |   FTO_Wenger           |
         +--------------------+------------+------------------------+
-        |    Zn3P2           |            |   FTO_Wengerk5         |
+        |    Zn3P2           |  Al        |   FTO_Wengerk5         |
         +--------------------+------------+------------------------+
         |    AlGaAs          |            |                        |
         +--------------------+------------+------------------------+
@@ -280,6 +280,8 @@ Cu = Material(np.loadtxt('%sCu_JC.txt' % data_location))
 # Johnson Christy
 Cu_Palik = Material(np.loadtxt('%sCu_Palik.txt' % data_location))
 # Palik
+Al = Material(np.loadtxt('%sAl.txt' % data_location))
+# McPeak ACS Photonics 2015 http://dx.doi.org/10.1021/ph5004237
 
 
 # Drude model
