@@ -23,6 +23,7 @@ import numpy as np
 from mode_calcs import r_t_mat
 from mode_calcs import Anallo
 
+
 class Stack(object):
     """ Represents a stack of layers evaluated at one frequency.
 

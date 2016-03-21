@@ -1,5 +1,5 @@
 """
-    simo_100-EOT.py is a simulation script template for EMUstack.
+    simo_090-EOT.py is a simulation script template for EMUstack.
 
     Copyright (C) 2015  Bjorn Sturmberg
 
