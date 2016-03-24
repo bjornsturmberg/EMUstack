@@ -372,12 +372,14 @@ class Stack(object):
                     flux_TE = np.linalg.norm(f2_minus[0:num_prop_out])**2
                     flux_TM = np.linalg.norm(f2_minus[neq_PW:neq_PW+num_prop_out])**2
                     down_fluxes.append(flux_TE + flux_TM)
-                else: print "Warning: there are no propagating modes in the semi-inf \n substrate therefore cannot calculate energy fluxes here."
+                else:
+                    print "Warning: there are no propagating modes in the semi-inf \n substrate therefore cannot calculate energy fluxes here. \n Setting down_flux=0"
+                    down_fluxes.append(0.0)
 
-                num_prop_in    = self.layers[-1].num_prop_pw_per_pol
-                if num_prop_out != 0:
+                num_prop_in = self.layers[-1].num_prop_pw_per_pol
+                if num_prop_in != 0:
                 # calculate absorptance in each layer
-                    for i in range(1 , len(down_fluxes)-1):
+                    for i in range(1, len(down_fluxes)-1):
                         a_layer = abs(abs(down_fluxes[i])-abs(down_fluxes[i+1]))
                         self.a_list.append(a_layer)
                     a_layer = abs(down_fluxes[0]-down_fluxes[-1]-up_flux[0])
