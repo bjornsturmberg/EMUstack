@@ -31,7 +31,7 @@ msh_location = '../backend/fortran/msh/'
 # Acknowledgements
 print '\n##################################################################\n'\
     + 'EMUstack is brought to you by Bjorn Sturmberg, Kokou Dossou, \n' \
-    + 'Felix Lawrence & Lindsay Botten, with support from CUDOS & ARENA\n' \
+    + 'Felix Lawrence & Lindsay Botton, with support from CUDOS & ARENA\n' \
     + 'Starting EMUstack calculation ...\n' + \
       '##################################################################\n'
 
@@ -191,7 +191,7 @@ class NanoStruct(object):
                  diameter6=0, diameter7=0, diameter8=0, diameter9=0,
                  diameter10=0, diameter11=0, diameter12=0, diameter13=0,
                  diameter14=0, diameter15=0, diameter16=0, gap=0, smooth=0,
-                 hyperbolic=False, world_1d=None, posx=0, posy=0,
+                 hyperbolic=False, world_1d=None, posx=0, posy=0, xshift=None,
                  make_mesh_now=True, force_mesh=True,
                  mesh_file='NEED_FILE.mail',
                  lc_bkg=0.09, lc2=1.0, lc3=1.0, lc4=1.0, lc5=1.0, lc6=1.0,
@@ -297,6 +297,7 @@ class NanoStruct(object):
         self.plot_imag = plot_imag
         self.plot_abs = plot_abs
         self.plot_field_conc = plot_field_conc
+        self.xshift = xshift
 
     def make_mesh(self):
         if self.periodicity == '2D_array':
@@ -502,6 +503,7 @@ class NanoStruct(object):
                     geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
                     geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
                     geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
+                    geo = geo.replace('xshift_nm = 0;', "xshift_nm = %f;" % self.xshift)
 
             elif self.inc_shape == 'dimer':
                 msh_name = 'dimer_%(d)s_%(dy)s_%(d_one)s_%(d_two)s_%(gap)s' % {
