@@ -54,6 +54,8 @@ class NanoStruct(object):
                 currently; 'circle', 'ellipse', 'square', 'ring', 'SRR',
                 'dimer', 'square_dimer', 'strip_circle', 'strip_square'.
 
+            is_hex  (bool): Simulating a hexagonal lattice, using a rect unitcell?
+
             ellipticity  (float): If != 0, inclusion has given ellipticity, \
                 with b = diameter, a = diameter-ellipticity * diameter. \
                 NOTE: only implemented for a single inclusion.
@@ -175,8 +177,8 @@ class NanoStruct(object):
     """
 
     def __init__(self, periodicity, period, diameter1,
-                 period_y=None, inc_shape='circle', ellipticity=0.0,
-                 ff=0, ff_rand=False, small_space=None,
+                 period_y=None, inc_shape='circle', is_hex=False,
+                 ellipticity=0.0, ff=0, ff_rand=False, small_space=None,
                  edge_spacing=False, split_touching_incs=False,
                  len_vertical=0, len_horizontal=0,
                  background=materials.Material(1.0 + 0.0j),
@@ -205,6 +207,7 @@ class NanoStruct(object):
         else:
             self.period_y = float(period_y)
         self.inc_shape = inc_shape
+        self.is_hex = is_hex
         self.height_nm = height_nm
         self.background = background
         self.inclusion_a = inclusion_a
@@ -242,6 +245,8 @@ class NanoStruct(object):
         elif diameter2 != 0:
             self.nb_typ_el = 3
         else:
+            self.nb_typ_el = 2
+        if self.is_hex is True:
             self.nb_typ_el = 2
         if ff == 0:
             if periodicity == '2D_array':
@@ -314,13 +319,22 @@ class NanoStruct(object):
                    'diasss': dec_float_str(self.diameter4),
                    'diassss': dec_float_str(self.diameter5)}
                 elif self.diameter5 > 0:
-                    supercell = 9
-                    msh_name = '%(d)s_%(dy)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s_%(diassss)s' % {
-                   'd': dec_float_str(self.period),
-                   'dy': dec_float_str(self.period_y),
-                   'dia': dec_float_str(self.diameter1),
-                   'dias': dec_float_str(self.diameter2), 'diass': dec_float_str(self.diameter3),
-                   'diasss': dec_float_str(self.diameter4), 'diassss': dec_float_str(self.diameter5)}
+                    if self.is_hex is False:
+                        supercell = 9
+                        msh_name = '%(d)s_%(dy)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s_%(diassss)s' % {
+                       'd': dec_float_str(self.period),
+                       'dy': dec_float_str(self.period_y),
+                       'dia': dec_float_str(self.diameter1),
+                       'dias': dec_float_str(self.diameter2), 'diass': dec_float_str(self.diameter3),
+                       'diasss': dec_float_str(self.diameter4), 'diassss': dec_float_str(self.diameter5)}
+                    elif self.is_hex is True:
+                        supercell = 5
+                        msh_name = 'hex_%(d)s_%(dy)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s_%(diassss)s' % {
+                       'd': dec_float_str(self.period),
+                       'dy': dec_float_str(np.round(self.period_y,decimals=2)),
+                       'dia': dec_float_str(self.diameter1),
+                       'dias': dec_float_str(self.diameter2), 'diass': dec_float_str(self.diameter3),
+                       'diasss': dec_float_str(self.diameter4), 'diassss': dec_float_str(self.diameter5)}
                 elif self.diameter4 > 0:
                     supercell = 4
                     msh_name = '%(d)s_%(dy)s_%(dia)s_%(dias)s_%(diass)s_%(diasss)s' % {
@@ -424,7 +438,11 @@ class NanoStruct(object):
 
 
                 if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh is True:
-                    geo_tmp = open(msh_location + '%s_msh_template.geo' % supercell, "r").read()
+                    if self.is_hex is False:
+                        geo_tmp = open(msh_location + '%s_msh_template.geo' % supercell, "r").read()
+                    else:
+                        geo_tmp = open(msh_location + 'hex_msh_template.geo', "r").read()
+
                     geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                     geo = geo.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
                     geo = geo.replace('dy_in_nm = 0;', "dy_in_nm = %f;" % self.period_y)
@@ -451,12 +469,14 @@ class NanoStruct(object):
                     if supercell > 3:
                         geo = geo.replace('a4 = 0;', "a4 = %f;" % self.diameter4)
                         geo = geo.replace('lc6 = lc/1;', "lc6 = lc/%f;" % self.lc6)
-                    if supercell > 4:
+                    if supercell > 4 and self.is_hex is False:
                         geo = geo.replace('a5 = 0;', "a5 = %f;" % self.diameter5)
                         geo = geo.replace('a6 = 0;', "a6 = %f;" % self.diameter6)
                         geo = geo.replace('a7 = 0;', "a7 = %f;" % self.diameter7)
                         geo = geo.replace('a8 = 0;', "a8 = %f;" % self.diameter8)
                         geo = geo.replace('a9 = 0;', "a9 = %f;" % self.diameter9)
+                    elif supercell > 4 and self.is_hex is True:
+                        geo = geo.replace('a5 = 0;', "a5 = %f;" % self.diameter5)
                     if supercell > 9:
                         geo = geo.replace('a10 = 0;', "a10 = %f;" % self.diameter10)
                         geo = geo.replace('a11 = 0;', "a11 = %f;" % self.diameter11)
