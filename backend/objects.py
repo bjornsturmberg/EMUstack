@@ -247,7 +247,7 @@ class NanoStruct(object):
         else:
             self.nb_typ_el = 2
         if self.is_hex is True:
-            self.nb_typ_el = 2
+            self.nb_typ_el = 6
         if ff == 0:
             if periodicity == '2D_array':
                 self.ff = calculate_ff(inc_shape, period, self.period_y,
