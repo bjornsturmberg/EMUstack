@@ -8,15 +8,11 @@ d_in_nm = 0;
 dy_in_nm = 0;
 dy = dy_in_nm/d_in_nm;
 a1 = 0;
-a2 = 0;
-a3 = 0;
-a4 = 0;
-a5 = 0;
 radius1 = (a1/(2*d_in_nm))*d;
-radius2 = (a2/(2*d_in_nm))*d;
-radius3 = (a3/(2*d_in_nm))*d;
-radius4 = (a4/(2*d_in_nm))*d;
-radius5 = (a5/(2*d_in_nm))*d;
+radius2 = (a1/(2*d_in_nm))*d;
+radius3 = (a1/(2*d_in_nm))*d;
+radius4 = (a1/(2*d_in_nm))*d;
+radius5 = (a1/(2*d_in_nm))*d;
 ellipticity = 0;
 square = 0;
 lc = 0; // 0.501 0.201 0.0701;
@@ -92,10 +88,10 @@ Ellipse(58) = {20, 4, 21, 21};
 Ellipse(59) = {19, 3, 18, 18};
 Ellipse(60) = {16, 2, 17, 17};
 
-Physical Line(61) = {50, 1, 51, 2};
-Physical Line(62) = {7, 52, 53, 8};
-Physical Line(63) = {4, 54, 55, 3};
-Physical Line(64) = {6, 56, 5, 49};
+//Physical Line(61) = {50, 1, 51, 2};
+//Physical Line(62) = {7, 52, 53, 8};
+//Physical Line(63) = {4, 54, 55, 3};
+//Physical Line(64) = {6, 56, 5, 49};
 
 Line Loop(65) = {1, 13, 18, -9, -5, 57};
 Plane Surface(66) = {65};
@@ -123,11 +119,7 @@ Line Loop(87) = {60, 6, 3};
 Plane Surface(88) = {87};
 
 Physical Surface(1) = {66, 70, 74, 86};
-Physical Surface(2) = {82, 80, 78, 84};
-Physical Surface(3) = {68};
-Physical Surface(4) = {72};
-Physical Surface(5) = {76};
-Physical Surface(6) = {88};
+Physical Surface(2) = {82, 80, 78, 84, 68, 72, 76, 88};
 
 EndIf
 
@@ -161,10 +153,10 @@ Line(46) = {158, 18};
 Line(47) = {17, 156};
 Line(48) = {156, 16};
 
-Physical Line(61) = {50, 1, 51, 2};
-Physical Line(62) = {7, 52, 53, 8};
-Physical Line(63) = {4, 54, 55, 3};
-Physical Line(64) = {6, 56, 5, 49};
+//Physical Line(61) = {50, 1, 51, 2};
+//Physical Line(62) = {7, 52, 53, 8};
+//Physical Line(63) = {4, 54, 55, 3};
+//Physical Line(64) = {6, 56, 5, 49};
 
 Line Loop(65) = {49, 41, 42, -50};
 Plane Surface(66) = {65};
@@ -191,10 +183,6 @@ Plane Surface(86) = {85};
 Line Loop(87) = {45, 46, 4, -8};
 Plane Surface(88) = {87};
 Physical Surface(1) = {68, 82, 86, 70};
-Physical Surface(2) = {74, 80, 78, 76};
-Physical Surface(3) = {66};
-Physical Surface(4) = {84};
-Physical Surface(5) = {88};
-Physical Surface(6) = {72};
+Physical Surface(2) = {74, 80, 78, 76, 66, 84, 88, 72};
 
 EndIf
