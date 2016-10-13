@@ -655,8 +655,9 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         elif x_1 <= 0.5 - i_d - rad_1 and 0.5 - i_d - rad_1 - 2.0*rad_2 <= x_1 \
                         and  x_2 <= 0.5 - i_d - rad_1 and 0.5 - i_d - rad_1 - 2.0*rad_2 <= x_2:
@@ -682,8 +683,9 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         elif  x_1 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 <= x_2:
@@ -722,8 +724,9 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         elif 0.5 - i_d - rad_2 <= x_1 and x_1 <= 0.5 - i_d + rad_2 \
                         and  0.5 - i_d - rad_2 <= x_2 and x_2 <= 0.5 - i_d + rad_2:
@@ -762,8 +765,9 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         elif x_1 <= 0.5 - i_d - rad_1 and 0.5 - i_d - rad_1 - 2.0*rad_2 <= x_1 \
                         and x_2 <= 0.5 - i_d - rad_1 and 0.5 - i_d - rad_1 - 2.0*rad_2 <= x_2:
@@ -783,8 +787,9 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         elif  x_1 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 <= x_2:
@@ -817,8 +822,9 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         elif 0.5 - i_d - rad_2 <= x_1 and x_1 <= 0.5 - i_d + rad_2 \
                         and 0.5 - i_d - rad_2 <= x_2 and x_2 <= 0.5 - i_d + rad_2:
@@ -851,8 +857,9 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         elif x_1 <= 0.5 - i_d - rad_1 and 0.5 - i_d - rad_1 - 2.0*rad_2 <= x_1 \
                         and x_2 <= 0.5 - i_d - rad_1 and 0.5 - i_d - rad_1 - 2.0*rad_2 <= x_2:
@@ -872,8 +879,9 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         elif  x_1 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 <= x_1 \
                         and x_2 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 <= x_2:
@@ -900,8 +908,9 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         elif 0.5 - i_d - rad_2 <= x_1 and x_1 <= 0.5 - i_d + rad_2 \
                         and  0.5 - i_d - rad_2 <= x_2 and x_2 <= 0.5 - i_d + rad_2:
@@ -930,9 +939,10 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
+                        dx = x_2 - x_1
                         # inclusion 1
-                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         # inclusion 2
                         elif 0.5 - i_d - 2.0*rad_2 - rad_1 <= x_1 and x_1 <= 0.5 - i_d - rad_1 \
@@ -948,20 +958,21 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
-                        elif  x_1 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 <= x_2:
+                        elif  x_1 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 - dx <= x_2:
                             type_el[i_el] = 3
-                        elif  x_1 <= 0.5 - rad_1 and 0.5 - rad_1 - rad_2 <= x_1 \
-                        and x_2 <= 0.5 - rad_1 and 0.5 - rad_1 - rad_2 <= x_2:
+                        elif  x_1 <= 0.5 - rad_1 and 0.5 - rad_1 - rad_2 - dx <= x_1 \
+                        and x_2 <= 0.5 - rad_1 and 0.5 - rad_1 - rad_2 - dx <= x_2:
                             type_el[i_el] = 3
-                        elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 <= x_2:
+                        elif  x_1 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 + rad_2 + rad_3 and 0.5 + rad_1 + rad_2 - dx <= x_2:
                             type_el[i_el] = 4
-                        elif  x_1 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 <= x_1 \
-                        and x_2 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 <= x_2:
+                        elif  x_1 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 - dx <= x_1 \
+                        and x_2 <= 0.5 - rad_1 - rad_2 and 0.5 - rad_1 - rad_2 - rad_3 - dx <= x_2:
                             type_el[i_el] = 4
                         else:
                             type_el[i_el] = 1
@@ -970,8 +981,9 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         elif 0.5 - i_d - rad_2 <= x_1 and x_1 <= 0.5 - i_d + rad_2 \
                         and  0.5 - i_d - rad_2 <= x_2 and x_2 <= 0.5 - i_d + rad_2:
@@ -993,14 +1005,15 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if  x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
-                        elif  x_1 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 <= x_2:
+                        elif  x_1 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 + rad_2 and 0.5 + rad_1 - dx <= x_2:
                             type_el[i_el] = 3
-                        elif  x_1 <= 0.5 - rad_1 and 0.5 - rad_1 - rad_2 <= x_1 \
-                        and x_2 <= 0.5 - rad_1 and 0.5 - rad_1 - rad_2 <= x_2:
+                        elif  x_1 <= 0.5 - rad_1 and 0.5 - rad_1 - rad_2 - dx <= x_1 \
+                        and x_2 <= 0.5 - rad_1 and 0.5 - rad_1 - rad_2 - dx <= x_2:
                             type_el[i_el] = 3
                         else:
                             type_el[i_el] = 1
@@ -1013,8 +1026,9 @@ class NanoStruct(object):
                     for i_el in el_list:
                         x_1 = ls_x[2*i_el-1]
                         x_2 = ls_x[2*i_el+1]
-                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                        dx = x_2 - x_1
+                        if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                        and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                             type_el[i_el] = 2
                         elif x_1 <= 0.5-rad_1-small_space and x_2 <= 0.5-rad_1-small_space:
                             type_el[i_el] = 3
@@ -1030,8 +1044,9 @@ class NanoStruct(object):
                 for i_el in el_list:
                     x_1 = ls_x[2*i_el-1]
                     x_2 = ls_x[2*i_el+1]
-                    if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_1 \
-                    and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 <= x_2:
+                    dx = x_2 - x_1
+                    if x_1 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_1 \
+                    and x_2 <= 0.5 + rad_1 and 0.5 - rad_1 - dx <= x_2:
                         type_el[i_el] = 2
                     else:
                         type_el[i_el] = 1
