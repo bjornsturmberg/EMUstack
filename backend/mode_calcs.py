@@ -18,6 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import print_function
 
 import numpy as np
 import sys
@@ -140,10 +141,10 @@ class Anallo(Modes):
             k_z_unsrt = np.sqrt(self.k()**2 - alphas**2 - betas**2)
 
         else:
-            raise ValueError, "must specify world_1d status of ThinFilm."
+            raise ValueError("must specify world_1d status of ThinFilm.")
 
         if np.shape(np.nonzero(k_z_unsrt))[1] != np.shape(k_z_unsrt)[0]:
-            print "Warning: selected [k_x, k_y] hits a Wood Anomaly!\n EMUstack changed [k_x, k_y] -> (1-1e-9)*[k_x, k_y]."
+            print("Warning: selected [k_x, k_y] hits a Wood Anomaly!\n EMUstack changed [k_x, k_y] -> (1-1e-9)*[k_x, k_y].")
             if self.structure.world_1d is True:
                 alpha0, beta0 = (1-1e-9)*self.k_pll_norm()
                 alphas = alpha0 + pxs * 2 * pi / d
@@ -242,9 +243,8 @@ class Anallo(Modes):
             inc_amp[spec_TE] = 1/np.sqrt(2.)
             inc_amp[spec_TM] = -1j/np.sqrt(2.)
         else:
-            raise NotImplementedError, \
-            "Must select from the currently implemented polarisations; \
-             TE, TM, R Circ, L Circ."
+            raise NotImplementedError("Must select from the currently implemented polarisations; \
+             TE, TM, R Circ, L Circ.")
 
         return inc_amp
 
@@ -281,8 +281,8 @@ class Simmo(Modes):
         elif self.structure.periodicity == '2D_array':
             pxs, pys = self.calc_2d_grating_orders(self.max_order_PWs)
         else:
-            raise ValueError, "NanoStruct layer must have periodicity of \
-                either '1D_array' or '2D_array'."
+            raise ValueError("NanoStruct layer must have periodicity of \
+                either '1D_array' or '2D_array'.")
 
         num_pw_per_pol = pxs.size
         if num_BMs is None: self.num_BMs = num_pw_per_pol * 2 + 20
@@ -311,7 +311,7 @@ class Simmo(Modes):
                 - self.k_pll_norm()[0]**2 - self.k_pll_norm()[1]**2
 
         if FEM_debug == 1:
-            print 'shift', shift
+            print('shift', shift)
             if not os.path.exists("Normed"):
                 os.mkdir("Normed")
             if not os.path.exists("Matrices"):
@@ -350,8 +350,8 @@ class Simmo(Modes):
                 J_dag_2d = None
 
             except KeyboardInterrupt:
-                print "\n\n1D FEM routine calc_modes_1d",\
-                "interrupted by keyboard.\n\n"
+                print("\n\n1D FEM routine calc_modes_1d",\
+                "interrupted by keyboard.\n\n")
 
 
         elif self.structure.periodicity == '2D_array':
@@ -385,12 +385,12 @@ class Simmo(Modes):
                 self.J, self.J_dag = np.mat(J)/area_norm, np.mat(J_dag)
 
             except KeyboardInterrupt:
-                print "\n\n2D FEM routine calc_modes_2d",\
-                "interrupted by keyboard.\n\n"
+                print("\n\n2D FEM routine calc_modes_2d",\
+                "interrupted by keyboard.\n\n")
 
         else:
-            raise ValueError, "NanoStruct layer must have periodicity of \
-                either '1D_array' or '2D_array'."
+            raise ValueError("NanoStruct layer must have periodicity of \
+                either '1D_array' or '2D_array'.")
 
         if not self.structure.plot_field_conc:
             self.mode_pol = None
@@ -439,9 +439,8 @@ def r_t_mat(lay1, lay2):
         R21, T21, R12, T12 = r_t_mat_tf_ns(lay2, lay1)
         ref_trans = R12, T12, R21, T21
     elif isinstance(lay1, Simmo) and isinstance(lay2, Simmo):
-        raise NotImplementedError, \
-            "Sorry! For, now you can put an extremely thin film between your \
-            NanoStructs"
+        raise NotImplementedError("Sorry! For, now you can put an extremely thin film between your \
+            NanoStructs")
 
     # Store its R and T matrices for later use
     _interfaces_i_have_known[id(lay1), id(lay2)] = ref_trans
@@ -457,8 +456,8 @@ def r_t_mat_anallo(an1, an2):
         in the eyes of `numpy.sign`
     """
     if len(an1.k_z) != len(an2.k_z):
-        raise ValueError, "Need the same number of plane waves in \
-        Anallos %(an1)s and %(an2)s" % {'an1': an1, 'an2': an2}
+        raise ValueError("Need the same number of plane waves in \
+        Anallos %(an1)s and %(an2)s" % {'an1': an1, 'an2': an2})
 
     Z1 = an1.Z()
     Z2 = an2.Z()
@@ -492,8 +491,8 @@ def r_t_mat_tf_ns(an1, sim2):
     # In the paper, X is a diagonal matrix. Here it is a 1 x N array.
     # Same difference.
     if np.shape(Z1_sqrt_inv)[1] != np.shape(sim2.J.A)[0]:
-        raise ValueError, "Scattering matrices of layers are not consistent,\
-            \nsome layers are 1D and others 2D. Check that world_1d status."
+        raise ValueError("Scattering matrices of layers are not consistent,\
+            \nsome layers are 1D and others 2D. Check that world_1d status.")
 
     A = np.mat(Z1_sqrt_inv.T * sim2.J.A)
     B = np.mat(sim2.J_dag.A * Z1_sqrt_inv)
