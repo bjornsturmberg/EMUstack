@@ -30,6 +30,7 @@ matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
+emu_path = os.path.dirname(os.path.abspath(__file__))
 
 # font = {'family' : 'normal',
 #         'weight' : 'bold',
@@ -283,7 +284,7 @@ def t_r_a_plots(stacks_list, xvalues=None, xlabel='', params_layer=1,
 
     if weight_spec == True:
         # Plot totals weighted by solar irradiance.
-        Irrad_spec_file = '../backend/data/ASTMG173'
+        Irrad_spec_file = emu_path + '/data/ASTMG173'
         i_data = np.loadtxt('%s.txt' % Irrad_spec_file)
         i_spec = np.interp(xvalues, i_data[:,0], i_data[:,3])
         bandgap_wl = xvalues[-1]
@@ -551,7 +552,7 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n,
 
     if weight_spec == True:
         # Also plot totals weighted by solar irradiance
-        Irrad_spec_file = '../backend/data/ASTMG173'
+        Irrad_spec_file = emu_path + '/data/ASTMG173'
         i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
         i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
         bandgap_wl   = wavelengths[-1]
@@ -892,7 +893,7 @@ def J_short_circuit(active_abs, wavelengths, params_2_print='',
         Assuming every absorbed photon produces a pair of charge carriers.
     """
 
-    Irrad_spec_file = '../backend/data/ASTMG173'
+    Irrad_spec_file = emu_path + '/data/ASTMG173'
     i_data = np.loadtxt('%s.txt' % Irrad_spec_file)
     i_spec = np.interp(wavelengths, i_data[:, 0], i_data[:, 3])
     expression = i_spec*active_abs*wavelengths
@@ -918,7 +919,7 @@ def ult_efficiency(active_abs, wavelengths, bandgap_wl=None,
     """
     if bandgap_wl is None:
         bandgap_wl = np.max(wavelengths)
-    Irrad_spec_file = '../backend/data/ASTMG173'
+    Irrad_spec_file = emu_path + '/data/ASTMG173'
     i_data       = np.loadtxt('%s.txt' % Irrad_spec_file)
     i_spec       = np.interp(wavelengths, i_data[:,0], i_data[:,3])
     expression   = i_spec*active_abs*wavelengths

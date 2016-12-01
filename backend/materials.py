@@ -19,13 +19,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
 import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
-data_location = '../backend/data/'
+emu_path = os.path.dirname(os.path.abspath(__file__))
+data_location = emu_path + '/data/'
 
 
 class Material(object):

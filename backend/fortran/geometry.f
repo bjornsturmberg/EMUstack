@@ -6,7 +6,7 @@ c   type_nod != 0 => boundary point
 c
 c
       subroutine geometry (nel, npt, nnodes, nb_typ_el,
-     *    lx, ly, type_nod, type_el, table_nod, x, 
+     *    lx, ly, type_nod, type_el, table_nod, x,
      *    mesh_file)
 c
       implicit none
@@ -52,7 +52,7 @@ c     Connectivity table
         if(j .lt. 0) then
           write(ui,*)
           write(ui,*) "   ???"
-          write(ui,*) "geometry: type_el(i) < 0 : ", 
+          write(ui,*) "geometry: type_el(i) < 0 : ",
      *    i, type_el(i)
           write(ui,*) "geometry: Aborting..."
           stop
@@ -63,7 +63,7 @@ c     Connectivity table
       if(nb_typ_el2 .gt. nb_typ_el) then
          write(ui,*)
          write(ui,*) "   ???"
-         write(ui,*) "geometry: nb_typ_el2 > nb_typ_el : ", 
+         write(ui,*) "geometry: nb_typ_el2 > nb_typ_el : ",
      *    nb_typ_el2, nb_typ_el
          write(ui,*) "geometry: Aborting..."
          stop
@@ -71,4 +71,3 @@ c     Connectivity table
 
       return
       end
-
