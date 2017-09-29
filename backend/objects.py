@@ -19,6 +19,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import print_function
 
 import os
 import numpy as np
@@ -29,11 +30,11 @@ from fortran import EMUstack
 msh_location = '../backend/fortran/msh/'
 
 # Acknowledgements
-print '\n##################################################################\n'\
+print('\n##################################################################\n'\
     + 'EMUstack is brought to you by Bjorn Sturmberg, Kokou Dossou, \n' \
     + 'Felix Lawrence & Lindsay Botton, with support from CUDOS & ARENA\n' \
     + 'Starting EMUstack calculation ...\n' + \
-      '##################################################################\n'
+      '##################################################################\n')
 
 
 class NanoStruct(object):
@@ -239,7 +240,7 @@ class NanoStruct(object):
         self.len_horizontal = len_horizontal
         self.ellipticity = ellipticity
         if ellipticity > 1.0:
-            raise ValueError, "ellipticity must be less than 1.0"
+            raise ValueError("ellipticity must be less than 1.0")
         if diameter3 != 0:
             self.nb_typ_el = 4
         elif diameter2 != 0:
@@ -358,7 +359,7 @@ class NanoStruct(object):
                                    'dy': dec_float_str(self.period_y),
                                    'dia': dec_float_str(self.diameter1)}
                 else:
-                    raise ValueError, "must have at least one cylinder of nonzero diameter."
+                    raise ValueError("must have at least one cylinder of nonzero diameter.")
 
                 if self.ellipticity != 0:
                     msh_name = msh_name + '_e_%(e)s' % {'e': dec_float_str(self.ellipticity),}
@@ -400,7 +401,7 @@ class NanoStruct(object):
                                                rad_array[11], rad_array[12],
                                                rad_array[13], rad_array[14],
                                                rad_array[15])
-                        print test_ff
+                        print(test_ff)
                         if supercell > 3:
                             self.diameter1 = rad_array[0]
                             self.diameter2 = rad_array[1]
@@ -594,9 +595,9 @@ class NanoStruct(object):
                     geo = geo.replace('square = 0;', "square = 1;")
 
             else:
-                raise NotImplementedError, "\n Selected inc_shape = '%s' \n \
+                raise NotImplementedError("\n Selected inc_shape = '%s' \n \
                 is not currently implemented. Please make a mesh with gmsh, & \n \
-                consider contributing this to EMUstack via github." % self.inc_shape
+                consider contributing this to EMUstack via github." % self.inc_shape)
 
             self.mesh_file = msh_name + '.mail'
             if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh is True:
@@ -1036,7 +1037,7 @@ class NanoStruct(object):
                     else:
                         type_el[i_el] = 1
             else:
-                raise ValueError, "Must have at least one grating of nonzero width."
+                raise ValueError("Must have at least one grating of nonzero width.")
 
             # Store useful quantities as property of the object.
             self.n_msh_el = nel
@@ -1119,7 +1120,7 @@ class NanoStruct(object):
         #         # os.system(gmsh_cmd)
 
         else:
-            raise ValueError, "Must be simulating either a '1D_array' or a '2D_array'."
+            raise ValueError("Must be simulating either a '1D_array' or a '2D_array'.")
 
     def calc_modes(self, light, **args):
         """ Run a simulation to find the NanoStruct's modes.
@@ -1237,28 +1238,28 @@ class Light(object):
                  theta=None, phi=None, n_inc=1.):
         if np.imag(wl_nm) != 0:
             self.wl_nm = complex(wl_nm)
-            print "Warning: using a complex wavelength. EMUstack can \n\
-                only handle these for uniform films using 0 pw_orders."
+            print("Warning: using a complex wavelength. EMUstack can \n\
+                only handle these for uniform films using 0 pw_orders.")
         else:
             self.wl_nm = float(np.real(wl_nm))
         self._air_anallos = {}
         self.max_order_PWs = max_order_PWs
 
         if None == theta and None == k_parallel:
-            raise ValueError, "Specify incident angle either by \n\
-            k_parallel OR by theta, phi and n_inc."
+            raise ValueError("Specify incident angle either by \n\
+            k_parallel OR by theta, phi and n_inc.")
 
         if None == theta:
             self.k_pll = np.array(k_parallel, dtype='float64')
             # Check that not aligned with either x or y axis.
             if np.abs(self.k_pll[0]) == 0 or np.abs(self.k_pll[1]) == 0:
-                print "Warning: a component of k_parallel is exactly zero, \n\
-                this can lead to degeneracies and errors."
+                print("Warning: a component of k_parallel is exactly zero, \n\
+                this can lead to degeneracies and errors.")
         else:
             # Check for inconsistent input
             if None != k_parallel or phi == None:
-                raise ValueError, "Specify incident angle either by \n\
-            k_parallel OR by theta, phi and n_inc."
+                raise ValueError("Specify incident angle either by \n\
+            k_parallel OR by theta, phi and n_inc.")
             # Avoid the degeneracies that occur at normal incidence
             # (FEM does not deal well with them)
             if abs(theta) < 1e-5: theta += 1e-5

@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import print_function
 
 import objects
 import mode_calcs
@@ -212,7 +213,7 @@ def t_r_a_plots(stacks_list, xvalues=None, xlabel='', params_layer=1,
         else:
             xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
             xlabel = r'$\lambda$ (nm)'
-            print "t_r_a_plots is guessing you have a single wavelength, else specify xvalues."
+            print("t_r_a_plots is guessing you have a single wavelength, else specify xvalues.")
 
     if add_height!=0: add_name += "_" + zeros_int_str(add_height)
     stack_label = zeros_int_str(stack_label)
@@ -238,7 +239,7 @@ def t_r_a_plots(stacks_list, xvalues=None, xlabel='', params_layer=1,
         active_abs = []
         active_layer_nu = len(stacks_list[0].layers) - active_layer_nu - 1
         if not 0 < active_layer_nu < len(stacks_list[0].layers)-1:
-            raise ValueError, "active_layer_nu must refer to a finite layer."
+            raise ValueError("active_layer_nu must refer to a finite layer.")
         for i in range(len(xvalues)):
             active_abs.append(float(a_list[active_layer_nu - 1 +
                               i*layers_steps]))
@@ -524,7 +525,7 @@ def t_r_a_plots_subs(stacks_list, wavelengths, period, sub_n,
         active_abs = []
         active_layer_nu = len(stacks_list[0].layers) - active_layer_nu - 1
         if not 0 < active_layer_nu < len(stacks_list[0].layers)-1:
-            raise ValueError, "active_layer_nu must refer to a finite layer."
+            raise ValueError("active_layer_nu must refer to a finite layer.")
         for i in range(len(xvalues)):
             active_abs.append(float(a_list[active_layer_nu - 1 + \
                 i*layers_steps]))
@@ -716,7 +717,7 @@ def J_sc_eta_NO_plots(stacks_list, wavelengths, params_layer=1,
     active_abs = []
     active_layer_nu = len(stacks_list[0].layers) - active_layer_nu - 1
     if not 0 < active_layer_nu < len(stacks_list[0].layers)-1:
-        raise ValueError, "active_layer_nu must refer to a finite layer."
+        raise ValueError("active_layer_nu must refer to a finite layer.")
     for i in range(len(wavelengths)):
         active_abs.append(float(a_list[active_layer_nu - 1 + i*layers_steps]))
 
@@ -1064,9 +1065,9 @@ def E_conc_plot(stacks_list, which_layer, which_modes, wavelengths,
         fig1.savefig('Energy_Concentration_stack%(bon)s'% {'bon' : stack_label}, \
             bbox_inches='tight')
     else:
-        print "\nERROR: plotting.E_conc_plot; \n" + \
-            "Can only calculate energy concentration in NanoStruct layers."
-        print repr(stacks_list[0].layers[which_layer])
+        print("\nERROR: plotting.E_conc_plot; \n" + \
+            "Can only calculate energy concentration in NanoStruct layers.")
+        print(repr(stacks_list[0].layers[which_layer]))
 ###############################################################################
 
 
@@ -1316,7 +1317,7 @@ def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
         else:
             xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
             xlabel = r'$\lambda$ (nm)'
-            print "BM_amplitudes is guessing you have a single wavelength, else specify xvalues."
+            print("BM_amplitudes is guessing you have a single wavelength, else specify xvalues.")
 
     if chosen_BMs == None: chosen_BMs = range(stacks_list[-1].layers[lay_interest].num_BMs)
     try:
@@ -1359,8 +1360,8 @@ def BM_amplitudes(stacks_list, xvalues=None, chosen_BMs=None,
                 save_trans, fmt = '%18.11f')
 
     except ValueError:
-        print "BM_amplitudes only works in NanoStruct layers."\
-        "\nPlease select lay_interest !=%i.\n" % lay_interest
+        print("BM_amplitudes only works in NanoStruct layers."\
+        "\nPlease select lay_interest !=%i.\n" % lay_interest)
 
     fig.clf()
 
@@ -1421,7 +1422,7 @@ def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
         else:
             xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
             xlabel = r'$\lambda$ (nm)'
-            print "PW_amplitudes is guessing you have a single wavelength, else specify xvalues."
+            print("PW_amplitudes is guessing you have a single wavelength, else specify xvalues.")
 
     try:
         save_trans = []
@@ -1496,8 +1497,8 @@ def PW_amplitudes(stacks_list, xvalues=None, chosen_PWs=None,
                 save_trans, fmt = '%18.11f')
 
     except ValueError:
-        print "PW_amplitudes only works in ThinFilm layers."\
-        "\nPlease select lay_interest !=%i.\n" % lay_interest
+        print("PW_amplitudes only works in ThinFilm layers."\
+        "\nPlease select lay_interest !=%i.\n" % lay_interest)
 
     fig.clf()
 
@@ -1551,7 +1552,7 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PWs=None,
         else:
             xvalues = [s.layers[0].light.wl_nm for s in stacks_list]
             xlabel = r'$\lambda$ (nm)'
-            print "evanescent_merit is guessing you have a single wavelength, else specify xvalues."
+            print("evanescent_merit is guessing you have a single wavelength, else specify xvalues.")
 
     store_m_p      = []
     store_m_ne     = []
@@ -1652,8 +1653,8 @@ def evanescent_merit(stacks_list, xvalues=None, chosen_PWs=None,
                        av_diff, fmt='%18.11f')
 
     except ValueError:
-        print "evanescent_merit only works in ThinFilm layers."\
-        "\nPlease select lay_interest !=%i.\n" % lay_interest
+        print("evanescent_merit only works in ThinFilm layers."\
+        "\nPlease select lay_interest !=%i.\n" % lay_interest)
 
     fig.clf()
 ###############################################################################
@@ -1734,8 +1735,8 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
                                              extra_name)
 
             except ValueError:
-                print "fields_in_plane cannot plot fields in 1D-arrays."\
-                "\nPlease select a different lay_interest.\n"
+                print("fields_in_plane cannot plot fields in 1D-arrays."\
+                "\nPlease select a different lay_interest.\n")
 
 
         # If selected z location is within a ThinFilm layer
@@ -1841,8 +1842,7 @@ def fields_in_plane(stacks_list, lay_interest=1, z_values=[0.1, 3.6],
                         elif z1[z] <= float(pstack.layers[lay_interest].structure.height_nm)/period:
                             expo_down = np.exp(1j*(alpha*x1[x]+beta*y1[y]-gamma*(z1[z]-float(pstack.layers[lay_interest].structure.height_nm)/period)))
                         else:
-                            raise ValueError, \
-                            "fields_in_plane: z_value exceeds thickness of layer, reduce it. "
+                            raise ValueError("fields_in_plane: z_value exceeds thickness of layer, reduce it. ")
                         expo_up = np.exp(1j*(alpha*x1[x]+beta*y1[y]+gamma*z1[z]))
 
                         E_TE_x = np.sum(eta_TE_x_down*expo_down + eta_TE_x_up*expo_up)
@@ -2062,9 +2062,9 @@ def fields_interpolator_in_plane(pstack, lay_interest=1, z_value=0.1):
             return ReEx, ImEx, ReEy, ImEy, ReEz, ImEz, AbsE
 
         except ValueError as e:
-            print e
-            print "fields_in_plane cannot plot fields in 1D-arrays."\
-                  "\nPlease select a different lay_interest.\n"
+            print(e)
+            print("fields_in_plane cannot plot fields in 1D-arrays."\
+                  "\nPlease select a different lay_interest.\n")
 
     # If selected z location is within a ThinFilm layer
     # plot fields in Plane Wave Basis using python routine.
@@ -2994,8 +2994,8 @@ def field_values(stacks_list, lay_interest=0, xyz_values=[(0.1,0.1,0.1)]):
             super_points.append([calc_E_x_array,calc_E_y_array,calc_E_z_array,calc_E_tot_array])
 
         except ValueError:
-            print "field_values can only calculate field values in ThinFilms."\
-            "\nPlease select a different lay_interest.\n"
+            print("field_values can only calculate field values in ThinFilms."\
+            "\nPlease select a different lay_interest.\n")
 
         return super_points
 
@@ -3052,8 +3052,8 @@ def fields_3d(stacks_list, lay_interest=1):
 
             stack_num += 1
         except ValueError:
-            print "fields_3d can only plot 3D fields within 2D_array "\
-            "Nanostruct layers. \nPlease select a different lay_interest.\n"
+            print("fields_3d can only plot 3D fields within 2D_array "\
+            "Nanostruct layers. \nPlease select a different lay_interest.\n")
 
 
 def Bloch_fields_1d(stacks_list, lay_interest=None):
@@ -3247,8 +3247,8 @@ def Bloch_fields_1d(stacks_list, lay_interest=None):
                     fig.clf()
 
             except ValueError:
-                print "fields_1d can only plot 1D fields of 1D_array "\
-                "NanoStruct layers. \nPlease select different lay_interest.\n"
+                print("fields_1d can only plot 1D fields of 1D_array "\
+                "NanoStruct layers. \nPlease select different lay_interest.\n")
 
 ###############################################################################
 
