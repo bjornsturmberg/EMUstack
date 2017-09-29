@@ -24,7 +24,8 @@ import numpy as np
 import sys
 # from scipy import sqrt
 import os
-sys.path.append("../backend/")
+import paths
+sys.path.append(paths.backend_path)
 
 from fortran import EMUstack
 
@@ -356,7 +357,7 @@ class Simmo(Modes):
 
         elif self.structure.periodicity == '2D_array':
             # Prepare for the mesh
-            with open("../backend/fortran/msh/"+self.structure.mesh_file) as f:
+            with open(paths.msh_path+self.structure.mesh_file) as f:
                 self.n_msh_pts, self.n_msh_el = [int(i) for i in f.readline().split()]
 
             # Size of Fortran's complex superarray (scales with mesh)
@@ -369,7 +370,7 @@ class Simmo(Modes):
             try:
                 resm = EMUstack.calc_modes_2d(
                     self.wl_norm(), self.num_BMs, self.max_order_PWs,
-                    FEM_debug, self.structure.mesh_file, self.n_msh_pts,
+                    FEM_debug,paths.msh_path+self.structure.mesh_file, self.n_msh_pts,
                     self.n_msh_el, self.structure.nb_typ_el, self.n_effs,
                     self.k_pll_norm(), shift, self.E_H_field, i_cond, itermax,
                     self.structure.plotting_fields, self.structure.plot_real,

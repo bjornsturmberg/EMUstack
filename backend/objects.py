@@ -23,11 +23,13 @@ from __future__ import print_function
 
 import os
 import numpy as np
+import paths
 import materials
 from mode_calcs import Simmo, Anallo
 from fortran import EMUstack
 
-msh_location = '../backend/fortran/msh/'
+msh_location = paths.msh_path
+template_location = paths.template_path
 
 # Acknowledgements
 print('\n##################################################################\n'\
@@ -435,9 +437,9 @@ class NanoStruct(object):
 
                 if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh is True:
                     if self.is_hex is False:
-                        geo_tmp = open(msh_location + '%s_msh_template.geo' % supercell, "r").read()
+                        geo_tmp = open(template_location + '%s_msh_template.geo' % supercell, "r").read()
                     else:
-                        geo_tmp = open(msh_location + 'hex_msh_template.geo', "r").read()
+                        geo_tmp = open(template_location + 'hex_msh_template.geo', "r").read()
 
                     geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                     geo = geo.replace('d_in_nm = 0;', "d_in_nm = %f;" % self.period)
@@ -489,7 +491,7 @@ class NanoStruct(object):
                            'lhori': dec_float_str(self.len_horizontal),
                            'dia': dec_float_str(self.diameter1)}
                 if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh is True:
-                    geo_tmp = open(msh_location + 'SRR_msh_template.geo', "r").read()
+                    geo_tmp = open(template_location + 'SRR_msh_template.geo', "r").read()
                     geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                     geo = geo.replace('d_in_nm  = 0;', "d_in_nm  = %f;" % self.period)
                     geo = geo.replace('dy_in_nm = 0;', "dy_in_nm = %f;" % self.period_y)
@@ -508,7 +510,7 @@ class NanoStruct(object):
                            'dia_out': dec_float_str(self.diameter1),
                            'dia_in': dec_float_str(self.diameter2)}
                 if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh is True:
-                    geo_tmp = open(msh_location + 'ring1_msh_template.geo', "r").read()
+                    geo_tmp = open(template_location + 'ring1_msh_template.geo', "r").read()
                     geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                     geo = geo.replace('d_in_nm = 0;', "d_in_nm  = %f;" % self.period)
                     geo = geo.replace('dy_in_nm = 0;', "dy_in_nm = %f;" % self.period_y)
@@ -527,7 +529,7 @@ class NanoStruct(object):
                            'd_two': dec_float_str(self.diameter2),
                            'gap': dec_float_str(self.gap)}
                 if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh is True:
-                    geo_tmp = open(msh_location + 'dimer1_msh_template.geo', "r").read()
+                    geo_tmp = open(template_location + 'dimer1_msh_template.geo', "r").read()
                     geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                     geo = geo.replace('d_in_nm = 0;', "d_in_nm  = %f;" % self.period)
                     geo = geo.replace('dy_in_nm = 0;', "dy_in_nm = %f;" % self.period_y)
@@ -547,7 +549,7 @@ class NanoStruct(object):
                            'gap': dec_float_str(self.gap),
                            'smooth': dec_float_str(self.smooth)}
                 if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh is True:
-                    geo_tmp = open(msh_location + 'square_dimer1_msh_template.geo', "r").read()
+                    geo_tmp = open(template_location + 'square_dimer1_msh_template.geo', "r").read()
                     geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                     geo = geo.replace('d_in_nm = 0;', "d_in_nm  = %f;" % self.period)
                     geo = geo.replace('dy_in_nm = 0;', "dy_in_nm = %f;" % self.period_y)
@@ -566,7 +568,7 @@ class NanoStruct(object):
                            'd_one': dec_float_str(self.diameter1),
                            'd_two': dec_float_str(self.diameter2)}
                 if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh is True:
-                    geo_tmp = open(msh_location + '1_strip_msh_template.geo', "r").read()
+                    geo_tmp = open(template_location + '1_strip_msh_template.geo', "r").read()
                     geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                     geo = geo.replace('d_in_nm = 0;', "d_in_nm  = %f;" % self.period)
                     geo = geo.replace('dy_in_nm = 0;', "dy_in_nm = %f;" % self.period_y)
@@ -583,7 +585,7 @@ class NanoStruct(object):
                            'd_one': dec_float_str(self.diameter1),
                            'd_two': dec_float_str(self.diameter2)}
                 if not os.path.exists(msh_location + msh_name + '.mail') or self.force_mesh is True:
-                    geo_tmp = open(msh_location + '1_strip_msh_template.geo', "r").read()
+                    geo_tmp = open(template_location + '1_strip_msh_template.geo', "r").read()
                     geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                     geo = geo.replace('d_in_nm = 0;', "d_in_nm  = %f;" % self.period)
                     geo = geo.replace('dy_in_nm = 0;', "dy_in_nm = %f;" % self.period_y)

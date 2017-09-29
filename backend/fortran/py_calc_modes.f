@@ -103,8 +103,8 @@ C  Timing variables
       character*(8) start_date, end_date
       character*(10) start_time, end_time
 C  Names and Controls
-      character mesh_file*100, gmsh_file*100, log_file*100
-      character gmsh_file_pos*100
+      character mesh_file*500, gmsh_file*500, log_file*500
+      character gmsh_file_pos*500
       character overlap_file*100, dir_name*100
       character*100 tchar
       integer*8 namelength, PrintAll!, Checks

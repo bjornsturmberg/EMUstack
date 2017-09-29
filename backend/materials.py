@@ -22,11 +22,11 @@
 import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib
+import paths
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
-data_location = '../backend/data/'
-
+data_location = paths.data_path
 
 class Material(object):
     """ Represents a material with a refractive index n.
