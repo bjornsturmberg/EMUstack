@@ -302,15 +302,15 @@ class NanoStruct(object):
                                     diameter8, diameter9, diameter10, diameter11, diameter12,
                                     diameter13, diameter14, diameter15, diameter16,
                                     ellipticity)
-                            elif periodicity == '1D_array':
-                                self.ff = (diameter1 + diameter2) / period
-                        else:
-                            self.ff = ff
-                            if diameter2 != 0:
-                                self.diameter2 = 2 * ((ff * (period)**2) / np.pi -
-                                                      ((diameter1 / 2)**2))**0.5
-                            else:
-                                self.diameter1 = 2 * np.sqrt((ff * (period)**2) / np.pi)
+            elif periodicity == '1D_array':
+                self.ff = (diameter1 + diameter2) / period
+        else:
+            self.ff = ff
+            if diameter2 != 0:
+                self.diameter2 = 2 * ((ff * (period)**2) / np.pi -
+                                      ((diameter1 / 2)**2))**0.5
+            else:
+                self.diameter1 = 2 * np.sqrt((ff * (period)**2) / np.pi)
         self.ff_rand = ff_rand
         if world_1d is None:
             if periodicity == '1D_array':
