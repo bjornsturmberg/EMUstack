@@ -297,7 +297,7 @@ class Simmo(Modes):
         self.E_H_field = 1  # Selected formulation (1=E-Field, 2=H-Field)
         i_cond = 2  # Boundary conditions (0=Dirichlet,1=Neumann,2=Periodic)
         itermax = 30  # Maximum number of iterations for convergence
-        FEM_debug = 0  # Fortran routines will display & save add. info
+        FEM_debug = 1  # Fortran routines will display & save add. info
 
         # Calculate where to center the Eigenmode solver around.
         # (Shift and invert FEM method)
@@ -370,7 +370,7 @@ class Simmo(Modes):
             try:
                 resm = EMUstack.calc_modes_2d(
                     self.wl_norm(), self.num_BMs, self.max_order_PWs,
-                    FEM_debug,paths.msh_path+self.structure.mesh_file, self.n_msh_pts,
+                    FEM_debug,paths.msh_path,self.structure.mesh_file, self.n_msh_pts,
                     self.n_msh_el, self.structure.nb_typ_el, self.n_effs,
                     self.k_pll_norm(), shift, self.E_H_field, i_cond, itermax,
                     self.structure.plotting_fields, self.structure.plot_real,
