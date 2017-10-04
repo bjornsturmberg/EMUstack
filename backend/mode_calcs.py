@@ -89,7 +89,7 @@ class Modes(object):
     def __del__(self):
         # Clean up _interfaces_i_have_known to avoid memory leak
         if _interfaces_i_have_known is not None:
-            for key in _interfaces_i_have_known.keys():
+            for key in _interfaces_i_have_known.copy().keys():
                 if id(self) in key:
                     _interfaces_i_have_known.pop(key)
 
@@ -205,7 +205,7 @@ class Anallo(Modes):
 
         # self.k_z repeats itself halfway through
         # First half is for TE pol, second is for TM
-        num_pw2 = len(self.k_z) / 2
+        num_pw2 = int(len(self.k_z) / 2)
         k_z = self.k_z[:num_pw2]
         assert (k_z == self.k_z[num_pw2:]).all()
 

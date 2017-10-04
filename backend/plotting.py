@@ -317,7 +317,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
     """
 
     fig = plt.figure(num=None, figsize=(9, 12))
-    nu_layers = len(spec_list)/len(xvalues)
+    nu_layers = int(len(spec_list)/len(xvalues))
     h_array = np.ones(len(xvalues))*total_h
     for i in range(nu_layers):
         layer_spec = []
