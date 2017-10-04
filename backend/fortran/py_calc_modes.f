@@ -1,7 +1,7 @@
       subroutine calc_modes_2d(
 c     Explicit inputs
      *    lambda, nval, ordre_ls,
-     *    debug, mesh_file, npt, nel,
+     *    debug, msh_path, mesh_file, npt, nel,
      *    nb_typ_el, n_eff, bloch_vec, shift,
      *    E_H_field, i_cond, itermax,
      *    plot_modes, plot_real, plot_imag, plot_abs,
@@ -103,8 +103,8 @@ C  Timing variables
       character*(8) start_date, end_date
       character*(10) start_time, end_time
 C  Names and Controls
-      character mesh_file*100, gmsh_file*100, log_file*100
-      character gmsh_file_pos*100
+      character msh_path*500,mesh_file*500, gmsh_file*500, log_file*500
+      character gmsh_file_pos*500,full_mesh_file*500
       character overlap_file*100, dir_name*100
       character*100 tchar
       integer*8 namelength, PrintAll!, Checks
@@ -143,7 +143,7 @@ C      complex*16 overlap_L(nval_max, nval_max)
       complex*16 mode_pol(4,nval)
 
 Cf2py intent(in) lambda, nval, ordre_ls
-Cf2py intent(in) debug, mesh_file, npt, nel
+Cf2py intent(in) debug, msh_path, mesh_file, npt, nel
 Cf2py intent(in) n_eff, bloch_vec, shift
 Cf2py intent(in) E_H_field, i_cond, itermax, neq_PW
 Cf2py intent(in) plot_modes, plot_real, plot_imag, plot_abs
@@ -233,11 +233,12 @@ CCCCCCCCCCCCCCCCC POST F2PY CCCCCCCCCCCCCCCCCCCCCCCCC
 
 C     clean mesh_format
       namelength = len_trim(mesh_file)
-      gmsh_file = mesh_file(1:namelength-5)//'.msh'
+      full_mesh_file = TRIM(msh_path)//TRIM(mesh_file)
+      gmsh_file = full_mesh_file(1:namelength-5)//'.msh'
       gmsh_file_pos = mesh_file(1:namelength)
-      log_file = mesh_file(1:namelength-5)//'.log'
+      log_file = full_mesh_file(1:namelength-5)//'.log'
       if (debug .eq. 1) then
-        write(*,*) "mesh_file = ", mesh_file
+        write(*,*) "mesh_file = ", full_mesh_file
         write(*,*) "gmsh_file = ", gmsh_file
       endif
 
@@ -275,7 +276,7 @@ C
         write(ui,*)
         write(ui,*) "lx,ly = ", lx, ly
         write(ui,*) "npt, nel, nnodes = ", npt, nel, nnodes
-        write(ui,*) "mesh_file = ", mesh_file
+        write(ui,*) "mesh_file = ", full_mesh_file
         write(ui,*)
       endif
 C
@@ -296,7 +297,7 @@ C
 C
       call geometry (nel, npt, nnodes, nb_typ_el,
      *     lx, ly, type_nod, type_el, table_nod,
-     *     x_arr, mesh_file)
+     *     x_arr, full_mesh_file)
 C
       call lattice_vec (npt, x_arr, lat_vecs, debug)
 C
@@ -941,7 +942,7 @@ c
         write(26,*)
         write(26,*) "conjugate pair problem", pair_warning, "times"
         write(26,*)
-        write(26,*) "mesh_file = ", mesh_file
+        write(26,*) "mesh_file = ", full_mesh_file
         write(26,*) "gmsh_file = ", gmsh_file
         write(26,*) "log_file  = ", log_file
         close(26)

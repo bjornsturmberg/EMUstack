@@ -6,7 +6,7 @@ c   type_nod != 0 => boundary point
 c
 c
       subroutine geometry (nel, npt, nnodes, nb_typ_el,
-     *    lx, ly, type_nod, type_el, table_nod, x, 
+     *    lx, ly, type_nod, type_el, table_nod, x,
      *    mesh_file)
 c
       implicit none
@@ -17,14 +17,14 @@ c
       parameter (max_typ_el=10)
       double precision x(2,npt), xx(2)
 
-      character mesh_file*100
+      character mesh_file*500
 
       integer*8 npt2, nel2, ui
       integer*8 i, j, k
 c
       ui = 6
 c
-        open (unit=24,file="../backend/fortran/msh/"//mesh_file,
+        open (unit=24,file=mesh_file,
      *     status='old')
         read(24,*) npt2, nel2
 c
@@ -52,7 +52,7 @@ c     Connectivity table
         if(j .lt. 0) then
           write(ui,*)
           write(ui,*) "   ???"
-          write(ui,*) "geometry: type_el(i) < 0 : ", 
+          write(ui,*) "geometry: type_el(i) < 0 : ",
      *    i, type_el(i)
           write(ui,*) "geometry: Aborting..."
           stop
@@ -63,7 +63,7 @@ c     Connectivity table
       if(nb_typ_el2 .gt. nb_typ_el) then
          write(ui,*)
          write(ui,*) "   ???"
-         write(ui,*) "geometry: nb_typ_el2 > nb_typ_el : ", 
+         write(ui,*) "geometry: nb_typ_el2 > nb_typ_el : ",
      *    nb_typ_el2, nb_typ_el
          write(ui,*) "geometry: Aborting..."
          stop
@@ -71,4 +71,3 @@ c     Connectivity table
 
       return
       end
-

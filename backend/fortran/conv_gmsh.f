@@ -10,8 +10,8 @@ c
 c
       integer i_sym
       integer gmsh_version
-      character file0_mesh*100, geoname*100
-      character file1_mesh*100, file2_mesh*100
+      character file0_mesh*500, geoname*500
+      character file1_mesh*500, file2_mesh*500
       integer i_mesh(3)
       integer max_ne, max_npt, i_err
       parameter(max_npt=250000, max_ne=120000)
@@ -33,8 +33,8 @@ c
       integer debug, ui, namelength2
       double precision time1, time2
       character objet*5
-      character file_ui*100
-      character*230 com_line
+      character file_ui*500
+      character*1000 com_line
 C
 Cf2py intent(in) geoname
 c
@@ -45,7 +45,7 @@ c
       gmsh_version = 2
 
       namelength2 = len_trim(geoname)
-      if (namelength2 .ge. 100) then
+      if (namelength2 .ge. 500) then
         write(*,*) "Name of .geo file is too long extend in ",
      *  "conv_gmsh_py.f"
       endif
@@ -55,7 +55,7 @@ C
       file2_mesh = geoname(1:namelength2)//".mail"
       file_ui    = geoname(1:namelength2)//".log"
 C
-      com_line = "gmsh -0 -2  -order 2 -v 0 -o " // 
+      com_line = "gmsh -0 -2  -order 2 -v 0 -o " //
      *    file1_mesh // " " // file0_mesh
 C
       call system(com_line)
@@ -93,7 +93,7 @@ c
 c
       if(max_npt .lt. npt) then
         open (unit=ui,file=file_ui)
-        write(*,*) 'CONV_GMSH: ATTENTION: max_npt < npt', 
+        write(*,*) 'CONV_GMSH: ATTENTION: max_npt < npt',
      *              max_npt, npt
         i_err = -1
         close(ui)
@@ -158,7 +158,7 @@ c
       do i=1,ne
         if(elm_type(i) .eq. gmsh_type_line) then
           ne_d1 = ne_d1 + 1
-          read(25,*) (etc_1(k), k=1,number_tags), 
+          read(25,*) (etc_1(k), k=1,number_tags),
      *      (nu_d1(k,ne_d1), k=1,3)
           do k=1,3
             j = nu_d1(k,ne_d1)
@@ -167,7 +167,7 @@ c
           typ_el_d1(ne_d1) = etc_1(physic_tag)
         elseif(elm_type(i) .eq. gmsh_type_el) then
           ne_d2 = ne_d2 + 1
-          read(25,*) (etc_1(k), k=1,number_tags), 
+          read(25,*) (etc_1(k), k=1,number_tags),
      *      (nu_d2(k,ne_d2), k=1,6)
           do k=1,6
             j = nu_d2(k,ne_d2)
@@ -208,8 +208,8 @@ c
 c      print*, 'Appel de renumerote'
 c
       if(i_sym .ne. 0) then
-        call symmetry(npt, ne_d2, 
-     *      max_ne, max_npt, idfn, nu_d2, typ_el_d2, 
+        call symmetry(npt, ne_d2,
+     *      max_ne, max_npt, idfn, nu_d2, typ_el_d2,
      *      x, y, i_sym)
       endif
 c
