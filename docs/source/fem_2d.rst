@@ -11,6 +11,7 @@ An advantage of using the FEM to calculate the modes of layers is that there is 
 
 Note that the area of the unit cell must always be unity! This has been assumed throughout the theoretical derivations.
 
+A guide to making your own mesh from scratch is presented `here <http://numbat-au.readthedocs.io/en/latest/fem.html>`_. While the geometry in this example is different from those typically examined with EMUstack, the process is the same.
 
 
 FEM Errors
