@@ -57,7 +57,7 @@ class NanoStruct(object):
                 currently; 'circle', 'ellipse', 'square', 'ring', 'SRR',
                 'dimer', 'square_dimer', 'strip_circle', 'strip_square',
                 'rectangle', 'rectangle_shell', 'square_dimer_shell',
-                'cross', 'cross_shell', 'L' .
+                'cross', 'cross_shell', 'cross_asym' 'L' .
 
             is_hex  (bool): Simulating a hexagonal lattice, using a rect unitcell?
 
@@ -720,6 +720,7 @@ class NanoStruct(object):
                     geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
                     geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
                     geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
+
             elif self.inc_shape == 'cross_shell':
                 msh_name = 'cross_shell_%(d)s_%(dy)s_%(d_one)s_%(d_two)s_%(smooth)s_%(t)s' % {
                     'd': dec_float_str(self.period),
@@ -744,6 +745,35 @@ class NanoStruct(object):
                     geo = geo.replace('smooth = 0;',
                                       "smooth = %f;" % self.smooth)
                     geo = geo.replace('t = 0;', "t = %f;" % self.t)
+                    geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
+                    geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
+                    geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
+
+            elif self.inc_shape == 'cross_asym':
+                msh_name = 'cross_asym_%(d)s_%(dy)s_%(d_one)s_%(d_two)s_%(d_three)s_%(d_four)s_%(smooth)s' % {
+                    'd': dec_float_str(self.period),
+                    'dy': dec_float_str(self.period_y),
+                    'd_one': dec_float_str(self.diameter1),
+                    'd_two': dec_float_str(self.diameter2),
+                    'd_three': dec_float_str(self.diameter3),
+                    'd_four': dec_float_str(self.diameter4),
+                    'smooth': dec_float_str(self.smooth)
+                }
+                if not os.path.exists(msh_location + msh_name +
+                                      '.mail') or self.force_mesh is True:
+                    geo_tmp = open(template_location + 'cross_asym1_msh_template.geo',
+                                   "r").read()
+                    geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
+                    geo = geo.replace('d_in_nm = 0;',
+                                      "d_in_nm  = %f;" % self.period)
+                    geo = geo.replace('dy_in_nm = 0;',
+                                      "dy_in_nm = %f;" % self.period_y)
+                    geo = geo.replace('w1 = 0;', "w1 = %f;" % self.diameter1)
+                    geo = geo.replace('h1 = 0;', "h1 = %f;" % self.diameter2)
+                    geo = geo.replace('w2 = 0;', "w2 = %f;" % self.diameter3)
+                    geo = geo.replace('h2 = 0;', "h2 = %f;" % self.diameter4)
+                    geo = geo.replace('smooth = 0;',
+                                      "smooth = %f;" % self.smooth)
                     geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
                     geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
                     geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
