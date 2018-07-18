@@ -13,6 +13,14 @@ Note that the area of the unit cell must always be unity! This has been assumed 
 
 A guide to making your own mesh from scratch is presented `here <http://numbat-au.readthedocs.io/en/latest/fem.html>`_. While the geometry in this example is different from those typically examined with EMUstack, the process is the same.
 
+Note that the Physical Surface numbers set in the .geo file must map onto the following array in EMUstack ::
+
+    self.n_effs = np.array([st.background.n(wl), st.inclusion_a.n(wl),
+                            st.inclusion_b.n(wl), st.inclusion_c.n(wl),
+                            st.inclusion_d.n(wl), st.inclusion_e.n(wl)])
+
+So, for example, Physical Surface(1) is st.background and Physical Surface(2) is inclusion_a.
+
 
 FEM Errors
 -----------
