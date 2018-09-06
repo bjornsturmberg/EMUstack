@@ -101,7 +101,7 @@ def simulate_stack(light):
 
 pool = Pool(num_cores)
 # stacks_list = pool.map(simulate_stack, light_list)
-stacks_list = map(simulate_stack, light_list)
+stacks_list = list(map(simulate_stack, light_list))
 # Save full simo data to .npz file for safe keeping!
 np.savez('Simo_results', stacks_list=stacks_list)
 
@@ -110,7 +110,7 @@ np.savez('Simo_results', stacks_list=stacks_list)
 plotting.t_r_a_plots(stacks_list)
 
 ######################## Wrapping up ########################
-print '\n*******************************************'
+print('\n*******************************************')
 # Calculate and record the (real) time taken for simulation,
 elapsed = (time.time() - start)
 hms     = str(datetime.timedelta(seconds=elapsed))
@@ -118,9 +118,9 @@ hms_string = 'Total time for simulation was \n \
     %(hms)s (%(elapsed)12.3f seconds)'% {
             'hms'       : hms,
             'elapsed'   : elapsed, }
-print hms_string
-print '*******************************************'
-print ''
+print(hms_string)
+print('*******************************************')
+print('')
 
 # and store this info.
 python_log = open("python_log.log", "w")

@@ -123,7 +123,7 @@ plt.savefig('ultrathin_limit')
 
 
 ######################## Wrapping up ########################
-print '\n*******************************************'
+print('\n*******************************************')
 # Calculate and record the (real) time taken for simulation,
 elapsed = (time.time() - start)
 hms     = str(datetime.timedelta(seconds=elapsed))
@@ -131,9 +131,9 @@ hms_string = 'Total time for simulation was \n \
     %(hms)s (%(elapsed)12.3f seconds)'% {
             'hms'       : hms,
             'elapsed'   : elapsed, }
-print hms_string
-print '*******************************************'
-print ''
+print(hms_string)
+print('*******************************************')
+print('')
 
 # and store this info.
 python_log = open("python_log.log", "w")

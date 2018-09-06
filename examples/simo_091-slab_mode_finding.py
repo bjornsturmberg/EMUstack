@@ -103,7 +103,8 @@ def simulate_stack(lyte):
     return detskew
 
 
-def mode_finder((det_mat_slice, wl_list, kx)):
+def mode_finder(xxx_todo_changeme):
+    (det_mat_slice, wl_list, kx) = xxx_todo_changeme
     dispcurve = []
     xtol = 1e-4*wl_0
     for j in range(len(wl_list)-1):
@@ -120,15 +121,15 @@ def mode_finder((det_mat_slice, wl_list, kx)):
                         # Optimise the wl
                         finwl = optimize.brentq(lambda wl: np.real(np.exp(1j)*simulate_stack([wl, kx])),wl_list[j],wl_list[j+1],rtol=1e-3,xtol=xtol)
                         findet=simulate_stack([finwl, kx])
-                        print '#################################'
-                        print 'found root = ', findet
-                        print '#################################'
+                        print('#################################')
+                        print('found root = ', findet)
+                        print('#################################')
                         #check the final determinant is below some tolerance
                         if np.abs(findet)< 1.e-3:
                             finfreq=2*np.pi*c_speed*1e9/finwl
                             dispcurve.append((kx*1e9,finfreq))
                     except AttributeError:
-                        print det_mat_slice[j], det_mat_slice[j+1]
+                        print(det_mat_slice[j], det_mat_slice[j+1])
     return dispcurve
 
 
@@ -185,6 +186,6 @@ python_log = open("python_log.log", "w")
 python_log.write(hms_string)
 python_log.close()
 
-print hms_string
-print '*******************************************'
-print ''
+print(hms_string)
+print('*******************************************')
+print('')

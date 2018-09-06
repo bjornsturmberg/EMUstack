@@ -75,7 +75,7 @@ def simulate_stack(light):
 
     return stack
 
-stacks_list = map(simulate_stack, light_list)
+stacks_list = list(map(simulate_stack, light_list))
 # Save full simo data to .npz file for safe keeping!
 np.savez('Simo_results', stacks_list=stacks_list)
 
@@ -104,7 +104,7 @@ np.savez('Simo_results', stacks_list=stacks_list)
 wl_num = 0
 lay = 1
 betas = stacks_list[wl_num].layers[lay].k_z
-print 'k_z of superstrate \n', betas
+print('k_z of superstrate \n', betas)
 # and save the values for the longest wavelength for the substrate.
 wl_num = -1
 lay = 0
@@ -121,7 +121,7 @@ np.savetxt('Substrate_k_zs.txt', betas.view(float).reshape(-1, 2))
 wl_num = -1
 lay = 0
 R12_sub = stacks_list[wl_num].layers[lay].R12
-print 'R12 of substrate \n', R12_sub
+print('R12 of substrate \n', R12_sub)
 
 # The reflection matrix for the reflection off the top of the
 # superstrate-substrate interface meanwhile is a property of the stack.
@@ -137,7 +137,7 @@ plotting.t_r_a_plots(stacks_list)
 
 # p.s. we'll keep an eye on the time...
 ######################## Wrapping up ########################
-print '\n*******************************************'
+print('\n*******************************************')
 # Calculate and record the (real) time taken for simulation,
 elapsed = (time.time() - start)
 hms     = str(datetime.timedelta(seconds=elapsed))
@@ -145,9 +145,9 @@ hms_string = 'Total time for simulation was \n \
     %(hms)s (%(elapsed)12.3f seconds)'% {
             'hms'       : hms,
             'elapsed'   : elapsed, }
-print hms_string
-print '*******************************************'
-print ''
+print(hms_string)
+print('*******************************************')
+print('')
 
 # and store this info.
 python_log = open("python_log.log", "w")

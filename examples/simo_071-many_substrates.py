@@ -162,6 +162,6 @@ python_log = open("python_log.log", "w")
 python_log.write(hms_string)
 python_log.close()
 
-print '*******************************************'
-print hms_string
-print '*******************************************'
+print('*******************************************')
+print(hms_string)
+print('*******************************************')
