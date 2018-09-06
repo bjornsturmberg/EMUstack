@@ -13,7 +13,7 @@ UMFPACK_NAME = umf4_f77zwrapper64.o
 
 
 ### --- IF using Ubuntu SuiteSparse --------------------------------------
-EMUstack.so: EMUstack.pyf lib/umf4_f77zwrapper64.o *.f
+EMUstack.so: EMUstack.pyf *.f
 	f2py -c EMUstack.pyf *.f --fcompiler=$(COMPILER_VENDOR) \
 	--link-lapack_opt --link-blas_opt  \
 	$(LIB_LOCATION)/$(UMFPACK_NAME) --link-umfpack
