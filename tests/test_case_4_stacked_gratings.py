@@ -40,9 +40,7 @@ from numpy.testing import assert_equal
 
 def setup_module(module):
     # Remove results of previous simulations
-    plotting.clear_previous('.log')
-    plotting.clear_previous('.pdf')
-    plotting.clear_previous('.txt')
+    plotting.clear_previous()
 
     ################ Light parameters #####################
     wavelengths = np.linspace(800,1600,1)
@@ -130,5 +128,5 @@ def test_stack_list_matches_saved(casefile_name = 'case_4'):
         yield assert_ac, stack.R_net, rstack['R_net'], rtol, atol, lbl_s + 'R_net'
         yield assert_ac, stack.T_net, rstack['T_net'], rtol, atol, lbl_s + 'T_net'
 
-plotting.clear_previous('.txt')
+plotting.clear_previous()
 plotting.clear_previous('.pdf')

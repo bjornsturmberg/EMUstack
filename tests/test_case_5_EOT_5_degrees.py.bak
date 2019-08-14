@@ -107,5 +107,4 @@ def test_stack_list_matches_saved(casefile_name = 'case_5'):
         yield assert_ac, stack.T_net, rstack['T_net'], rtol, atol, lbl_s + 'T_net'
 
 
-plotting.clear_previous('.txt')
-plotting.clear_previous('.pdf')
+plotting.clear_previous()

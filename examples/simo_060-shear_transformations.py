@@ -58,7 +58,7 @@ superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
 substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
-grating_1 = objects.NanoStruct('1D_array', period, small_d=period/2,
+grating_1 = objects.NanoStruct('1D_array', period, small_space=period/2,
     diameter1=int(round(0.25*period)), diameter2=int(round(0.25*period)),
     height_nm = 150, inclusion_a = materials.Material(3.61 + 0.0j),
     inclusion_b = materials.Material(3.61 + 0.0j),

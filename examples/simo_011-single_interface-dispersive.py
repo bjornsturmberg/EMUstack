@@ -61,7 +61,7 @@ period = 300
 superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air)
 substrate   = objects.ThinFilm(period, height_nm = 'semi_inf',
-    material = materials.SiO2_a) # Amorphous silica
+    material = materials.SiO2) # Amorphous silica
 
 def simulate_stack(light):
     ################ Evaluate each layer individually ##############
