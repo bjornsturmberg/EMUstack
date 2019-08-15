@@ -56,7 +56,7 @@ substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
     material = materials.Air, loss = False)
 
 spacer  = objects.ThinFilm(period, height_nm = 200,
-    material = materials.SiO2_a, loss = True)
+    material = materials.SiO2, loss = True)
 
 NW_diameter = 120
 NW_array = objects.NanoStruct('2D_array', period, NW_diameter,

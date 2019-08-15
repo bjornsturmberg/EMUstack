@@ -58,7 +58,7 @@ light_list  = [objects.Light(wl, max_order_PWs = 2, theta = 0.0, phi = 0.0) \
 period = 550
 
 cover  = objects.ThinFilm(period = period, height_nm = 'semi_inf',
-    material = materials.Air, loss = True)
+    material = materials.Air, world_1d = True, loss = True)
 
 sub_ns = np.linspace(1.0,4.0,100)
 

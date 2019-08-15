@@ -56,7 +56,7 @@ substrate  = objects.ThinFilm(period, height_nm = 'semi_inf', world_1d = True,
     material = materials.Air, loss = False)
 
 spacer  = objects.ThinFilm(period, height_nm = 200, world_1d = True,
-    material = materials.SiO2_a, loss = True)
+    material = materials.SiO2, loss = True)
 
 grating = objects.NanoStruct('1D_array', period, int(round(0.7*period)), height_nm = 400,
     background = materials.Material(1.45 + 0.0j),

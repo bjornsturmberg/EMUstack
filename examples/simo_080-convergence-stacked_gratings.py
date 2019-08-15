@@ -56,10 +56,10 @@ for PWs in np.linspace(1,10,10):
     period = 760
 
     superstrate = objects.ThinFilm(period, height_nm = 'semi_inf',
-        material = materials.Air, loss = False)
+        material = materials.Air,, world_1d = True loss = False)
 
     substrate  = objects.ThinFilm(period, height_nm = 'semi_inf',
-        material = materials.Air, loss = False)
+        material = materials.Air, world_1d = True, loss = False)
 
     grating_1 = objects.NanoStruct('1D_array', period, small_space=period/2,
         diameter1=int(round(0.25*period)), diameter2=int(round(0.25*period)), height_nm = 150,

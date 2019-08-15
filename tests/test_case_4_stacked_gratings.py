@@ -129,4 +129,3 @@ def test_stack_list_matches_saved(casefile_name = 'case_4'):
         yield assert_ac, stack.T_net, rstack['T_net'], rtol, atol, lbl_s + 'T_net'
 
 plotting.clear_previous()
-plotting.clear_previous('.pdf')
