@@ -140,7 +140,10 @@ class Material(object):
             eps_inf = n[2]
             self.data_wls = 'Drude'
             self.data_ns = [omega_plasma, omega_gamma, eps_inf, c]
-            self._n = lambda x: np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
+            if np.imag(np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))) < 0:
+                self._n = lambda x: -1*np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
+             else:
+                self._n = lambda x: np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
         elif np.shape(n) >= (2, 1):
             self.data_wls = n[:, 0]
             if len(n[0]) == 2:
@@ -176,7 +179,10 @@ class Material(object):
         if None is self.data_wls:
             self._n = lambda x: self.data_ns
         elif self.data_wls == 'Drude':
-            self._n = lambda x: np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
+            if np.imag(np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))) < 0:
+                self._n = lambda x: -1*np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
+             else:
+                self._n = lambda x: np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
         else:
             self._n = interp1d(self.data_wls, self.data_ns)
 
