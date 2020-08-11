@@ -322,7 +322,7 @@ def layers_plot(spectra_name, spec_list, xvalues, xlabel, total_h,
         layer_spec = []
         for wl in range(len(xvalues)):
             layer_spec = np.append(layer_spec, spec_list[wl*nu_layers + i])
-        av_array = (xvalues, layer_spec, h_array)
+        av_array = list(zip(xvalues, layer_spec, h_array))
         ax1 = fig.add_subplot(nu_layers, 1, i+1)
         ax1.plot(xvalues, layer_spec, linewidth=linesstrength)
         if label_eV == True:
@@ -779,7 +779,7 @@ def layers_print(spectra_name, spec_list, wavelengths, total_h,
         Is called from t_r_a_write_files.
     """
 
-    nu_layers = len(spec_list)/len(wavelengths)
+    nu_layers = int(len(spec_list)/len(wavelengths))
     h_array = np.ones(len(wavelengths))*total_h
     for i in range(nu_layers):
         layer_spec = []
@@ -797,7 +797,7 @@ def layers_print(spectra_name, spec_list, wavelengths, total_h,
             lay_spec_name = 'Lay_Reflec'
             if i == nu_layers-1:
                 lay_spec_name = 'Reflectance'
-        av_array = (wavelengths, layer_spec, h_array)
+        av_array = list(zip(wavelengths, layer_spec, h_array))
 
         if i != nu_layers-1:
             np.savetxt('%(s)s_%(i)i_stack%(bon)s%(add)s.txt'% {'s' : lay_spec_name, 'i' : i,
@@ -879,9 +879,9 @@ def EOT_plot(stacks_list, wavelengths, pol='TM', params_layer=1,
 
     if savetxt == True:
         np.savetxt('Trans_%(s)s%(add)s.txt'% {'s' : plot_name, 'add' : add_name}, \
-        (wavelengths, T_00), fmt = '%10.6f')
+        list(zip(wavelengths, T_00)), fmt = '%10.6f')
         np.savetxt('Refl_%(s)s%(add)s.txt'% {'s' : plot_name, 'add' : add_name}, \
-        (wavelengths, R_00), fmt = '%10.6f')
+        list(zip(wavelengths, R_00)), fmt = '%10.6f')
 ###############################################################################
 
 

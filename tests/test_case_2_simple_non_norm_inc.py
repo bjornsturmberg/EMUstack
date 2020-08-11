@@ -110,7 +110,7 @@ def test_txt_results():
 def test_stack_list_matches_saved(casefile_name = 'case_2'):
     rtol = 1e-4
     atol = 1e-4
-    ref = np.load("ref/%s.npz" % casefile_name)
+    ref = np.load("ref/%s.npz" % casefile_name, allow_pickle=True, encoding='latin1')
     yield assert_equal, len(stack_list), len(ref['stack_list'])
     for stack, rstack in zip(stack_list, ref['stack_list']):
         yield assert_equal, len(stack.layers), len(rstack['layers'])
