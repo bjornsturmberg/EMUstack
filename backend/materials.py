@@ -178,7 +178,7 @@ class Material(object):
         self.__dict__ = d
         if None is self.data_wls:
             self._n = lambda x: self.data_ns
-        elif self.data_wls == 'Drude':
+        elif self.data_wls is 'Drude':
             self._n = lambda x: np.sqrt(self.data_ns[2]-self.data_ns[0]**2/(((2*np.pi*self.data_ns[3])/(x*1e-9))**2 + 1j*self.data_ns[1]*(2*np.pi*self.data_ns[3])/(x*1e-9)))
             if np.imag(self._n) < 0:
                 self._n *= -1
