@@ -84,8 +84,8 @@ def setup_module(module):
 
 
 def results_match_reference(filename):
-    rtol = 1e-6
-    atol = 1e-6
+    rtol = 1e-3
+    atol = 1e-1
     reference = np.loadtxt("ref/case_3/" + filename)
     result    = np.loadtxt(filename)
     np.testing.assert_allclose(result, reference, rtol, atol, filename)
