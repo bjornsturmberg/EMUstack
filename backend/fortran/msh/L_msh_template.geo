@@ -1,5 +1,8 @@
 // Template mesh geometry file for L shape.
 
+// Force Gmsh to use legacy msh file format v2
+Mesh.MshFileVersion = 2.2;
+
 d = 1; // grating period
 d_in_nm = 0;
 dy_in_nm = 0;

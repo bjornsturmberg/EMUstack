@@ -1,6 +1,9 @@
 // Template mesh geometry file for a split ring resonator,
 // with its open side at the top.
 
+// Force Gmsh to use legacy msh file format v2
+Mesh.MshFileVersion = 2.2;
+
 d = 1; // grating period
 
 d_in_nm  = 0;

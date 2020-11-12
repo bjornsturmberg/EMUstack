@@ -1,3 +1,8 @@
+
+// Force Gmsh to use legacy msh file format v2
+Mesh.MshFileVersion = 2.2;
+
+
 d = 1; // grating period
 ff = 0.000000;
 d_in_nm = 940.000000;
