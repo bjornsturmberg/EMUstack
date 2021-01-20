@@ -14,7 +14,7 @@ c
       character file1_mesh*500, file2_mesh*500
       integer i_mesh(3)
       integer max_ne, max_npt, i_err
-      parameter(max_npt=250000, max_ne=120000)
+      parameter(max_npt=200000, max_ne=100000)
       integer nu_d1(3,max_ne), typ_el_d1(max_ne)
       integer nu_d2(6,max_ne), typ_el_d2(max_ne)
       integer idfn(max_npt)
@@ -30,7 +30,7 @@ c
 c
       double precision tmp1, tmp2, tmp3
 c
-      integer debug, ui, namelength2
+      integer dbg, ui, namelength2
       double precision time1, time2
       character objet*5
       character file_ui*500
@@ -40,7 +40,7 @@ Cf2py intent(in) geoname
 c
 ccccccccccccccccccccccccc
 c
-      debug = 0
+      dbg = 0
       ui = 66
       gmsh_version = 2
 
@@ -238,10 +238,10 @@ c	FEM mesh plot by Matlab
 c
 c      call matlab(npt,ne_d2,nu_d2,idfn,typ_el_d2,x,y)
 c
-      If(debug .eq. 1) then
+      If(dbg .eq. 1) then
         call cpu_time(time2)  ! temps initial (sert pour la durree des calcul)
         open (unit=ui,file=file_ui)
-        write(ui,*) "conv_gmsh_m: debug = ", debug
+        write(ui,*) "conv_gmsh_m: dbg = ", dbg
         write(ui,*) "gmsh_version = ", gmsh_version
         write(ui,*) "i_mesh = ", i_mesh
         write(ui,*) " file1_mesh = ", file1_mesh
