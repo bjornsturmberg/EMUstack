@@ -91,10 +91,10 @@ Ellipse(58) = {20, 4, 21, 21};
 Ellipse(59) = {19, 3, 18, 18};
 Ellipse(60) = {16, 2, 17, 17};
 
-//Physical Line(61) = {50, 1, 51, 2};
-//Physical Line(62) = {7, 52, 53, 8};
-//Physical Line(63) = {4, 54, 55, 3};
-//Physical Line(64) = {6, 56, 5, 49};
+Physical Line(61) = {50, 1, 51, 2};
+Physical Line(62) = {7, 52, 53, 8};
+Physical Line(63) = {-4, 54, 55, -3};
+Physical Line(64) = {-6, 56, -5, -49};
 
 Line Loop(65) = {1, 13, 18, -9, -5, 57};
 Plane Surface(66) = {65};
@@ -156,10 +156,10 @@ Line(46) = {158, 18};
 Line(47) = {17, 156};
 Line(48) = {156, 16};
 
-//Physical Line(61) = {50, 1, 51, 2};
-//Physical Line(62) = {7, 52, 53, 8};
-//Physical Line(63) = {4, 54, 55, 3};
-//Physical Line(64) = {6, 56, 5, 49};
+Physical Line(61) = {50, 1, 51, 2};
+Physical Line(62) = {7, 52, 53, 8};
+Physical Line(63) = {-4, 54, 55, -3};
+Physical Line(64) = {-6, 56, -5, -49};
 
 Line Loop(65) = {49, 41, 42, -50};
 Plane Surface(66) = {65};
