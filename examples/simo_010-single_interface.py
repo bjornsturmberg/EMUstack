@@ -33,8 +33,6 @@ import materials
 import plotting
 from stack import *
 
-print("updating from Codium!")
-
 start = time.time()
 
 ################ Light parameters #####################
