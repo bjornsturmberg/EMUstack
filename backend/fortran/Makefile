@@ -14,7 +14,7 @@ UMFPACK_NAME = umf4_f77zwrapper64.o
 
 ### --- IF using Ubuntu SuiteSparse --------------------------------------
 EMUstack.so: EMUstack.pyf *.f
-	f2py -c EMUstack.pyf *.f --fcompiler=$(COMPILER_VENDOR) \
+	f2py3 -c EMUstack.pyf *.f --fcompiler=$(COMPILER_VENDOR) \
 	--link-lapack_opt --link-blas_opt  \
 	$(LIB_LOCATION)/$(UMFPACK_NAME) --link-umfpack
 
@@ -29,7 +29,7 @@ lib/umf4_f77zwrapper64.o: lib/umf4_f77zwrapper_SS_3.7.1.c
 #       -fPIC -o lib/umf4_f77zwrapper64.o
 
 EMUstack.pyf: $(SUBROUTINES_FOR_PYTHON)
-	f2py -m EMUstack -h EMUstack.pyf $(SUBROUTINES_FOR_PYTHON) --overwrite-signature
+	f2py3 -m EMUstack -h EMUstack.pyf $(SUBROUTINES_FOR_PYTHON) --overwrite-signature
 
 purge:
 	-rm EMUstack.pyf
