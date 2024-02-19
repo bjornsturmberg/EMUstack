@@ -285,6 +285,7 @@ class NanoStruct(object):
         self.geo_params = geo_params
         self.gap = gap
         self.smooth = smooth
+        self.xshift = xshift
         self.t = t
         self.len_vertical = len_vertical
         self.len_horizontal = len_horizontal
@@ -353,7 +354,6 @@ class NanoStruct(object):
         self.plot_imag = plot_imag
         self.plot_abs = plot_abs
         self.plot_field_conc = plot_field_conc
-        self.xshift = xshift
 
     def make_mesh(self):
         if self.periodicity == '2D_array':
