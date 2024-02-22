@@ -12,7 +12,7 @@ UMFPACK_NAME = umf4_f77zwrapper64.o
 
 
 
-### --- IF using Ubuntu SuiteSparse --------------------------------------
+### --- IF using Fedora SuiteSparse --------------------------------------
 EMUstack.so: EMUstack.pyf *.f
 	f2py3 -c EMUstack.pyf *.f --f77flags='-fallow-argument-mismatch' --fcompiler=$(COMPILER_VENDOR) \
 	--link-lapack_opt --link-blas_opt \
