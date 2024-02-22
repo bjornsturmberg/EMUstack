@@ -14,8 +14,8 @@ UMFPACK_NAME = umf4_f77zwrapper64.o
 
 ### --- IF using Ubuntu SuiteSparse --------------------------------------
 EMUstack.so: EMUstack.pyf *.f
-	f2py3 -c EMUstack.pyf *.f --fcompiler=$(COMPILER_VENDOR) \
-	--link-lapack_opt --link-blas_opt  \
+	f2py3 -c EMUstack.pyf *.f --f77flags='-fallow-argument-mismatch' --fcompiler=$(COMPILER_VENDOR) \
+	--link-lapack_opt --link-blas_opt \
 	$(LIB_LOCATION)/$(UMFPACK_NAME) --link-umfpack
 
 ### With installed libsuitesparse v. < 4.0.0
