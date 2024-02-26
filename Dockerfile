@@ -1,6 +1,5 @@
-# The base ubuntu LTS image, 22.04 had fortran compilation issues
+# Latest fedora image. It works well with the new compilation flags.
 FROM fedora:latest
-
 
 # Install Fedora package dependencies, needed to add an explicit timezone
 RUN dnf -y update
