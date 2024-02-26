@@ -21,6 +21,7 @@ WORKDIR /home
 RUN mkdir host
 
 # getting code and setup env vars
+ENV PYTHONPATH "${PYTHONPATH}:/home/EMUstack/backend/"
 ENV OPENBLAS_NUM_THREADS=1
 ENV OMP_NUM_THREADS=1
 RUN echo -e "ulimit -s unlimited" >> /root/.bashrc
