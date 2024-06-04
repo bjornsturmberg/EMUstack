@@ -1,5 +1,5 @@
 # Latest fedora image. It works well with the new compilation flags.
-FROM fedora:latest
+FROM fedora:39
 
 # Install Fedora package dependencies, needed to add an explicit timezone
 RUN dnf -y update
