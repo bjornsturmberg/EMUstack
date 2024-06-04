@@ -63,9 +63,9 @@ class Material(object):
         +--------------------+------------+------------------------+
         |    Zn3P2           |  Al        |   FTO_Wengerk5         |
         +--------------------+------------+------------------------+
-        |    AlGaAs          |            |                        |
+        |    AlGaAs          |  Al_CRC    |                        |
         +--------------------+------------+------------------------+
-        |    Al2O3           |            |                        |
+        |    Al2O3           |  Au_CRC    |                        |
         +--------------------+------------+------------------------+
         |    Al2O3_PV        |            |                        |
         +--------------------+------------+------------------------+
@@ -277,6 +277,8 @@ Au = Material(np.loadtxt('%sAu_JC.txt' % data_location))
 # Johnson Christy
 Au_Palik = Material(np.loadtxt('%sAu_Palik.txt' % data_location))
 # Palik
+Au_CRC = Material(np.loadtxt('%sAu_CRC.txt' % data_location))
+# Au CRC from Lumerical database
 Ag = Material(np.loadtxt('%sAg_JC.txt' % data_location))
 # Johnson Christy
 Ag_Palik = Material(np.loadtxt('%sAg_Palik.txt' % data_location))
@@ -287,6 +289,10 @@ Cu_Palik = Material(np.loadtxt('%sCu_Palik.txt' % data_location))
 # Palik
 Al = Material(np.loadtxt('%sAl.txt' % data_location))
 # McPeak ACS Photonics 2015 http://dx.doi.org/10.1021/ph5004237
+Al_Palik = Material(np.loadtxt('%sAl_Palik.txt' % data_location))
+# Al Palik
+Al_CRC = Material(np.loadtxt('%sAl_CRC.txt' % data_location))
+# Al CRC from Lumerical database
 
 
 # Drude model
