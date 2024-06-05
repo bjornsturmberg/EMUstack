@@ -72,15 +72,15 @@ Once the build is finished, you can launch the docker image. Docker provides a l
 - We want to expose the ``8888`` port so that we can launch a ``jupyter`` instance from **docker** and access it from the **host**.
 
 In order to satisfy all these requirements we launch the EMUstack docker image as follows:
- - **Linux, windows and Apple (Intel silicon)**: ``docker run -it --name EMUstack -p "host_port":8888 --mount source=emu,target=/home/EMUstack --mount type=bind,source="host_folder",target=/home/host emu:latest``
- - **Apple (Apple silicon)**: ``docker run -it --name EMUstack -p "host_port":8888 --platform linux/amd64 --ulimit stack=33554432:33554432 --mount source=emu,target=/home/EMUstack --mount type=bind,source="host_folder",target=/home/host emu:latest``
+ - **Linux, windows and Apple (Intel silicon)**: ``docker run -it --name EMUstack -p host_port:8888 --mount source=emu,target=/home/EMUstack --mount type=bind,source=full_path_host_folder,target=/home/host emu:latest``
+ - **Apple (Apple silicon)**: ``docker run -it --name EMUstack -p host_port:8888 --platform linux/amd64 --ulimit stack=33554432:33554432 --mount source=emu,target=/home/EMUstack --mount type=bind,source=full_path_host_folder,target=/home/host emu:latest``
 
  The meaning of the flags is:
  - ``-it`` runs docker with an interactive shell.
  - ``--name EMUstack`` the docker session is named ``EMUstack``.
- - ``-p "host_port":8888``: we expose the internal docker ``8888`` port the host's ``"host_port"``.
+ - ``-p host_port:8888``: we expose the internal docker ``8888`` port the host's ``host_port``.
  - ``--mount source=emu,target=/home/EMUstack`` we save the persistent state of the internal ``/home/EMUstack`` folder in the docker volume ``emu``.
- - ``--mount type=bind,source="host_folder",target=/home/host``: ``"host_folder"``, without commas, is the folder of the host that we are exposing to docker.
+ - ``--mount type=bind,source=full_path_host_folder,target=/home/host``: ``full_path_host_folder`` is the folder of the host that we are exposing to docker. It must be specified as a full path.
  - ``emu:latest``: we run the last built image.
  - ``--ulimit stack=33554432:33554432``: stack size to properly run the image on apple silicon.
  - ``--platform linux/amd64``: telling docker that this is an intel x86 architecture image.
