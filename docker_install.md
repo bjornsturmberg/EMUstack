@@ -58,11 +58,11 @@ Clone the repository as you would usually do.
     - Linux: open a terminal
 
 - From the terminal or from powershell, go to the cloned repository folder.
-- Build the docker image (!!!!!!! IMPORTANT !!!!!!!!!!! The build command MUST INCLUDE the final dot, otherwise the image won't build). The build process will take a few minutes. A successful build should end with the line ``naming to docker.io/library/emu``:
-    - **Linux**: ``docker build -t emu .``
-    - **Windows**: ``docker build -t emu .``
-    - **Apple (Intel silicon)**: ``docker build -t emu .``
-    - **Apple (Apple silicon)**: ``docker buildx build --platform linux/amd64 -t emu .``
+- Build the docker image (!!!!!!! IMPORTANT !!!!!!!!!!! The build command MUST INCLUDE the final dot, otherwise the image won't build). The build process will take a few minutes. A successful build should end with the line ``naming to docker.io/library/emustack``:
+    - **Linux**: ``docker build -t emustack .``
+    - **Windows**: ``docker build -t emustack .``
+    - **Apple (Intel silicon)**: ``docker build -t emustack .``
+    - **Apple (Apple silicon)**: ``docker buildx build --platform linux/amd64 -t emustack .``
 
 ## Running EMUstack
 Once the build is finished, you can launch the docker image. Docker provides a lot of flexibility when it comes to running an image. We are going to focus on four aspects:
@@ -72,16 +72,16 @@ Once the build is finished, you can launch the docker image. Docker provides a l
 - We want to expose the ``8888`` port so that we can launch a ``jupyter`` instance from **docker** and access it from the **host**.
 
 In order to satisfy all these requirements we launch the EMUstack docker image as follows:
- - **Linux, windows and Apple (Intel silicon)**: ``docker run -it --name EMUstack -p host_port:8888 --mount source=emu,target=/home/EMUstack --mount type=bind,source=full_path_host_folder,target=/home/host emu:latest``
- - **Apple (Apple silicon)**: ``docker run -it --name EMUstack -p host_port:8888 --platform linux/amd64 --ulimit stack=33554432:33554432 --mount source=emu,target=/home/EMUstack --mount type=bind,source=full_path_host_folder,target=/home/host emu:latest``
+ - **Linux, windows and Apple (Intel silicon)**: ``docker run -it --name EMUstack -p host_port:8888 --mount source=emustack,target=/home/EMUstack --mount type=bind,source=full_path_host_folder,target=/home/host emustack:latest``
+ - **Apple (Apple silicon)**: ``docker run -it --name EMUstack -p host_port:8888 --platform linux/amd64 --ulimit stack=33554432:33554432 --mount source=emustack,target=/home/EMUstack --mount type=bind,source=full_path_host_folder,target=/home/host emustack:latest``
 
  The meaning of the flags is:
  - ``-it`` runs docker with an interactive shell.
  - ``--name EMUstack`` the docker session is named ``EMUstack``.
  - ``-p host_port:8888``: we expose the internal docker ``8888`` port the host's ``host_port``.
- - ``--mount source=emu,target=/home/EMUstack`` we save the persistent state of the internal ``/home/EMUstack`` folder in the docker volume ``emu``.
+ - ``--mount source=emustack,target=/home/EMUstack`` we save the persistent state of the internal ``/home/EMUstack`` folder in the docker volume ``emustack``.
  - ``--mount type=bind,source=full_path_host_folder,target=/home/host``: ``full_path_host_folder`` is the folder of the host that we are exposing to docker. It must be specified as a full path.
- - ``emu:latest``: we run the last built image.
+ - ``emustack:latest``: we run the last built image.
  - ``--ulimit stack=33554432:33554432``: stack size to properly run the image on apple silicon.
  - ``--platform linux/amd64``: telling docker that this is an intel x86 architecture image.
 
