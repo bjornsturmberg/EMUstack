@@ -909,7 +909,7 @@ class NanoStruct(object):
                 }
                 if not os.path.exists(msh_location + msh_name +
                                       '.mail') or self.force_mesh is True:
-                    geo_tmp = open(msh_location + '1_2strip_msh_template.geo',
+                    geo_tmp = open(template_location + '1_2strip_msh_template.geo',
                                    "r").read()
                     geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                     geo = geo.replace('d_in_nm = 0;',
@@ -935,7 +935,7 @@ class NanoStruct(object):
                 }
                 if not os.path.exists(msh_location + msh_name +
                                       '.mail') or self.force_mesh is True:
-                    geo_tmp = open(msh_location + '1_2strip_msh_template.geo',
+                    geo_tmp = open(template_location + '1_2strip_msh_template.geo',
                                    "r").read()
                     geo = geo_tmp.replace('ff = 0;', "ff = %f;" % self.ff)
                     geo = geo.replace('d_in_nm = 0;',
@@ -992,7 +992,7 @@ class NanoStruct(object):
                                       '.mail') or self.force_mesh is True:
 
                     # loop over ge_params to replace parameters
-                    geo_tmp = open(msh_location + self.geo_file, "r").read()
+                    geo_tmp = open(template_location + self.geo_file, "r").read()
                     geo = geo_tmp.replace('d_in_nm = 0;',
                                           "d_in_nm  = %f;" % self.period)
                     geo = geo.replace('dy_in_nm = 0;',
