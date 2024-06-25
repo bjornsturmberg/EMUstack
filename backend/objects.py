@@ -241,6 +241,7 @@ class NanoStruct(object):
                  lc4=1.0,
                  lc5=1.0,
                  lc6=1.0,
+                 nb_typ_el = None,
                  plotting_fields=False,
                  plot_real=1,
                  plot_imag=0,
@@ -292,12 +293,18 @@ class NanoStruct(object):
         self.ellipticity = ellipticity
         if ellipticity > 1.0:
             raise ValueError("ellipticity must be less than 1.0")
-        if diameter3 != 0:
-            self.nb_typ_el = 4
-        elif diameter2 != 0:
-            self.nb_typ_el = 3
+        
+        # setting the number of inclusions
+        if nb_typ_el == None:
+            if diameter3 != 0:
+                self.nb_typ_el = 4
+            elif diameter2 != 0:
+                self.nb_typ_el = 3
+            else:
+                self.nb_typ_el = 2
         else:
-            self.nb_typ_el = 2
+            self.nb_typ_el = nb_typ_el
+
         if ff == 0:
             if periodicity == '2D_array':
                 self.ff = calculate_ff(inc_shape, period, self.period_y,
