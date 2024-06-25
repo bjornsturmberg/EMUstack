@@ -1000,6 +1000,18 @@ class NanoStruct(object):
                     geo = geo.replace('lc = 0;', "lc = %f;" % self.lc)
                     geo = geo.replace('lc2 = lc/1;', "lc2 = lc/%f;" % self.lc2)
                     geo = geo.replace('lc3 = lc/1;', "lc3 = lc/%f;" % self.lc3)
+                    try:
+                        geo = geo.replace('lc4 = lc/1;', "lc4 = lc/%f;" % self.lc4)
+                    except:
+                        print('lc4 not present')
+                    try:
+                        geo = geo.replace('lc5 = lc/1;', "lc5 = lc/%f;" % self.lc5)
+                    except:
+                        print('lc5 not present')
+                    try:
+                        geo = geo.replace('lc6 = lc/1;', "lc6 = lc/%f;" % self.lc6)
+                    except:
+                        print('lc6 not present')
                     for key, value in self.geo_params.items():
                         try:
                             if key[0:2] == 'lc':

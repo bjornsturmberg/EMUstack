@@ -17,8 +17,8 @@ shifty = 0;
 // active material inclusion params
 ///////////////////////////////////
 r_inc = 0;
-inc_shiftx = 0;
-inc_shifty = 0;
+shift_inc_x = 0;
+shift_inc_y = 0;
 ///////////////////////////////////
 ///////////////////////////////////
 ///////////////////////////////////
@@ -26,8 +26,8 @@ rr1 = (r1/(d_in_nm))*d;
 rr2 = (r2/(d_in_nm))*d;
 rr3 = (r3/(d_in_nm))*d;
 rr_inc = (r_inc/(d_in_nm))*d;
-inc_sshiftx = (inc_shiftx/(d_in_nm))*d;
-inc_sshifty = (inc_shifty/(d_in_nm))*d;
+inc_sshiftx = (shift_inc_x/(d_in_nm))*d;
+inc_sshifty = (shift_inc_y/(d_in_nm))*d;
 inc_delta = 0.0000001; // this is a numerical trick to distinguish point(5) from point(105) when there is no shift
 sshiftx=(shiftx/(d_in_nm))*d;
 sshifty=(shifty/(d_in_nm))*d;
