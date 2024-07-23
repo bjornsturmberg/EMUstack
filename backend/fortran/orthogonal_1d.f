@@ -17,7 +17,7 @@ c
       complex*16 pp(nb_typ_el)
       complex*16 beta_1(nval), beta_2(nval)
       complex*16, dimension(nval,nval) :: mat_overlap
-      character overlap_file*100
+      character overlap_file*500
       double precision bloch_vec_y
 c     Local variables
       integer*8 nnodes_0, nddl_0

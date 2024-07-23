@@ -59,7 +59,7 @@ c     Local variables
       integer*8 list_tag(6)
       integer*8, dimension(:), allocatable :: type_data
 
-      character*100 tchar
+      character*500 tchar
       character*1 tE_H
 
       integer*8 iFrame, nFrame

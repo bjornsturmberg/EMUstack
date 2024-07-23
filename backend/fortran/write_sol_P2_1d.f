@@ -17,7 +17,7 @@ c
       integer*8 nval, nel, E_H_field
       double precision lambda
       complex*16 sol_P2(3,3,nval,nel), beta(nval)
-      character mesh_file*100
+      character mesh_file*500
 
 c     Local variables
 
@@ -32,8 +32,8 @@ c      parameter (nnodes_0 = 6)
       integer*8 namelen, namelength, namelen2
 
       character*11 ivalue, jvalue
-      character dir_name*100
-      character*100 tchar1, tchar2
+      character dir_name*500
+      character*500 tchar1, tchar2
 c
 c
 cccccccccccccccccccccccccccccccccccccccccccccccccc

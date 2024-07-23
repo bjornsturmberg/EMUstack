@@ -34,7 +34,7 @@ c
       double precision time1, time2
       character objet*5
       character file_ui*500
-      character*1000 com_line
+      character*5000 com_line
 C
 Cf2py intent(in) geoname
 c

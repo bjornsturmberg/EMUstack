@@ -17,7 +17,7 @@ c
       complex*16 beta1(nval), beta2(nval)
 C      complex*16 mat_overlap(nval,nval)
       complex*16, dimension(nval,nval) :: mat_overlap
-      character overlap_file*100
+      character overlap_file*500
       double precision k_0
 c     Local variables
       integer*8 nnodes_0

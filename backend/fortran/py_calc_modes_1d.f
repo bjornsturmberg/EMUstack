@@ -83,9 +83,9 @@ C  Timing variables
       double precision time1_arpack, time2_arpack
       double precision time1_J, time2_J
 C  Names and Controls
-      character*100 mesh_file
-      character*100 overlap_file, dir_name
-      character*100 tchar
+      character*500 mesh_file
+      character*500 overlap_file, dir_name
+      character*500 tchar
       integer*8 debug, plot_modes, pair_warning, homogeneous_check
       integer*8 q_average, plot_real, plot_imag, plot_abs
 

@@ -26,7 +26,7 @@ c
       integer*8 ui
 c      double precision time1, time2
 
-      character gmsh_file*100
+      character gmsh_file*500
 
       integer*8 i, j, k
       integer*8 gmsh_type_line, gmsh_type_tri, gmsh_type_tetra

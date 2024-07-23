@@ -46,7 +46,7 @@ C      double precision ls_abs_index(nnodes_0), abs_index
       complex*16 z_tmp1
       complex*16 ii
       character*(*) gmsh_file_pos, dir_name
-      character*100 tchar
+      character*500 tchar
       character tval*4, buf*3
       character*1 tE_H
       integer*8 namelength, charlength

@@ -37,7 +37,7 @@ c
       integer*8 debug, ui
       complex*16 z_tmp1
       complex*16 ii
-      character*100 tchar
+      character*500 tchar
       character*1 tE_H
       integer*8 namelength
 

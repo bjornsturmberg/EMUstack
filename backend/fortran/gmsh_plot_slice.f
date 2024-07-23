@@ -64,7 +64,7 @@ cc      integer*8 gmsh_type_prism, choice_type, typ_e
 cc      integer*8 number_tags, physic_tag, list_tag(6)
 cc      integer*8, dimension(:), allocatable :: type_data
 
-      character*100 tchar
+      character*500 tchar
       character*1 tE_H
 
       integer*8 iFrame, nFrame

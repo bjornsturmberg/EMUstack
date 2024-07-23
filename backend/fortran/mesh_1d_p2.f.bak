@@ -10,7 +10,7 @@ C      parameter (npt = 2 * nel + 1)
       integer*8, allocatable :: type_nod(:), type_el(:), table_nod(:,:)
       double precision x, x_1, x_2
       double precision x_min, x_max, delta_x, core_radius
-      character mesh_file*100
+      character mesh_file*500
 
 Cf2py intent(in) nel, mesh_file, core_radius
 

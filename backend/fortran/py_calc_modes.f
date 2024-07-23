@@ -105,8 +105,8 @@ C  Timing variables
 C  Names and Controls
       character msh_path*500,mesh_file*500, gmsh_file*500, log_file*500
       character gmsh_file_pos*500,full_mesh_file*500
-      character overlap_file*100, dir_name*100
-      character*100 tchar
+      character overlap_file*500, dir_name*500
+      character*500 tchar
       integer*8 namelength, PrintAll!, Checks
       integer*8 plot_modes
       integer*8 pair_warning, homogeneous_check

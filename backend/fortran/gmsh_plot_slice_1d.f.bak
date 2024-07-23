@@ -64,7 +64,7 @@ C     Resolution: number of points over the thickness h
       double precision x_interface(n_interface_max)
       integer*8, allocatable ::  visite(:)
 
-      character*100 tchar
+      character*500 tchar
       character*1 tE_H
 
       integer*8 iFrame, nFrame

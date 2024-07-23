@@ -8,14 +8,14 @@ c
       double precision lambda
       complex*16 sol(3,nnodes+7,nval,nel)
       complex*16 beta(nval)
-      character mesh_file*100
+      character mesh_file*500
 c     Local variables
       integer*8 i, iel, ival
       integer*8 namelen, namelength, namelen2
 
       character*11 ivalue, jvalue
-      character dir_name*100
-      character*100 tchar1, tchar2
+      character dir_name*500
+      character*500 tchar1, tchar2
 c
       namelen = len_trim(mesh_file)
       namelength = len_trim(dir_name)

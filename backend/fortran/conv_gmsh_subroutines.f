@@ -52,7 +52,7 @@ c      xadj(npt+1),
       integer visite(npt_max), lb(npt_max)
       integer xadj(npt_max+1), adjncy(long_adj_max)
       integer nut(6)
-      character file_ui*100
+      character file_ui*500
       common/imp_file/file_ui
 c
 c ip(1,i) = i+1 MOD 3
@@ -156,7 +156,7 @@ C      double precision delta_x, tol
 C      integer period1(max_period), period2(max_period)
 C      integer period3(2,max_period)
 C      character*(*) file1_mesh
-C      character file_ui*100
+C      character file_ui*500
 C      common/imp_file/file_ui
 Cc
 Cc      character fichier_mail*20
@@ -498,7 +498,7 @@ c
       integer xls(npt_max), invperm(npt_max)
       integer idfn_r(npt_max)
       double precision x_r(npt_max), y_r(npt_max)
-      character file_ui*100
+      character file_ui*500
       common/imp_file/file_ui
 c
 c ip(1,i) = i+1 MOD 3
@@ -789,7 +789,7 @@ c
       integer i, j, k
 c
       integer debug, ui
-      character file_ui*100
+      character file_ui*500
 c
       common/imp/ui, debug
       common/imp_file/file_ui
@@ -894,7 +894,7 @@ c     Local variables
       double precision x_a, y_a, x_b, y_b
 
       integer ui, debug
-      character file_ui*100
+      character file_ui*500
       common/imp/ui, debug
       common/imp_file/file_ui
 c
@@ -1068,7 +1068,7 @@ c     Local variables
       double precision x_a, y_a, x_b, y_b
 
       integer ui, debug
-      character file_ui*100
+      character file_ui*500
       common/imp/ui, debug
       common/imp_file/file_ui
 c

@@ -24,10 +24,10 @@ c
       complex*16 shift
       complex*16 eps_eff(nb_typ_el)
       integer*8 mesh_format, namelen
-      character mesh_file*100
-      character dir_name*100
+      character mesh_file*500
+      character dir_name*500
       integer*8 namelength
-      character*100 tchar1, tchar2, tchar3
+      character*500 tchar1, tchar2, tchar3
 c     Local variables
       integer*8 i
       double precision pi

@@ -17,7 +17,7 @@ c
 c      complex*16 x(npt)
 c      double precision xx, re_tmp, im_tmp
 
-      character mesh_file*100
+      character mesh_file*500
 
       integer*8 npt2, nel2, ui
       integer*8 i, j, k, debug
